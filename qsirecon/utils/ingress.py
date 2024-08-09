@@ -42,59 +42,6 @@ def missing_from_ukb_directory(ukb_subject_dir):
     return [str(fpath) for fpath in required_files if not fpath.exists()]
 
 
-def find_ukb_directory(ukb_directory_list, subject_id):
-    """Find a UKB directory for a given subject ID.
-
-    Parameters
-    ----------
-    ukb_directory_list : :obj:`list` of :obj:`pathlib.Path`
-        A list of ukb directories to search.
-    subject_id : :obj:`str`
-        The subject ID to search for.
-
-    Returns
-    -------
-    ukb_directory : :obj:`pathlib.Path`
-        The path to the ukb directory.
-    """
-    potential_directories = [
-        subdir for subdir in ukb_directory_list if subdir.name.startswith(subject_id)
-    ]
-
-    # If nothing starts with the subject id, then we're out of luck
-    if not potential_directories:
-        raise Exception(f"No UKB directory available for {subject_id}")
-
-    complete_dirs = []
-    for potential_directory in potential_directories:
-        missing_files = missing_from_ukb_directory(potential_directory)
-        if not missing_files:
-            complete_dirs.append(potential_directory)
-
-    # Too many complete matches: ambiguous subject ID
-    if len(complete_dirs) > 1:
-        raise Exception(
-            "Provide a more specific subject filter: More than 1 directories match "
-            + subject_id
-            + "\n"
-            + "\n".join(map(str, complete_dirs))
-        )
-
-    # There were potential directories, but none were complete
-    if not complete_dirs:
-        error_report = "\n".join(
-            [
-                str(pdir.absolute())
-                + " missing:\n    "
-                + "\n    ".join(missing_from_ukb_directory(pdir))
-                for pdir in potential_directories
-            ]
-        )
-        raise Exception(f"No complete directories found for {subject_id}:\n{error_report}")
-
-    return
-
-
 def create_ukb_layout(ukb_dir, participant_label=None):
     """Find all valid ukb directories under ukb_dir.
 

@@ -103,57 +103,6 @@ def plot_denoise(
     return out_files
 
 
-def plot_acpc(
-    acpc_registered_img,
-    div_id,
-    plot_params=None,
-    order=("z", "x", "y"),
-    cuts=None,
-    estimate_brightness=False,
-    label=None,
-    compress="auto",
-):
-    """
-    Plot the results of an AC-PC transformation.
-    """
-    plot_params = plot_params or {}
-
-    # Do the low-b image first
-    out_files = []
-    if estimate_brightness:
-        plot_params = robust_set_limits(
-            acpc_registered_img.get_fdata(dtype="float32").reshape(-1), plot_params
-        )
-
-    # Plot each cut axis for low-b
-    for i, mode in enumerate(list(order)):
-        plot_params["display_mode"] = mode
-        plot_params["cut_coords"] = [-20.0, 0.0, 20.0]
-        if i == 0:
-            plot_params["title"] = label
-        else:
-            plot_params["title"] = None
-
-        # Generate nilearn figure
-        display = plot_anat(acpc_registered_img, **plot_params)
-        for coord, axis in display.axes.items():
-            axis.ax.axvline(0, lw=1)
-            axis.ax.axhline(0, lw=1)
-        svg = extract_svg(display, compress=compress)
-        display.close()
-
-        # Find and replace the figure_1 id.
-        xml_data = etree.fromstring(svg)
-        find_text = etree.ETXPath("//{%s}g[@id='figure_1']" % SVGNS)
-        find_text(xml_data)[0].set("id", "%s-%s-%s" % (div_id, mode, uuid4()))
-
-        svg_fig = SVGFigure()
-        svg_fig.root = xml_data
-        out_files.append(svg_fig)
-
-    return out_files
-
-
 def slices_from_bbox(mask_data, cuts=3, padding=0):
     """Finds equi-spaced cuts for presenting images"""
     B = np.argwhere(mask_data > 0)

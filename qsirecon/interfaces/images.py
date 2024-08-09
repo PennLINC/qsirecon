@@ -15,7 +15,6 @@ from textwrap import indent
 
 import nibabel as nb
 import numpy as np
-from dipy.io import read_bvals_bvecs
 from nipype import logging
 from nipype.interfaces.base import (
     BaseInterfaceInputSpec,
@@ -274,35 +273,6 @@ def bvec_to_rasb(bval_file, bvec_file, img_file, workdir):
         raise Exception(str(err))
 
     return np.fromstring(out, dtype=float, sep=" ")[:3]
-
-
-def split_bvals_bvecs(bval_file, bvec_file, img_files, deoblique, working_dir):
-    """Split bvals and bvecs into one text file per image."""
-    if deoblique:
-        LOGGER.info("Converting oblique-image bvecs to world coordinate reference frame")
-    bvals, bvecs = read_bvals_bvecs(bval_file, bvec_file)
-    split_bval_files = []
-    split_bvec_files = []
-    for nsample, (bval, bvec, img_file) in enumerate(zip(bvals[:, None], bvecs, img_files)):
-        bval_fname = fname_presuffix(bval_file, suffix="_%04d" % nsample, newpath=working_dir)
-        bvec_suffix = "_ortho_%04d" % nsample if not deoblique else "_%04d" % nsample
-        bvec_fname = fname_presuffix(bvec_file, bvec_suffix, newpath=working_dir)
-        np.savetxt(bval_fname, bval)
-        np.savetxt(bvec_fname, bvec)
-
-        # re-write the bvec deobliqued, if requested
-        if deoblique:
-            rasb = bvec_to_rasb(bval_fname, bvec_fname, img_file, working_dir)
-            # Convert to image axis orientation
-            ornt = nb.aff2axcodes(nb.load(img_file).affine)
-            flippage = np.array([1 if ornt[n] == "RAS"[n] else -1 for n in [0, 1, 2]])
-            deobliqued_bvec = rasb * flippage
-            np.savetxt(bvec_fname, deobliqued_bvec)
-
-        split_bval_files.append(bval_fname)
-        split_bvec_files.append(bvec_fname)
-
-    return split_bval_files, split_bvec_files
 
 
 def to_lps(input_img, new_axcodes=("L", "P", "S")):

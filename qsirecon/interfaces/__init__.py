@@ -3,4 +3,3 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from .bids import DerivativesDataSink
 from .images import ConformDwi, ValidateImage
-from .reports import AboutSummary, SubjectSummary

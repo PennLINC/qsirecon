@@ -5,7 +5,6 @@ import os.path as op
 from copy import deepcopy
 from glob import glob
 from pathlib import Path
-from subprocess import PIPE, Popen
 
 import nibabel as nb
 import nipype.interfaces.utility as niu
@@ -120,48 +119,6 @@ class DSIStudioCreateSrc(CommandLine):
         outputs = self.output_spec().get()
         outputs["output_src"] = self._gen_filename("output_src")
         return outputs
-
-
-class _DSIStudioQCOutputSpec(TraitedSpec):
-    qc_txt = File(exists=True, desc="Text file with QC measures")
-
-
-class DSIStudioQC(SimpleInterface):
-    output_spec = _DSIStudioQCOutputSpec
-
-    def _run_interface(self, runtime):
-        # DSI Studio (0.12.2) action=qc has two modes, depending on wether the
-        # input is a file (src.gz|nii.gz)|(fib.gz) or a directory. For
-        # directories, the action will be run on a number of detected files
-        # (which *cannot* be symbolic links for some reason).
-        src_file = fname_presuffix(self.inputs.src_file, newpath=runtime.cwd)
-        cmd = ["dsi_studio", "--action=qc", "--source=" + src_file]
-        proc = Popen(cmd, cwd=runtime.cwd, stdout=PIPE, stderr=PIPE)
-        out, err = proc.communicate()
-        if out:
-            LOGGER.info(out.decode())
-        if err:
-            LOGGER.critical(err.decode())
-        self._results["qc_txt"] = op.join(runtime.cwd, "qc.txt")
-        return runtime
-
-
-class _DSIStudioSrcQCInputSpec(DSIStudioCommandLineInputSpec):
-    src_file = File(exists=True, copyfile=False, argstr="%s", desc="DSI Studio src[.gz] file")
-
-
-class DSIStudioSrcQC(DSIStudioQC):
-    input_spec = _DSIStudioSrcQCInputSpec
-    ext = ".src.gz"
-
-
-class _DSIStudioFibQCInputSpec(DSIStudioCommandLineInputSpec):
-    src_file = File(exists=True, copyfile=False, argstr="%s", desc="DSI Studio fib[.gz] file")
-
-
-class DSIStudioFibQC(DSIStudioQC):
-    input_spec = _DSIStudioFibQCInputSpec
-    ext = ".fib.gz"
 
 
 # Step 2 reonstruct ODFs
@@ -683,57 +640,6 @@ class FixDSIStudioExportHeader(SimpleInterface):
         return runtime
 
 
-class _DSIStudioQCMergeInputSpec(BaseInterfaceInputSpec):
-    src_qc = File(exists=True, mandatory=True)
-    fib_qc = File(exists=True, mandatory=True)
-
-
-class _DSIStudioQCMergeOutputSpec(TraitedSpec):
-    qc_file = File(exists=True)
-
-
-class DSIStudioMergeQC(SimpleInterface):
-    input_spec = _DSIStudioQCMergeInputSpec
-    output_spec = _DSIStudioQCMergeOutputSpec
-
-    def _run_interface(self, runtime):
-        output_csv = runtime.cwd + "/merged_qc.csv"
-        src_qc = load_src_qc_file(self.inputs.src_qc)
-        fib_qc = load_fib_qc_file(self.inputs.fib_qc)
-        src_qc.update(fib_qc)
-        qc_df = pd.DataFrame(src_qc)
-        qc_df.to_csv(output_csv, index=False)
-        self._results["qc_file"] = output_csv
-        return runtime
-
-
-class _DSIStudioBTableInputSpec(BaseInterfaceInputSpec):
-    bval_file = File(exists=True, mandatory=True)
-    bvec_file = File(exists=True, mandatory=True)
-    bvec_convention = traits.Enum(
-        ("DIPY", "FSL"),
-        usedefault=True,
-        desc="Convention used for bvecs. FSL assumes LAS+ no matter image orientation",
-    )
-
-
-class _DSIStudioBTableOutputSpec(TraitedSpec):
-    btable_file = File(exists=True)
-
-
-class DSIStudioBTable(SimpleInterface):
-    input_spec = _DSIStudioBTableInputSpec
-    output_spec = _DSIStudioBTableOutputSpec
-
-    def _run_interface(self, runtime):
-        if self.inputs.bvec_convention != "DIPY":
-            raise NotImplementedError("Only DIPY Bvecs supported for now")
-        btab_file = op.join(runtime.cwd, "btable.txt")
-        btable_from_bvals_bvecs(self.inputs.bval_file, self.inputs.bvec_file, btab_file)
-        self._results["btable_file"] = btab_file
-        return runtime
-
-
 class _AutoTrackInputSpec(DSIStudioCommandLineInputSpec):
     fib_file = File(exists=True, mandatory=True, copyfile=False, argstr="--source=%s")
     map_file = File(exists=True, copyfile=False)
@@ -883,53 +789,6 @@ def stat_txt_to_df(stat_txt_file, bundle_name):
         bundle_stats[name] = float(value)
 
     return bundle_stats
-
-
-def load_src_qc_file(fname, prefix=""):
-    with open(fname, "r") as qc_file:
-        qc_data = qc_file.readlines()
-    data = qc_data[1]
-    parts = data.strip().split("\t")
-    dwi_contrast = np.nan
-    ndc_masked = np.nan
-    if len(parts) == 7:
-        _, dims, voxel_size, dirs, max_b, ndc, bad_slices = parts
-    elif len(parts) == 8:
-        _, dims, voxel_size, dirs, max_b, _, ndc, bad_slices = parts
-    elif len(parts) == 9:
-        _, dims, voxel_size, dirs, max_b, dwi_contrast, ndc, ndc_masked, bad_slices = parts
-    else:
-        raise Exception("Unknown QC File format")
-
-    voxelsx, voxelsy, voxelsz = map(float, voxel_size.strip().split())
-    dimx, dimy, dimz = map(float, dims.strip().split())
-    n_dirs = float(dirs.split("/")[1])
-    max_b = float(max_b)
-    dwi_corr = float(ndc)
-    n_bad_slices = float(bad_slices)
-    ndc_masked = float(ndc_masked)
-    dwi_contrast = float(dwi_contrast)
-    data = {
-        prefix + "dimension_x": [dimx],
-        prefix + "dimension_y": [dimy],
-        prefix + "dimension_z": [dimz],
-        prefix + "voxel_size_x": [voxelsx],
-        prefix + "voxel_size_y": [voxelsy],
-        prefix + "voxel_size_z": [voxelsz],
-        prefix + "max_b": [max_b],
-        prefix + "neighbor_corr": [dwi_corr],
-        prefix + "masked_neighbor_corr": [ndc_masked],
-        prefix + "dwi_contrast": [dwi_contrast],
-        prefix + "num_bad_slices": [n_bad_slices],
-        prefix + "num_directions": [n_dirs],
-    }
-    return data
-
-
-def load_fib_qc_file(fname):
-    with open(fname, "r") as fibqc_f:
-        lines = [line.strip().split() for line in fibqc_f]
-    return {"coherence_index": [float(lines[1][-1])]}
 
 
 def btable_from_bvals_bvecs(bval_file, bvec_file, output_file):

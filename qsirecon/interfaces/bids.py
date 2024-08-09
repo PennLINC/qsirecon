@@ -118,7 +118,7 @@ class DerivativesDataSink(SimpleInterface):
 
     >>> from pathlib import Path
     >>> import tempfile
-    >>> from qsirecon.utils.bids import collect_data
+    >>> from qsiprep.utils.bids import collect_data
     >>> tmpdir = Path(tempfile.mkdtemp())
     >>> tmpfile = tmpdir / 'a_temp_file.nii.gz'
     >>> tmpfile.open('w').close()  # "touch" the file
