@@ -171,23 +171,38 @@ def main():
         errno = 0
     finally:
 
-        from ..viz.reports import generate_reports
+        from ..reports.core import generate_reports
+        from ..workflows.base import _load_recon_spec
 
         # Generate reports phase
-        # session_list = (
-        #     config.execution.get().get('bids_filters', {}).get('dwi', {}).get('session')
-        # )
+        session_list = config.execution.get().get("bids_filters", {}).get("dwi", {}).get("session")
 
-        failed_reports = generate_reports(
-            config.execution.participant_label,
-            # session_list=session_list,
-        )
-        write_derivative_description(
-            config.execution.bids_dir,
-            config.execution.qsirecon_dir,
-            # dataset_links=config.execution.dataset_links,
-        )
-        write_bidsignore(config.execution.qsirecon_dir)
+        workflow_spec = _load_recon_spec()
+        # Compile list of output folders
+        # TODO: Retain QSIRecon pipeline names in the config object
+        qsirecon_suffixes = []
+        for node_spec in workflow_spec["nodes"]:
+            qsirecon_suffix = node_spec.get("qsirecon_suffix", None)
+            qsirecon_suffixes += [qsirecon_suffix] if qsirecon_suffix else []
+
+        qsirecon_suffixes = sorted(list(set(qsirecon_suffixes)))
+        config.loggers.cli.warning(f"QSIRecon suffixes: {qsirecon_suffixes}")
+        failed_reports = []
+        for qsirecon_suffix in qsirecon_suffixes:
+            suffix_dir = Path(str(config.execution.qsirecon_dir) + f"-{qsirecon_suffix}")
+            suffix_failed_reports = generate_reports(
+                config.execution.participant_label,
+                suffix_dir,
+                config.execution.run_uuid,
+                session_list=session_list,
+            )
+            failed_reports += suffix_failed_reports
+            write_derivative_description(
+                config.execution.bids_dir,
+                config.execution.qsirecon_dir,
+                # dataset_links=config.execution.dataset_links,
+            )
+            write_bidsignore(config.execution.qsirecon_dir)
 
         if failed_reports:
             print(failed_reports)
@@ -198,139 +213,5 @@ def main():
             # config.loggers.cli.error(msg)
             # if sentry_sdk is not None:
             #     sentry_sdk.capture_message(msg, level='error')
-        if not config.execution.run_preproc_and_recon:
-            sys.exit(int(errno + failed_reports) > 0)
 
-        # If preprocessing and recon are requested in the same call, start the recon workflow now.
-        if errno > 0:
-            if config.nipype.stop_on_first_crash:
-                config.loggers.workflow.critical(
-                    "Errors occurred during preprocessing - Recon will not run."
-                )
-                sys.exit(int(errno + failed_reports) > 0)
-
-    # POST-PREP RECON
-    del qsirecon_wf
-    # CRITICAL Call build_workflow(config_file, retval) in a subprocess.
-    # Because Python on Linux does not ever free virtual memory (VM), running the
-    # workflow construction jailed within a process preempts excessive VM buildup.
-    if "pdb" not in config.execution.debug:
-        with Manager() as mgr:
-            retval = mgr.dict()
-            p = Process(target=build_workflow, args=(str(config_file), "QSIRecon", retval))
-            p.start()
-            p.join()
-            retval = dict(retval.items())  # Convert to base dictionary
-
-            if p.exitcode:
-                retval["return_code"] = p.exitcode
-
-    else:
-        retval = build_workflow(str(config_file), "QSIRecon", {})
-
-    exitcode = retval.get("return_code", 0)
-    qsirecon_wf = retval.get("workflow", None)
-
-    # CRITICAL It would be bad to let the config file be changed between prep and recon.
-    # config.load(config_file)
-
-    if qsirecon_wf and config.execution.write_graph:
-        qsirecon_wf.write_graph(graph2use="colored", format="svg", simple_form=True)
-
-    exitcode = exitcode or (qsirecon_wf is None) * EX_SOFTWARE
-    if exitcode != 0:
-        sys.exit(exitcode)
-
-    # Generate boilerplate
-    with Manager() as mgr:
-        from .workflow import build_boilerplate
-
-        p = Process(target=build_boilerplate, args=(str(config_file), qsirecon_wf))
-        p.start()
-        p.join()
-
-    if config.execution.boilerplate_only:
-        sys.exit(int(exitcode > 0))
-
-    # Clean up master process before running workflow, which may create forks
-    gc.collect()
-
-    # Sentry tracking
-    if sentry_sdk is not None:
-        with sentry_sdk.configure_scope() as scope:
-            scope.set_tag("run_uuid", config.execution.run_uuid)
-            scope.set_tag("npart", len(config.execution.participant_label))
-        sentry_sdk.add_breadcrumb(message="QSIPostRecon started", level="info")
-        sentry_sdk.capture_message("QSIRecon started", level="info")
-
-    config.loggers.workflow.log(
-        15,
-        "\n".join(["QSIRecon config:"] + ["\t\t%s" % s for s in config.dumps().splitlines()]),
-    )
-    config.loggers.workflow.log(25, "QSIRecon started!")
-    errno = 1  # Default is error exit unless otherwise set
-    try:
-        qsirecon_wf.run(**config.nipype.get_plugin())
-    except Exception as e:
-        if not config.execution.notrack:
-            from ..utils.sentry import process_crashfile
-
-            crashfolders = [
-                config.execution.qsirecon_dir / f"sub-{s}" / "log" / config.execution.run_uuid
-                for s in config.execution.participant_label
-            ]
-            for crashfolder in crashfolders:
-                for crashfile in crashfolder.glob("crash*.*"):
-                    process_crashfile(crashfile)
-
-            if sentry_sdk is not None and "Workflow did not execute cleanly" not in str(e):
-                sentry_sdk.capture_exception(e)
-        config.loggers.workflow.critical("QSIRecon failed: %s", e)
-        raise
-    else:
-        config.loggers.workflow.log(25, "QSIRecon finished successfully!")
-        if sentry_sdk is not None:
-            success_message = "QSIPostRecon finished without errors"
-            sentry_sdk.add_breadcrumb(message=success_message, level="info")
-            sentry_sdk.capture_message(success_message, level="info")
-
-        # Bother users with the boilerplate only iff the workflow went okay.
-        boiler_file = config.execution.qsirecon_dir / "logs" / "CITATION.md"
-        if boiler_file.exists():
-            if config.environment.exec_env in (
-                "singularity",
-                "docker",
-                "qsirecon-docker",
-            ):
-                boiler_file = Path("<OUTPUT_PATH>") / boiler_file.relative_to(
-                    config.execution.output_dir
-                )
-            config.loggers.workflow.log(
-                25,
-                "Works derived from this QSIRecon execution should include the "
-                f"boilerplate text found in {boiler_file}.",
-            )
-
-        errno = 0
-    finally:
-
-        from ..viz.reports import generate_reports
-
-        # Generate reports phase
-        # session_list = (
-        #     config.execution.get().get('bids_filters', {}).get('dwi', {}).get('session')
-        # )
-
-        failed_reports = generate_reports(
-            config.execution.participant_label,
-            # session_list=session_list,
-        )
-        write_derivative_description(
-            config.execution.bids_dir,
-            config.execution.qsirecon_dir,
-            # dataset_links=config.execution.dataset_links,
-        )
-        write_bidsignore(config.execution.qsirecon)
-
-        if failed_reports:
-            print(failed_reports)
+        sys.exit(int(errno + len(failed_reports)) > 0)

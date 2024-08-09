@@ -441,8 +441,6 @@ class execution(_Config):
     """Directory containing FreeSurfer directories to use for recon workflows."""
     recon_only = False
     """Run only recon workflows."""
-    reportlets_dir = None
-    """Path where reportlets are written."""
     run_preproc_and_recon = False
     """Will both preproc and recon be run in a single call?"""
     skip_anat_based_spatial_normalization = False
@@ -457,6 +455,8 @@ class execution(_Config):
     """Write out the computational graph corresponding to the planned postprocessing."""
     dataset_links = {}
     """A dictionary of dataset links to be used to track Sources in sidecars."""
+    aggr_ses_reports = 4  # TODO: Change to None when implemented on command line
+    """Maximum number of sessions aggregated in one subject's visual report."""
 
     _layout = None
 
@@ -474,7 +474,6 @@ class execution(_Config):
         "qsirecon_dir",
         "qsirecon_dir",
         "recon_input",
-        "reportlets_dir",
         "templateflow_home",
         "work_dir",
     )
