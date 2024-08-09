@@ -21,7 +21,7 @@ their current feature sets. These other
 
 ## Preprocessing
 
-|                                                     | QSIRecon                  | Tractoflow             | PreQual                 | MRtrix3_connectome | dMRIPrep         |
+|                                                     | QSIPrep                  | Tractoflow             | PreQual                 | MRtrix3_connectome | dMRIPrep         |
 | --------------------------------------------------- | :----------------------: | :--------------------: | :---------------------: | :----------------: | :--------------: |
 | BIDS App                                            |            ✔             |           ✔            |            ✘            |         ✔          |        ✔         |
 | Gradient direction sanity check                     |     Q-form matching      |           ✘            |     `dwigradcheck`      |         ✘          |        ✘         |

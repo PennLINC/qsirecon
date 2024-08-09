@@ -26,7 +26,7 @@ ARG VCS_REF
 ARG VERSION
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.name="qsirecon" \
-      org.label-schema.description="qsirecon - q Space Images preprocessing tool" \
+      org.label-schema.description="qsirecon - q Space Images postprocessing tool" \
       org.label-schema.url="http://qsirecon.readthedocs.io" \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.vcs-url="https://github.com/pennlinc/qsirecon" \

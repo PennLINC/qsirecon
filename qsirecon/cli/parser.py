@@ -145,7 +145,7 @@ def _build_parser(**kwargs):
     is_release = not any((currentv.is_devrelease, currentv.is_prerelease, currentv.is_postrelease))
 
     parser = ArgumentParser(
-        description=f"{verstr}: q-Space Image Preprocessing workflows",
+        description=f"{verstr}: q-Space Image Reconstruction Workflows",
         formatter_class=ArgumentDefaultsHelpFormatter,
         **kwargs,
     )
@@ -168,7 +168,7 @@ def _build_parser(**kwargs):
         "output_dir",
         action="store",
         type=Path,
-        help="The output path for the outcomes of preprocessing and visual reports",
+        help="The output path for the outcomes of postprocessing and visual reports",
     )
     parser.add_argument(
         "analysis_level",

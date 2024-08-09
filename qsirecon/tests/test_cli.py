@@ -1061,7 +1061,7 @@ def _run_and_generate(test_name, parameters, test_main=True):
         config.loggers.cli.warning(f"Saving config file to {config_file}")
         config.to_filename(config_file)
 
-        retval = build_workflow(config_file, exec_mode="auto", retval={})
+        retval = build_workflow(config_file, retval={})
         qsirecon_wf = retval["workflow"]
         qsirecon_wf.run()
         write_derivative_description(config.execution.fmri_dir, config.execution.qsirecon_dir)
