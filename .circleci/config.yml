@@ -1080,7 +1080,7 @@ workflows:
             - Recon_ScalarMap
           filters:
             branches:
-              only: master
+              only: main
             tags:
               only: /.*/
 
@@ -1089,6 +1089,6 @@ workflows:
             - deployable
           filters:
             branches:
-              only: master
+              only: main
             tags:
               only: /.*/

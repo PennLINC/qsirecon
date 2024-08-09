@@ -514,7 +514,7 @@ def _build_parser(**kwargs):
         help="path to a json file with settings for the call to eddy. If no "
         "json is specified, a default one will be used. The current default "
         "json can be found here: "
-        "https://github.com/PennLINC/qsirecon/blob/master/qsirecon/data/eddy_params.json",
+        "https://github.com/PennLINC/qsirecon/blob/main/qsirecon/data/eddy_params.json",
     )
     g_moco.add_argument(
         "--shoreline_iters",
