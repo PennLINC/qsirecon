@@ -81,10 +81,7 @@ def main():
 
     exitcode = retval.get("return_code", 0)
     qsirecon_wf = retval.get("workflow", None)
-    exec_mode = retval.get("exec_mode", "QSIRecon")
-    output_dir = (
-        config.execution.qsirecon_dir if exec_mode == "QSIRecon" else config.execution.output_dir
-    )
+    output_dir = config.execution.output_dir
 
     # CRITICAL Load the config from the file. This is necessary because the ``build_workflow``
     # function executed constrained in a process may change the config (and thus the global
@@ -125,9 +122,9 @@ def main():
 
     config.loggers.workflow.log(
         15,
-        "\n".join([f"{exec_mode} config:"] + ["\t\t%s" % s for s in config.dumps().splitlines()]),
+        "\n".join(["config:"] + ["\t\t%s" % s for s in config.dumps().splitlines()]),
     )
-    config.loggers.workflow.log(25, f"{exec_mode} started!")
+    config.loggers.workflow.log(25, "QSIRecon started!")
     errno = 1  # Default is error exit unless otherwise set
     try:
         qsirecon_wf.run(**config.nipype.get_plugin())
@@ -145,7 +142,7 @@ def main():
 
             if sentry_sdk is not None and "Workflow did not execute cleanly" not in str(e):
                 sentry_sdk.capture_exception(e)
-        config.loggers.workflow.critical("%s failed: %s", exec_mode, e)
+        config.loggers.workflow.critical("%s failed: %s", "QSIRecon", e)
         raise
     else:
         config.loggers.workflow.log(25, "QSIRecon finished successfully!")
@@ -233,7 +230,6 @@ def main():
 
     exitcode = retval.get("return_code", 0)
     qsirecon_wf = retval.get("workflow", None)
-    exec_mode = "QSIRecon"
 
     # CRITICAL It would be bad to let the config file be changed between prep and recon.
     # config.load(config_file)
