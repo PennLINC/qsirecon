@@ -3,7 +3,7 @@ import os
 import warnings
 from argparse import ArgumentParser, RawTextHelpFormatter
 
-from qsiprep.interfaces.converters import FIBGZtoFOD, FODtoFIBGZ
+from qsirecon.interfaces.converters import FIBGZtoFOD, FODtoFIBGZ
 
 warnings.filterwarnings("ignore", category=ImportWarning)
 warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
@@ -23,7 +23,7 @@ def sink_mask_file(in_file, orig_file, out_dir):
 def fib_to_mif():
     """Convert fib to mif."""
     parser = ArgumentParser(
-        description="qsiprep: Convert DSI Studio fib file to MRtrix mif file.",
+        description="qsirecon: Convert DSI Studio fib file to MRtrix mif file.",
         formatter_class=RawTextHelpFormatter,
     )
 
@@ -69,7 +69,7 @@ def fib_to_mif():
 def mif_to_fib():
     """Convert mif to fib."""
     parser = ArgumentParser(
-        description="qsiprep: Convert MRtrix mif file to DSI Studio fib file",
+        description="qsirecon: Convert MRtrix mif file to DSI Studio fib file",
         formatter_class=RawTextHelpFormatter,
     )
 

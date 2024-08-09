@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 #
-# Changed to build qsiprep and qsirecon workflows
+# Changed to build qsirecon and qsirecon workflows
 #
 # Copyright The NiPreps Developers <nipreps@gmail.com>
 #
@@ -28,7 +28,7 @@ The workflow builder factory method.
 All the checks and the construction of the workflow are done
 inside this function that has pickleable inputs and output
 dictionary (``retval``) to allow isolation using a
-``multiprocessing.Process`` that allows qsiprep to enforce
+``multiprocessing.Process`` that allows qsirecon to enforce
 a hard-limited memory-scope.
 
 """
@@ -47,13 +47,13 @@ def build_workflow(config_file, exec_mode, retval):
     from .. import config
     from ..utils.misc import check_deps
     from ..viz.reports import generate_reports
-    from ..workflows.base import init_qsiprep_wf
+    from ..workflows.base import init_qsirecon_wf
     from ..workflows.recon import init_qsirecon_wf
 
     config.load(config_file)
     build_log = config.loggers.workflow
 
-    # qsiprep_dir = config.execution.qsiprep_dir
+    # qsirecon_dir = config.execution.qsirecon_dir
     version = config.environment.version
 
     retval["return_code"] = 1
@@ -69,27 +69,27 @@ def build_workflow(config_file, exec_mode, retval):
                     "Argument --recon-only is not needed if --recon-input is specified."
                 )
         else:
-            exec_mode = "QSIPrep"
+            exec_mode = "QSIRecon"
 
-    if exec_mode == "QSIPrep":
-        workflow_builder = init_qsiprep_wf
+    if exec_mode == "QSIRecon":
+        workflow_builder = init_qsirecon_wf
     elif exec_mode == "QSIRecon":
         workflow_builder = init_qsirecon_wf
     else:
         raise Exception(f"Unknown mode: {exec_mode}")
 
     banner = [f"Running {exec_mode} version {version}"]
-    notice_path = Path(pkgrf("qsiprep", "data/NOTICE"))
+    notice_path = Path(pkgrf("qsirecon", "data/NOTICE"))
     if notice_path.exists():
         banner[0] += "\n"
         banner += [f"License NOTICE {'#' * 50}"]
-        banner += [f"QSIPrep {version}"]
+        banner += [f"QSIRecon {version}"]
         banner += notice_path.read_text().splitlines(keepends=False)[1:]
         banner += ["#" * len(banner[1])]
     build_log.log(25, f"\n{' ' * 9}".join(banner))
 
     # warn if older results exist: check for dataset_description.json in output folder
-    # msg = check_pipeline_version("QSIPrep", version, qsiprep_dir / "dataset_description.json")
+    # msg = check_pipeline_version("QSIRecon", version, qsirecon_dir / "dataset_description.json")
     # if msg is not None:
     #     build_log.warning(msg)
 
@@ -107,7 +107,7 @@ def build_workflow(config_file, exec_mode, retval):
     )
 
     # Called with reports only
-    if config.execution.reports_only and exec_mode == "QSIPrep":
+    if config.execution.reports_only and exec_mode == "QSIRecon":
         build_log.log(25, "Running --reports-only on participants %s", ", ".join(subject_list))
         session_list = (
             config.execution.bids_filters.get("dwi", {}).get("session")
@@ -117,7 +117,7 @@ def build_workflow(config_file, exec_mode, retval):
 
         failed_reports = generate_reports(
             config.execution.participant_label,
-            config.execution.qsiprep_dir,
+            config.execution.qsirecon_dir,
             config.execution.run_uuid,
             session_list=session_list,
         )
@@ -147,7 +147,7 @@ def build_workflow(config_file, exec_mode, retval):
     if not Path(config.execution.fs_license_file).exists():
         build_log.critical(
             """\
-ERROR: a valid license file is required for FreeSurfer to run. QSIPrep looked for an existing \
+ERROR: a valid license file is required for FreeSurfer to run. QSIRecon looked for an existing \
 license file at several paths, in this order: 1) command line argument ``--fs-license-file``; \
 2) ``$FS_LICENSE`` environment variable; and 3) the ``$FREESURFER_HOME/license.txt`` path. Get it \
 (for free) by registering at https://surfer.nmr.mgh.harvard.edu/registration.html"""
@@ -155,7 +155,7 @@ license file at several paths, in this order: 1) command line argument ``--fs-li
         retval["return_code"] = 126  # 126 == Command invoked cannot execute.
         return retval
 
-    # If qsiprep is being run on already preprocessed data:
+    # If qsirecon is being run on already preprocessed data:
     retval["exec_mode"] = exec_mode
     retval["workflow"] = workflow_builder()
 
@@ -185,7 +185,7 @@ def build_boilerplate(config_file, workflow):
     from .. import config
 
     config.load(config_file)
-    logs_path = config.execution.qsiprep_dir / "logs"
+    logs_path = config.execution.qsirecon_dir / "logs"
     boilerplate = workflow.visit_desc()
     citation_files = {
         ext: logs_path / ("CITATION.%s" % ext) for ext in ("bib", "tex", "md", "html")
@@ -206,9 +206,9 @@ def build_boilerplate(config_file, workflow):
     if citation_files["md"].exists():
         from subprocess import CalledProcessError, TimeoutExpired, check_call
 
-        bib_text = Path(pkgrf("qsiprep", "data/boilerplate.bib")).read_text()
+        bib_text = Path(pkgrf("qsirecon", "data/boilerplate.bib")).read_text()
         citation_files["bib"].write_text(
-            bib_text.replace("QSIPrep <version>", f"QSIPrep {config.environment.version}")
+            bib_text.replace("QSIRecon <version>", f"QSIRecon {config.environment.version}")
         )
 
         # Generate HTML file resolving citations
@@ -220,7 +220,7 @@ def build_boilerplate(config_file, workflow):
             "--filter",
             "pandoc-citeproc",
             "--metadata",
-            'pagetitle="QSIPrep citation boilerplate"',
+            'pagetitle="QSIRecon citation boilerplate"',
             str(citation_files["md"]),
             "-o",
             str(citation_files["html"]),

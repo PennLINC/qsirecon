@@ -26,7 +26,7 @@ def init_b0_to_anat_registration_wf(
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.dwi.registration import init_b0_to_anat_registration_wf
+        from qsirecon.workflows.dwi.registration import init_b0_to_anat_registration_wf
         wf = init_b0_to_anat_registration_wf(
                               transform_type="Rigid",
                               write_report=False)
@@ -139,7 +139,7 @@ def init_direct_b0_acpc_wf(write_report=True, name="b0_anat_coreg"):
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.dwi.registration import init_direct_b0_acpc_wf
+        from qsirecon.workflows.dwi.registration import init_direct_b0_acpc_wf
         wf = init_direct_b0_acpc_wf(mem_gb=3,
                                     omp_nthreads=1,
                                     write_report=False)
@@ -209,7 +209,7 @@ def init_direct_b0_acpc_wf(write_report=True, name="b0_anat_coreg"):
     workflow = Workflow(name=name)
 
     # Defines a coregistration operation
-    ants_settings = pkgrf("qsiprep", "data/intermodal_ACPC.json")
+    ants_settings = pkgrf("qsirecon", "data/intermodal_ACPC.json")
     acpc_reg = pe.Node(
         ANTSRegistrationRPT(generate_report=write_report, from_file=ants_settings),
         name="acpc_reg",

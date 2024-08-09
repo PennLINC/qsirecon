@@ -15,7 +15,7 @@ from ...engine import Workflow
 from ...interfaces.anatomical import CalculateSOP
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.mrtrix import MRConvert
-from qsiprep.interfaces.bids import ReconDerivativesDataSink
+from qsirecon.interfaces.bids import ReconDerivativesDataSink
 
 LOGGER = logging.getLogger("nipype.interface")
 
@@ -27,7 +27,7 @@ def init_steinhardt_order_param_wf(
 
     Inputs
 
-        *qsiprep outputs*
+        *qsirecon outputs*
 
     Outputs
 

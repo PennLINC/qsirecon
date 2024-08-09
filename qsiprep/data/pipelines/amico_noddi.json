@@ -7,7 +7,7 @@
       "name": "fit_noddi",
       "action": "fit_noddi",
       "software": "AMICO",
-      "input": "qsiprep",
+      "input": "qsirecon",
       "qsirecon_suffix": "NODDI",
       "parameters": {
         "isExvivo": false,

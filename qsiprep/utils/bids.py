@@ -122,7 +122,7 @@ def collect_participants(bids_dir, participant_label=None, strict=False, bids_va
     >>> collect_participants('ds114', participant_label=['02', '14'],
     ...                      strict=True)  # doctest: +IGNORE_EXCEPTION_DETAIL
     Traceback (most recent call last):
-    qsiprep.utils.bids.BIDSError:
+    qsirecon.utils.bids.BIDSError:
     ...
 
 
@@ -213,26 +213,26 @@ def collect_data(bids_dir, participant_label, filters=None, bids_validate=True):
 
 
 def write_derivative_description(bids_dir, deriv_dir):
-    from qsiprep import __version__
+    from qsirecon import __version__
 
-    DOWNLOAD_URL = f"https://github.com/PennLINC/qsiprep/archive/{__version__}.tar.gz"
+    DOWNLOAD_URL = f"https://github.com/PennLINC/qsirecon/archive/{__version__}.tar.gz"
 
     desc = {
-        "Name": "qsiprep output",
+        "Name": "qsirecon output",
         "BIDSVersion": "1.1.1",
         "PipelineDescription": {
-            "Name": "qsiprep",
+            "Name": "qsirecon",
             "Version": __version__,
             "CodeURL": DOWNLOAD_URL,
         },
         "GeneratedBy": [
             {
-                "Name": "qsiprep",
+                "Name": "qsirecon",
                 "Version": __version__,
                 "CodeURL": DOWNLOAD_URL,
             }
         ],
-        "CodeURL": "https://github.com/pennbbl/qsiprep",
+        "CodeURL": "https://github.com/pennbbl/qsirecon",
         "HowToAcknowledge": "Please cite our paper "
         "(https://www.nature.com/articles/s41592-021-01185-5#citeas), and "
         "include the generated citation boilerplate within the Methods "
@@ -240,10 +240,10 @@ def write_derivative_description(bids_dir, deriv_dir):
     }
 
     # Keys that can only be set by environment
-    if "QSIPREP_DOCKER_TAG" in os.environ:
-        desc["DockerHubContainerTag"] = os.environ["QSIPREP_DOCKER_TAG"]
-    if "QSIPREP_SINGULARITY_URL" in os.environ:
-        singularity_url = os.environ["QSIPREP_SINGULARITY_URL"]
+    if "QSIRECON_DOCKER_TAG" in os.environ:
+        desc["DockerHubContainerTag"] = os.environ["QSIRECON_DOCKER_TAG"]
+    if "QSIRECON_SINGULARITY_URL" in os.environ:
+        singularity_url = os.environ["QSIRECON_SINGULARITY_URL"]
         desc["SingularityContainerURL"] = singularity_url
         try:
             desc["SingularityContainerMD5"] = _get_shub_version(singularity_url)
@@ -286,7 +286,7 @@ def write_bidsignore(deriv_dir):
 
 
 def validate_input_dir(exec_env, bids_dir, participant_label):
-    # Ignore issues and warnings that should not influence qsiprep
+    # Ignore issues and warnings that should not influence qsirecon
     import subprocess
     import tempfile
 

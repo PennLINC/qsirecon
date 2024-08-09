@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 #
-# Edited from fMRIPrep to represent QSIPrep arguments
+# Edited from fMRIPrep to represent QSIRecon arguments
 #
 # Copyright The NiPreps Developers <nipreps@gmail.com>
 #
@@ -23,23 +23,23 @@
 #     https://www.nipreps.org/community/licensing/
 #
 r"""
-A Python module to maintain unique, run-wide *QSIPrep* settings.
+A Python module to maintain unique, run-wide *QSIRecon* settings.
 
 This module implements the memory structures to keep a consistent, singleton config.
 Settings are passed across processes via filesystem, and a copy of the settings for
 each run and subject is left under
-``<qsiprep_dir>/sub-<participant_id>/log/<run_unique_id>/qsiprep.toml``.
+``<qsirecon_dir>/sub-<participant_id>/log/<run_unique_id>/qsirecon.toml``.
 Settings are stored using :abbr:`ToML (Tom's Markup Language)`.
-The module has a :py:func:`~qsiprep.config.to_filename` function to allow writing out
+The module has a :py:func:`~qsirecon.config.to_filename` function to allow writing out
 the settings to hard disk in *ToML* format, which looks like:
 
-.. literalinclude:: ../qsiprep/data/tests/config.toml
+.. literalinclude:: ../qsirecon/data/tests/config.toml
    :language: toml
-   :name: qsiprep.toml
-   :caption: **Example file representation of QSIPrep settings**.
+   :name: qsirecon.toml
+   :caption: **Example file representation of QSIRecon settings**.
 
 This config file is used to pass the settings across processes,
-using the :py:func:`~qsiprep.config.load` function.
+using the :py:func:`~qsirecon.config.load` function.
 
 Configuration sections
 ----------------------
@@ -59,8 +59,8 @@ graph is built across processes.
 
 .. code-block:: Python
 
-    from qsiprep import config
-    config_file = config.execution.work_dir / '.qsiprep.toml'
+    from qsirecon import config
+    config_file = config.execution.work_dir / '.qsirecon.toml'
     config.to_filename(config_file)
     # Call build_workflow(config_file, retval) in a subprocess
     with Manager() as mgr:
@@ -100,7 +100,7 @@ _disable_et = bool(os.getenv("NO_ET") is not None or os.getenv("NIPYPE_NO_ET") i
 os.environ["NIPYPE_NO_ET"] = "1"
 os.environ["NO_ET"] = "1"
 
-CONFIG_FILENAME = "qsiprep.toml"
+CONFIG_FILENAME = "qsirecon.toml"
 
 try:
     set_start_method("forkserver")
@@ -127,13 +127,13 @@ if not any(
     (
         "+" in __version__,
         __version__.endswith(".dirty"),
-        os.getenv("QSIPREP_DEV", "0").lower() in ("1", "on", "true", "y", "yes"),
+        os.getenv("QSIRECON_DEV", "0").lower() in ("1", "on", "true", "y", "yes"),
     )
 ):
     from ._warnings import logging
 
     os.environ["PYTHONWARNINGS"] = "ignore"
-elif os.getenv("QSIPREP_WARNINGS", "0").lower() in ("1", "on", "true", "y", "yes"):
+elif os.getenv("QSIRECON_WARNINGS", "0").lower() in ("1", "on", "true", "y", "yes"):
     # allow disabling warnings on development versions
     # https://github.com/nipreps/fmriprep/pull/2080#discussion_r409118765
     from ._warnings import logging
@@ -166,7 +166,7 @@ if os.getenv("IS_DOCKER_8395080871"):
     _cgroup = Path("/proc/1/cgroup")
     if _cgroup.exists() and "docker" in _cgroup.read_text():
         _docker_ver = os.getenv("DOCKER_VERSION_8395080871")
-        _exec_env = "qsiprep-docker" if _docker_ver else "docker"
+        _exec_env = "qsirecon-docker" if _docker_ver else "docker"
     del _cgroup
 
 _fs_license = os.getenv("FS_LICENSE")
@@ -274,7 +274,7 @@ class environment(_Config):
     Read-only options regarding the platform and environment.
 
     Crawls runtime descriptive settings (e.g., default FreeSurfer license,
-    execution environment, nipype and *QSIPrep* versions, etc.).
+    execution environment, nipype and *QSIRecon* versions, etc.).
     The ``environment`` section is not loaded in from file,
     only written out when settings are exported.
     This config section is useful when reporting issues,
@@ -415,7 +415,7 @@ class execution(_Config):
     # md_only_boilerplate = False
     # """Do not convert boilerplate from MarkDown to LaTex and HTML."""
     notrack = False
-    """Do not collect telemetry information for *QSIPrep*."""
+    """Do not collect telemetry information for *QSIRecon*."""
     output_dir = None
     """Folder where derivatives will be stored."""
     output_layout = None
@@ -431,12 +431,12 @@ class execution(_Config):
     """Disable ODF recon reports."""
     participant_label = None
     """List of participant identifiers that are to be preprocessed."""
-    qsiprep_dir = None
-    """Root of QSIPrep BIDS Derivatives dataset. Depends on output_layout."""
+    qsirecon_dir = None
+    """Root of QSIRecon BIDS Derivatives dataset. Depends on output_layout."""
     qsirecon_dir = None
     """Root of QSIRecon BIDS Derivatives dataset."""
     recon_input = None
-    """Directory containing QSIPrep derivatives to run through recon workflows."""
+    """Directory containing QSIRecon derivatives to run through recon workflows."""
     freesurfer_input = None
     """Directory containing FreeSurfer directories to use for recon workflows."""
     recon_only = False
@@ -471,7 +471,7 @@ class execution(_Config):
         "layout",
         "log_dir",
         "output_dir",
-        "qsiprep_dir",
+        "qsirecon_dir",
         "qsirecon_dir",
         "recon_input",
         "reportlets_dir",
@@ -579,7 +579,7 @@ class workflow(_Config):
     b0_threshold = None
     """Any value in the .bval file less than this will be considered a b=0 image."""
     b0_motion_corr_to = None
-    """Perform SHORELine's initial b=0-based registration to first volume? 
+    """Perform SHORELine's initial b=0-based registration to first volume?
     Or make a template? Either 'iterative' or 'first'"""
     b0_to_t1w_transform = None
     """Transformation model for intramodal registration."""
@@ -616,7 +616,7 @@ class workflow(_Config):
     hmc_transform = None
     """Transformation to be used in SHORELine."""
     ignore = None
-    """Ignore particular steps for *QSIPrep*."""
+    """Ignore particular steps for *QSIRecon*."""
     infant = False
     """Configure pipelines specifically for infant brains"""
     intramodal_template_iters = None
@@ -759,7 +759,7 @@ def load(filename, skip=None, init=True):
     Arguments
     ---------
     filename : :py:class:`os.PathLike`
-        TOML file containing QSIPrep configuration.
+        TOML file containing QSIRecon configuration.
     skip : dict or None
         Sets of values to ignore during load, keyed by section name
     init : `bool` or :py:class:`~collections.abc.Container`

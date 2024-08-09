@@ -394,7 +394,7 @@ def _unwrap(fmap_data, mag_file, mask=None):
     if fsl_check == "no_fsl":
         raise Exception(
             """Container in use does not have FSL. To use this workflow,
-            please download the qsiprep container with FSL installed."""
+            please download the qsirecon container with FSL installed."""
         )
     from math import pi
 
@@ -476,7 +476,7 @@ def get_ees(in_meta, in_file=None):
 
     import nibabel as nb
 
-    from qsiprep.interfaces.fmap import _get_pe_index
+    from qsirecon.interfaces.fmap import _get_pe_index
 
     # Use case 1: EES is defined
     ees = in_meta.get("EffectiveEchoSpacing", None)

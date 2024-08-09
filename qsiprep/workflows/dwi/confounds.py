@@ -35,7 +35,7 @@ def init_dwi_confs_wf():
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.dwi.confounds import init_dwi_confs_wf
+        from qsirecon.workflows.dwi.confounds import init_dwi_confs_wf
         wf = init_dwi_confs_wf()
 
     Inputs

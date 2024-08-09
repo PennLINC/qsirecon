@@ -43,7 +43,7 @@ def init_fmap_wf(name="fmap_wf"):
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.fieldmap.fmap import init_fmap_wf
+        from qsirecon.workflows.fieldmap.fmap import init_fmap_wf
         wf = init_fmap_wf(omp_nthreads=6, fmap_bspline=False)
 
     """
@@ -52,7 +52,7 @@ def init_fmap_wf(name="fmap_wf"):
     if fsl_check == "no_fsl":
         raise Exception(
             """Container in use does not have FSL. To use this workflow,
-            please download the qsiprep container with FSL installed."""
+            please download the qsirecon container with FSL installed."""
         )
     workflow = Workflow(name=name)
     inputnode = pe.Node(niu.IdentityInterface(fields=["magnitude", "fieldmap"]), name="inputnode")

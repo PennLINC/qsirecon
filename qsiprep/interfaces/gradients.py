@@ -516,7 +516,7 @@ class ComposeTransforms(SimpleInterface):
         ]:
             ifargs.pop(key, None)
 
-        # In qsiprep the transforms have already been merged
+        # In qsirecon the transforms have already been merged
         assert len(xfms_list) == num_dwis
         self._results["transform_lists"] = xfms_list
 

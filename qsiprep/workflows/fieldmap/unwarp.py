@@ -88,7 +88,7 @@ def init_sdc_unwarp_wf(name="sdc_unwarp_wf"):
     if not fsl_check:
         raise Exception(
             """Container in use does not have FSL. To use this workflow,
-            please download the qsiprep container with FSL installed."""
+            please download the qsirecon container with FSL installed."""
         )
     workflow = Workflow(name=name)
     inputnode = pe.Node(
@@ -121,10 +121,10 @@ def init_sdc_unwarp_wf(name="sdc_unwarp_wf"):
 
     # Register the reference of the fieldmap to the reference
     # of the target image (the one that shall be corrected)
-    ants_settings = pkgr.resource_filename("qsiprep", "data/fmap-any_registration.json")
+    ants_settings = pkgr.resource_filename("qsirecon", "data/fmap-any_registration.json")
     if config.execution.sloppy:
         ants_settings = pkgr.resource_filename(
-            "qsiprep", "data/fmap-any_registration_testing.json"
+            "qsirecon", "data/fmap-any_registration_testing.json"
         )
     fmap2ref_reg = pe.Node(
         ANTSRegistrationRPT(
@@ -271,7 +271,7 @@ def init_fmap_unwarp_report_wf(name="fmap_unwarp_report_wf"):
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.fieldmap.unwarp import init_fmap_unwarp_report_wf
+        from qsirecon.workflows.fieldmap.unwarp import init_fmap_unwarp_report_wf
         wf = init_fmap_unwarp_report_wf()
 
     Parameters

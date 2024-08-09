@@ -48,7 +48,7 @@ def init_drbuddi_wf(
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.fieldmap import init_drbuddi_wf
+        from qsirecon.workflows.fieldmap import init_drbuddi_wf
         scan_groups = {
             'dwi_series': [
                 'data/tinytensor/sub-tinytensors/dwi/sub-tinytensors_dir-AP_dwi.nii.gz'],

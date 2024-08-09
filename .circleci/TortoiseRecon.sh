@@ -10,7 +10,7 @@ All supported reconstruction workflows get tested
 
 Inputs:
 -------
- - qsiprep multi shell results (data/DSDTI_fmap)
+ - qsirecon multi shell results (data/DSDTI_fmap)
 
 DOC
 set +e
@@ -25,11 +25,11 @@ CFG=${TESTDIR}/data/nipype.cfg
 setup_dir ${TESTDIR}/${TESTNAME}
 TEMPDIR=${TESTDIR}/${TESTNAME}/work
 OUTPUT_DIR=${TESTDIR}/${TESTNAME}/derivatives
-BIDS_INPUT_DIR=${TESTDIR}/data/multishell_output/qsiprep
+BIDS_INPUT_DIR=${TESTDIR}/data/multishell_output/qsirecon
 export FS_LICENSE=${TESTDIR}/data/license.txt
-QSIPREP_CMD=$(run_qsiprep_cmd ${BIDS_INPUT_DIR} ${OUTPUT_DIR})
+QSIRECON_CMD=$(run_qsirecon_cmd ${BIDS_INPUT_DIR} ${OUTPUT_DIR})
 
-${QSIPREP_CMD} \
+${QSIRECON_CMD} \
    -w ${TEMPDIR} \
 	--recon-input ${BIDS_INPUT_DIR} \
 	--sloppy \

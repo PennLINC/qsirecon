@@ -68,7 +68,7 @@ def init_sdc_wf(fieldmap_info, dwi_meta):
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.fieldmap import init_sdc_wf
+        from qsirecon.workflows.fieldmap import init_sdc_wf
         wf = init_sdc_wf(
             fieldmap_info={
                 'suffix': 'epi',

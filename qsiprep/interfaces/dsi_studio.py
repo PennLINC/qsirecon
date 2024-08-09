@@ -78,7 +78,7 @@ class DSIStudioCreateSrc(CommandLine):
     _cmd = "dsi_studio --action=src "
 
     def _pre_run_hook(self, runtime):
-        """As of QSIPrep > 0.17 DSI Studio changed from DIPY bvecs to FSL bvecs."""
+        """As of QSIRecon > 0.17 DSI Studio changed from DIPY bvecs to FSL bvecs."""
 
         # b_table files and dicom directories are ok
         if isdefined(self.inputs.input_b_table_file) or isdefined(self.inputs.input_dicom_dir):
@@ -935,7 +935,7 @@ def load_fib_qc_file(fname):
 def btable_from_bvals_bvecs(bval_file, bvec_file, output_file):
     """Create a b-table from DIPY-style bvals/bvecs.
 
-    Assuming these come from qsiprep they will be in LPS+, which
+    Assuming these come from qsirecon they will be in LPS+, which
     is the same convention as DSI Studio's btable.
     """
     bvals = np.loadtxt(bval_file).squeeze()

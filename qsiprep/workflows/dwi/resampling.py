@@ -47,7 +47,7 @@ def init_dwi_trans_wf(
         :graph2use: colored
         :simple_form: yes
 
-        from qsiprep.workflows.dwi.resampling import init_dwi_trans_wf
+        from qsirecon.workflows.dwi.resampling import init_dwi_trans_wf
         wf = init_dwi_trans_wf(source_file='sub-1_dwi.nii.gz',
                                template='MNI152NLin2009cAsym',
                                output_resolution=1.2,

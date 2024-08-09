@@ -10,32 +10,32 @@ Fieldmap estimation and unwarping workflows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-.. automodule:: qsiprep.workflows.fieldmap.base
+.. automodule:: qsirecon.workflows.fieldmap.base
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: qsiprep.workflows.fieldmap.pepolar
+.. automodule:: qsirecon.workflows.fieldmap.pepolar
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: qsiprep.workflows.fieldmap.phdiff
+.. automodule:: qsirecon.workflows.fieldmap.phdiff
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: qsiprep.workflows.fieldmap.fmap
+.. automodule:: qsirecon.workflows.fieldmap.fmap
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: qsiprep.workflows.fieldmap.syn
+.. automodule:: qsirecon.workflows.fieldmap.syn
     :members:
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: qsiprep.workflows.fieldmap.unwarp
+.. automodule:: qsirecon.workflows.fieldmap.unwarp
     :members:
     :undoc-members:
     :show-inheritance:

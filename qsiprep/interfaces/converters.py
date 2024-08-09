@@ -213,7 +213,7 @@ class DSIStudioTrkToTck(SimpleInterface):
 
 
 def get_dsi_studio_ODF_geometry(odf_key):
-    mat_path = pkgr("qsiprep", "data/odfs.mat")
+    mat_path = pkgr("qsirecon", "data/odfs.mat")
     m = loadmat(mat_path)
     odf_vertices = m[odf_key + "_vertices"].T
     odf_faces = m[odf_key + "_faces"].T

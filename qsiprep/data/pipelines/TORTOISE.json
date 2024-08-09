@@ -9,7 +9,7 @@
       "software": "TORTOISE",
       "action": "estimate",
       "qsirecon_suffix": "TORTOISE",
-      "input": "qsiprep",
+      "input": "qsirecon",
       "parameters": {
         "estimate_tensor_separately": true,
         "big_delta": null,

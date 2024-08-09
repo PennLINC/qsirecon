@@ -16,7 +16,7 @@ applied if fieldmaps are unavailable.
 During the evaluation phase, the ``--force-syn`` flag will cause this estimation to
 be performed *in addition to* fieldmap-based estimation, to permit the direct
 comparison of the results of each technique.
-Note that, even if ``--force-syn`` is given, the functional outputs of qsiprep will
+Note that, even if ``--force-syn`` is given, the functional outputs of qsirecon will
 be corrected using the fieldmap-based estimates.
 
 Feedback will be enthusiastically received.
@@ -96,7 +96,7 @@ def init_syn_sdc_wf(bold_pe=None, atlas_threshold=2):
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.fieldmap.syn import init_syn_sdc_wf
+        from qsirecon.workflows.fieldmap.syn import init_syn_sdc_wf
         wf = init_syn_sdc_wf(
             bold_pe='j',
             omp_nthreads=8)
@@ -155,10 +155,10 @@ template [@fieldmapless3].
 
     # Collect predefined data
     # Atlas image and registration affine
-    atlas_img = pkgr.resource_filename("qsiprep", "data/mni_lps_fmap_atlas.nii.gz")
+    atlas_img = pkgr.resource_filename("qsirecon", "data/mni_lps_fmap_atlas.nii.gz")
     # Registration specifications
-    affine_transform = pkgr.resource_filename("qsiprep", "data/affine.json")
-    syn_transform = pkgr.resource_filename("qsiprep", "data/susceptibility_syn.json")
+    affine_transform = pkgr.resource_filename("qsirecon", "data/affine.json")
+    syn_transform = pkgr.resource_filename("qsirecon", "data/susceptibility_syn.json")
 
     invert_t1w = pe.Node(Rescale(invert=True), name="invert_t1w", mem_gb=0.3)
 

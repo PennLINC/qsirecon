@@ -52,7 +52,7 @@ def init_pepolar_unwarp_wf(dwi_meta, epi_fmaps, name="pepolar_unwarp_wf"):
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.fieldmap.pepolar import init_pepolar_unwarp_wf
+        from qsirecon.workflows.fieldmap.pepolar import init_pepolar_unwarp_wf
         wf = init_pepolar_unwarp_wf(
             dwi_meta={'PhaseEncodingDirection': 'j'},
             epi_fmaps=[('/dataset/sub-01/fmap/sub-01_epi.nii.gz', 'j-')])
@@ -186,7 +186,7 @@ def init_prepare_dwi_epi_wf(omp_nthreads, orientation="LPS", name="prepare_epi_w
     )
 
     enhance_b0 = pe.Node(EnhanceB0(), name="enhance_b0")
-    ants_settings = pkgr.resource_filename("qsiprep", "data/translation_rigid.json")
+    ants_settings = pkgr.resource_filename("qsirecon", "data/translation_rigid.json")
     fmap2ref_reg = pe.Node(
         ants.Registration(from_file=ants_settings, output_warped_image=True),
         name="fmap2ref_reg",

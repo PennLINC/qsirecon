@@ -36,7 +36,7 @@ LOGGER = logging.getLogger("nipype.workflow")
 
 
 class DerivativesDataSink(FDerivativesDataSink):
-    out_path_base = "qsiprep"
+    out_path_base = "qsirecon"
 
 
 TEMPLATE_MAP = {
@@ -82,7 +82,7 @@ def init_surface_recon_wf(omp_nthreads, hires, name="surface_recon_wf"):
     https://github.com/nipy/mindboggle/blob/7f91faaa7664d820fe12ccc52ebaf21d679795e2/mindboggle/guts/segment.py#L1660
     The final phase resumes reconstruction, using the T2w image to assist
     in finding the pial surface, if available.
-    See :py:func:`~qsiprep.workflows.anatomical.init_autorecon_resume_wf` for details.
+    See :py:func:`~qsirecon.workflows.anatomical.init_autorecon_resume_wf` for details.
     Memory annotations for FreeSurfer are based off `their documentation
     <https://surfer.nmr.mgh.harvard.edu/fswiki/SystemRequirements>`_.
     They specify an allocation of 4GB per subject. Here we define 5GB
@@ -90,7 +90,7 @@ def init_surface_recon_wf(omp_nthreads, hires, name="surface_recon_wf"):
     .. workflow::
         :graph2use: orig
         :simple_form: yes
-        from qsiprep.workflows.anatomical import init_surface_recon_wf
+        from qsirecon.workflows.anatomical import init_surface_recon_wf
         wf = init_surface_recon_wf(omp_nthreads=1, hires=True)
     **Parameters**
         omp_nthreads : int
@@ -135,8 +135,8 @@ def init_surface_recon_wf(omp_nthreads, hires, name="surface_recon_wf"):
         out_report
             Reportlet visualizing quality of surface alignment
     **Subworkflows**
-        * :py:func:`~qsiprep.workflows.anatomical.init_autorecon_resume_wf`
-        * :py:func:`~qsiprep.workflows.anatomical.init_gifti_surface_wf`
+        * :py:func:`~qsirecon.workflows.anatomical.init_autorecon_resume_wf`
+        * :py:func:`~qsirecon.workflows.anatomical.init_gifti_surface_wf`
     """
 
     workflow = Workflow(name=name)
@@ -297,7 +297,7 @@ def init_autorecon_resume_wf(omp_nthreads, name="autorecon_resume_wf"):
     .. workflow::
         :graph2use: orig
         :simple_form: yes
-        from qsiprep.workflows.anatomical import init_autorecon_resume_wf
+        from qsirecon.workflows.anatomical import init_autorecon_resume_wf
         wf = init_autorecon_resume_wf(omp_nthreads=1)
     **Inputs**
         subjects_dir
@@ -413,11 +413,11 @@ def init_gifti_surface_wf(name="gifti_surface_wf"):
     sufaces (``lh/rh.pial``) and inflated surfaces (``lh/rh.inflated``) are
     converted to GIFTI files.
     Additionally, the vertex coordinates are :py:class:`recentered
-    <qsiprep.interfaces.NormalizeSurf>` to align with native T1w space.
+    <qsirecon.interfaces.NormalizeSurf>` to align with native T1w space.
     .. workflow::
         :graph2use: orig
         :simple_form: yes
-        from qsiprep.workflows.anatomical import init_gifti_surface_wf
+        from qsirecon.workflows.anatomical import init_gifti_surface_wf
         wf = init_gifti_surface_wf()
     **Inputs**
         subjects_dir
@@ -483,7 +483,7 @@ def init_segs_to_native_wf(name="segs_to_native", segmentation="aseg"):
     .. workflow::
         :graph2use: orig
         :simple_form: yes
-        from qsiprep.workflows.anatomical import init_segs_to_native_wf
+        from qsirecon.workflows.anatomical import init_segs_to_native_wf
         wf = init_segs_to_native_wf()
     **Parameters**
         segmentation
@@ -781,11 +781,11 @@ def _seg2msks(in_file, newpath=None):
 
     # contrast_name = anatomical_contrast.lower()
     # if not infant_mode:
-    #     ref_img = pkgr("qsiprep", "data/mni_1mm_%s_lps.nii.gz" % contrast_name)
-    #     ref_img_brain = pkgr("qsiprep", "data/mni_1mm_%s_lps_brain.nii.gz" % contrast_name)
+    #     ref_img = pkgr("qsirecon", "data/mni_1mm_%s_lps.nii.gz" % contrast_name)
+    #     ref_img_brain = pkgr("qsirecon", "data/mni_1mm_%s_lps_brain.nii.gz" % contrast_name)
     # else:
-    #     ref_img = pkgr("qsiprep", "data/mni_1mm_%s_lps_infant.nii.gz" % contrast_name)
-    #     ref_img_brain = pkgr("qsiprep",
+    #     ref_img = pkgr("qsirecon", "data/mni_1mm_%s_lps_infant.nii.gz" % contrast_name)
+    #     ref_img_brain = pkgr("qsirecon",
     #                          "data/mni_1mm_%s_lps_brain_infant.nii.gz" % contrast_name)
 
     # return ref_img, ref_img_brain

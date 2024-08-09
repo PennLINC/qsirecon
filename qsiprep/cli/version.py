@@ -20,7 +20,7 @@ def check_latest():
     latest = None
     date = None
     outdated = None
-    cachefile = Path.home() / ".cache" / "qsiprep" / "latest"
+    cachefile = Path.home() / ".cache" / "qsirecon" / "latest"
     try:
         cachefile.parent.mkdir(parents=True, exist_ok=True)
     except OSError:
@@ -43,7 +43,7 @@ def check_latest():
 
     if latest is None or outdated is True:
         try:
-            response = requests.get(url="https://pypi.org/pypi/qsiprep/json", timeout=1.0)
+            response = requests.get(url="https://pypi.org/pypi/qsirecon/json", timeout=1.0)
         except Exception:
             response = None
 
@@ -66,12 +66,12 @@ def check_latest():
 
 def is_flagged():
     """Check whether current version is flagged."""
-    # https://raw.githubusercontent.com/pennbbl/qsiprep/master/.versions.json
+    # https://raw.githubusercontent.com/pennbbl/qsirecon/master/.versions.json
     flagged = tuple()
     try:
         response = requests.get(
             url="""\
-https://raw.githubusercontent.com/pennbbl/qsiprep/master/.versions.json""",
+https://raw.githubusercontent.com/pennbbl/qsirecon/master/.versions.json""",
             timeout=1.0,
         )
     except Exception:

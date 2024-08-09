@@ -14,10 +14,10 @@ import nipype.pipeline.engine as pe
 from ... import config
 from ...interfaces.bids import ReconDerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
-from qsiprep.interfaces.pyafq import PyAFQRecon
+from qsirecon.interfaces.pyafq import PyAFQRecon
 
 
-def _parse_qsiprep_params_dict(params_dict):
+def _parse_qsirecon_params_dict(params_dict):
     arg_dict = afb.func_dict_to_arg_dict()
     kwargs = {}
 
@@ -49,11 +49,11 @@ def _parse_qsiprep_params_dict(params_dict):
 
 
 def init_pyafq_wf(available_anatomical_data, name="afq", qsirecon_suffix="", params={}):
-    """Run PyAFQ on some qsiprep outputs
+    """Run PyAFQ on some qsirecon outputs
 
     Inputs
 
-        *qsiprep outputs*
+        *qsirecon outputs*
 
     Outputs
         profiles_csv
@@ -68,7 +68,7 @@ def init_pyafq_wf(available_anatomical_data, name="afq", qsirecon_suffix="", par
     )
     outputnode.inputs.recon_scalars = []
 
-    kwargs = _parse_qsiprep_params_dict(params)
+    kwargs = _parse_qsirecon_params_dict(params)
     kwargs["omp_nthreads"] = config.nipype.omp_nthreads
     run_afq = pe.Node(PyAFQRecon(kwargs=kwargs), name="run_afq")
     workflow = pe.Workflow(name=name)

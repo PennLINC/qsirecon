@@ -6,7 +6,7 @@
 Reconstruction
 ==============
 
-You can send the outputs from ``qsiprep`` to other software packages
+You can send the outputs from ``qsirecon`` to other software packages
 by specifying a JSON file with the ``--recon-spec`` option. Here we use
 "reconstruction" to mean reconstructing ODFs/FODs/EAPs and connectivity matrices
 from the preprocessed diffusion data.
@@ -56,21 +56,21 @@ Instead of specifying a path to a file you can choose from the following:
 
 These workflows each take considerable processing time, because they output as many versions of
 connectivity as possible. All :ref:`connectivity_atlases`  and all possible weightings are
-included. Each workflow corresponds to a JSON file that can be found in QSIprep's
-`github <https://github.com/PennBBL/qsiprep/tree/master/qsiprep/data/pipelines>`_. For extra
+included. Each workflow corresponds to a JSON file that can be found in QSIRecon's
+`github <https://github.com/PennBBL/qsirecon/tree/master/qsirecon/data/pipelines>`_. For extra
 information about how to customize these, see :ref:`custom_reconstruction`.
 
 To use a pre-packaged workflow, simply provide the name from the leftmost column above for the
 ``--recon-spec`` argument. For example::
 
-  $ qsiprep-docker \
+  $ qsirecon-docker \
       /path/to/bids /path/for/reconstruction/outputs participant \
-      --recon_input /output/from/qsiprep \
+      --recon_input /output/from/qsirecon \
       --recon_spec dsi_studio_gqi \
       --fs-license-file /path/to/license.txt
 
 
-``qsiprep`` supports a limited number of algorithms that are wrapped in
+``qsirecon`` supports a limited number of algorithms that are wrapped in
 nipype workflows and can be configured and connected based on the
 recon spec JSON file.  The output from one workflow can be the input to
 another as long as the output from the upstream workflow matches the inputs to
@@ -84,7 +84,7 @@ Using Data Preprocessed by Other Pipelines
 
 Many open datasets are provided in minimally preprocessed form. Most of these have a
 bespoke processing pipeline and in many cases these pipelines are very similar to
-QSIPrep. Instead of preprocessing these from scratch, you can run reconstruction
+QSIRecon. Instead of preprocessing these from scratch, you can run reconstruction
 workflows on the minimally preprocessed data by specifying the pipeline that was
 used for preprocessing.
 
@@ -144,7 +144,7 @@ anatomical data:
 |:ref:`reorient_fslstd`                   |       No          |       No          |    No        |
 +-----------------------------------------+-------------------+-------------------+--------------+
 
-Data preprocessed by ``qsiprep`` may be missing a preprocessed T1w image if the ``--dwi-only`` flag
+Data preprocessed by ``qsirecon`` may be missing a preprocessed T1w image if the ``--dwi-only`` flag
 was used. This is not a problem because anatomical data can be introduced during the Reconstruction
 workflows! Suppose you ran FreeSurfer on your data separately (e.g. as part of fmriprep). You can
 specify the directory containing freesurfer outputs with the ``--freesurfer-input`` flag. If you
@@ -154,38 +154,38 @@ have::
     derivatives/freesurfer/sub-y
     derivatives/freesurfer/sub-z
 
-and from ``qsiprep``::
+and from ``qsirecon``::
 
-    derivatives/qsiprep/sub-x
-    derivatives/qsiprep/sub-y
-    derivatives/qsiprep/sub-z
+    derivatives/qsirecon/sub-x
+    derivatives/qsirecon/sub-y
+    derivatives/qsirecon/sub-z
 
 You can run::
 
-  $ qsiprep-docker \
-      derivatives/qsiprep derivatives participant \
-      --recon_input derivatives/qsiprep \
+  $ qsirecon-docker \
+      derivatives/qsirecon derivatives participant \
+      --recon_input derivatives/qsirecon \
       --recon_spec mrtrix_multishell_msmt_ACT-hsvs \
       --freesurfer-input derivatives/freesurfer \
       --fs-license-file /path/to/license.txt
 
-This will read the FreeSurfer data, align it to the ``qsiprep`` results and use it
+This will read the FreeSurfer data, align it to the ``qsirecon`` results and use it
 for subsequent reconstruction steps. The ``--freesurfer-input`` flag can be included
 regardless even if the ``--dwi-only`` flag wasn't used. This means two possible
 things can happen
 
-If ``qsiprep`` performed anatomical preprocessing
+If ``qsirecon`` performed anatomical preprocessing
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In most cases human MRI experiments include a T1-weighted anatomical image.
-By default ``qsiprep`` performs some processing steps on this image,
+By default ``qsirecon`` performs some processing steps on this image,
 including brain extraction and spatial normalization to the MNI152NLin2009cAsym
 template (unless ``--infant`` was specified, then the infant template is used).
 
 If a T1w image is available in the input BIDS data and was preprocessed by
-``qsiprep``, the ``brain.mgz`` image from freesurfer is registered to the
-AC-PC and DWI-aligned ``desc-preproc_T1w.nii`` image in the ``qsiprep`` outputs.
-The transform from freesurfer native space into alignment with the ``qsiprep``
+``qsirecon``, the ``brain.mgz`` image from freesurfer is registered to the
+AC-PC and DWI-aligned ``desc-preproc_T1w.nii`` image in the ``qsirecon`` outputs.
+The transform from freesurfer native space into alignment with the ``qsirecon``
 outputs is achieved by converting ``brain.mgz`` into NIfTI format and adjusting
 the affine matrix such that the images are aligned in world coordinates. This
 prevents an extra interpolation.
@@ -195,7 +195,7 @@ If ``--dwi-only`` was used
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If ``--dwi-only`` was used, there will be no preprocessed T1w data in the
-``qsiprep`` results. Instead the DWI images have been aligned to AC-PC
+``qsirecon`` results. Instead the DWI images have been aligned to AC-PC
 as closely as possibly (likely imperfectly). In this case, the FreeSurfer
 skull-stripped ``brain.mgz`` is rigidly registered to ``dwiref`` of each
 preprocessed DWI. The FreeSurfer brain mask is resampled to the grid of
@@ -215,14 +215,14 @@ How masking is incorporated
 A brain mask is provided as default input to all reconstruction workflows.
 The source of the brain mask depends on available data and user options.
 
-  * If ``qsiprep`` ran normally and the reconstruction workflows are run
+  * If ``qsirecon`` ran normally and the reconstruction workflows are run
     without ``--dwi-only``, the brain mask estimated by ``antsBrainExtraction``
     during preprocessing is used.
-  * If no T1w data is available in the ``qsiprep`` outputs and the user
+  * If no T1w data is available in the ``qsirecon`` outputs and the user
     supplies FreeSurfer data with ``--freesurfer-input``, the brain mask
     created by FreeSurfer is used.
-  * If you specify ``--dwi-only`` when ``qsiprep`` performs the reconstruction
-    OR if no preprocessed T1w images (either via ``qsiprep`` outputs or
+  * If you specify ``--dwi-only`` when ``qsirecon`` performs the reconstruction
+    OR if no preprocessed T1w images (either via ``qsirecon`` outputs or
     ``--freesurfer-input``) are available, a mask is estimated based on the
     preprocessed DWI data. This is the least robust option and should be
     avoided if at all possible.
@@ -368,23 +368,23 @@ Additionally, a number of anisotropy scalar images are produced such as QA, GFA 
 ``dsi_studio_autotrack``
 ^^^^^^^^^^^^^^^^^^
 
-This workflow implements DSI Studio's q-space diffeomorphic reconstruction (QSDR), the MNI space 
-(ICBM-152) version of GQI, followed by automatic fiber tracking (autotrack) [Yeh2020]_ [Yeh2022]_ 
-of 56 white matter pathways. Autotrack uses a population-averaged tractography atlas 
-(based on HCP-Young Adult data) to identify tracts of interest in individual subject's data. 
-The autotrack procedure seeds deterministic fiber tracking with randomized parameter saturation 
-within voxels that correspondto each tract in the tractography atlas and determines whether 
-generated streamlines belong to the target tract based on the Hausdorff distance between 
-subject and atlas streamlines. 
+This workflow implements DSI Studio's q-space diffeomorphic reconstruction (QSDR), the MNI space
+(ICBM-152) version of GQI, followed by automatic fiber tracking (autotrack) [Yeh2020]_ [Yeh2022]_
+of 56 white matter pathways. Autotrack uses a population-averaged tractography atlas
+(based on HCP-Young Adult data) to identify tracts of interest in individual subject's data.
+The autotrack procedure seeds deterministic fiber tracking with randomized parameter saturation
+within voxels that correspondto each tract in the tractography atlas and determines whether
+generated streamlines belong to the target tract based on the Hausdorff distance between
+subject and atlas streamlines.
 
 Reconstructed subject-specific tracts are written out as .tck files that are aligned to the
-qsiprep-generated _dwiref.nii.gz and preproc_T1w.nii.gz volumes; .tck files can be visualized 
-overlaid on these volumes in mrview or MI-brain. Note, .tck files will not appear in alignment 
-with the dwiref/T1w volumes in DSI Studio due to how the .tck files are read in. 
+qsirecon-generated _dwiref.nii.gz and preproc_T1w.nii.gz volumes; .tck files can be visualized
+overlaid on these volumes in mrview or MI-brain. Note, .tck files will not appear in alignment
+with the dwiref/T1w volumes in DSI Studio due to how the .tck files are read in.
 
 Diffusion metrics (e.g., dti_fa, gfa, iso,rdi, nrdi02) and shape statistics (e.g., mean_length,
-span, curl, volume, endpoint_radius) are calculated for subject-specific tracts and written out in 
-an AutoTrackGQI.csv file.  
+span, curl, volume, endpoint_radius) are calculated for subject-specific tracts and written out in
+an AutoTrackGQI.csv file.
 
 .. _dipy_mapmri:
 
@@ -412,8 +412,8 @@ again run on the 3dSHORE-estimated ODFs.
 ``reorient_fslstd``
 ^^^^^^^^^^^^^^^^^^^
 
-Reorients the ``qsiprep`` preprocessed DWI and bval/bvec to the standard FSL orientation.
-This can be useful if FSL tools will be applied outside of ``qsiprep``.
+Reorients the ``qsirecon`` preprocessed DWI and bval/bvec to the standard FSL orientation.
+This can be useful if FSL tools will be applied outside of ``qsirecon``.
 
 
 .. _csdsi_3dshore:
@@ -456,7 +456,7 @@ file similar to the following::
         "name": "dsistudio_gqi",
         "software": "DSI Studio",
         "action": "reconstruction",
-        "input": "qsiprep",
+        "input": "qsirecon",
         "output_suffix": "gqi",
         "parameters": {"method": "gqi"}
       },
@@ -477,7 +477,7 @@ The ``"name"`` element defines the name of the pipeline. This will ultimately
 be the name of the output directory. By setting ``"space": "T1w"`` we specify
 that all operations will take place in subject anatomical (``"T1w"``) space.
 Many "connectomics" algorithms require a brain parcellation. A number of these
-come packaged with ``qsiprep`` in the Docker image. In this case, the
+come packaged with ``qsirecon`` in the Docker image. In this case, the
 atlases will be transformed from group template space to subject anatomical space
 because we specified  ``"space": "T1w"`` earlier. Be sure a warp is calculated if
 using these (transforms_).
@@ -492,12 +492,12 @@ node. In this example we can see that the node with ``"name": "dsistudio_gqi"``
 sends its outputs to the node with ``"name": "scalar_export"`` because
 the ``"name": "scalar_export"`` node specifies ``"input": "dsistudio_gqi"``.
 If no ``"input"`` is specified for a node, it is assumed that the
-outputs from ``qsiprep`` will be its inputs.
+outputs from ``qsirecon`` will be its inputs.
 
 By specifying ``"software": "DSI Studio"`` we will be using algorithms implemented
 in `DSI Studio`_. Other options include MRTrix_ and Dipy_. Since there are many
 things that `DSI Studio`_ can do, we specify that we want to reconstruct the
-output from ``qsiprep`` by adding ``"action": "reconstruction"``. Additional
+output from ``qsirecon`` by adding ``"action": "reconstruction"``. Additional
 parameters can be sent to specify how the reconstruction should take place in
 the ``"parameters"`` item. Possible options for ``"software"``, ``"action"``
 and ``"parameters"`` can be found in the :ref:`recon_workflows` section.
@@ -516,11 +516,11 @@ Executing the reconstruction pipeline
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Assuming this file is called ``qgi_scalar_export.json`` and you've installed
-``qsiprep-container`` you can execute this pipeline with::
+``qsirecon-container`` you can execute this pipeline with::
 
-  $ qsiprep-docker \
+  $ qsirecon-docker \
       /path/to/bids /where/my/reconstructed/data/goes participant \
-      --recon_input /output/from/qsiprep \
+      --recon_input /output/from/qsirecon \
       --recon_spec gqi_scalar_export.json \
       --fs-license-file /path/to/license.txt
 
@@ -551,7 +551,7 @@ Reconstruction Outputs: Connectivity matrices
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Instead of offering a bewildering number of options for constructing connectivity matrices,
-``qsiprep`` will construct as many connectivity matrices as it can given the reconstruction
+``qsirecon`` will construct as many connectivity matrices as it can given the reconstruction
 methods. It is **highly** recommended that you pick a weighting scheme before you run
 these pipelines and only look at those numbers. If you look at more than one weighting method
 be sure to adjust your statistics for the additional comparisons.
@@ -561,7 +561,7 @@ be sure to adjust your statistics for the additional comparisons.
 Atlases
 ^^^^^^^
 
-The following atlases are included in ``qsiprep`` and are used by default in the
+The following atlases are included in ``qsirecon`` and are used by default in the
 :ref:`preconfigured_workflows`. If you use one of them please be sure to cite
 the relevant publication.
 
@@ -578,8 +578,8 @@ the relevant publication.
 Using custom atlases
 ^^^^^^^^^^^^^^^^^^^^
 
-It's possible to use your own atlases provided you can match the format ``qsiprep`` uses to
-read atlases. The ``qsiprep`` atlas set can be downloaded directly from
+It's possible to use your own atlases provided you can match the format ``qsirecon`` uses to
+read atlases. The ``qsirecon`` atlas set can be downloaded directly from
 `box  <https://upenn.box.com/shared/static/8k17yt2rfeqm3emzol5sa0j9fh3dhs0i.xz>`_.
 
 In this directory there must exist a JSON file called ``atlas_config.json`` containing an
@@ -600,13 +600,13 @@ Where ``"node_names"`` are the text names of the regions in ``"my_custom_atlas"`
 section.
 
 The directory containing ``atlas_config.json`` and the atlas nifti files should be mounted in
-the container at ``/atlas/qsirecon_atlases``. If using ``qsiprep-docker`` or
-``qsiprep-singularity`` this can be done with ``--custom-atlases /path/to/my/atlases`` or
+the container at ``/atlas/qsirecon_atlases``. If using ``qsirecon-docker`` or
+``qsirecon-singularity`` this can be done with ``--custom-atlases /path/to/my/atlases`` or
 if you're running on your own system (not recommended) you can set the environment variable
 ``QSIRECON_ATLAS=/path/to/my/atlases``.
 
 The nifti images should be registered to the
-`MNI152NLin2009cAsym <https://github.com/PennBBL/qsiprep/blob/master/qsiprep/data/mni_1mm_t1w_lps.nii.gz>`_
-included in ``qsiprep``.
+`MNI152NLin2009cAsym <https://github.com/PennBBL/qsirecon/blob/master/qsirecon/data/mni_1mm_t1w_lps.nii.gz>`_
+included in ``qsirecon``.
 It is essential that your images are in the LPS+ orientation and have the sform zeroed-out
 in the header. **Be sure to check for alignment and orientation** in your outputs.

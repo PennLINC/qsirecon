@@ -8,7 +8,7 @@
       "name": "dipy_dki",
       "software": "Dipy",
       "action": "DKI_reconstruction",
-      "input": "qsiprep",
+      "input": "qsirecon",
       "qsirecon_suffix": "DIPYDKI",
       "parameters": {
         "write_mif": false,
@@ -20,7 +20,7 @@
       "software": "TORTOISE",
       "action": "estimate",
       "qsirecon_suffix": "TORTOISE_model-MAPMRI",
-      "input": "qsiprep",
+      "input": "qsirecon",
       "parameters": {
         "estimate_tensor_separately": true,
         "big_delta": null,
@@ -37,7 +37,7 @@
       "software": "TORTOISE",
       "action": "estimate",
       "qsirecon_suffix": "TORTOISE_model-tensor",
-      "input": "qsiprep",
+      "input": "qsirecon",
       "parameters": {
         "estimate_tensor_separately": true,
         "big_delta": null,
@@ -51,7 +51,7 @@
       "name": "fit_noddi",
       "action": "fit_noddi",
       "software": "AMICO",
-      "input": "qsiprep",
+      "input": "qsirecon",
       "qsirecon_suffix": "NODDI",
       "parameters": {
         "isExvivo": false,
@@ -63,7 +63,7 @@
       "name": "dsistudio_gqi",
       "software": "DSI Studio",
       "action": "reconstruction",
-      "input": "qsiprep",
+      "input": "qsirecon",
       "qsirecon_suffix": "DSIStudio",
       "parameters": {
         "method": "gqi"
@@ -91,7 +91,7 @@
     },
     {
       "name": "bundle_means",
-      "software": "qsiprep",
+      "software": "qsirecon",
       "action": "bundle_map",
       "input": "autotrackgqi",
       "scalars_from": [
@@ -104,9 +104,9 @@
     },
     {
       "name": "template_map",
-      "software": "qsiprep",
+      "software": "qsirecon",
       "action": "template_map",
-      "input": "qsiprep",
+      "input": "qsirecon",
       "scalars_from": [
         "gqi_scalars",
         "dipy_dki",

@@ -7,7 +7,7 @@ DSCSDSI test
 
 This tests the following features:
  - Whether the --anat-only workflow is successful
- - Whether the regular qsiprep workflow can resume using the
+ - Whether the regular qsirecon workflow can resume using the
    working directory from --anat-only
  - The SHORELine motion correction workflow
  - Skipping B1 biascorrection
@@ -34,10 +34,10 @@ TEMPDIR=${TESTDIR}/${TESTNAME}/work
 OUTPUT_DIR=${TESTDIR}/${TESTNAME}/derivatives
 BIDS_INPUT_DIR=${TESTDIR}/data/DSCSDSI_nofmap
 export FS_LICENSE=${TESTDIR}/data/license.txt
-QSIPREP_CMD=$(run_qsiprep_cmd ${BIDS_INPUT_DIR} ${OUTPUT_DIR})
+QSIRECON_CMD=$(run_qsirecon_cmd ${BIDS_INPUT_DIR} ${OUTPUT_DIR})
 
-# name: Run full qsiprep on DSCSDSI
-${QSIPREP_CMD} \
+# name: Run full qsirecon on DSCSDSI
+${QSIRECON_CMD} \
    -w ${TEMPDIR} \
    --sloppy --write-graph --use-syn-sdc \
    --force-syn \

@@ -126,7 +126,7 @@ div#boilerplate pre {
 <div id="boilerplate">
     <h1 class="sub-report-title">Methods</h1>
     {% if boilerplate %}
-    <p>We kindly ask to report results preprocessed with qsiprep using the following
+    <p>We kindly ask to report results preprocessed with qsirecon using the following
        boilerplate</p>
     <ul class="nav nav-tabs" id="myTab" role="tablist">
         {% for b in boilerplate %}
@@ -143,7 +143,7 @@ div#boilerplate pre {
     {% else %}
     <p class="text-danger">Failed to generate the boilerplate</p>
     {% endif %}
-    <p>Alternatively, an interactive <a href="http://qsiprep.readthedocs.io/en/latest/citing.html">boilerplate generator</a> is available in the <a href="https://qsiprep.org">documentation website</a>.</p>
+    <p>Alternatively, an interactive <a href="http://qsirecon.readthedocs.io/en/latest/citing.html">boilerplate generator</a> is available in the <a href="https://qsirecon.org">documentation website</a>.</p>
 </div>
 
 <div id="errors">

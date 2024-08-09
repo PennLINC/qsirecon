@@ -40,7 +40,7 @@ def init_dwi_reference_wf(
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.dwi.util import init_dwi_reference_wf
+        from qsirecon.workflows.dwi.util import init_dwi_reference_wf
 
         wf = init_dwi_reference_wf(omp_nthreads=1)
 
@@ -87,7 +87,7 @@ def init_dwi_reference_wf(
 
     See Also
     --------
-    * :py:func:`~qsiprep.workflows.dwi.util.init_enhance_and_skullstrip_wf`
+    * :py:func:`~qsirecon.workflows.dwi.util.init_enhance_and_skullstrip_wf`
     """
     workflow = Workflow(name=name)
     workflow.__desc__ = ""
@@ -114,7 +114,7 @@ def init_dwi_reference_wf(
 
     # Synthstrip is used now
     # if register_t1:
-    #     affine_transform = pkgr.resource_filename("qsiprep", "data/affine.json")
+    #     affine_transform = pkgr.resource_filename("qsirecon", "data/affine.json")
     #     register_t1_to_raw = pe.Node(
     #         ants.Registration(from_file=affine_transform),
     #         name="register_t1_to_raw",

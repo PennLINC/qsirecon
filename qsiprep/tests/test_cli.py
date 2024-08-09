@@ -7,16 +7,16 @@ from unittest.mock import patch
 import pytest
 from nipype import config as nipype_config
 
-from qsiprep.cli import run
-from qsiprep.cli.parser import parse_args
-from qsiprep.cli.workflow import build_boilerplate, build_workflow
-from qsiprep.tests.utils import (
+from qsirecon.cli import run
+from qsirecon.cli.parser import parse_args
+from qsirecon.cli.workflow import build_boilerplate, build_workflow
+from qsirecon.tests.utils import (
     check_generated_files,
     download_test_data,
     get_test_data_path,
 )
-from qsiprep.utils.bids import write_derivative_description
-from qsiprep.viz.reports import generate_reports
+from qsirecon.utils.bids import write_derivative_description
+from qsirecon.viz.reports import generate_reports
 
 nipype_config.enable_debug_mode()
 
@@ -38,12 +38,12 @@ def test_mrtrix_singleshell_ss3t_act(data_dir, output_dir, working_dir):
 
     Inputs
     ------
-    - qsiprep single shell results (data/DSDTI_fmap)
+    - qsirecon single shell results (data/DSDTI_fmap)
     """
     TEST_NAME = "mrtrix_singleshell_ss3t_act"
 
     dataset_dir = download_test_data("singleshell_output", data_dir)
-    dataset_dir = os.path.join(dataset_dir, "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, "qsirecon")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -79,12 +79,12 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
 
     Inputs
     ------
-    - qsiprep multi shell results (data/DSDTI_fmap)
+    - qsirecon multi shell results (data/DSDTI_fmap)
     """
     TEST_NAME = "mrtrix_singleshell_ss3t_noact"
 
     dataset_dir = download_test_data("singleshell_output", data_dir)
-    dataset_dir = os.path.join(dataset_dir, "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, "qsirecon")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -209,7 +209,7 @@ def test_amico_noddi(data_dir, output_dir, working_dir):
 
     dataset_dir = download_test_data("singleshell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, "qsirecon")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -251,7 +251,7 @@ def test_autotrack(data_dir, output_dir, working_dir):
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -294,7 +294,7 @@ def test_cuda(data_dir, output_dir, working_dir):
 
     dataset_dir = download_test_data("drbuddi_rpe_series", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, "qsirecon")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
     test_data_path = get_test_data_path()
@@ -335,14 +335,14 @@ def test_dipy_mapmri(data_dir, output_dir, working_dir):
     Inputs:
     -------
 
-    - qsiprep single shell results (data/DSDTI_fmap)
-    - qsiprep multi shell results (data/DSDTI_fmap)
+    - qsirecon single shell results (data/DSDTI_fmap)
+    - qsirecon multi shell results (data/DSDTI_fmap)
     """
     TEST_NAME = "dipy_mapmri"
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -379,14 +379,14 @@ def test_dipy_dki(data_dir, output_dir, working_dir):
     Inputs:
     -------
 
-    - qsiprep single shell results (data/DSDTI_fmap)
-    - qsiprep multi shell results (data/DSDTI_fmap)
+    - qsirecon single shell results (data/DSDTI_fmap)
+    - qsirecon multi shell results (data/DSDTI_fmap)
     """
     TEST_NAME = "dipy_dki"
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -423,8 +423,8 @@ def test_drbuddi_rpe(data_dir, output_dir, working_dir):
     Inputs:
     -------
 
-    - qsiprep single shell results (data/DSDTI_fmap)
-    - qsiprep multi shell results (data/DSDTI_fmap)
+    - qsirecon single shell results (data/DSDTI_fmap)
+    - qsirecon multi shell results (data/DSDTI_fmap)
     """
     TEST_NAME = "drbuddi_rpe"
 
@@ -537,7 +537,7 @@ def test_dscsdsi(data_dir, output_dir, working_dir):
 
     This tests the following features:
     - Whether the --anat-only workflow is successful
-    - Whether the regular qsiprep workflow can resume using the working directory from --anat-only
+    - Whether the regular qsirecon workflow can resume using the working directory from --anat-only
     - The SHORELine motion correction workflow
     - Skipping B1 biascorrection
     - Using the SyN-SDC distortion correction method
@@ -790,13 +790,13 @@ def test_scalar_mapper(data_dir, output_dir, working_dir):
 
     Inputs
     ------
-    - qsiprep multi shell results (data/DSDTI_fmap)
+    - qsirecon multi shell results (data/DSDTI_fmap)
     """
     TEST_NAME = "scalar_mapper"
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -828,13 +828,13 @@ def test_pyafq_recon_external_trk(data_dir, output_dir, working_dir):
 
     Inputs
     ------
-    - qsiprep multi shell results (data/DSDTI_fmap)
+    - qsirecon multi shell results (data/DSDTI_fmap)
     """
     TEST_NAME = "pyafq_recon_external_trk"
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -865,13 +865,13 @@ def test_pyafq_recon_full(data_dir, output_dir, working_dir):
 
     Inputs
     ------
-    - qsiprep multi shell results (data/DSDTI_fmap)
+    - qsirecon multi shell results (data/DSDTI_fmap)
     """
     TEST_NAME = "pyafq_recon_full"
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -905,14 +905,14 @@ def test_mrtrix3_recon(data_dir, output_dir, working_dir):
 
     Inputs
     ------
-    - qsiprep single shell results (data/DSDTI_fmap)
-    - qsiprep multi shell results (data/DSDTI_fmap)
+    - qsirecon single shell results (data/DSDTI_fmap)
+    - qsirecon multi shell results (data/DSDTI_fmap)
     """
     TEST_NAME = "mrtrix3_recon"
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -940,13 +940,13 @@ def test_tortoise_recon(data_dir, output_dir, working_dir):
 
     Inputs
     ------
-    - qsiprep multi shell results (data/DSDTI_fmap)
+    - qsirecon multi shell results (data/DSDTI_fmap)
     """
     TEST_NAME = "tortoise_recon"
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -968,7 +968,7 @@ def test_tortoise_recon(data_dir, output_dir, working_dir):
 @pytest.mark.integration
 @pytest.mark.maternal_brain_project
 def test_maternal_brain_project(data_dir, output_dir, working_dir):
-    """Run QSIPrep on Maternal Brain Project data.
+    """Run QSIRecon on Maternal Brain Project data.
 
     The dataset was built from the Maternal Brain Project dataset:
     https://openneuro.org/datasets/ds005299/versions/1.0.0
@@ -1005,7 +1005,7 @@ def test_maternal_brain_project(data_dir, output_dir, working_dir):
 @pytest.mark.integration
 @pytest.mark.forrest_gump
 def test_forrest_gump(data_dir, output_dir, working_dir):
-    """Run QSIPrep on Forrest Gump data.
+    """Run QSIRecon on Forrest Gump data.
 
     The dataset was built from the Forrest Gump dataset:
     https://openneuro.org/datasets/ds000113/versions/1.3.0
@@ -1039,7 +1039,7 @@ def test_forrest_gump(data_dir, output_dir, working_dir):
 
 
 def _run_and_generate(test_name, parameters, test_main=True):
-    from qsiprep import config
+    from qsirecon import config
 
     # TODO: Add --clean-workdir param to CLI
     parameters.append("--stop-on-first-crash")
@@ -1048,7 +1048,7 @@ def _run_and_generate(test_name, parameters, test_main=True):
 
     if test_main:
         # This runs, but for some reason doesn't count toward coverage.
-        argv = ["qsiprep"] + parameters
+        argv = ["qsirecon"] + parameters
         with patch.object(sys, "argv", argv):
             with pytest.raises(SystemExit) as e:
                 run.main()
@@ -1062,11 +1062,11 @@ def _run_and_generate(test_name, parameters, test_main=True):
         config.to_filename(config_file)
 
         retval = build_workflow(config_file, exec_mode="auto", retval={})
-        qsiprep_wf = retval["workflow"]
-        qsiprep_wf.run()
-        write_derivative_description(config.execution.fmri_dir, config.execution.qsiprep_dir)
+        qsirecon_wf = retval["workflow"]
+        qsirecon_wf.run()
+        write_derivative_description(config.execution.fmri_dir, config.execution.qsirecon_dir)
 
-        build_boilerplate(str(config_file), qsiprep_wf)
+        build_boilerplate(str(config_file), qsirecon_wf)
         session_list = (
             config.execution.bids_filters.get("bold", {}).get("session")
             if config.execution.bids_filters
@@ -1074,7 +1074,7 @@ def _run_and_generate(test_name, parameters, test_main=True):
         )
         generate_reports(
             subject_list=config.execution.participant_label,
-            output_dir=config.execution.qsiprep_dir,
+            output_dir=config.execution.qsirecon_dir,
             run_uuid=config.execution.run_uuid,
             session_list=session_list,
         )

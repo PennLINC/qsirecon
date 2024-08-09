@@ -12,7 +12,7 @@ their current feature sets. These other
 
 ## Supported Sampling Schemes
 
-|                             | QSIPrep | Tractoflow | PreQual | MRtrix3_connectome | dMRIPrep |
+|                             | QSIRecon | Tractoflow | PreQual | MRtrix3_connectome | dMRIPrep |
 | --------------------------- | :-----: | :--------: | :-----: | :----------------: | :------: |
 | Single Shell                |    ✔    |     ✔      |    ✔    |         ✔          |    ✔     |
 | Multi Shell                 |    ✔    |     ✔      |    ✔    |         ✔          |    ✔     |
@@ -21,7 +21,7 @@ their current feature sets. These other
 
 ## Preprocessing
 
-|                                                     | QSIPrep                  | Tractoflow             | PreQual                 | MRtrix3_connectome | dMRIPrep         |
+|                                                     | QSIRecon                  | Tractoflow             | PreQual                 | MRtrix3_connectome | dMRIPrep         |
 | --------------------------------------------------- | :----------------------: | :--------------------: | :---------------------: | :----------------: | :--------------: |
 | BIDS App                                            |            ✔             |           ✔            |            ✘            |         ✔          |        ✔         |
 | Gradient direction sanity check                     |     Q-form matching      |           ✘            |     `dwigradcheck`      |         ✘          |        ✘         |
@@ -46,7 +46,7 @@ their current feature sets. These other
 
 ## Reconstruction
 
-|                           | QSIPrep | Tractoflow | PreQual | MRtrix3_connectome |
+|                           | QSIRecon | Tractoflow | PreQual | MRtrix3_connectome |
 | ------------------------- | :-----: | :--------: | :-----: | :----------------: |
 | MRTrix3 MSMT CSD          |    ✔    |     ✘      |    ✘    |         ✔          |
 | CSD                       | MRtrix3 |    DIPY    |    ✘    |      MRtrix3       |
@@ -58,7 +58,7 @@ their current feature sets. These other
 
 ## Tractography
 
-|                                       | QSIPrep | Tractoflow | PreQual | MRtrix3_connectome |
+|                                       | QSIRecon | Tractoflow | PreQual | MRtrix3_connectome |
 | ------------------------------------- | :-----: | :--------: | :-----: | :----------------: |
 | DIPY Particle Filtering               |    ✘    |     ✔      |    ✘    |         ✘          |
 | MRtrix3 iFOD2                         |    ✔    |     ✘      |    ✘    |         ✔          |
@@ -69,7 +69,7 @@ their current feature sets. These other
 
 ## QC
 
-|                               | QSIPrep           | Tractoflow | PreQual | MRtrix3_connectome |
+|                               | QSIRecon           | Tractoflow | PreQual | MRtrix3_connectome |
 | ----------------------------- | :---------------: | :--------: | :-----: | :----------------: |
 | Automated methods boilerplate |         ✔         |     ✘      |    ✘    |         ✘          |
 | HTML Preprocessing Report     | [NiWorkflows-based](preprocessing.html#visual-reports) |     ✘      | Custom  |      EddyQuad      |

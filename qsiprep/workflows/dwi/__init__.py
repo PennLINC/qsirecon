@@ -1,11 +1,11 @@
 """
 Pre-processing q-space Image workflows
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. automodule:: qsiprep.workflows.dwi.base
-.. automodule:: qsiprep.workflows.dwi.util
-.. automodule:: qsiprep.workflows.dwi.hmc
-.. automodule:: qsiprep.workflows.dwi.fsl
-.. automodule:: qsiprep.workflows.dwi.registration
-.. automodule:: qsiprep.workflows.dwi.resampling
-.. automodule:: qsiprep.workflows.dwi.confounds
+.. automodule:: qsirecon.workflows.dwi.base
+.. automodule:: qsirecon.workflows.dwi.util
+.. automodule:: qsirecon.workflows.dwi.hmc
+.. automodule:: qsirecon.workflows.dwi.fsl
+.. automodule:: qsirecon.workflows.dwi.registration
+.. automodule:: qsirecon.workflows.dwi.resampling
+.. automodule:: qsirecon.workflows.dwi.confounds
 """

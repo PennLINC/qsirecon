@@ -158,7 +158,7 @@ def _applytfms(args):
 def _arrange_xfms(transforms, num_files, tmp_folder):
     """
     Convenience method to arrange the list of transforms that should be applied
-    to each input file. Not needed in qsiprep
+    to each input file. Not needed in qsirecon
     """
     base_xform = ["#Insight Transform File V1.0", "#Transform 0"]
     # Initialize the transforms matrix

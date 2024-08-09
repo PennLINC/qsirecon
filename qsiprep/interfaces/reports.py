@@ -73,8 +73,8 @@ DIFFUSION_TEMPLATE = """\t\t<h3 class="elem-title">Summary</h3>
 """
 
 ABOUT_TEMPLATE = """\t<ul>
-\t\t<li>qsiprep version: {version}</li>
-\t\t<li>qsiprep command: <code>{command}</code></li>
+\t\t<li>qsirecon version: {version}</li>
+\t\t<li>qsirecon command: <code>{command}</code></li>
 \t\t<li>Date preprocessed: {date}</li>
 \t</ul>
 </div>
@@ -174,7 +174,7 @@ class SubjectSummary(SummaryInterface):
             if recon.cmdline.startswith("echo"):
                 freesurfer_status = "Pre-existing directory"
             else:
-                freesurfer_status = "Run by qsiprep"
+                freesurfer_status = "Run by qsirecon"
 
         t2w_seg = ""
         if self.inputs.t2w:
@@ -278,8 +278,8 @@ class DiffusionSummary(SummaryInterface):
 
 
 class AboutSummaryInputSpec(BaseInterfaceInputSpec):
-    version = Str(desc="qsiprep version")
-    command = Str(desc="qsiprep command")
+    version = Str(desc="qsirecon version")
+    command = Str(desc="qsirecon command")
     # Date not included - update timestamp only if version or command changes
 
 
@@ -731,7 +731,7 @@ class InteractiveReport(SimpleInterface):
         report["eddy_quad"] = eddy_qc
         report["subject_id"] = "sub-test"
         report["analysis_level"] = "participant"
-        report["pipeline"] = "qsiprep"
+        report["pipeline"] = "qsirecon"
         report["boilerplate"] = "boilerplate"
 
         df = pd.read_csv(self.inputs.confounds_file, delimiter="\t")

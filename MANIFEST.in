@@ -8,4 +8,4 @@ include LICENSE
 
 # versioneer
 include versioneer.py
-include qsiprep/_version.py
+include qsirecon/_version.py

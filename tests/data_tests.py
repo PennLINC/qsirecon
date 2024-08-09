@@ -3,7 +3,7 @@ import os.path as op
 import argparse
 from unittest import mock
 import pytest
-from qsiprep.cli.run import main as cli_main
+from qsirecon.cli.run import main as cli_main
 from get_data import (bids_data, WORKING_DIR, ANAT_URL, URL_PREFIX, get_default_cli_args,
                       link_anatomicals)
 
@@ -30,7 +30,7 @@ def anatomical_pipeline(bids_data):
             URL_PREFIX + ANAT_URL, WORKING_DIR))
         assert status == 0
         wd_files = os.listdir(WORKING_DIR)
-        assert 'qsiprep_wf' in wd_files
+        assert 'qsirecon_wf' in wd_files
 
 
 def test_anat(anatomical_pipeline):

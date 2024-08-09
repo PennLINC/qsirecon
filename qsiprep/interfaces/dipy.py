@@ -294,8 +294,8 @@ class DipyReconInterface(SimpleInterface):
             use_ext=False,
         )
         # Copy in the bval and bvecs
-        bval_file = pkgr("qsiprep", "data/schemes/{}.bval".format(scheme_name))
-        bvec_file = pkgr("qsiprep", "data/schemes/{}.bvec".format(scheme_name))
+        bval_file = pkgr("qsirecon", "data/schemes/{}.bval".format(scheme_name))
+        bvec_file = pkgr("qsirecon", "data/schemes/{}.bvec".format(scheme_name))
         shutil.copyfile(bval_file, output_bval_file)
         shutil.copyfile(bvec_file, output_bvec_file)
         self._results["extrapolated_bvecs"] = bvec_file
@@ -480,8 +480,8 @@ class BrainSuiteShoreReconstruction(DipyReconInterface):
             use_ext=False,
         )
         # Copy in the bval and bvecs
-        bval_file = pkgr("qsiprep", "data/schemes/{}.bval".format(scheme_name))
-        bvec_file = pkgr("qsiprep", "data/schemes/{}.bvec".format(scheme_name))
+        bval_file = pkgr("qsirecon", "data/schemes/{}.bval".format(scheme_name))
+        bvec_file = pkgr("qsirecon", "data/schemes/{}.bvec".format(scheme_name))
         shutil.copyfile(bval_file, output_bval_file)
         shutil.copyfile(bvec_file, output_bvec_file)
         self._results["extrapolated_bvecs"] = bvec_file

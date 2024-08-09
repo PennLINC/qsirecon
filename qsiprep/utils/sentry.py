@@ -77,8 +77,8 @@ def start_ping(run_uuid, npart):
         if run_uuid:
             scope.set_tag("run_uuid", run_uuid)
         scope.set_tag("npart", npart)
-    sentry_sdk.add_breadcrumb(message="QSIPrep started", level="info")
-    sentry_sdk.capture_message("QSIPrep started", level="info")
+    sentry_sdk.add_breadcrumb(message="QSIRecon started", level="info")
+    sentry_sdk.capture_message("QSIRecon started", level="info")
 
 
 def sentry_setup():
@@ -86,7 +86,7 @@ def sentry_setup():
     environment = (
         "dev"
         if (
-            os.getenv("QSIPREP_DEV", "").lower in ("1", "on", "yes", "y", "true")
+            os.getenv("QSIRECON_DEV", "").lower in ("1", "on", "yes", "y", "true")
             or ("+" in release)
         )
         else "prod"

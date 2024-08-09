@@ -37,7 +37,7 @@ def _get_parser():
 def run_command(command, env=None):
     """Run a given shell command with certain environment variables set.
 
-    Keep this out of the real qsiprep code so that devs don't need to install QSIPrep to run tests.
+    Keep this out of the real qsirecon code so that devs don't need to install QSIRecon to run tests.
     """
     merged_env = os.environ
     if env:
@@ -66,16 +66,16 @@ def run_command(command, env=None):
 def run_tests(test_regex, test_mark):
     """Run the tests."""
     local_patch = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    mounted_code = "/usr/local/miniconda/lib/python3.10/site-packages/qsiprep"
+    mounted_code = "/usr/local/miniconda/lib/python3.10/site-packages/qsirecon"
     run_str = "docker run --rm -ti "
     run_str += f"-v {local_patch}:{mounted_code} "
     run_str += "--entrypoint pytest "
-    run_str += "pennbbl/qsiprep:unstable "
+    run_str += "pennbbl/qsirecon:unstable "
     run_str += (
-        f"{mounted_code}/qsiprep "
-        f"--data_dir={mounted_code}/qsiprep/tests/test_data "
-        f"--output_dir={mounted_code}/qsiprep/tests/pytests/out "
-        f"--working_dir={mounted_code}/qsiprep/tests/pytests/work "
+        f"{mounted_code}/qsirecon "
+        f"--data_dir={mounted_code}/qsirecon/tests/test_data "
+        f"--output_dir={mounted_code}/qsirecon/tests/pytests/out "
+        f"--working_dir={mounted_code}/qsirecon/tests/pytests/work "
     )
     if test_regex:
         run_str += f"-k {test_regex} "

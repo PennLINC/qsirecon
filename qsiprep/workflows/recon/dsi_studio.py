@@ -20,7 +20,7 @@ from ...interfaces.converters import DSIStudioTrkToTck
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import DSIStudioReconScalars, ReconScalarsDataSink
 from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport
-from qsiprep.interfaces.dsi_studio import (
+from qsirecon.interfaces.dsi_studio import (
     DSI_STUDIO_VERSION,
     AggregateAutoTrackResults,
     AutoTrack,
@@ -46,7 +46,7 @@ def init_dsi_studio_recon_wf(
 
     Inputs
 
-        *Default qsiprep inputs*
+        *Default qsirecon inputs*
 
     Outputs
 
@@ -116,7 +116,7 @@ distance of %02f in DSI Studio (version %s). """ % (
             (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')])
         ])  # fmt:skip
         # Plot targeted regions
-        if available_anatomical_data["has_qsiprep_t1w_transforms"]:
+        if available_anatomical_data["has_qsirecon_t1w_transforms"]:
             ds_report_odfs = pe.Node(
                 ReconDerivativesDataSink(extension=".png", desc="GQIODF", suffix="odfs"),
                 name="ds_report_odfs",

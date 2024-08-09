@@ -16,7 +16,7 @@ from ... import config
 from ...engine import Workflow
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import ReconScalarsDataSink, TORTOISEReconScalars
-from qsiprep.interfaces.tortoise import (
+from qsirecon.interfaces.tortoise import (
     ComputeADMap,
     ComputeFAMap,
     ComputeLIMap,
@@ -50,7 +50,7 @@ def init_tortoise_estimator_wf(
 
     Inputs
 
-        *Default qsiprep inputs*
+        *Default qsirecon inputs*
 
     Outputs
 

@@ -5,7 +5,7 @@
 #
 # Copyright The NiPreps Developers <nipreps@gmail.com>
 #
-# Changed to run qsiprep workflows
+# Changed to run qsirecon workflows
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,10 +25,10 @@
 #     https://www.nipreps.org/community/licensing/
 #
 """
-qsiprep base processing workflows
+qsirecon base processing workflows
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: init_qsiprep_wf
+.. autofunction:: init_qsirecon_wf
 .. autofunction:: init_single_subject_wf
 
 """
@@ -61,8 +61,8 @@ from .dwi.intramodal_template import init_intramodal_template_wf
 from .dwi.util import get_source_file
 
 
-def init_qsiprep_wf():
-    """Organize the execution of qsiprep, with a sub-workflow for each subject.
+def init_qsirecon_wf():
+    """Organize the execution of qsirecon, with a sub-workflow for each subject.
 
     .. workflow::
         :graph2use: orig
@@ -70,31 +70,31 @@ def init_qsiprep_wf():
 
         import os
         os.environ['FREESURFER_HOME'] = os.getcwd()
-        from qsiprep.workflows.base import init_qsiprep_wf
+        from qsirecon.workflows.base import init_qsirecon_wf
 
-        wf = init_qsiprep_wf()
+        wf = init_qsirecon_wf()
     """
     ver = Version(config.environment.version)
-    qsiprep_wf = Workflow(name=f"qsiprep_{ver.major}_{ver.minor}_wf")
-    qsiprep_wf.base_dir = config.execution.work_dir
+    qsirecon_wf = Workflow(name=f"qsirecon_{ver.major}_{ver.minor}_wf")
+    qsirecon_wf.base_dir = config.execution.work_dir
 
     for subject_id in config.execution.participant_label:
         single_subject_wf = init_single_subject_wf(subject_id)
 
         single_subject_wf.config["execution"]["crashdump_dir"] = str(
-            config.execution.qsiprep_dir / f"sub-{subject_id}" / "log" / config.execution.run_uuid
+            config.execution.qsirecon_dir / f"sub-{subject_id}" / "log" / config.execution.run_uuid
         )
         for node in single_subject_wf._get_all_nodes():
             node.config = deepcopy(single_subject_wf.config)
-        qsiprep_wf.add_nodes([single_subject_wf])
+        qsirecon_wf.add_nodes([single_subject_wf])
 
         # Dump a copy of the config file into the log directory
         log_dir = (
-            config.execution.qsiprep_dir / f"sub-{subject_id}" / "log" / config.execution.run_uuid
+            config.execution.qsirecon_dir / f"sub-{subject_id}" / "log" / config.execution.run_uuid
         )
         log_dir.mkdir(exist_ok=True, parents=True)
-        config.to_filename(log_dir / "qsiprep.toml")
-    return qsiprep_wf
+        config.to_filename(log_dir / "qsirecon.toml")
+    return qsirecon_wf
 
 
 def init_single_subject_wf(subject_id: str):
@@ -112,9 +112,9 @@ def init_single_subject_wf(subject_id: str):
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.base import init_single_subject_wf
+        from qsirecon.workflows.base import init_single_subject_wf
 
-        wf = init_single_subject_wf('qsiprepXtest')
+        wf = init_single_subject_wf('qsireconXtest')
 
     Parameters
     ----------
@@ -122,7 +122,7 @@ def init_single_subject_wf(subject_id: str):
         Single subject label
 
     """
-    if subject_id == "qsiprepXtest":
+    if subject_id == "qsireconXtest":
         # for documentation purposes
         subject_data = {
             "t1w": ["/completely/made/up/path/sub-01_T1w.nii.gz"],
@@ -165,20 +165,20 @@ def init_single_subject_wf(subject_id: str):
 
     workflow = Workflow(name=f"sub_{subject_id}_wf")
     workflow.__desc__ = f"""
-Preprocessing was performed using *QSIPrep* {config.environment.version},
+Preprocessing was performed using *QSIRecon* {config.environment.version},
 which is based on *Nipype* {config.environment.nipype_version}
 (@nipype1; @nipype2; RRID:SCR_002502).
 
 """
     workflow.__postdesc__ = f"""
 
-Many internal operations of *QSIPrep* use
+Many internal operations of *QSIRecon* use
 *Nilearn* {nilearn_ver} [@nilearn, RRID:SCR_001362] and
 *Dipy* [@dipy].
 For more details of the pipeline, see [the section corresponding
-to workflows in *QSIPrep*'s documentation]\
-(https://qsiprep.readthedocs.io/en/latest/workflows.html \
-"QSIPrep's documentation").
+to workflows in *QSIRecon*'s documentation]\
+(https://qsirecon.readthedocs.io/en/latest/workflows.html \
+"QSIRecon's documentation").
 
 
 ### References

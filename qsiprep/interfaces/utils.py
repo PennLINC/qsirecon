@@ -158,7 +158,7 @@ class AddTSVHeader(SimpleInterface):
 
     Add headers:
 
-    >>> from qsiprep.interfaces import AddTSVHeader
+    >>> from qsirecon.interfaces import AddTSVHeader
     >>> addheader = AddTSVHeader()
     >>> addheader.inputs.in_file = 'data.tsv'
     >>> addheader.inputs.columns = ['a', 'b', 'c', 'd', 'e']

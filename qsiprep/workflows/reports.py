@@ -3,10 +3,10 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-qsiprep interactive report workflow
+qsirecon interactive report workflow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: init_qsiprep_wf
+.. autofunction:: init_qsirecon_wf
 
 """
 import logging
@@ -19,7 +19,7 @@ from .. import config
 from ..engine import Workflow
 from ..interfaces import DerivativesDataSink
 from ..interfaces.ingress import QsiReconDWIIngress
-from ..interfaces.interchange import qsiprep_output_names, recon_workflow_input_fields
+from ..interfaces.interchange import qsirecon_output_names, recon_workflow_input_fields
 from ..interfaces.reports import InteractiveReport
 from ..utils.bids import collect_data
 
@@ -35,9 +35,9 @@ def init_json_preproc_report_wf(subject_list):
         :simple_form: yes
 
         import os
-        from qsiprep.workflows.reports import init_json_preproc_report_wf
+        from qsirecon.workflows.reports import init_json_preproc_report_wf
         wf = init_json_preproc_report_wf(
-            subject_list=['qsipreptest'],
+            subject_list=['qsirecontest'],
             work_dir='.',
             output_dir='.')
 
@@ -56,8 +56,8 @@ def init_json_preproc_report_wf(subject_list):
     work_dir = config.execution.work_dir
     output_dir = config.execution.output_dir
 
-    qsiprep_wf = Workflow(name="json_reports_wf")
-    qsiprep_wf.base_dir = work_dir
+    qsirecon_wf = Workflow(name="json_reports_wf")
+    qsirecon_wf.base_dir = work_dir
 
     for subject_id in subject_list:
         single_subject_wf = init_single_subject_json_report_wf(
@@ -68,25 +68,25 @@ def init_json_preproc_report_wf(subject_list):
 
         for node in single_subject_wf._get_all_nodes():
             node.config = deepcopy(single_subject_wf.config)
-            qsiprep_wf.add_nodes([single_subject_wf])
+            qsirecon_wf.add_nodes([single_subject_wf])
 
-    return qsiprep_wf
+    return qsirecon_wf
 
 
 def init_single_subject_json_report_wf(subject_id, name):
     """
-    This workflow examines the output of a qsiprep run and creates a json report for
-    dmriprep-viewer. These are very useful for batch QC-ing QSIPrep runs.
+    This workflow examines the output of a qsirecon run and creates a json report for
+    dmriprep-viewer. These are very useful for batch QC-ing QSIRecon runs.
 
     .. workflow::
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.reports import init_single_subject_json_report_wf
+        from qsirecon.workflows.reports import init_single_subject_json_report_wf
 
         wf = init_single_subject_json_report_wf(
             subject_id='test',
-            name='single_subject_qsipreptest_wf',
+            name='single_subject_qsirecontest_wf',
             reportlets_dir='.',
             output_dir='.')
 
@@ -101,7 +101,7 @@ def init_single_subject_json_report_wf(subject_id, name):
 
     """
     output_dir = config.execution.output_dir
-    if name in ("single_subject_wf", "single_subject_qsipreptest_wf"):
+    if name in ("single_subject_wf", "single_subject_qsirecontest_wf"):
         # for documentation purposes
         subject_data = {
             "t1w": ["/completely/made/up/path/sub-01_T1w.nii.gz"],
@@ -118,8 +118,8 @@ def init_single_subject_json_report_wf(subject_id, name):
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
     )
-    qsiprep_preprocessed_dwi_data = pe.Node(
-        QsiReconDWIIngress(), name="qsiprep_preprocessed_dwi_data"
+    qsirecon_preprocessed_dwi_data = pe.Node(
+        QsiReconDWIIngress(), name="qsirecon_preprocessed_dwi_data"
     )
 
     # For doctests
@@ -136,9 +136,9 @@ def init_single_subject_json_report_wf(subject_id, name):
 
     # Connect the collected diffusion data (gradients, etc) to the inputnode
     workflow.connect([
-        (scans_iter, qsiprep_preprocessed_dwi_data, ([('dwi_file', 'dwi_file')])),
-        (qsiprep_preprocessed_dwi_data, inputnode, [
-            (trait, trait) for trait in qsiprep_output_names]),
+        (scans_iter, qsirecon_preprocessed_dwi_data, ([('dwi_file', 'dwi_file')])),
+        (qsirecon_preprocessed_dwi_data, inputnode, [
+            (trait, trait) for trait in qsirecon_output_names]),
         (inputnode, interactive_report, [
             ('dwi_file', 'processed_dwi_file'),
             ('confounds_file', 'confounds_file'),

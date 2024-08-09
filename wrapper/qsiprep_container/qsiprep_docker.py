@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 """
-The qsiprep on Docker wrapper
+The qsirecon on Docker wrapper
 
 
-This is a lightweight Python wrapper to run qsiprep.
+This is a lightweight Python wrapper to run qsirecon.
 Docker must be installed and running. This can be checked
 running ::
 
   docker info
 
 Please report any feedback to our GitHub repository
-(https://github.com/pennbbl/qsiprep) and do not
-forget to credit all the authors of software that qsiprep
-uses (https://qsiprep.readthedocs.io/en/latest/citing.html).
+(https://github.com/pennbbl/qsirecon) and do not
+forget to credit all the authors of software that qsirecon
+uses (https://qsirecon.readthedocs.io/en/latest/citing.html).
 """
 import os
 import re
@@ -20,25 +20,25 @@ import subprocess
 import sys
 
 __version__ = "latest"
-__packagename__ = "qsiprep-container"
+__packagename__ = "qsirecon-container"
 __author__ = ""
 __copyright__ = "Copyright 2019, "
 __credits__ = []
 __license__ = "3-clause BSD"
 __maintainer__ = ""
 __email__ = ""
-__url__ = "https://github.com/pennbbl/qsiprep"
-__bugreports__ = "https://github.com/pennbbl/qsiprep/issues"
+__url__ = "https://github.com/pennbbl/qsirecon"
+__bugreports__ = "https://github.com/pennbbl/qsirecon/issues"
 
 __description__ = """\
-qsiprep is a non-DTI diffusion-weighted image pre-processing pipeline \
+qsirecon is a non-DTI diffusion-weighted image pre-processing pipeline \
 that is designed to provide an easily accessible, state-of-the-art interface \
 that is robust to differences in scan acquisition protocols and that requires \
 minimal user input, while providing easily interpretable and comprehensive \
 error and output reporting."""
 __longdesc__ = """\
-This package is a basic wrapper for qsiprep that generates the appropriate
-Docker commands, providing an intuitive interface to running the qsiprep
+This package is a basic wrapper for qsirecon that generates the appropriate
+Docker commands, providing an intuitive interface to running the qsirecon
 workflow in a Docker environment."""
 
 DOWNLOAD_URL = (
@@ -58,7 +58,7 @@ CLASSIFIERS = [
 MISSING = """
 Image '{}' is missing
 Would you like to download? [Y/n] """
-PKG_PATH = "/opt/conda/envs/qsiprep/lib/python3.10/site-packages"
+PKG_PATH = "/opt/conda/envs/qsirecon/lib/python3.10/site-packages"
 
 # Monkey-patch Py2 subprocess
 if not hasattr(subprocess, "DEVNULL"):
@@ -226,7 +226,7 @@ def get_parser():
         description=__doc__, formatter_class=argparse.ArgumentDefaultsHelpFormatter, add_help=False
     )
 
-    # Standard qsiprep arguments
+    # Standard qsirecon arguments
     parser.add_argument("bids_dir", nargs="?", type=os.path.abspath, default="")
     parser.add_argument("output_dir", nargs="?", type=os.path.abspath, default="")
     parser.add_argument(
@@ -273,7 +273,7 @@ def get_parser():
         "--image",
         metavar="IMG",
         type=str,
-        default="pennbbl/qsiprep:{}".format(__version__),
+        default="pennbbl/qsirecon:{}".format(__version__),
         help="image name",
     )
 
@@ -302,14 +302,14 @@ def get_parser():
 
     # Developer patch/shell options
     g_dev = parser.add_argument_group(
-        "Developer options", "Tools for testing and debugging qsiprep"
+        "Developer options", "Tools for testing and debugging qsirecon"
     )
     g_dev.add_argument(
         "-f",
-        "--patch-qsiprep",
+        "--patch-qsirecon",
         metavar="PATH",
         type=os.path.abspath,
-        help="working qsiprep repository",
+        help="working qsirecon repository",
     )
     g_dev.add_argument(
         "-p",
@@ -322,7 +322,7 @@ def get_parser():
         "-a", "--custom_atlases", type=os.path.abspath, help="custom atlas directory"
     )
     g_dev.add_argument(
-        "--shell", action="store_true", help="open shell in image instead of running qsiprep"
+        "--shell", action="store_true", help="open shell in image instead of running qsirecon"
     )
     g_dev.add_argument(
         "--config",
@@ -360,20 +360,20 @@ def main():
     check = check_docker()
     if check < 1:
         if opts.version:
-            print("qsiprep wrapper {!s}".format(__version__))
+            print("qsirecon wrapper {!s}".format(__version__))
         if opts.help:
             parser.print_help()
         if check == -1:
-            print("qsiprep: Could not find docker command... Is it installed?")
+            print("qsirecon: Could not find docker command... Is it installed?")
         else:
-            print("qsiprep: Make sure you have permission to run 'docker'")
+            print("qsirecon: Make sure you have permission to run 'docker'")
         return 1
 
     # For --help or --version, ask before downloading an image
     if not check_image(opts.image):
         resp = "Y"
         if opts.version:
-            print("qsiprep wrapper {!s}".format(__version__))
+            print("qsirecon wrapper {!s}".format(__version__))
         if opts.help:
             parser.print_help()
         if opts.version or opts.help:
@@ -397,7 +397,7 @@ def main():
     if not (opts.help or opts.version or "--reports-only" in unknown_args) and mem_total < 8000:
         print(
             "Warning: <8GB of RAM is available within your Docker "
-            "environment.\nSome parts of qsiprep may fail to complete."
+            "environment.\nSome parts of qsirecon may fail to complete."
         )
         if "--mem_mb" not in unknown_args:
             resp = "N"
@@ -412,7 +412,7 @@ def main():
     command = ["docker", "run", "--rm", "-it"]
 
     # Patch working repositories into installed package directories
-    for pkg in ("qsiprep", "nipype"):
+    for pkg in ("qsirecon", "nipype"):
         repo_path = getattr(opts, "patch_" + pkg)
         if repo_path is not None:
             command.extend(["-v", "{}:{}/{}:ro".format(repo_path, PKG_PATH, pkg)])
@@ -431,8 +431,8 @@ def main():
     if opts.bids_dir:
         command.extend(["-v", ":".join((opts.bids_dir, "/data", "ro"))])
     if opts.recon_input:
-        command.extend(["-v", ":".join((opts.recon_input, "/qsiprep-output", "ro"))])
-        main_args.extend(["--recon-input", "/qsiprep-output"])
+        command.extend(["-v", ":".join((opts.recon_input, "/qsirecon-output", "ro"))])
+        main_args.extend(["--recon-input", "/qsirecon-output"])
     if opts.freesurfer_input:
         command.extend(["-v", ":".join((opts.freesurfer_input, "/sngl/freesurfer-input", "ro"))])
         main_args.extend(["--freesurfer-input", "/sngl/freesurfer-input"])
@@ -487,7 +487,7 @@ def main():
     print("RUNNING: " + " ".join(command))
     ret = subprocess.run(command)
     if ret.returncode:
-        print("qsiprep: Please report errors to {}".format(__bugreports__))
+        print("qsirecon: Please report errors to {}".format(__bugreports__))
     return ret.returncode
 
 

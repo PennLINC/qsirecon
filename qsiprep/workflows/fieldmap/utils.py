@@ -86,7 +86,7 @@ def cleanup_edge_pipeline(name="Cleanup"):
     if not fsl_check:
         raise Exception(
             """Container in use does not have FSL. To use this workflow,
-            please download the qsiprep container with FSL installed."""
+            please download the qsirecon container with FSL installed."""
         )
     inputnode = pe.Node(niu.IdentityInterface(fields=["in_file", "in_mask"]), name="inputnode")
     outputnode = pe.Node(niu.IdentityInterface(fields=["out_file"]), name="outputnode")

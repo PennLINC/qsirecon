@@ -2,7 +2,7 @@
 """Download test data."""
 import sys
 
-from qsiprep.tests.utils import download_test_data
+from qsirecon.tests.utils import download_test_data
 
 if __name__ == "__main__":
     data_dir = sys.argv[1]

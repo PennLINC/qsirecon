@@ -1,5 +1,5 @@
 {
-    "description": "Use pyAFQ to perform the Tractometry pipeline, with tractography from qsiprep",
+    "description": "Use pyAFQ to perform the Tractometry pipeline, with tractography from qsirecon",
     "space": "T1w",
     "name": "mrtrix_multishell_msmt_pyafq_tractometry",
     "atlases": [],
@@ -9,7 +9,7 @@
             "software": "MRTrix3",
             "action": "csd",
             "qsirecon_suffix": "MRtrix3",
-            "input": "qsiprep",
+            "input": "qsirecon",
             "parameters": {
                 "mtnormalize": true,
                 "response": {

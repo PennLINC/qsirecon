@@ -113,7 +113,7 @@ class GatherEddyInputs(SimpleInterface):
         self._results["topup_config"] = "b02b0.cnf"
         if 1 in (example_b0.shape[0] % 2, example_b0.shape[1] % 2, example_b0.shape[2] % 2):
             LOGGER.warning("Using slower b02b0_1.cnf because an axis has an odd number of slices")
-            self._results["topup_config"] = pkgr_fn("qsiprep.data", "b02b0_1.cnf")
+            self._results["topup_config"] = pkgr_fn("qsirecon.data", "b02b0_1.cnf")
 
         # For the apply topup report:
         pre_topup_image = index_img(topup_imain_file, 0)

@@ -22,7 +22,7 @@ from ..fieldmap.drbuddi import init_drbuddi_wf
 from .hmc import init_dwi_hmc_wf
 
 
-def init_qsiprep_hmcsdc_wf(
+def init_qsirecon_hmcsdc_wf(
     scan_groups,
     source_file,
     t2w_sdc,
@@ -30,15 +30,15 @@ def init_qsiprep_hmcsdc_wf(
 ):
     """
     This workflow controls the head motion correction and susceptibility distortion
-    correction parts of the qsiprep workflow. These parts have been combined because they're
+    correction parts of the qsirecon workflow. These parts have been combined because they're
     also combined in the eddy pipeline.
 
     .. workflow::
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.dwi.shoreline import init_qsiprep_hmcsdc_coreg_wf
-        wf = init_qsiprep_hmcsdc_wf(
+        from qsirecon.workflows.dwi.shoreline import init_qsirecon_hmcsdc_coreg_wf
+        wf = init_qsirecon_hmcsdc_wf(
             {'dwi_series':[dwi1.nii, dwi2.nii],
              'fieldmap_info': {'suffix': None},
              'dwi_series_pedir': j},
@@ -102,7 +102,7 @@ def init_qsiprep_hmcsdc_wf(
         name="outputnode",
     )
 
-    workflow = Workflow(name="qsiprep_hmcsdc_wf")
+    workflow = Workflow(name="qsirecon_hmcsdc_wf")
 
     # Split the input data into single volumes, put bvecs in LPS+ world reference frame
     split_dwis = pe.Node(TSplit(digits=4, out_name="vol"), name="split_dwis")

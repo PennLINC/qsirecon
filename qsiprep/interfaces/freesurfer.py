@@ -53,7 +53,7 @@ class StructuralReference(fs.RobustTemplate):
     """Variation on RobustTemplate that simply copies the source if a single
     volume is provided.
 
-    >>> from qsiprep.utils.bids import collect_data
+    >>> from qsirecon.utils.bids import collect_data
     >>> t1w = collect_data('ds114', '01')[0]['t1w']
     >>> template = StructuralReference()
     >>> template.inputs.in_files = t1w

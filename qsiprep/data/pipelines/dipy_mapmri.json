@@ -7,7 +7,7 @@
       "name": "mapmri_recon",
       "software": "Dipy",
       "action": "MAPMRI_reconstruction",
-      "input": "qsiprep",
+      "input": "qsirecon",
       "qsirecon_suffix": "DIPYMAPMRI",
       "parameters": {
         "radial_order": 6,

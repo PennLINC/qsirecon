@@ -56,7 +56,7 @@ from ...utils.misc import fix_multi_source_name
 
 
 class DerivativesDataSink(FDerivativesDataSink):
-    out_path_base = "qsiprep"
+    out_path_base = "qsirecon"
 
 
 ANTS_VERSION = BrainExtraction().version or "<ver>"
@@ -70,7 +70,7 @@ def init_anat_preproc_wf(
     has_rois,
 ):
     r"""
-    This workflow controls the anatomical preprocessing stages of qsiprep.
+    This workflow controls the anatomical preprocessing stages of qsirecon.
 
     This includes:
 
@@ -83,7 +83,7 @@ def init_anat_preproc_wf(
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.anatomical import init_anat_preproc_wf
+        from qsirecon.workflows.anatomical import init_anat_preproc_wf
         wf = init_anat_preproc_wf(num_anat_images=1,
                                   num_additional_t2ws=0,
                                   has_rois=False)
@@ -274,8 +274,8 @@ FreeSurfer version {fs_version}. """.format(
 
     acpc_aseg_to_dseg = pe.Node(
         mrtrix3.LabelConvert(
-            in_lut=pkgr("qsiprep", "data/FreeSurferColorLUT.txt"),
-            in_config=pkgr("qsiprep", "data/FreeSurfer2dseg.txt"),
+            in_lut=pkgr("qsirecon", "data/FreeSurferColorLUT.txt"),
+            in_config=pkgr("qsirecon", "data/FreeSurfer2dseg.txt"),
             out_file="acpc_dseg.nii.gz",
         ),
         name="acpc_aseg_to_dseg",
@@ -447,7 +447,7 @@ image using an affine transformation in antsRegistration.
     )
 
     # Perform registrations
-    settings = pkgr("qsiprep", "data/affine.json")
+    settings = pkgr("qsirecon", "data/affine.json")
     t2_brain_to_t1_brain = pe.Node(
         ants.Registration(from_file=settings),
         name="t2_brain_to_t1_brain",
@@ -509,7 +509,7 @@ def init_anat_template_wf(num_images) -> Workflow:
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.anatomical import init_anat_template_wf
+        from qsirecon.workflows.anatomical import init_anat_template_wf
         wf = init_anat_template_wf(num_images=1)
 
     Parameters
@@ -603,7 +603,7 @@ A {contrast}-reference map was computed after registration of
 
         n4_correct = pe.Node(n4_interface, name="n4_correct", n_procs=omp_nthreads)
 
-        outputnode.inputs.template_transforms = [pkgr("qsiprep", "data/itkIdentityTransform.txt")]
+        outputnode.inputs.template_transforms = [pkgr("qsirecon", "data/itkIdentityTransform.txt")]
 
         workflow.connect([
             (anat_conform, outputnode, [
@@ -654,7 +654,7 @@ def init_anat_normalization_wf(has_rois=False) -> Workflow:
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.anatomical import init_anat_normalization_wf
+        from qsirecon.workflows.anatomical import init_anat_normalization_wf
         wf = init_anat_registration_wf(has_rois=False)
 
     Parameters
@@ -709,7 +709,7 @@ a 6-DOF transform extracted from a full Affine registration to the
 {config.workflow.anatomical_template} template. """
 
     acpc_settings = pkgr(
-        "qsiprep",
+        "qsirecon",
         (
             "data/intramodal_ACPC.json"
             if not config.execution.sloppy
@@ -761,7 +761,7 @@ estimated via symmetric nonlinear registration (SyN) using antsRegistration. """
     if config.execution.sloppy:
         config.loggers.workflow.info("Using QuickSyN")
         # Requires a warp file: make an inaccurate one
-        settings = pkgr("qsiprep", "data/quick_syn.json")
+        settings = pkgr("qsirecon", "data/quick_syn.json")
         anat_norm_interface = RobustMNINormalizationRPT(
             float=True, generate_report=True, settings=[settings]
         )

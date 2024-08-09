@@ -3,7 +3,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-qsiprep base reconstruction workflows
+qsirecon base reconstruction workflows
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: init_qsirecon_wf
@@ -22,7 +22,7 @@ from pkg_resources import resource_filename as pkgrf
 
 from ... import config
 from ...engine import Workflow
-from ...interfaces.anatomical import QsiprepAnatomicalIngress, UKBAnatomicalIngress
+from ...interfaces.anatomical import QSIReconAnatomicalIngress, UKBAnatomicalIngress
 from ...interfaces.ants import ConvertTransformFile
 from ...interfaces.bids import ReconDerivativesDataSink
 from ...interfaces.freesurfer import find_fs_path
@@ -30,12 +30,12 @@ from ...interfaces.gradients import ExtractB0s
 from ...interfaces.interchange import (
     FS_FILES_TO_REGISTER,
     anatomical_workflow_outputs,
-    qsiprep_highres_anatomical_ingressed_fields,
+    qsirecon_highres_anatomical_ingressed_fields,
     recon_workflow_input_fields,
 )
 from ...interfaces.mrtrix import GenerateMasked5tt, ITKTransformConvert, TransformHeader
 from ..anatomical.volume import init_output_grid_wf
-from qsiprep.interfaces.utils import GetConnectivityAtlases
+from qsirecon.interfaces.utils import GetConnectivityAtlases
 
 # Required freesurfer files for mrtrix's HSV 5tt generation
 HSV_REQUIREMENTS = [
@@ -51,13 +51,13 @@ HSV_REQUIREMENTS = [
 
 UKB_REQUIREMENTS = ["T1/T1_brain.nii.gz", "T1/T1_brain_mask.nii.gz"]
 
-# Files that must exist if QSIPrep ran the anatomical workflow
-QSIPREP_ANAT_REQUIREMENTS = [
+# Files that must exist if QSIRecon ran the anatomical workflow
+QSIRECON_ANAT_REQUIREMENTS = [
     "sub-{subject_id}/anat/sub-{subject_id}_desc-brain_mask.nii.gz",
     "sub-{subject_id}/anat/sub-{subject_id}_desc-preproc_T1w.nii.gz",
 ]
 
-QSIPREP_NORMALIZED_ANAT_REQUIREMENTS = [
+QSIRECON_NORMALIZED_ANAT_REQUIREMENTS = [
     "sub-{subject_id}/anat/sub-{subject_id}_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5",
     "sub-{subject_id}/anat/sub-{subject_id}_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5",
 ]
@@ -82,19 +82,19 @@ def init_highres_recon_anatomical_wf(
     )
     workflow.__desc__ = ""
     # "Gather" the input data. ``status`` is a dict that reflects which anatomical data
-    # are present. The anat_ingress_node is a nipype node that ensures that qsiprep-style
-    # anatomical data is available. In the case where ``pipeline_source`` is not "qsiprep",
-    # the data is converted in this node to be qsiprep-like.
+    # are present. The anat_ingress_node is a nipype node that ensures that qsirecon-style
+    # anatomical data is available. In the case where ``pipeline_source`` is not "qsirecon",
+    # the data is converted in this node to be qsirecon-like.
     pipeline_source = config.workflow.recon_input_pipeline
     freesurfer_dir = config.execution.freesurfer_input
-    if pipeline_source == "qsiprep":
-        anat_ingress_node, status = gather_qsiprep_anatomical_data(subject_id)
+    if pipeline_source == "qsirecon":
+        anat_ingress_node, status = gather_qsirecon_anatomical_data(subject_id)
     elif pipeline_source == "ukb":
         anat_ingress_node, status = gather_ukb_anatomical_data(subject_id)
     else:
         raise Exception(f"Unknown pipeline source '{pipeline_source}'")
     anat_ingress_node.inputs.infant_mode = config.workflow.infant
-    if needs_t1w_transform and not status["has_qsiprep_t1w_transforms"]:
+    if needs_t1w_transform and not status["has_qsirecon_t1w_transforms"]:
         raise Exception("Cannot compute to-template")
 
     # If there is no high-res anat data in the inputs there may still be an image available
@@ -103,7 +103,7 @@ def init_highres_recon_anatomical_wf(
     status["has_freesurfer"] = subject_freesurfer_path is not None
 
     # If no high-res are available, we're done here
-    if not status["has_qsiprep_t1w"] and subject_freesurfer_path is None:
+    if not status["has_qsirecon_t1w"] and subject_freesurfer_path is None:
         config.loggers.workflow.warning(
             f"No high-res anatomical data available directly in recon inputs for {subject_id}."
         )
@@ -118,7 +118,7 @@ def init_highres_recon_anatomical_wf(
     )
     workflow.connect([
         (anat_ingress_node, outputnode,
-            [(name, name) for name in qsiprep_highres_anatomical_ingressed_fields])])  # fmt:skip
+            [(name, name) for name in qsirecon_highres_anatomical_ingressed_fields])])  # fmt:skip
 
     # grab un-coregistered freesurfer images later use
     if subject_freesurfer_path is not None:
@@ -155,11 +155,11 @@ def init_highres_recon_anatomical_wf(
             name="create_5tt_hsvs",
             n_procs=config.nipype.omp_nthreads,
         )
-        ds_qsiprep_5tt_hsvs = pe.Node(
+        ds_qsirecon_5tt_hsvs = pe.Node(
             ReconDerivativesDataSink(
                 atlas="hsvs", space="T1w", suffix="dseg", qsirecon_suffix="anat"
             ),
-            name="ds_qsiprep_5tt_hsvs",
+            name="ds_qsirecon_5tt_hsvs",
             run_without_submitting=True,
         )
         ds_fs_5tt_hsvs = pe.Node(
@@ -171,39 +171,39 @@ def init_highres_recon_anatomical_wf(
         )
         workflow.connect([
             (anat_ingress_node, ds_fs_5tt_hsvs, [("t1_preproc", "source_file")]),
-            (anat_ingress_node, ds_qsiprep_5tt_hsvs, [("t1_preproc", "source_file")]),
+            (anat_ingress_node, ds_qsirecon_5tt_hsvs, [("t1_preproc", "source_file")]),
             (create_5tt_hsvs, outputnode, [('out_file', 'fs_5tt_hsvs')]),
             (create_5tt_hsvs, ds_fs_5tt_hsvs, [("out_file", "in_file")]),
         ])  # fmt:skip
 
-        # Transform the 5tt image so it's registered to the QSIPrep AC-PC T1w
-        if status["has_qsiprep_t1w"]:
+        # Transform the 5tt image so it's registered to the QSIRecon AC-PC T1w
+        if status["has_qsirecon_t1w"]:
             config.loggers.workflow.info(
-                "HSVS 5tt imaged will be registered to the QSIPrep T1w image."
+                "HSVS 5tt imaged will be registered to the QSIRecon T1w image."
             )
-            status["has_qsiprep_5tt_hsvs"] = True
-            register_fs_to_qsiprep_wf = init_register_fs_to_qsiprep_wf(
-                use_qsiprep_reference_mask=True
+            status["has_qsirecon_5tt_hsvs"] = True
+            register_fs_to_qsirecon_wf = init_register_fs_to_qsirecon_wf(
+                use_qsirecon_reference_mask=True
             )
             apply_header_to_5tt = pe.Node(TransformHeader(), name="apply_header_to_5tt")
             workflow.connect([
-                (anat_ingress_node, register_fs_to_qsiprep_wf, [
-                    ("t1_preproc", "inputnode.qsiprep_reference_image"),
-                    ("t1_brain_mask", "inputnode.qsiprep_reference_mask")]),
-                (fs_source, register_fs_to_qsiprep_wf, [
+                (anat_ingress_node, register_fs_to_qsirecon_wf, [
+                    ("t1_preproc", "inputnode.qsirecon_reference_image"),
+                    ("t1_brain_mask", "inputnode.qsirecon_reference_mask")]),
+                (fs_source, register_fs_to_qsirecon_wf, [
                     (field, "inputnode." + field) for field in FS_FILES_TO_REGISTER]),
-                (register_fs_to_qsiprep_wf, outputnode, [
-                    ("outputnode.fs_to_qsiprep_transform_mrtrix",
-                        "fs_to_qsiprep_transform_mrtrix"),
-                    ("outputnode.fs_to_qsiprep_transform_itk",
-                        "fs_to_qsiprep_transform_itk")] + [
+                (register_fs_to_qsirecon_wf, outputnode, [
+                    ("outputnode.fs_to_qsirecon_transform_mrtrix",
+                        "fs_to_qsirecon_transform_mrtrix"),
+                    ("outputnode.fs_to_qsirecon_transform_itk",
+                        "fs_to_qsirecon_transform_itk")] + [
                     ("outputnode." + field, field) for field in FS_FILES_TO_REGISTER]),
                 (create_5tt_hsvs, apply_header_to_5tt, [("out_file", "in_image")]),
-                (register_fs_to_qsiprep_wf, apply_header_to_5tt, [
-                    ("outputnode.fs_to_qsiprep_transform_mrtrix", "transform_file")]),
+                (register_fs_to_qsirecon_wf, apply_header_to_5tt, [
+                    ("outputnode.fs_to_qsirecon_transform_mrtrix", "transform_file")]),
                 (apply_header_to_5tt, outputnode, [
-                    ("out_image", "qsiprep_5tt_hsvs")]),
-                (apply_header_to_5tt, ds_qsiprep_5tt_hsvs, [("out_image", "in_file")]),
+                    ("out_image", "qsirecon_5tt_hsvs")]),
+                (apply_header_to_5tt, ds_qsirecon_5tt_hsvs, [("out_image", "in_file")]),
             ])  # fmt:skip
             workflow.__desc__ += "A hybrid surface/volume segmentation was created [Smith 2020]."
 
@@ -221,16 +221,16 @@ def gather_ukb_anatomical_data(subject_id):
 
     """
     status = {
-        "has_qsiprep_5tt_hsvs": False,
+        "has_qsirecon_5tt_hsvs": False,
         "has_freesurfer_5tt_hsvs": False,
         "has_freesurfer": False,
     }
     recon_input_dir = config.execution.recon_input
 
-    # Check to see if we have a T1w preprocessed by QSIPrep
+    # Check to see if we have a T1w preprocessed by QSIRecon
     missing_ukb_anats = check_ukb_anatomical_outputs(recon_input_dir)
     has_t1w = not missing_ukb_anats
-    status["has_qsiprep_t1w"] = has_t1w
+    status["has_qsirecon_t1w"] = has_t1w
     if missing_ukb_anats:
         config.loggers.workflow.info(f"Missing T1w from UKB session: {recon_input_dir}")
     else:
@@ -242,15 +242,15 @@ def gather_ukb_anatomical_data(subject_id):
 
     # I couldn't figure out how to convert UKB transforms to ants. So
     # they're not available for recon workflows for now
-    status["has_qsiprep_t1w_transforms"] = False
-    config.loggers.workflow.info("QSIPrep can't read FNIRT transforms from UKB at this time.")
+    status["has_qsirecon_t1w_transforms"] = False
+    config.loggers.workflow.info("QSIRecon can't read FNIRT transforms from UKB at this time.")
 
     return anat_ingress, status
 
 
-def gather_qsiprep_anatomical_data(subject_id):
+def gather_qsirecon_anatomical_data(subject_id):
     """
-    Gathers the anatomical data from a qsiprep input and finds which files are available.
+    Gathers the anatomical data from a qsirecon input and finds which files are available.
 
 
     Parameters
@@ -260,36 +260,36 @@ def gather_qsiprep_anatomical_data(subject_id):
 
     """
     status = {
-        "has_qsiprep_5tt_hsvs": False,
+        "has_qsirecon_5tt_hsvs": False,
         "has_freesurfer_5tt_hsvs": False,
         "has_freesurfer": False,
     }
     recon_input_dir = config.execution.recon_input
-    # Check to see if we have a T1w preprocessed by QSIPrep
-    missing_qsiprep_anats = check_qsiprep_anatomical_outputs(recon_input_dir, subject_id, "T1w")
-    has_qsiprep_t1w = not missing_qsiprep_anats
-    status["has_qsiprep_t1w"] = has_qsiprep_t1w
-    if missing_qsiprep_anats:
+    # Check to see if we have a T1w preprocessed by QSIRecon
+    missing_qsirecon_anats = check_qsirecon_anatomical_outputs(recon_input_dir, subject_id, "T1w")
+    has_qsirecon_t1w = not missing_qsirecon_anats
+    status["has_qsirecon_t1w"] = has_qsirecon_t1w
+    if missing_qsirecon_anats:
         config.loggers.workflow.info(
-            "Missing T1w QSIPrep outputs found: %s", " ".join(missing_qsiprep_anats)
+            "Missing T1w QSIRecon outputs found: %s", " ".join(missing_qsirecon_anats)
         )
     else:
-        config.loggers.workflow.info("Found usable QSIPrep-preprocessed T1w image and mask.")
+        config.loggers.workflow.info("Found usable QSIRecon-preprocessed T1w image and mask.")
     anat_ingress = pe.Node(
-        QsiprepAnatomicalIngress(subject_id=subject_id, recon_input_dir=recon_input_dir),
-        name="qsiprep_anat_ingress",
+        QSIReconAnatomicalIngress(subject_id=subject_id, recon_input_dir=recon_input_dir),
+        name="qsirecon_anat_ingress",
     )
 
-    # Check if the T1w-to-MNI transforms are in the QSIPrep outputs
-    missing_qsiprep_transforms = check_qsiprep_anatomical_outputs(
+    # Check if the T1w-to-MNI transforms are in the QSIRecon outputs
+    missing_qsirecon_transforms = check_qsirecon_anatomical_outputs(
         recon_input_dir, subject_id, "transforms"
     )
-    has_qsiprep_t1w_transforms = not missing_qsiprep_transforms
-    status["has_qsiprep_t1w_transforms"] = has_qsiprep_t1w_transforms
+    has_qsirecon_t1w_transforms = not missing_qsirecon_transforms
+    status["has_qsirecon_t1w_transforms"] = has_qsirecon_t1w_transforms
 
-    if missing_qsiprep_transforms:
+    if missing_qsirecon_transforms:
         config.loggers.workflow.info(
-            "Missing T1w QSIPrep outputs: %s", " ".join(missing_qsiprep_transforms)
+            "Missing T1w QSIRecon outputs: %s", " ".join(missing_qsirecon_transforms)
         )
 
     return anat_ingress, status
@@ -321,8 +321,8 @@ def _check_zipped_unzipped(path_to_check):
     return exists
 
 
-def check_qsiprep_anatomical_outputs(recon_input_dir, subject_id, anat_type):
-    """Determines whether an aligned T1w exists in a qsiprep derivatives directory.
+def check_qsirecon_anatomical_outputs(recon_input_dir, subject_id, anat_type):
+    """Determines whether an aligned T1w exists in a qsirecon derivatives directory.
 
     It is possible that:
       - ``--dwi-only`` was used, in which case there is NO T1w available
@@ -332,7 +332,7 @@ def check_qsiprep_anatomical_outputs(recon_input_dir, subject_id, anat_type):
     missing = []
     recon_input_path = Path(recon_input_dir)
     to_check = (
-        QSIPREP_ANAT_REQUIREMENTS if anat_type == "T1w" else QSIPREP_NORMALIZED_ANAT_REQUIREMENTS
+        QSIRECON_ANAT_REQUIREMENTS if anat_type == "T1w" else QSIRECON_NORMALIZED_ANAT_REQUIREMENTS
     )
 
     for requirement in to_check:
@@ -366,25 +366,25 @@ def check_ukb_anatomical_outputs(recon_input_dir):
     return missing
 
 
-def init_register_fs_to_qsiprep_wf(
-    use_qsiprep_reference_mask=False, name="register_fs_to_qsiprep_wf"
+def init_register_fs_to_qsirecon_wf(
+    use_qsirecon_reference_mask=False, name="register_fs_to_qsirecon_wf"
 ):
     """Registers a T1w images from freesurfer to another image and transforms"""
     inputnode = pe.Node(
         niu.IdentityInterface(
-            fields=FS_FILES_TO_REGISTER + ["qsiprep_reference_image", "qsiprep_reference_mask"]
+            fields=FS_FILES_TO_REGISTER + ["qsirecon_reference_image", "qsirecon_reference_mask"]
         ),
         name="inputnode",
     )
     outputnode = pe.Node(
         niu.IdentityInterface(
             fields=FS_FILES_TO_REGISTER
-            + ["fs_to_qsiprep_transform_itk", "fs_to_qsiprep_transform_mrtrix"]
+            + ["fs_to_qsirecon_transform_itk", "fs_to_qsirecon_transform_mrtrix"]
         ),
         name="outputnode",
     )
     workflow = Workflow(name=name)
-    workflow.__desc__ = "FreeSurfer outputs were registered to the QSIPrep outputs."
+    workflow.__desc__ = "FreeSurfer outputs were registered to the QSIRecon outputs."
 
     # Convert the freesurfer inputs so we can register them with ANTs
     convert_fs_brain = pe.Node(
@@ -392,16 +392,16 @@ def init_register_fs_to_qsiprep_wf(
         name="convert_fs_brain",
     )
 
-    # Register the brain to the QSIPrep reference
-    ants_settings = pkgrf("qsiprep", "data/freesurfer_to_qsiprep.json")
-    register_to_qsiprep = pe.Node(
-        ants.Registration(from_file=ants_settings), name="register_to_qsiprep"
+    # Register the brain to the QSIRecon reference
+    ants_settings = pkgrf("qsirecon", "data/freesurfer_to_qsirecon.json")
+    register_to_qsirecon = pe.Node(
+        ants.Registration(from_file=ants_settings), name="register_to_qsirecon"
     )
 
-    # If there is a mask for the QSIPrep reference image, use it
-    if use_qsiprep_reference_mask:
-        workflow.connect(inputnode, "qsiprep_reference_mask",
-                         register_to_qsiprep, "fixed_image_masks")  # fmt:skip
+    # If there is a mask for the QSIRecon reference image, use it
+    if use_qsirecon_reference_mask:
+        workflow.connect(inputnode, "qsirecon_reference_mask",
+                         register_to_qsirecon, "fixed_image_masks")  # fmt:skip
 
     # The more recent ANTs mat format isn't compatible with transformconvert.
     # So convert it to ANTs text format with ConvertTransform
@@ -414,7 +414,7 @@ def init_register_fs_to_qsiprep_wf(
         ITKTransformConvert(), name="convert_ants_to_mrtrix_transform"
     )
 
-    # Adjust the headers of all the input images so they're aligned to the qsiprep ref
+    # Adjust the headers of all the input images so they're aligned to the qsirecon ref
     transform_nodes = {}
     for image_name in FS_FILES_TO_REGISTER:
         transform_nodes[image_name] = pe.Node(TransformHeader(), name="transform_" + image_name)
@@ -428,18 +428,18 @@ def init_register_fs_to_qsiprep_wf(
     workflow.connect([
         (inputnode, convert_fs_brain, [
             ("brain", "in_file")]),
-        (inputnode, register_to_qsiprep, [
-            ("qsiprep_reference_image", "fixed_image")]),
-        (convert_fs_brain, register_to_qsiprep, [
+        (inputnode, register_to_qsirecon, [
+            ("qsirecon_reference_image", "fixed_image")]),
+        (convert_fs_brain, register_to_qsirecon, [
             ("out_file", "moving_image")]),
-        (register_to_qsiprep, convert_ants_transform, [
+        (register_to_qsirecon, convert_ants_transform, [
             (("forward_transforms", _get_first), "in_transform")]),
-        (register_to_qsiprep, outputnode, [
-            ("composite_transform", "fs_to_qsiprep_transform_itk")]),
+        (register_to_qsirecon, outputnode, [
+            ("composite_transform", "fs_to_qsirecon_transform_itk")]),
         (convert_ants_transform, convert_ants_to_mrtrix_transform, [
             ("out_transform", "in_transform")]),
         (convert_ants_to_mrtrix_transform, outputnode,
-         [("out_transform", "fs_to_qsiprep_transform_mrtrix")])
+         [("out_transform", "fs_to_qsirecon_transform_mrtrix")])
     ])  # fmt:skip
 
     return workflow
@@ -447,11 +447,11 @@ def init_register_fs_to_qsiprep_wf(
 
 def init_dwi_recon_anatomical_workflow(
     atlas_names,
-    has_qsiprep_5tt_hsvs,
+    has_qsirecon_5tt_hsvs,
     needs_t1w_transform,
     has_freesurfer_5tt_hsvs,
-    has_qsiprep_t1w,
-    has_qsiprep_t1w_transforms,
+    has_qsirecon_t1w,
+    has_qsirecon_t1w_transforms,
     has_freesurfer,
     extras_to_make,
     name,
@@ -469,10 +469,10 @@ def init_dwi_recon_anatomical_workflow(
 
     Parameters:
     ===========
-        has_qsiprep_5tt_hsvs:
+        has_qsirecon_5tt_hsvs:
         has_freesurfer_5tt_hsvs: True,
-        has_qsiprep_t1w:
-        has_qsiprep_t1w_transforms: True}
+        has_qsirecon_t1w:
+        has_qsirecon_t1w_transforms: True}
     """
     # Inputnode holds data from the T1w-based anatomical workflow
     inputnode = pe.Node(
@@ -509,10 +509,10 @@ def init_dwi_recon_anatomical_workflow(
 
     def _get_status():
         return {
-            "has_qsiprep_5tt_hsvs": has_qsiprep_5tt_hsvs,
+            "has_qsirecon_5tt_hsvs": has_qsirecon_5tt_hsvs,
             "has_freesurfer_5tt_hsvs": has_freesurfer_5tt_hsvs,
-            "has_qsiprep_t1w": has_qsiprep_t1w,
-            "has_qsiprep_t1w_transforms": has_qsiprep_t1w_transforms,
+            "has_qsirecon_t1w": has_qsirecon_t1w,
+            "has_qsirecon_t1w_transforms": has_qsirecon_t1w_transforms,
         }
 
     reference_grid_wf = init_output_grid_wf()
@@ -524,8 +524,8 @@ def init_dwi_recon_anatomical_workflow(
             ('outputnode.grid_image', 'resampling_template')])
     ])  # fmt:skip
 
-    # Missing Freesurfer AND QSIPrep T1ws, or the user wants a DWI-based mask
-    if not (has_qsiprep_t1w or has_freesurfer) or prefer_dwi_mask:
+    # Missing Freesurfer AND QSIRecon T1ws, or the user wants a DWI-based mask
+    if not (has_qsirecon_t1w or has_freesurfer) or prefer_dwi_mask:
         desc += (
             "No T1w weighted images were available for masking, so a mask "
             "was estimated based on the b=0 images in the DWI data itself."
@@ -542,10 +542,10 @@ def init_dwi_recon_anatomical_workflow(
         ])  # fmt:skip
         return workflow, _get_status()
 
-    # No data from QSIPrep was available, BUT we have freesurfer! register it and
+    # No data from QSIRecon was available, BUT we have freesurfer! register it and
     # get the brain, masks and possibly a to-MNI transform.
-    # --> If has_freesurfer AND has qsiprep_t1w, the necessary files were created earlier
-    elif has_freesurfer and not has_qsiprep_t1w:
+    # --> If has_freesurfer AND has qsirecon_t1w, the necessary files were created earlier
+    elif has_freesurfer and not has_qsirecon_t1w:
         fs_source = pe.Node(
             nio.FreeSurferSource(subjects_dir=config.execution.fs_subjects_dir), name="fs_source"
         )
@@ -562,70 +562,70 @@ def init_dwi_recon_anatomical_workflow(
             + [
                 "t1_brain_mask",
                 "t1_preproc",
-                "fs_to_qsiprep_transform_mrtrix",
-                "fs_to_qsiprep_transform_itk",
+                "fs_to_qsirecon_transform_mrtrix",
+                "fs_to_qsirecon_transform_itk",
             ]
         )
 
         # Perform the registration and connect the outputs to buffernode
         # NOTE: using FreeSurfer "brain" image as t1_preproc and aseg as the brainmask
-        has_qsiprep_t1w = True
-        register_fs_to_qsiprep_wf = init_register_fs_to_qsiprep_wf(
-            use_qsiprep_reference_mask=False
+        has_qsirecon_t1w = True
+        register_fs_to_qsirecon_wf = init_register_fs_to_qsirecon_wf(
+            use_qsirecon_reference_mask=False
         )
         workflow.connect([
             (inputnode, fs_source, [("subject_id", "subject_id")]),
-            (inputnode, register_fs_to_qsiprep_wf, [
-                ("dwi_ref", "inputnode.qsiprep_reference_image")]),
-            (fs_source, register_fs_to_qsiprep_wf, [
+            (inputnode, register_fs_to_qsirecon_wf, [
+                ("dwi_ref", "inputnode.qsirecon_reference_image")]),
+            (fs_source, register_fs_to_qsirecon_wf, [
                 (field, "inputnode." + field) for field in FS_FILES_TO_REGISTER]),
-            (register_fs_to_qsiprep_wf, buffernode, [
+            (register_fs_to_qsirecon_wf, buffernode, [
                 ("outputnode.brain", "t1_preproc"),
                 ("outputnode.aseg", "t1_brain_mask"),
-                ("outputnode.fs_to_qsiprep_transform_mrtrix",
-                    "fs_to_qsiprep_transform_mrtrix"),
-                ("outputnode.fs_to_qsiprep_transform_itk",
-                    "fs_to_qsiprep_transform_itk")] + [
+                ("outputnode.fs_to_qsirecon_transform_mrtrix",
+                    "fs_to_qsirecon_transform_mrtrix"),
+                ("outputnode.fs_to_qsirecon_transform_itk",
+                    "fs_to_qsirecon_transform_itk")] + [
                 ("outputnode." + field, field) for field in FS_FILES_TO_REGISTER]),
         ])  # fmt:skip
 
     # Do we need to transform the 5tt hsvs from fsnative?
-    if "mrtrix_5tt_hsvs" in extras_to_make and not has_qsiprep_5tt_hsvs:
-        # Transform the 5tt image so it's registered to the QSIPrep AC-PC T1w
+    if "mrtrix_5tt_hsvs" in extras_to_make and not has_qsirecon_5tt_hsvs:
+        # Transform the 5tt image so it's registered to the QSIRecon AC-PC T1w
         config.loggers.workflow.info(
-            "HSVS 5tt imaged will be registered to the " "QSIPrep dwiref image."
+            "HSVS 5tt imaged will be registered to the " "QSIRecon dwiref image."
         )
-        _exchange_fields(["qsiprep_5tt_hsvs"])
+        _exchange_fields(["qsirecon_5tt_hsvs"])
         if not has_freesurfer_5tt_hsvs:
             raise Exception("The 5tt image in fsnative should have been created by now")
         apply_header_to_5tt_hsvs = pe.Node(TransformHeader(), name="apply_header_to_5tt_hsvs")
-        ds_qsiprep_5tt_hsvs = pe.Node(
+        ds_qsirecon_5tt_hsvs = pe.Node(
             ReconDerivativesDataSink(
                 atlas="hsvs",
                 suffix="dseg",
                 qsirecon_suffix="anat",
             ),
-            name="ds_qsiprep_5tt_hsvs",
+            name="ds_qsirecon_5tt_hsvs",
             run_without_submitting=True,
         )
         workflow.connect([
             (inputnode, apply_header_to_5tt_hsvs, [("fs_5tt_hsvs", "in_image")]),
             (apply_header_to_5tt_hsvs, buffernode, [
-                ("out_image", "qsiprep_5tt_hsvs")]),
-            (apply_header_to_5tt_hsvs, ds_qsiprep_5tt_hsvs, [("out_image", "in_file")]),
+                ("out_image", "qsirecon_5tt_hsvs")]),
+            (apply_header_to_5tt_hsvs, ds_qsirecon_5tt_hsvs, [("out_image", "in_file")]),
         ])  # fmt:skip
         desc += "A hybrid surface/volume segmentation was created [Smith 2020]."
 
     # If we have transforms to the template space, use them to get ROIs/atlases
-    # if not has_qsiprep_t1w_transforms and has_qsiprep_t1w:
+    # if not has_qsirecon_t1w_transforms and has_qsirecon_t1w:
     #     desc += "In order to warp brain parcellations from template space into " \
     #         "alignment with the DWI data, the DWI-aligned FreeSurfer brain was " \
     #         "registered to template space. "
 
-    #     # We now have qsiprep t1w and transforms!!
-    #     has_qsiprep_t1w = has_qsiprep_t1w_transforms = True
+    #     # We now have qsirecon t1w and transforms!!
+    #     has_qsirecon_t1w = has_qsirecon_t1w_transforms = True
     #     # Calculate the transforms here:
-    #     has_qsiprep_t1w_transforms = True
+    #     has_qsirecon_t1w_transforms = True
     #     _exchange_fields(['t1_2_mni_forward_transform', 't1_2_mni_reverse_transform'])
     #     t1_2_mni = pe.Node(
     #         get_t1w_registration_node(
@@ -642,8 +642,8 @@ def init_dwi_recon_anatomical_workflow(
 
     # Check the status of the T1wACPC-to-template transforms
     if needs_t1w_transform:
-        if has_qsiprep_t1w_transforms:
-            config.loggers.workflow.info("Found T1w-to-template transforms from QSIPrep")
+        if has_qsirecon_t1w_transforms:
+            config.loggers.workflow.info("Found T1w-to-template transforms from QSIRecon")
             desc += (
                 "T1w-based spatial normalization calculated during "
                 "preprocessing was used to map atlases from template space into "
@@ -657,7 +657,7 @@ def init_dwi_recon_anatomical_workflow(
 
     # Simply resample the T1w mask into the DWI resolution. This was the default
     # up to version 0.14.3
-    if has_qsiprep_t1w and not prefer_dwi_mask:
+    if has_qsirecon_t1w and not prefer_dwi_mask:
         desc += "Brainmasks from {} were used in all " "subsequent reconstruction steps.".format(
             skull_strip_method
         )
@@ -676,10 +676,10 @@ def init_dwi_recon_anatomical_workflow(
             (resample_mask, buffernode, [("output_image", "dwi_mask")])
         ])  # fmt:skip
 
-    if has_qsiprep_t1w_transforms:
+    if has_qsirecon_t1w_transforms:
         config.loggers.workflow.info("Transforming ODF ROIs into DWI space for visual report.")
         # Resample ROI targets to DWI resolution for ODF plotting
-        crossing_rois_file = pkgrf("qsiprep", "data/crossing_rois.nii.gz")
+        crossing_rois_file = pkgrf("qsirecon", "data/crossing_rois.nii.gz")
         odf_rois = pe.Node(
             ants.ApplyTransforms(interpolation="MultiLabel", dimension=3), name="odf_rois"
         )
@@ -782,7 +782,7 @@ def init_dwi_recon_anatomical_workflow(
                 workflow.connect(
                     inputnode, 'dwi_file', workflow.get_node(node), 'source_file')  # fmt:skip
 
-    if "mrtrix_5tt_hsv" in extras_to_make and not has_qsiprep_5tt_hsvs:
+    if "mrtrix_5tt_hsv" in extras_to_make and not has_qsirecon_5tt_hsvs:
         raise Exception("Unable to create a 5tt HSV image given input data.")
 
     # Directly connect anything from the inputs that we haven't created here
@@ -809,7 +809,7 @@ def get_t1w_registration_node(infant_mode, sloppy, omp_nthreads):
     if sloppy:
         config.loggers.workflow.info("Using QuickSyN")
         # Requires a warp file: make an inaccurate one
-        settings = pkgrf("qsiprep", "data/quick_syn.json")
+        settings = pkgrf("qsirecon", "data/quick_syn.json")
         t1_2_mni = pe.Node(
             SpatialNormalizationRPT(
                 float=True,
@@ -833,9 +833,9 @@ def get_t1w_registration_node(infant_mode, sloppy, omp_nthreads):
         )
         # Get the template image
     if not infant_mode:
-        ref_img_brain = pkgrf("qsiprep", "data/mni_1mm_t1w_lps_brain.nii.gz")
+        ref_img_brain = pkgrf("qsirecon", "data/mni_1mm_t1w_lps_brain.nii.gz")
     else:
-        ref_img_brain = pkgrf("qsiprep", "data/mni_1mm_t1w_lps_brain_infant.nii.gz")
+        ref_img_brain = pkgrf("qsirecon", "data/mni_1mm_t1w_lps_brain_infant.nii.gz")
 
     t1_2_mni.inputs.template = "MNI152NLin2009cAsym"
     t1_2_mni.inputs.reference_image = ref_img_brain

@@ -28,8 +28,8 @@ Continuing the update to current NiPreps best practices, an update to PyAFQ and 
 The effort to update to current NiPreps standards has begun, plus another bugfix in the TOPUP workflow.
 
 ### Other Changes
-* Remove copy of Niworkflows in favor of dependency by @tsalo in https://github.com/PennLINC/qsiprep/pull/709
-* [FIX] stop bizarre argsort behavior in best b=0 by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/744
+* Remove copy of Niworkflows in favor of dependency by @tsalo in https://github.com/PennLINC/qsirecon/pull/709
+* [FIX] stop bizarre argsort behavior in best b=0 by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/744
 
 
 
@@ -41,11 +41,11 @@ The effort to update to current NiPreps standards has begun, plus another bugfix
 This update addresses an important coregistration bug (#740), makes CPU Eddy much more usable and fixes a bug in the PyAFQ workflow.
 
 ### Other Changes
-* [FIX] PyAFQ was not being written to derivatives by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/738
-* [FIX] use b0 ref from eddy-processed data by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/739
-* [MAINT] remove pypi by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/742
-* [ENH] add parallel argument for topup by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/741
-* [ENH] Allow multithreading in eddy by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/743
+* [FIX] PyAFQ was not being written to derivatives by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/738
+* [FIX] use b0 ref from eddy-processed data by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/739
+* [MAINT] remove pypi by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/742
+* [ENH] add parallel argument for topup by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/741
+* [ENH] Allow multithreading in eddy by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/743
 
 
 
@@ -55,37 +55,37 @@ This update addresses an important coregistration bug (#740), makes CPU Eddy muc
 There are important software updates in this release, along with a lot of infrastructure improvements.
 
 ## Important Changes
- * FSL version 6.0.7.8 is now in qsiprep. This contains 2 [serious bugfixes](https://fsl.fmrib.ox.ac.uk/fsl/docs/#/development/history/changelog-6.0.7.8.md). One has to do with susceptibility-by-volume correction and the other resulted in incorrect CNR values being calculated.
+ * FSL version 6.0.7.8 is now in qsirecon. This contains 2 [serious bugfixes](https://fsl.fmrib.ox.ac.uk/fsl/docs/#/development/history/changelog-6.0.7.8.md). One has to do with susceptibility-by-volume correction and the other resulted in incorrect CNR values being calculated.
  * DSI Studio has been updated to fix a bug in [Neighboring DWI Correlation](https://github.com/frankyeh/DSI-Studio/issues/84).
  * You can use `"mporder"` in your eddy config json file and the slice timings will automatically be created and passed to eddy (even if you're concatenating runs)
- * Recon workflows can now include a "bundle mapping" and "scalar mapping", where scalars created in individual workflows can be mapped to a template or summarized inside autotrack bundles. This does not do tract profiles or surface mapping - yet. See `qsiprep/data/pipelines/hbcd_scalar_maps.json` for an example.
+ * Recon workflows can now include a "bundle mapping" and "scalar mapping", where scalars created in individual workflows can be mapped to a template or summarized inside autotrack bundles. This does not do tract profiles or surface mapping - yet. See `qsirecon/data/pipelines/hbcd_scalar_maps.json` for an example.
  * The recon derivatives are written approximately according to BEP-016
 
 ## New Features
 
-* [ENH] Add workflow to resample recon scalars to template space by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/688
-* Support complex-valued dwidenoising by @tsalo in https://github.com/PennLINC/qsiprep/pull/679
-* [ENH] Add ReconScalars node to recon workflows by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/683
-* Pin current version of pyAFQ (1.3.1) by @arokem in https://github.com/PennLINC/qsiprep/pull/729
-* [ENH] Add TORTOISE Estimator recon workflows by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/674
-* [ENH] Make Eddy's slice2vol much easier to use by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/710
+* [ENH] Add workflow to resample recon scalars to template space by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/688
+* Support complex-valued dwidenoising by @tsalo in https://github.com/PennLINC/qsirecon/pull/679
+* [ENH] Add ReconScalars node to recon workflows by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/683
+* Pin current version of pyAFQ (1.3.1) by @arokem in https://github.com/PennLINC/qsirecon/pull/729
+* [ENH] Add TORTOISE Estimator recon workflows by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/674
+* [ENH] Make Eddy's slice2vol much easier to use by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/710
 
 ## Other Changes
-* Apply stylistic changes to `workflows/base.py` by @tsalo in https://github.com/PennLINC/qsiprep/pull/678
-* Pin Nilearn version by @tsalo in https://github.com/PennLINC/qsiprep/pull/687
-* Add a series of infrastructure files from ASLPrep/XCP-D by @tsalo in https://github.com/PennLINC/qsiprep/pull/684
-* Run isort and remove unused imports by @tsalo in https://github.com/PennLINC/qsiprep/pull/690
-* Apply stylistic changes to `workflows/utils.py` by @tsalo in https://github.com/PennLINC/qsiprep/pull/680
-* Remove unused classes flagged by vulture by @tsalo in https://github.com/PennLINC/qsiprep/pull/693
-* [RF] Use Black to reformat package by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/701
+* Apply stylistic changes to `workflows/base.py` by @tsalo in https://github.com/PennLINC/qsirecon/pull/678
+* Pin Nilearn version by @tsalo in https://github.com/PennLINC/qsirecon/pull/687
+* Add a series of infrastructure files from ASLPrep/XCP-D by @tsalo in https://github.com/PennLINC/qsirecon/pull/684
+* Run isort and remove unused imports by @tsalo in https://github.com/PennLINC/qsirecon/pull/690
+* Apply stylistic changes to `workflows/utils.py` by @tsalo in https://github.com/PennLINC/qsirecon/pull/680
+* Remove unused classes flagged by vulture by @tsalo in https://github.com/PennLINC/qsirecon/pull/693
+* [RF] Use Black to reformat package by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/701
 
 ## Bugfixes
-* [FIX] Prevent undecodable terminal output in calc_connectivity by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/711
-* [FIX] save recon anat files by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/702
-* [FIX] revert citeproc for old pandoc by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/736
-* [FIX] recon workflows when --anat-modality T2w was used  by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/734
-* [FIX] remove old nodes from csdsi_3dshore.json by @kjamison in https://github.com/PennLINC/qsiprep/pull/733
-* [ENH] Update TORTOISE for lower cuda memory use by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/730
+* [FIX] Prevent undecodable terminal output in calc_connectivity by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/711
+* [FIX] save recon anat files by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/702
+* [FIX] revert citeproc for old pandoc by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/736
+* [FIX] recon workflows when --anat-modality T2w was used  by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/734
+* [FIX] remove old nodes from csdsi_3dshore.json by @kjamison in https://github.com/PennLINC/qsirecon/pull/733
+* [ENH] Update TORTOISE for lower cuda memory use by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/730
 
 
 
@@ -94,23 +94,23 @@ There are important software updates in this release, along with a lot of infras
 Please note there is no corresponding release on PyPI for this version
 
 ## New features
-* [ENH] allow topup+drbuddi for hbcd by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/667
+* [ENH] allow topup+drbuddi for hbcd by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/667
    * Adds a 2-stage distortion correction option `--pepolar-method TOPUP+DRBUDDI`, which will run TOPUP -> Eddy -> DRBUDDI
-* [ENH] Use UKB processed data as input for recon workflows by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/651
+* [ENH] Use UKB processed data as input for recon workflows by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/651
    * This adds the --recon-input-pipeline, which lets you run recon workflows on UKB data
-* [ENH] Update to python 3.10 by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/670
+* [ENH] Update to python 3.10 by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/670
    * Hopefully this will address the hang-after-crashing problem in the recent releases
 
 ## Bugfixes/Docs
-* DOC: Add SMeisler and JHLegarreta to contributors list by @jhlegarreta in https://github.com/PennLINC/qsiprep/pull/642
-* Fixes typos on FreeSurfer requirements for ss3t hsvs recon by @pcamach2 in https://github.com/PennLINC/qsiprep/pull/414
-* Fix RTD build by @tsalo in https://github.com/PennLINC/qsiprep/pull/652
-* ENH: conform bvals to shells separated by b0_threshold by @cookpa in https://github.com/PennLINC/qsiprep/pull/660
-* [FIX] remove unneeded "method" from tracking by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/641
-* FIX: allow finding of lesion rois by @psadil in https://github.com/PennLINC/qsiprep/pull/659
-* MISC: Remove outdated dsi_studio tracking parameters by @cookpa in https://github.com/PennLINC/qsiprep/pull/668
-* [DOC] Add documentation for dsi_studio_autotrack reconstruction workflow by @valeriejill in https://github.com/PennLINC/qsiprep/pull/669
-* [ENH] Update BIDS validator to 1.8.4 by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/671
+* DOC: Add SMeisler and JHLegarreta to contributors list by @jhlegarreta in https://github.com/PennLINC/qsirecon/pull/642
+* Fixes typos on FreeSurfer requirements for ss3t hsvs recon by @pcamach2 in https://github.com/PennLINC/qsirecon/pull/414
+* Fix RTD build by @tsalo in https://github.com/PennLINC/qsirecon/pull/652
+* ENH: conform bvals to shells separated by b0_threshold by @cookpa in https://github.com/PennLINC/qsirecon/pull/660
+* [FIX] remove unneeded "method" from tracking by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/641
+* FIX: allow finding of lesion rois by @psadil in https://github.com/PennLINC/qsirecon/pull/659
+* MISC: Remove outdated dsi_studio tracking parameters by @cookpa in https://github.com/PennLINC/qsirecon/pull/668
+* [DOC] Add documentation for dsi_studio_autotrack reconstruction workflow by @valeriejill in https://github.com/PennLINC/qsirecon/pull/669
+* [ENH] Update BIDS validator to 1.8.4 by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/671
 
 
 0.19.0 (August 10, 2023)
@@ -150,34 +150,34 @@ changes the anatomical workflow significantly, synthstrip and synthseg are used.
 "dsi_studio_autotrack" has also been added.
 
 ## What's Changed
-* Bump sentry-sdk from 0.13.1 to 1.14.0 by @dependabot in https://github.com/PennLINC/qsiprep/pull/539
-* [ENH] Update FreeSurfer to 7.3.1, dmri-amico to 1.5.4 by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/537
-* WIP: ENH: Make pyAFQ tests faster, add export all by @36000 in https://github.com/PennLINC/qsiprep/pull/534
-* [ENH] move biascorrect so it runs on resampled data by default by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/527
-* [Fix] Fix threading on DRBUDDI interface by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/540
-* [ENH] add CNR to the imageqc.csv by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/541
-* [FIX] pin pandas version to < 2.0.0 by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/543
-* ENH: Replace avscale with non-fsl tools by @jbh1091 in https://github.com/PennLINC/qsiprep/pull/542
-* ENH: Replace fsl applymask by @jbh1091 in https://github.com/PennLINC/qsiprep/pull/544
-* Replace fsl split by @jbh1091 in https://github.com/PennLINC/qsiprep/pull/548
-* [FIX] Update distortion_group_merge.py by @smeisler in https://github.com/PennLINC/qsiprep/pull/555
-* [ENH] Redo anatomical workflow by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/553
-* [FIX] remove pre bids-filter acq type argument by @octomike in https://github.com/PennLINC/qsiprep/pull/557
-* FIX: Replace deprecated `np.int` instances by @smeisler in https://github.com/PennLINC/qsiprep/pull/558
-* [WIP] ENH: 482 remove fsl dependency by @jbh1091 in https://github.com/PennLINC/qsiprep/pull/498
-* [ENH] Update TORTOISE for improved T2w registration by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/564
-* [FIX] T2w anat-modality issues by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/565
-* [FIX] update boost in tortoise by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/569
-* [FIX] connections on multi-anat workflow by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/572
-* [ENH] Update DSI Studio to the latest commit by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/573
-* [ENH] Add DSI Studio AutoTrack recon workflow by @mattcieslak in https://github.com/PennLINC/qsiprep/pull/576
+* Bump sentry-sdk from 0.13.1 to 1.14.0 by @dependabot in https://github.com/PennLINC/qsirecon/pull/539
+* [ENH] Update FreeSurfer to 7.3.1, dmri-amico to 1.5.4 by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/537
+* WIP: ENH: Make pyAFQ tests faster, add export all by @36000 in https://github.com/PennLINC/qsirecon/pull/534
+* [ENH] move biascorrect so it runs on resampled data by default by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/527
+* [Fix] Fix threading on DRBUDDI interface by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/540
+* [ENH] add CNR to the imageqc.csv by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/541
+* [FIX] pin pandas version to < 2.0.0 by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/543
+* ENH: Replace avscale with non-fsl tools by @jbh1091 in https://github.com/PennLINC/qsirecon/pull/542
+* ENH: Replace fsl applymask by @jbh1091 in https://github.com/PennLINC/qsirecon/pull/544
+* Replace fsl split by @jbh1091 in https://github.com/PennLINC/qsirecon/pull/548
+* [FIX] Update distortion_group_merge.py by @smeisler in https://github.com/PennLINC/qsirecon/pull/555
+* [ENH] Redo anatomical workflow by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/553
+* [FIX] remove pre bids-filter acq type argument by @octomike in https://github.com/PennLINC/qsirecon/pull/557
+* FIX: Replace deprecated `np.int` instances by @smeisler in https://github.com/PennLINC/qsirecon/pull/558
+* [WIP] ENH: 482 remove fsl dependency by @jbh1091 in https://github.com/PennLINC/qsirecon/pull/498
+* [ENH] Update TORTOISE for improved T2w registration by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/564
+* [FIX] T2w anat-modality issues by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/565
+* [FIX] update boost in tortoise by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/569
+* [FIX] connections on multi-anat workflow by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/572
+* [ENH] Update DSI Studio to the latest commit by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/573
+* [ENH] Add DSI Studio AutoTrack recon workflow by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/576
 
 ## New Contributors
-* @dependabot made their first contribution in https://github.com/PennLINC/qsiprep/pull/539
-* @jbh1091 made their first contribution in https://github.com/PennLINC/qsiprep/pull/542
-* @smeisler made their first contribution in https://github.com/PennLINC/qsiprep/pull/555
+* @dependabot made their first contribution in https://github.com/PennLINC/qsirecon/pull/539
+* @jbh1091 made their first contribution in https://github.com/PennLINC/qsirecon/pull/542
+* @smeisler made their first contribution in https://github.com/PennLINC/qsirecon/pull/555
 
-**Full Changelog**: https://github.com/PennLINC/qsiprep/compare/0.17.0...0.18.0alpha0
+**Full Changelog**: https://github.com/PennLINC/qsirecon/compare/0.17.0...0.18.0alpha0
 
 
 0.16.1 (October 10, 2022)
@@ -189,7 +189,7 @@ estimate distortion. Previously, the most-denoised version of each image was use
 TOPUP. To disable this change and return to the previous behavior, use the
 `--denoised-image-sdc` flag.
 
-Note, **this is a change in the default behavior of QSIPrep!!**
+Note, **this is a change in the default behavior of QSIRecon!!**
 
 *Upgrades*
 
@@ -200,7 +200,7 @@ Note, **this is a change in the default behavior of QSIPrep!!**
 *Bug fixes*
 
  * Use safe_load instead of load for yaml #443
- * Add fugue and prelude back to the qsiprep image #463
+ * Add fugue and prelude back to the qsirecon image #463
 
 
 0.16.0RC2 (June 1, 2022)
@@ -217,7 +217,7 @@ Fixes a naming error in the schaefer 400 atlas #428
 ========================
 
 Major additions to the reconstruction workflows! Most notably PyAFQ is available
-as a reconstruction workflow. The default atlases included in QSIPrep have been
+as a reconstruction workflow. The default atlases included in QSIRecon have been
 updated to include subcortical regions if they weren't already present in the
 original atlas.
 
@@ -231,7 +231,7 @@ original atlas.
  * Critical Fix, use correct transform to get atlases into T1w space #417
  * Add resampled atlases back into derivatives #418
  * Add connectome2tck exemplar streamlines for mrtrix connectivity workflows #420
- * Update the atlases to include subcortical regions #426 [details here](https://github.com/PennLINC/qsiprep-atlas/blob/main/QSIRecon%20atlases.ipynb)
+ * Update the atlases to include subcortical regions #426 [details here](https://github.com/PennLINC/qsirecon-atlas/blob/main/QSIRecon%20atlases.ipynb)
 
 0.15.2 (March 3, 2022) DEPRECATED
 ==================================
@@ -255,19 +255,19 @@ with the reports still enabled, so you know that your ODFs are correctly oriente
 **WARNING** There is an bug in the connectome pipelines that makes the connectivity
 matrices unreliable. Do not use this version for connectome estimation.
 
-A lot of changes in QSIPrep. The big-picture changes are
+A lot of changes in QSIRecon. The big-picture changes are
 
  1. The build system was redone so a multistage build is used in a
-    different repository (https://github.com/PennLINC/qsiprep_build).
+    different repository (https://github.com/PennLINC/qsirecon_build).
     The container should be about half as big as the last release.
  2. The way anatomical masks are handled in reconstruction workflows
     has been changed so that FreeSurfer data can be incorporated.
  3. FAST-based anatomically-constrained tractography is now deprecated in
-    QSIPrep. If you're going to use anatomical constraints, they should be
+    QSIRecon. If you're going to use anatomical constraints, they should be
     very accurate. The hybrid surface-volume segmentation (HSVS) is
     *amazing* and should be considered the default way to use the
     MRtrix3/3Tissue workflows. The
-    [documentation](https://qsiprep.readthedocs.io/en/latest/reconstruction.html)
+    [documentation](https://qsirecon.readthedocs.io/en/latest/reconstruction.html)
     describes the new built-in workflow names.
  4. The reconstruction workflows have been totally refactored. This won't
     affect the outputs of the reconstruction workflows, but will affect
@@ -277,7 +277,7 @@ A lot of changes in QSIPrep. The big-picture changes are
  5. FSL is updated to 6.0.5.1!
 
 Since these are a lot of changes, please be vigilant and check your results!
-The QSIPrep preprocessing workflows have not changed with this release, but
+The QSIRecon preprocessing workflows have not changed with this release, but
 the dependencies have been upgraded for almost everything.
 
  * Update FSL to 6.0.5.1 (#334)
@@ -350,7 +350,7 @@ appreciated!
 Adds options for processing infant dMRI data. Also enables running without a T1w
 image.
 
- * Adds ``--dwi-only`` and ``--infant`` options to QSIPrep. (#177)
+ * Adds ``--dwi-only`` and ``--infant`` options to QSIRecon. (#177)
 
 
 0.11.0 (August 12, 2020)
@@ -402,7 +402,7 @@ are merged before motion correction by default (disabled by ``--separate-all-dwi
 
 0.6.7 (January 9 2020)
 ======================
-This release adds some rather big updates to QSIPrep.
+This release adds some rather big updates to QSIRecon.
  * FSL is updated to version 6.0.3
  * CUDA v9.1 support is added to the image (works with GPUS in Docker and Singularity)
  * A new robust b=0 masking algorith is introduced.

@@ -46,7 +46,7 @@ def init_dwi_finalize_wf(
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.dwi.base import init_dwi_finalize_wf
+        from qsirecon.workflows.dwi.base import init_dwi_finalize_wf
         wf = init_dwi_finalize_wf(name='finalize_wf',
                                   omp_nthreads=1,
                                   reportlets_dir='.',

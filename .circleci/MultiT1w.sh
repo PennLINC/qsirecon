@@ -30,7 +30,7 @@ TEMPDIR=${TESTDIR}/${TESTNAME}/work
 OUTPUT_DIR=${TESTDIR}/${TESTNAME}/derivatives
 BIDS_INPUT_DIR=${TESTDIR}/data/DSDTI
 export FS_LICENSE=${TESTDIR}/data/license.txt
-QSIPREP_CMD=$(run_qsiprep_cmd ${BIDS_INPUT_DIR} ${OUTPUT_DIR})
+QSIRECON_CMD=$(run_qsirecon_cmd ${BIDS_INPUT_DIR} ${OUTPUT_DIR})
 
 # CRITICAL: delete the fieldmap data
 rm -rf data/DSDTI/sub-PNC/fmap
@@ -58,7 +58,7 @@ cp ${BIDS_INPUT_DIR}/sub-PNC/anat/sub-PNC_T1w.json \
    ${BIDS_INPUT_DIR}/sub-PNC/anat/sub-PNC_run-02_T1w.json
 
 # Do the anatomical run on its own
-${QSIPREP_CMD} \
+${QSIRECON_CMD} \
 	 -w ${TEMPDIR} \
      --eddy-config ${EDDY_CFG} \
      --denoise-method none \
@@ -74,7 +74,7 @@ setup_dir ${TESTDIR}/${TESTNAME}
 TEMPDIR=${TESTDIR}/${TESTNAME}/work
 OUTPUT_DIR=${TESTDIR}/${TESTNAME}/derivatives
 
-${QSIPREP_CMD} \
+${QSIRECON_CMD} \
 	 -w ${TEMPDIR} \
      --eddy-config ${EDDY_CFG} \
      --denoise-method none \

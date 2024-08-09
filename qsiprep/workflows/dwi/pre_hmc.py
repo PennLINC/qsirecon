@@ -43,7 +43,7 @@ def init_dwi_pre_hmc_wf(
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.dwi.pre_hmc import init_dwi_pre_hmc_wf
+        from qsirecon.workflows.dwi.pre_hmc import init_dwi_pre_hmc_wf
         wf = init_dwi_pre_hmc_wf(['/completely/made/up/path/sub-01_dwi.nii.gz'],
                                   preprocess_rpe_series=False,
                                   orientation="LPS",

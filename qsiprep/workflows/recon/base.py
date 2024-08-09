@@ -3,7 +3,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-qsiprep base reconstruction workflows
+qsirecon base reconstruction workflows
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: init_qsirecon_wf
@@ -38,7 +38,7 @@ def init_qsirecon_wf():
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.recon.base import init_qsirecon_wf
+        from qsirecon.workflows.recon.base import init_qsirecon_wf
         wf = init_qsirecon_wf()
 
 
@@ -47,15 +47,15 @@ def init_qsirecon_wf():
 
     """
     ver = Version(config.environment.version)
-    qsiprep_wf = Workflow(name=f"qsirecon_{ver.major}_{ver.minor}_wf")
-    qsiprep_wf.base_dir = config.execution.work_dir
+    qsirecon_wf = Workflow(name=f"qsirecon_{ver.major}_{ver.minor}_wf")
+    qsirecon_wf.base_dir = config.execution.work_dir
 
-    if config.workflow.recon_input_pipeline not in ("qsiprep", "ukb"):
+    if config.workflow.recon_input_pipeline not in ("qsirecon", "ukb"):
         raise NotImplementedError(
             f"{config.workflow.recon_input_pipeline} is not supported as recon-input yet."
         )
 
-    if config.workflow.recon_input_pipeline == "qsiprep":
+    if config.workflow.recon_input_pipeline == "qsirecon":
         # This should work for --recon-input as long as the same dataset is in bids_dir
         # or if the call is doing preproc+recon
         to_recon_list = config.execution.participant_label
@@ -76,16 +76,16 @@ def init_qsirecon_wf():
         )
         for node in single_subject_wf._get_all_nodes():
             node.config = deepcopy(single_subject_wf.config)
-        qsiprep_wf.add_nodes([single_subject_wf])
+        qsirecon_wf.add_nodes([single_subject_wf])
 
         # Dump a copy of the config file into the log directory
         log_dir = (
             config.execution.qsirecon_dir / f"sub-{subject_id}" / "log" / config.execution.run_uuid
         )
         log_dir.mkdir(exist_ok=True, parents=True)
-        config.to_filename(log_dir / "qsiprep.toml")
+        config.to_filename(log_dir / "qsirecon.toml")
 
-    return qsiprep_wf
+    return qsirecon_wf
 
 
 def init_single_subject_recon_wf(subject_id):
@@ -103,7 +103,7 @@ def init_single_subject_recon_wf(subject_id):
     from ...interfaces.interchange import (
         ReconWorkflowInputs,
         anatomical_workflow_outputs,
-        qsiprep_output_names,
+        qsirecon_output_names,
         recon_workflow_anatomical_input_fields,
         recon_workflow_input_fields,
     )
@@ -119,20 +119,20 @@ def init_single_subject_recon_wf(subject_id):
     workflow = Workflow(name=f"sub-{subject_id}_{spec['name']}")
     workflow.__desc__ = f"""
 Reconstruction was
-performed using *QSIprep* {config.__version__},
+performed using *QSIRecon* {config.__version__},
 which is based on *Nipype* {nipype_ver}
 (@nipype1; @nipype2; RRID:SCR_002502).
 
 """
     workflow.__postdesc__ = f"""
 
-Many internal operations of *qsiprep* use
+Many internal operations of *qsirecon* use
 *Nilearn* {nilearn_ver} [@nilearn, RRID:SCR_001362] and
 *Dipy* {dipy_ver}[@dipy].
 For more details of the pipeline, see [the section corresponding
-to workflows in *qsiprep*'s documentation]\
-(https://qsiprep.readthedocs.io/en/latest/workflows.html \
-"qsiprep's documentation").
+to workflows in *qsirecon*'s documentation]\
+(https://qsirecon.readthedocs.io/en/latest/workflows.html \
+"qsirecon's documentation").
 
 
 ### References
@@ -147,9 +147,9 @@ to workflows in *qsiprep*'s documentation]\
     atlas_names = spec.get("atlases", [])
     needs_t1w_transform = spec_needs_to_template_transform(spec)
 
-    # This is here because qsiprep currently only makes one anatomical result per subject
+    # This is here because qsirecon currently only makes one anatomical result per subject
     # regardless of sessions. So process it on its
-    if config.workflow.recon_input_pipeline == "qsiprep":
+    if config.workflow.recon_input_pipeline == "qsirecon":
         anat_ingress_node, available_anatomical_data = init_highres_recon_anatomical_wf(
             subject_id=subject_id,
             extras_to_make=spec.get("anatomical", []),
@@ -173,7 +173,7 @@ to workflows in *qsiprep*'s documentation]\
         wf_name = _get_wf_name(dwi_file)
 
         # Get the preprocessed DWI and all the related preprocessed images
-        if config.workflow.recon_input_pipeline == "qsiprep":
+        if config.workflow.recon_input_pipeline == "qsirecon":
             dwi_ingress_nodes[dwi_file] = pe.Node(
                 QsiReconDWIIngress(dwi_file=dwi_file), name=wf_name + "_ingressed_dwi_data"
             )
@@ -224,11 +224,11 @@ to workflows in *qsiprep*'s documentation]\
         workflow.connect([
             # The dwi data
             (dwi_ingress_nodes[dwi_file], recon_full_inputs[dwi_file], [
-                (trait, trait) for trait in qsiprep_output_names]),
+                (trait, trait) for trait in qsirecon_output_names]),
 
             # Session-specific anatomical data
             (dwi_ingress_nodes[dwi_file], dwi_individual_anatomical_wfs[dwi_file],
-             [(trait, "inputnode." + trait) for trait in qsiprep_output_names]),
+             [(trait, "inputnode." + trait) for trait in qsirecon_output_names]),
 
             # subject dwi-specific anatomical to a special node in recon_full_inputs so
             # we have a record of what went in. Otherwise it would be lost in an IdentityInterface
@@ -239,7 +239,7 @@ to workflows in *qsiprep*'s documentation]\
             (recon_full_inputs[dwi_file], dwi_recon_wfs[dwi_file],
              [(trait, "inputnode." + trait) for trait in recon_workflow_input_fields]),
 
-            (anat_ingress_node if config.workflow.recon_input_pipeline == "qsiprep"
+            (anat_ingress_node if config.workflow.recon_input_pipeline == "qsirecon"
              else anat_ingress_nodes[dwi_file],
              dwi_individual_anatomical_wfs[dwi_file],
              [(f"outputnode.{trait}", f"inputnode.{trait}")
@@ -276,7 +276,7 @@ def _load_recon_spec():
     from ...utils.sloppy_recon import make_sloppy
 
     spec_name = config.workflow.recon_spec
-    prepackaged_dir = pkgrf("qsiprep", "data/pipelines")
+    prepackaged_dir = pkgrf("qsirecon", "data/pipelines")
     prepackaged = [op.split(fname)[1][:-5] for fname in glob(prepackaged_dir + "/*.json")]
     if op.exists(spec_name):
         recon_spec = spec_name
@@ -298,7 +298,7 @@ def _load_recon_spec():
 def _get_iterable_dwi_inputs(subject_id):
     """Return inputs for the recon ingressors depending on the pipeline source.
 
-    If qsiprep was used as the pipeline source, the iterable is going to be the
+    If qsirecon was used as the pipeline source, the iterable is going to be the
     dwi files (there can be an arbitrary number of them).
 
     If ukb or hcpya were used there is only one dwi file per subject, so the
@@ -309,17 +309,17 @@ def _get_iterable_dwi_inputs(subject_id):
     from ...utils.ingress import create_ukb_layout
 
     recon_input_directory = config.execution.recon_input
-    if config.workflow.recon_input_pipeline == "qsiprep":
-        # If recon_input is specified without qsiprep, check if we can find the subject dir
+    if config.workflow.recon_input_pipeline == "qsirecon":
+        # If recon_input is specified without qsirecon, check if we can find the subject dir
         if not (recon_input_directory / f"sub-{subject_id}").exists():
             config.loggers.workflow.info(
                 "%s not in %s, trying recon_input=%s",
                 subject_id,
                 recon_input_directory,
-                recon_input_directory / "qsiprep",
+                recon_input_directory / "qsirecon",
             )
 
-            recon_input_directory = recon_input_directory / "qsiprep"
+            recon_input_directory = recon_input_directory / "qsirecon"
             if not (recon_input_directory / f"sub-{subject_id}").exists():
                 raise Exception(
                     "Unable to find subject directory in %s or %s"

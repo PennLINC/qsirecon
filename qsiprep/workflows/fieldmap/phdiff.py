@@ -43,7 +43,7 @@ def init_phdiff_wf(phasetype="phasediff", name="phdiff_wf"):
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.fieldmap.phdiff import init_phdiff_wf
+        from qsirecon.workflows.fieldmap.phdiff import init_phdiff_wf
         wf = init_phdiff_wf(omp_nthreads=1)
 
 
@@ -70,7 +70,7 @@ further improvements of HCP Pipelines [@hcppipelines].
     if fsl_check == "no_fsl":
         raise Exception(
             """Container in use does not have FSL. To use this workflow,
-            please download the qsiprep container with FSL installed."""
+            please download the qsirecon container with FSL installed."""
         )
     inputnode = pe.Node(
         niu.IdentityInterface(

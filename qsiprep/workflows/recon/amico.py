@@ -16,7 +16,7 @@ from ...interfaces.converters import NODDItoFIBGZ
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import AMICOReconScalars, ReconScalarsDataSink
 from ...interfaces.reports import CLIReconPeaksReport
-from qsiprep.interfaces.bids import ReconDerivativesDataSink
+from qsirecon.interfaces.bids import ReconDerivativesDataSink
 
 
 def init_amico_noddi_fit_wf(
@@ -29,7 +29,7 @@ def init_amico_noddi_fit_wf(
 
     Inputs
 
-        *qsiprep outputs*
+        *qsirecon outputs*
 
     Outputs
 

@@ -39,7 +39,7 @@ LOGGER = logging.getLogger("nipype.interface")
 KNOWN_TEMPLATES = ["MNI152NLin2009cAsym", "infant"]
 
 
-class QsiprepAnatomicalIngressInputSpec(BaseInterfaceInputSpec):
+class QSIReconAnatomicalIngressInputSpec(BaseInterfaceInputSpec):
     recon_input_dir = traits.Directory(
         exists=True, mandatory=True, help="directory containing subject results directories"
     )
@@ -48,7 +48,7 @@ class QsiprepAnatomicalIngressInputSpec(BaseInterfaceInputSpec):
     infant_mode = traits.Bool(mandatory=True)
 
 
-class QsiprepAnatomicalIngressOutputSpec(TraitedSpec):
+class QSIReconAnatomicalIngressOutputSpec(TraitedSpec):
     # sub-1_desc-aparcaseg_dseg.nii.gz
     t1_aparc = File()
     # sub-1_dseg.nii.gz
@@ -75,18 +75,18 @@ class QsiprepAnatomicalIngressOutputSpec(TraitedSpec):
     template_image = File()
 
 
-class QsiprepAnatomicalIngress(SimpleInterface):
-    """Get only the useful files from a QSIPrep anatomical output.
+class QSIReconAnatomicalIngress(SimpleInterface):
+    """Get only the useful files from a QSIRecon anatomical output.
 
     Many of the preprocessed outputs aren't useful for reconstruction
     (mainly anything that has been mapped forward into template space).
     """
 
-    input_spec = QsiprepAnatomicalIngressInputSpec
-    output_spec = QsiprepAnatomicalIngressOutputSpec
+    input_spec = QSIReconAnatomicalIngressInputSpec
+    output_spec = QSIReconAnatomicalIngressOutputSpec
 
     def _run_interface(self, runtime):
-        # The path to the output from the qsiprep run
+        # The path to the output from the qsirecon run
         sub = self.inputs.subject_id
         qp_root = op.join(self.inputs.recon_input_dir, "sub-" + sub)
         anat_root = op.join(qp_root, "anat")
@@ -144,10 +144,10 @@ class QsiprepAnatomicalIngress(SimpleInterface):
             "%s/sub-%s*_from-T*w_to-MNI152NLin2009cAsym_mode-image_xfm.h5" % (anat_root, sub),
         )
         if not self.inputs.infant_mode:
-            self._results["template_image"] = pkgrf("qsiprep", "data/mni_1mm_t1w_lps_brain.nii.gz")
+            self._results["template_image"] = pkgrf("qsirecon", "data/mni_1mm_t1w_lps_brain.nii.gz")
         else:
             self._results["template_image"] = pkgrf(
-                "qsiprep", "data/mni_1mm_t1w_lps_brain_infant.nii.gz"
+                "qsirecon", "data/mni_1mm_t1w_lps_brain_infant.nii.gz"
             )
 
         return runtime
@@ -166,13 +166,13 @@ class QsiprepAnatomicalIngress(SimpleInterface):
             self._results[name] = files[0]
 
 
-class UKBAnatomicalIngressInputSpec(QsiprepAnatomicalIngressInputSpec):
+class UKBAnatomicalIngressInputSpec(QSIReconAnatomicalIngressInputSpec):
     recon_input_dir = traits.Directory(
         exists=True, mandatory=True, help="directory containing a single subject's results"
     )
 
 
-class UKBAnatomicalIngress(QsiprepAnatomicalIngress):
+class UKBAnatomicalIngress(QSIReconAnatomicalIngress):
     input_spec = UKBAnatomicalIngressInputSpec
 
     def _run_interface(self, runtime):
@@ -505,19 +505,19 @@ class GetTemplate(SimpleInterface):
             contrast_name = "t1w"
 
         # Cover the cases where the template images are actually in the
-        # qsiprep package. This is for common use cases (MNI2009cAsym and Infant)
+        # qsirecon package. This is for common use cases (MNI2009cAsym and Infant)
         # and legacy
         if self.inputs.template_name in KNOWN_TEMPLATES or self.inputs.infant_mode:
             if not self.inputs.infant_mode:
-                ref_img = pkgr("qsiprep", "data/mni_1mm_%s_lps.nii.gz" % contrast_name)
-                ref_img_brain = pkgr("qsiprep", "data/mni_1mm_%s_lps_brain.nii.gz" % contrast_name)
-                ref_img_mask = pkgr("qsiprep", "data/mni_1mm_t1w_lps_brainmask.nii.gz")
+                ref_img = pkgr("qsirecon", "data/mni_1mm_%s_lps.nii.gz" % contrast_name)
+                ref_img_brain = pkgr("qsirecon", "data/mni_1mm_%s_lps_brain.nii.gz" % contrast_name)
+                ref_img_mask = pkgr("qsirecon", "data/mni_1mm_t1w_lps_brainmask.nii.gz")
             else:
-                ref_img = pkgr("qsiprep", "data/mni_1mm_%s_lps_infant.nii.gz" % contrast_name)
+                ref_img = pkgr("qsirecon", "data/mni_1mm_%s_lps_infant.nii.gz" % contrast_name)
                 ref_img_brain = pkgr(
-                    "qsiprep", "data/mni_1mm_%s_lps_brain_infant.nii.gz" % contrast_name
+                    "qsirecon", "data/mni_1mm_%s_lps_brain_infant.nii.gz" % contrast_name
                 )
-                ref_img_mask = pkgr("qsiprep", "data/mni_1mm_t1w_lps_brainmask_infant.nii.gz")
+                ref_img_mask = pkgr("qsirecon", "data/mni_1mm_t1w_lps_brainmask_infant.nii.gz")
             self._results["template_file"] = ref_img
             self._results["template_brain_file"] = ref_img_brain
             self._results["template_mask_file"] = ref_img_mask

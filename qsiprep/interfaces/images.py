@@ -35,7 +35,7 @@ from nipype.interfaces.base import (
 from nipype.utils.filemanip import fname_presuffix
 from niworkflows.interfaces.header import _ValidateImageInputSpec
 
-# from qsiprep.interfaces.images import (
+# from qsirecon.interfaces.images import (
 #    nii_ones_like,
 #    FilledImageLike, DemeanImage, TemplateDimensions)
 from .mrtrix import SS3T_ROOT
@@ -201,7 +201,7 @@ class IntraModalMerge(SimpleInterface):
         if fsl_check == "no_fsl":
             raise Exception(
                 """Container in use does not have FSL. To use this workflow,
-                please download the qsiprep container with FSL installed."""
+                please download the qsirecon container with FSL installed."""
             )
         from nipype.interfaces import fsl
 
@@ -620,7 +620,7 @@ class ValidateImage(SimpleInterface):
             warning_txt = "WARNING - Missing orientation information"
             description = """\
 <p class="elem-desc">
-    QSIPrep could not retrieve orientation information from the image header.
+    QSIRecon could not retrieve orientation information from the image header.
     The qform and sform matrices have been set to a default, LAS-oriented affine.
     Analyses of this dataset MAY BE INVALID.
 </p>

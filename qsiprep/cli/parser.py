@@ -1,7 +1,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 #
-# Changes made to parse QSIPrep cli arguments
+# Changes made to parse QSIRecon cli arguments
 #
 # Copyright The NiPreps Developers <nipreps@gmail.com>
 #
@@ -140,7 +140,7 @@ def _build_parser(**kwargs):
             else:
                 raise parser.error(f"Path does not exist: <{value}>.")
 
-    verstr = f"QSIPrep v{config.environment.version}"
+    verstr = f"QSIRecon v{config.environment.version}"
     currentv = Version(config.environment.version)
     is_release = not any((currentv.is_devrelease, currentv.is_prerelease, currentv.is_postrelease))
 
@@ -173,7 +173,7 @@ def _build_parser(**kwargs):
     parser.add_argument(
         "analysis_level",
         choices=["participant"],
-        help='Processing stage to be run, only "participant" in the case of ' "QSIPrep (for now).",
+        help='Processing stage to be run, only "participant" in the case of ' "QSIRecon (for now).",
     )
 
     g_bids = parser.add_argument_group("Options for filtering BIDS queries")
@@ -245,7 +245,7 @@ def _build_parser(**kwargs):
         action="store",
         type=_to_gb,
         metavar="MEMORY_MB",
-        help="Upper bound memory limit for QSIPrep processes",
+        help="Upper bound memory limit for QSIRecon processes",
     )
     g_perfm.add_argument(
         "--low-mem",
@@ -383,7 +383,7 @@ def _build_parser(**kwargs):
         help="Which stage to apply B1 bias correction. The default 'final' will "
         "apply it after all the data has been resampled to its final space. "
         "'none' will skip B1 bias correction and 'legacy' will behave consistent "
-        "with qsiprep < 0.17.",
+        "with qsirecon < 0.17.",
     )
     g_conf.add_argument(
         "--no-b0-harmonization",
@@ -514,7 +514,7 @@ def _build_parser(**kwargs):
         help="path to a json file with settings for the call to eddy. If no "
         "json is specified, a default one will be used. The current default "
         "json can be found here: "
-        "https://github.com/PennLINC/qsiprep/blob/master/qsiprep/data/eddy_params.json",
+        "https://github.com/PennLINC/qsirecon/blob/master/qsirecon/data/eddy_params.json",
     )
     g_moco.add_argument(
         "--shoreline_iters",
@@ -569,7 +569,7 @@ def _build_parser(**kwargs):
     )
 
     # arguments for reconstructing QSI data
-    g_recon = parser.add_argument_group("Options for reconstructing qsiprep outputs")
+    g_recon = parser.add_argument_group("Options for reconstructing qsirecon outputs")
     g_recon.add_argument(
         "--recon-only",
         "--recon_only",
@@ -590,17 +590,17 @@ def _build_parser(**kwargs):
         action="store",
         metavar="PATH",
         type=Path,
-        help="use this directory as inputs to qsirecon. This option skips qsiprep.",
+        help="use this directory as inputs to qsirecon. This option skips qsirecon.",
     )
     g_recon.add_argument(
         "--recon-input-pipeline",
         "--recon_input_pipeline",
         action="store",
-        default="qsiprep",
-        choices=["qsiprep", "ukb", "hcpya"],
+        default="qsirecon",
+        choices=["qsirecon", "ukb", "hcpya"],
         help="specify which pipeline was used to create the data specified "
         "as the --recon-input. Not necessary to specify if the data was "
-        'processed by qsiprep. Other options include "ukb" for data processed '
+        'processed by qsirecon. Other options include "ukb" for data processed '
         'with the UK BioBank minimal preprocessing pipeline and "hcpya" for '
         "the HCP young adult minimal preprocessing pipeline.",
     )
@@ -668,8 +668,8 @@ def _build_parser(**kwargs):
         action="store_true",
         default=False,
         help="Opt-out of sending tracking information of this run to "
-        "the QSIPrep developers. This information helps to "
-        "improve QSIPrep and provides an indicator of real "
+        "the QSIRecon developers. This information helps to "
+        "improve QSIRecon and provides an indicator of real "
         "world usage crucial for obtaining funding.",
     )
     g_other.add_argument(
@@ -746,7 +746,7 @@ def parse_args(args=None, namespace=None):
     if config.workflow.recon_spec and not config.execution.recon_input:
         build_log.info("Running BOTH preprocessing and recon.")
         config.execution.running_preproc_and_recon = True
-        config.execution.recon_input = config.execution.qsiprep_dir
+        config.execution.recon_input = config.execution.qsirecon_dir
 
     # Validate the tricky options here
     if config.workflow.dwi_denoise_window != "auto":
@@ -760,8 +760,8 @@ def parse_args(args=None, namespace=None):
     work_dir = config.execution.work_dir
     version = config.environment.version
 
-    if config.execution.qsiprep_dir is None:
-        config.execution.qsiprep_dir = output_dir / "qsiprep"
+    if config.execution.qsirecon_dir is None:
+        config.execution.qsirecon_dir = output_dir / "qsirecon"
 
     if config.execution.qsirecon_dir is None:
         config.execution.qsirecon_dir = output_dir / "qsirecon"
@@ -782,7 +782,7 @@ def parse_args(args=None, namespace=None):
             "Please modify the output path (suggestion: %s)."
             % bids_dir
             / "derivatives"
-            / ("qsiprep-%s" % version.split("+")[0])
+            / ("qsirecon-%s" % version.split("+")[0])
         )
 
     if bids_dir in work_dir.parents:
@@ -809,7 +809,7 @@ def parse_args(args=None, namespace=None):
             )
 
     # Setup directories
-    config.execution.log_dir = config.execution.qsiprep_dir / "logs"
+    config.execution.log_dir = config.execution.qsirecon_dir / "logs"
     # Check and create output and working directories
     config.execution.log_dir.mkdir(exist_ok=True, parents=True)
     config.execution.reportlets_dir.mkdir(exist_ok=True, parents=True)

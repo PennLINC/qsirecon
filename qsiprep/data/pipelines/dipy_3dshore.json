@@ -7,7 +7,7 @@
       "name": "recon_3dshore",
       "software": "Dipy",
       "action": "3dSHORE_reconstruction",
-      "input": "qsiprep",
+      "input": "qsirecon",
       "qsirecon_suffix": "3dSHORE",
       "parameters": {
         "radial_order": 6,

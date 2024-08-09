@@ -74,7 +74,7 @@
     "dMRI",
     "BIDS"
   ],
-  "title": "QSIPrep: An integrative platform for preprocessing and reconstructing diffusion MRI",
+  "title": "QSIRecon: An integrative platform for preprocessing and reconstructing diffusion MRI",
   "license": "BSD-3-Clause",
   "upload_type": "software"
 }

@@ -23,7 +23,7 @@ from ...engine import Workflow
 from ...interfaces.bids import ReconDerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport
-from qsiprep.interfaces.mrtrix import (
+from qsirecon.interfaces.mrtrix import (
     SIFT2,
     EstimateFOD,
     GlobalTractography,
@@ -56,11 +56,11 @@ def init_mrtrix_csd_recon_wf(
 
     Inputs
 
-        *Default qsiprep inputs*
+        *Default qsirecon inputs*
 
-        qsiprep_5tt_hsvs
+        qsirecon_5tt_hsvs
             A hybrid surface volume segmentation 5tt image aligned with the
-            QSIPrep T1w
+            QSIRecon T1w
 
 
     Outputs
@@ -170,7 +170,7 @@ def init_mrtrix_csd_recon_wf(
         if method_5tt == "hsvs":
             workflow.connect([
                 (inputnode, estimate_response, [
-                    ('qsiprep_5tt_hsvs', 'mtt_file')])
+                    ('qsirecon_5tt_hsvs', 'mtt_file')])
             ])  # fmt:skip
         else:
             raise Exception("Unrecognized 5tt method: " + method_5tt)
@@ -249,7 +249,7 @@ def init_mrtrix_csd_recon_wf(
         ])  # fmt:skip
 
         # Plot targeted regions
-        if available_anatomical_data["has_qsiprep_t1w_transforms"]:
+        if available_anatomical_data["has_qsirecon_t1w_transforms"]:
             ds_report_odfs = pe.Node(
                 ReconDerivativesDataSink(extension=".png", desc="wmFOD", suffix="odfs"),
                 name="ds_report_odfs",
@@ -559,7 +559,7 @@ def init_mrtrix_tractography_wf(
 
     if use_5tt:
         if method_5tt == "hsvs":
-            connect_5tt = "qsiprep_5tt_hsvs"
+            connect_5tt = "qsirecon_5tt_hsvs"
         else:
             raise Exception("Unrecognized 5tt method: " + method_5tt)
         workflow.connect(inputnode, connect_5tt,

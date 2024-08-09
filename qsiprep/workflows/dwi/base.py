@@ -24,7 +24,7 @@ from ..fieldmap.pepolar import init_extended_pepolar_report_wf
 from ..fieldmap.unwarp import init_fmap_unwarp_report_wf
 from .confounds import init_dwi_confs_wf
 from .fsl import init_fsl_hmc_wf
-from .hmc_sdc import init_qsiprep_hmcsdc_wf
+from .hmc_sdc import init_qsirecon_hmcsdc_wf
 from .pre_hmc import init_dwi_pre_hmc_wf
 from .registration import init_b0_to_anat_registration_wf, init_direct_b0_acpc_wf
 from .util import _create_mem_gb, _get_wf_name
@@ -39,13 +39,13 @@ def init_dwi_preproc_wf(
     source_file,
 ) -> Workflow:
     """
-    This workflow controls the dwi preprocessing stages of qsiprep.
+    This workflow controls the dwi preprocessing stages of qsirecon.
 
     .. workflow::
         :graph2use: orig
         :simple_form: yes
 
-        from qsiprep.workflows.dwi.base import init_dwi_preproc_wf
+        from qsirecon.workflows.dwi.base import init_dwi_preproc_wf
         wf = init_dwi_preproc_wf(scan_groups={'dwi_series': ['fake.nii'],
                                   'fieldmap_info': {'suffix': None},
                                   'dwi_series_pedir': 'j'},
@@ -131,10 +131,10 @@ def init_dwi_preproc_wf(
     See Also
     --------
 
-    * :py:func:`~qsiprep.workflows.dwi.hmc.init_dwi_hmc_wf`
-    * :py:func:`~qsiprep.workflows.dwi.registration.init_dwi_t1_trans_wf`
-    * :py:func:`~qsiprep.workflows.dwi.registration.init_dwi_reg_wf`
-    * :py:func:`~qsiprep.workflows.dwi.confounds.init_dwi_confounds_wf`
+    * :py:func:`~qsirecon.workflows.dwi.hmc.init_dwi_hmc_wf`
+    * :py:func:`~qsirecon.workflows.dwi.registration.init_dwi_t1_trans_wf`
+    * :py:func:`~qsirecon.workflows.dwi.registration.init_dwi_reg_wf`
+    * :py:func:`~qsirecon.workflows.dwi.confounds.init_dwi_confounds_wf`
 
     """
     dwi_only = config.workflow.anat_modality == "none"
@@ -255,7 +255,7 @@ Diffusion data preprocessing
             raise Exception(
                 f"--shoreline-iters must be > 0 when --hmc-model is {config.workflow.hmc_model}"
             )
-        hmc_wf = init_qsiprep_hmcsdc_wf(
+        hmc_wf = init_qsirecon_hmcsdc_wf(
             scan_groups=scan_groups,
             source_file=source_file,
             dwi_metadata=dwi_metadata,

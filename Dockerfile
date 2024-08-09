@@ -5,11 +5,11 @@ RUN pip install build
 RUN apt-get update && \
     apt-get install -y --no-install-recommends git
 
-FROM pennbbl/qsiprep_build:24.7.4
+FROM pennbbl/qsirecon_build:24.7.4
 
-# Install qsiprep
-COPY . /src/qsiprep
-RUN pip install --no-cache-dir "/src/qsiprep[all]"
+# Install qsirecon
+COPY . /src/qsirecon
+RUN pip install --no-cache-dir "/src/qsirecon[all]"
 
 # Precaching fonts, set 'Agg' as default backend for matplotlib
 RUN python -c "from matplotlib import font_manager" && \
@@ -20,15 +20,15 @@ RUN find $HOME -type d -exec chmod go=u {} + && \
 
 RUN ldconfig
 WORKDIR /tmp/
-ENTRYPOINT ["/opt/conda/envs/qsiprep/bin/qsiprep"]
+ENTRYPOINT ["/opt/conda/envs/qsirecon/bin/qsirecon"]
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
 LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.name="qsiprep" \
-      org.label-schema.description="qsiprep - q Space Images preprocessing tool" \
-      org.label-schema.url="http://qsiprep.readthedocs.io" \
+      org.label-schema.name="qsirecon" \
+      org.label-schema.description="qsirecon - q Space Images preprocessing tool" \
+      org.label-schema.url="http://qsirecon.readthedocs.io" \
       org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.vcs-url="https://github.com/pennbbl/qsiprep" \
+      org.label-schema.vcs-url="https://github.com/pennbbl/qsirecon" \
       org.label-schema.version=$VERSION \
       org.label-schema.schema-version="1.0"

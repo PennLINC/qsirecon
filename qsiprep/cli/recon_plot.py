@@ -15,7 +15,7 @@ from nipype import logging
 from PIL import Image
 
 from ..viz.utils import slices_from_bbox
-from qsiprep.interfaces.converters import fib2amps, mif2amps
+from qsirecon.interfaces.converters import fib2amps, mif2amps
 
 LOGGER = logging.getLogger("nipype.interface")
 
@@ -37,7 +37,7 @@ def sink_mask_file(in_file, orig_file, out_dir):
 def recon_plot():
     """Convert fib to mif."""
     parser = ArgumentParser(
-        description="qsiprep: Convert DSI Studio fib file to MRtrix mif file.",
+        description="qsirecon: Convert DSI Studio fib file to MRtrix mif file.",
         formatter_class=RawTextHelpFormatter,
     )
 

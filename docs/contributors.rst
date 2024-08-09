@@ -1,7 +1,7 @@
 .. include:: links.rst
 
 ------------------------
-Contributing to qsiprep
+Contributing to qsirecon
 ------------------------
 
 This document explains how to prepare a new development environment and
@@ -9,8 +9,8 @@ update an existing environment, as necessary.
 
 Development in Docker is encouraged, for the sake of consistency and
 portability.
-By default, work should be built off of `pennbbl/qsiprep:latest
-<https://hub.docker.com/r/pennbbl/qsiprep/>`_ (see the
+By default, work should be built off of `pennbbl/qsirecon:latest
+<https://hub.docker.com/r/pennbbl/qsirecon/>`_ (see the
 installation_ guide for the basic procedure for running).
 
 
@@ -19,18 +19,18 @@ Patching working repositories
 In order to test new code without rebuilding the Docker image, it is
 possible to mount working repositories as source directories within the
 container.
-The ``qsiprep-docker`` script simplifies this for the most common repositories::
+The ``qsirecon-docker`` script simplifies this for the most common repositories::
 
-    -f PATH, --patch-qsiprep PATH
-                          working qsiprep repository (default: None)
+    -f PATH, --patch-qsirecon PATH
+                          working qsirecon repository (default: None)
     -p PATH, --patch-nipype PATH
                           working nipype repository (default: None)
 
 For instance, if your repositories are contained in ``$HOME/projects``::
 
-    $ qsiprep-docker -f $HOME/projects/qsiprep/qsiprep \
+    $ qsirecon-docker -f $HOME/projects/qsirecon/qsirecon \
                       -p $HOME/projects/nipype/nipype \
-                      -i pennbbl/qsiprep:latest \
+                      -i pennbbl/qsirecon:latest \
                       $HOME/fullds005 $HOME/dockerout participant
 
 Note the ``-i`` flag allows you to specify an image.
@@ -38,39 +38,39 @@ Note the ``-i`` flag allows you to specify an image.
 When invoking ``docker`` directly, the mount options must be specified
 with the ``-v`` flag::
 
-    -v $HOME/projects/qsiprep/qsiprep:/usr/local/miniconda/lib/python3.10/site-packages/qsiprep:ro
+    -v $HOME/projects/qsirecon/qsirecon:/usr/local/miniconda/lib/python3.10/site-packages/qsirecon:ro
     -v $HOME/projects/nipype/nipype:/usr/local/miniconda/lib/python3.10/site-packages/nipype:ro
 
 For example, ::
 
     $ docker run --rm -v $HOME/fullds005:/data:ro -v $HOME/dockerout:/out \
-        -v $HOME/projects/qsiprep/qsiprep:/usr/local/miniconda/lib/python3.10/site-packages/qsiprep:ro \
-        pennbbl/qsiprep:latest /data /out/out participant \
+        -v $HOME/projects/qsirecon/qsirecon:/usr/local/miniconda/lib/python3.10/site-packages/qsirecon:ro \
+        pennbbl/qsirecon:latest /data /out/out participant \
         -w /out/work/
 
 In order to work directly in the container, pass the ``--shell`` flag to
-``qsiprep-docker``::
+``qsirecon-docker``::
 
-    $ qsiprep-docker --shell $HOME/fullds005 $HOME/dockerout participant
+    $ qsirecon-docker --shell $HOME/fullds005 $HOME/dockerout participant
 
-This is the equivalent of using ``--entrypoint=bash`` and omitting the qsiprep
+This is the equivalent of using ``--entrypoint=bash`` and omitting the qsirecon
 arguments in a ``docker`` command::
 
     $ docker run --rm -v $HOME/fullds005:/data:ro -v $HOME/dockerout:/out \
-        -v $HOME/projects/qsiprep/qsiprep:/usr/local/miniconda/lib/python3.10/site-packages/qsiprep:ro --entrypoint=bash \
-        pennbbl/qsiprep:latest
+        -v $HOME/projects/qsirecon/qsirecon:/usr/local/miniconda/lib/python3.10/site-packages/qsirecon:ro --entrypoint=bash \
+        pennbbl/qsirecon:latest
 
 Patching containers can be achieved in Singularity analogous to ``docker``
 using the ``--bind`` (``-B``) option: ::
 
     $ singularity run \
-        -B $HOME/projects/qsiprep/qsiprep:/usr/local/miniconda/lib/python3.10/site-packages/qsiprep \
-        qsiprep.img \
+        -B $HOME/projects/qsirecon/qsirecon:/usr/local/miniconda/lib/python3.10/site-packages/qsirecon \
+        qsirecon.img \
         /scratch/dataset /scratch/out participant -w /out/work/
 
 Or you can patch Singularity containers using the PYTHONPATH variable: ::
 
-   $ PYTHONPATH="$HOME/projects/qsiprep" singularity run qsiprep.img \
+   $ PYTHONPATH="$HOME/projects/qsirecon" singularity run qsirecon.img \
         /scratch/dataset /scratch/out participant -w /out/work/
 
 
@@ -84,15 +84,15 @@ The image `must be rebuilt <#rebuilding-docker-image>`_ after any
 dependency changes.
 
 Python dependencies should generally be included in the ``REQUIRES``
-list in `qsiprep/info.py
-<https://github.com/pennbbl/qsiprep/blob/29133e5e9f92aae4b23dd897f9733885a60be311/qsiprep/info.py#L46-L61>`_.
+list in `qsirecon/info.py
+<https://github.com/pennbbl/qsirecon/blob/29133e5e9f92aae4b23dd897f9733885a60be311/qsirecon/info.py#L46-L61>`_.
 If the latest version in `PyPI <https://pypi.org/>`_ is sufficient,
 then no further action is required.
 
 For large Python dependencies where there will be a benefit to
 pre-compiled binaries, `conda <https://github.com/conda/conda>`_ packages
 may also be added to the ``conda install`` line in the `Dockerfile
-<https://github.com/pennbbl/qsiprep/blob/29133e5e9f92aae4b23dd897f9733885a60be311/Dockerfile#L46>`_.
+<https://github.com/pennbbl/qsirecon/blob/29133e5e9f92aae4b23dd897f9733885a60be311/Dockerfile#L46>`_.
 
 Non-Python dependencies must also be installed in the Dockerfile, via a
 ``RUN`` command.
@@ -104,17 +104,17 @@ For example, installing an ``apt`` package may be done as follows: ::
 Rebuilding Docker image
 =======================
 If it is necessary to rebuild the Docker image, a local image named
-``qsiprep`` may be built from within the working qsiprep
-repository, located in ``~/projects/qsiprep``: ::
+``qsirecon`` may be built from within the working qsirecon
+repository, located in ``~/projects/qsirecon``: ::
 
-    ~/projects/qsiprep$ docker build -t qsiprep .
+    ~/projects/qsirecon$ docker build -t qsirecon .
 
-To work in this image, replace ``pennbbl/qsiprep:latest`` with
-``qsiprep`` in any of the above commands.
-This image may be accessed by the ``qsiprep-docker`` wrapper via the
+To work in this image, replace ``pennbbl/qsirecon:latest`` with
+``qsirecon`` in any of the above commands.
+This image may be accessed by the ``qsirecon-docker`` wrapper via the
 ``-i`` flag, e.g. ::
 
-    $ qsiprep-docker -i qsiprep --shell
+    $ qsirecon-docker -i qsirecon --shell
 
 
 Adding new features to the citation boilerplate
@@ -122,7 +122,7 @@ Adding new features to the citation boilerplate
 
 The citation boilerplate is built by adding two dunder attributes
 of workflow objects: ``__desc__`` and ``__postdesc__``.
-Once the full *qsiprep* workflow is built, starting from the
+Once the full *qsirecon* workflow is built, starting from the
 outer workflow and visiting all sub-workflows in topological
 order, all defined ``__desc__`` are appended to the citation
 boilerplate before descending into sub-workflows.
@@ -132,7 +132,7 @@ and the execution pops out to higher level workflows.
 The dunder attributes are written in Markdown language, and may contain
 references.
 To add a reference, just add a new Bibtex entry to the references
-database (``/qsiprep/data/boilerplate.bib``).
+database (``/qsirecon/data/boilerplate.bib``).
 You can then use the Bibtex handle within the Markdown text.
 For example, if the Bibtex handle is ``myreference``, a citation
 will be generated in Markdown language with ``@myreference``.

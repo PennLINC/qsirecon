@@ -12,7 +12,7 @@ import os
 
 
 def get_atlases(atlas_names):
-    """Build dictionary of atlases to use to parcellate QSIPrep outputs.
+    """Build dictionary of atlases to use to parcellate QSIRecon outputs.
 
     Parameters
     ----------

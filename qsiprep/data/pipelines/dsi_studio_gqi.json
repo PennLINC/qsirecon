@@ -7,7 +7,7 @@
       "name": "dsistudio_gqi",
       "software": "DSI Studio",
       "action": "reconstruction",
-      "input": "qsiprep",
+      "input": "qsirecon",
       "qsirecon_suffix": "DSIStudio",
       "parameters": {"method": "gqi"}
     },

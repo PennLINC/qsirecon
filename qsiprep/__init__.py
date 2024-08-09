@@ -29,7 +29,7 @@ except ImportError:
 
 import warnings
 
-# cmp is not used by qsiprep, so ignore nipype-generated warnings
+# cmp is not used by qsirecon, so ignore nipype-generated warnings
 warnings.simplefilter("ignore")
 warnings.filterwarnings("ignore", r"cmp not installed")
 warnings.filterwarnings("ignore", r"Enable tracemalloc")

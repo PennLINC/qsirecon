@@ -240,7 +240,7 @@ def linear_alignment_workflow(transform="Rigid", iternum=0, omp_nthreads=1):
     )
     precision = "coarse" if config.execution.sloppy else "precise"
     ants_settings = pkgrf(
-        "qsiprep",
+        "qsirecon",
         "data/shoreline_{precision}_{transform}.json".format(
             precision=precision, transform=transform
         ),
@@ -420,7 +420,7 @@ def init_hmc_model_iteration_wf(name="hmc_model_iter0"):
         :graph2use: colored
         :simple_form: yes
 
-        from qsiprep.workflows.dwi.hmc import init_dwi_model_iteration_wf
+        from qsirecon.workflows.dwi.hmc import init_dwi_model_iteration_wf
         wf = init_dwi_model_hmc_wf(modelname='3dSHORE',
                                    transform='Affine',
                                    num_iters=2)
@@ -486,7 +486,7 @@ def init_hmc_model_iteration_wf(name="hmc_model_iter0"):
     )
     precision = "coarse" if config.execution.sloppy else "precise"
     ants_settings = pkgrf(
-        "qsiprep",
+        "qsirecon",
         "data/shoreline_{precision}_{transform}.json".format(
             precision=precision, transform=config.workflow.hmc_transform
         ),
@@ -557,7 +557,7 @@ def init_dwi_model_hmc_wf(
         :graph2use: colored
         :simple_form: yes
 
-        from qsiprep.workflows.dwi.hmc import init_dwi_model_hmc_wf
+        from qsirecon.workflows.dwi.hmc import init_dwi_model_hmc_wf
         wf = init_dwi_model_hmc_wf(modelname='3dSHORE',
                                    transform='Affine',
                                    num_iters=2)

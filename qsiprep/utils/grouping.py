@@ -10,7 +10,7 @@ Examples
 --------
 Set up tests
 >>> import os
->>> from qsiprep.utils.testing import get_grouping_test_data
+>>> from qsirecon.utils.testing import get_grouping_test_data
 >>> data_root = get_grouping_test_data()
 >>> os.chdir(data_root)
 """
@@ -233,7 +233,7 @@ def find_fieldmaps_from_other_dwis(dwi_files, dwi_file_metadatas):
     --------
 
     A single scan with no opportunities to SDC with a DWI scan
-    >>> from qsiprep.utils.grouping import find_fieldmaps_from_other_dwis
+    >>> from qsirecon.utils.grouping import find_fieldmaps_from_other_dwis
     >>> single_dwi_file = ["/data/sub-1/dwi/sub-1_dir-AP_run-1_dwi.nii.gz"]
     >>> single_dwi_file_metadatas = [{"PhaseEncodingDirection": "j"}]
     >>> find_fieldmaps_from_other_dwis(single_dwi_file, single_dwi_file_metadatas)
@@ -540,7 +540,7 @@ def group_by_warpspace(dwi_files, layout, ignore_fieldmaps):
     --------
 
     Set up tests
-    >>> from qsiprep.utils.bids import collect_data
+    >>> from qsirecon.utils.bids import collect_data
     >>> SUBJECT_ID = "1"
 
     No fieldmap data, a single DWI series
