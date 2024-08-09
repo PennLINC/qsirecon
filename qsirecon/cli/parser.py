@@ -173,7 +173,7 @@ def _build_parser(**kwargs):
     parser.add_argument(
         "analysis_level",
         choices=["participant"],
-        help='Processing stage to be run, only "participant" in the case of ' "QSIRecon (for now).",
+        help='Processing stage to be run, only "participant" in the case of QSIRecon (for now).',
     )
 
     g_bids = parser.add_argument_group("Options for filtering BIDS queries")

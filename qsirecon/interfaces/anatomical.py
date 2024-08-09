@@ -144,7 +144,10 @@ class QSIReconAnatomicalIngress(SimpleInterface):
             "%s/sub-%s*_from-T*w_to-MNI152NLin2009cAsym_mode-image_xfm.h5" % (anat_root, sub),
         )
         if not self.inputs.infant_mode:
-            self._results["template_image"] = pkgrf("qsirecon", "data/mni_1mm_t1w_lps_brain.nii.gz")
+            self._results["template_image"] = pkgrf(
+                "qsirecon",
+                "data/mni_1mm_t1w_lps_brain.nii.gz",
+            )
         else:
             self._results["template_image"] = pkgrf(
                 "qsirecon", "data/mni_1mm_t1w_lps_brain_infant.nii.gz"
@@ -510,7 +513,10 @@ class GetTemplate(SimpleInterface):
         if self.inputs.template_name in KNOWN_TEMPLATES or self.inputs.infant_mode:
             if not self.inputs.infant_mode:
                 ref_img = pkgr("qsirecon", "data/mni_1mm_%s_lps.nii.gz" % contrast_name)
-                ref_img_brain = pkgr("qsirecon", "data/mni_1mm_%s_lps_brain.nii.gz" % contrast_name)
+                ref_img_brain = pkgr(
+                    "qsirecon",
+                    "data/mni_1mm_%s_lps_brain.nii.gz" % contrast_name,
+                )
                 ref_img_mask = pkgr("qsirecon", "data/mni_1mm_t1w_lps_brainmask.nii.gz")
             else:
                 ref_img = pkgr("qsirecon", "data/mni_1mm_%s_lps_infant.nii.gz" % contrast_name)

@@ -47,7 +47,6 @@ def build_workflow(config_file, exec_mode, retval):
     from .. import config
     from ..utils.misc import check_deps
     from ..viz.reports import generate_reports
-    from ..workflows.base import init_qsirecon_wf
     from ..workflows.recon import init_qsirecon_wf
 
     config.load(config_file)
