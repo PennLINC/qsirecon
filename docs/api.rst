@@ -16,17 +16,6 @@ Internal configuration system
 Library API
 ***********
 
-Preprocessing Workflows
------------------------
-
-.. toctree::
-   :glob:
-
-   api/qsirecon.workflows.base
-   api/qsirecon.workflows.anatomical
-   api/qsirecon.workflows.dwi
-   api/qsirecon.workflows.fieldmap
-
 
 Reconstruction Workflows
 ------------------------
@@ -34,6 +23,7 @@ Reconstruction Workflows
 .. toctree::
    :glob:
 
+   api/qsirecon.workflows.base
    api/qsirecon.workflows.recon
 
 

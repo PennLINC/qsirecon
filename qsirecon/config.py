@@ -454,7 +454,7 @@ class execution(_Config):
     work_dir = Path("work").absolute()
     """Path to a working directory where intermediate results will be available."""
     write_graph = False
-    """Write out the computational graph corresponding to the planned preprocessing."""
+    """Write out the computational graph corresponding to the planned postprocessing."""
     dataset_links = {}
     """A dictionary of dataset links to be used to track Sources in sidecars."""
 
@@ -572,7 +572,7 @@ class workflow(_Config):
     contrast will be skull stripped and segmented for use in the
     visual reports and reconstruction. If --infant, T2w is forced."""
     anat_only = False
-    """Execute the anatomical preprocessing only."""
+    """Execute the anatomical postprocessing only."""
     anatomical_template = None
     """Keeps the :py:class:`~niworkflows.utils.spaces.SpatialReferences`
     instance keeping standard and nonstandard spaces."""

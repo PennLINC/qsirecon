@@ -36,13 +36,8 @@ About
 ``qsirecon`` configures pipelines for processing diffusion-weighted MRI (dMRI) data.
 The main features of this software are
 
-  1. A BIDS-app approach to preprocessing nearly all kinds of modern diffusion MRI data.
-  2. Automatically generated preprocessing pipelines that correctly group, distortion correct,
-     motion correct, denoise, coregister and resample your scans, producing visual reports and
-     QC metrics.
-  3. A system for running state-of-the-art reconstruction pipelines that include algorithms
+  1. A system for running state-of-the-art reconstruction pipelines that include algorithms
      from Dipy_, MRTrix_, `DSI Studio`_  and others.
-  4. A novel motion correction algorithm that works on DSI and random q-space sampling schemes
 
 .. image:: https://github.com/PennLINC/qsirecon/raw/main/docs/_static/workflow_full.png
 
@@ -52,7 +47,7 @@ The main features of this software are
 Reconstruction
 ~~~~~~~~~~~~~~~~
 
-The outputs from the :ref:`preprocessing_def` pipelines can be reconstructed in many other
+The outputs from BIDS-compliant preprocessing pipelines can be reconstructed in many other
 software packages. We provide a curated set of :ref:`recon_workflows` in ``qsirecon``
 that can run ODF/FOD reconstruction, tractography, Fixel estimation and regional
 connectivity.
