@@ -5,9 +5,9 @@ import argparse
 import pytest
 from urllib.request import urlretrieve
 from unittest import mock  # python 3.3+
-from qsiprep.cli.run import main as cli_main
+from qsirecon.cli.run import main as cli_main
 from pkg_resources import resource_filename as pkgrf
-from qsiprep.workflows.base import init_qsiprep_wf
+from qsirecon.workflows.base import init_qsirecon_wf
 import tempfile
 import os.path as op
 from copy import deepcopy
@@ -33,7 +33,7 @@ PREPROCESSED = "3qbln4gcqz2rxbnf7ras1gp7wyqdiray.xz"
 WORKING_DIR = tempfile.mkdtemp()
 WORKING_SINGLE_DIR = tempfile.mkdtemp()
 BIDS_DIR = op.join(WORKING_DIR, "DSCSDSI")
-RECON_INPUT = op.join(WORKING_DIR, "output/qsiprep")
+RECON_INPUT = op.join(WORKING_DIR, "output/qsirecon")
 FS_LICENSE = op.join(WORKING_DIR, "license.txt")
 os.environ['FS_LICENSE'] = FS_LICENSE
 LICENSE_CODE = "bWF0dGhldy5jaWVzbGFrQHBzeWNoLnVjc2IuZWR1C" \
@@ -125,8 +125,8 @@ def preprocessed_data():
 
 
 def link_anatomicals(new_dir):
-    old_wd = op.join(WORKING_DIR, "qsiprep_wf")
-    new_wd = op.join(new_dir, "qsiprep_wf")
+    old_wd = op.join(WORKING_DIR, "qsirecon_wf")
+    new_wd = op.join(new_dir, "qsirecon_wf")
     old_anat_dir = op.join(old_wd, "single_subject_tester_wf/anat_preproc_wf")
     new_anat_dir = op.join(new_wd, "single_subject_tester_wf/anat_preproc_wf")
 

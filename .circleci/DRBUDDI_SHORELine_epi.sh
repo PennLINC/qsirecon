@@ -25,10 +25,10 @@ TEMPDIR=${TESTDIR}/${TESTNAME}/work
 OUTPUT_DIR=${TESTDIR}/${TESTNAME}/derivatives
 BIDS_INPUT_DIR=${TESTDIR}/data/tinytensor_epi
 export FS_LICENSE=${TESTDIR}/data/license.txt
-QSIPREP_CMD=$(run_qsiprep_cmd ${BIDS_INPUT_DIR} ${OUTPUT_DIR})
+QSIRECON_CMD=$(run_qsirecon_cmd ${BIDS_INPUT_DIR} ${OUTPUT_DIR})
 
 # Do the anatomical run on its own
-${QSIPREP_CMD} \
+${QSIRECON_CMD} \
 	-w ${TEMPDIR} \
 	--sloppy \
 	--anat-modality none \

@@ -11,7 +11,7 @@
       "software": "MRTrix3",
       "action": "csd",
       "qsirecon_suffix": "MRtrix3_act-HSVS",
-      "input": "qsiprep",
+      "input": "qsirecon",
       "parameters": {
         "mtnormalize": true,
         "response": {

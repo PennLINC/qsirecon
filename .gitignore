@@ -1,8 +1,8 @@
 # Test data
-qsiprep/tests/test_data/
-qsiprep/tests/pytests/
+qsirecon/tests/test_data/
+qsirecon/tests/pytests/
 
-qsiprep/_version.py
+qsirecon/_version.py
 docs/api/
 
 # Byte-compiled / optimized / DLL files

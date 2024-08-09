@@ -15,11 +15,11 @@ TESTNAME=fs_ingress_test
 setup_dir ${TESTDIR}/${TESTNAME}
 TEMPDIR=${TESTDIR}/${TESTNAME}/work
 OUTPUT_DIR=${TESTDIR}/${TESTNAME}/derivatives
-BIDS_INPUT_DIR=${TESTDIR}/data/araikes/qsiprep
+BIDS_INPUT_DIR=${TESTDIR}/data/araikes/qsirecon
 SUBJECTS_DIR=${TESTDIR}/data/freesurfer
-QSIPREP_CMD=$(run_qsiprep_cmd ${BIDS_INPUT_DIR} ${OUTPUT_DIR})
+QSIRECON_CMD=$(run_qsirecon_cmd ${BIDS_INPUT_DIR} ${OUTPUT_DIR})
 
-${QSIPREP_CMD} \
+${QSIRECON_CMD} \
 	 -w ${TEMPDIR} \
 	 --recon-input ${BIDS_INPUT_DIR} \
 	 --sloppy \

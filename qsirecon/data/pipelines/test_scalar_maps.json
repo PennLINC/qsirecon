@@ -1,0 +1,64 @@
+{
+  "name": "bundle_scalar_map",
+  "space" : "T1w",
+  "atlases": [ ],
+  "anatomical": [ ],
+  "nodes": [
+    {
+      "name": "dipy_dki",
+      "software": "Dipy",
+      "action": "DKI_reconstruction",
+      "input": "qsirecon",
+      "qsirecon_suffix": "DIPYDKI",
+      "parameters": {
+        "write_mif": false,
+        "write_fibgz": false
+      }
+    },
+    {
+      "name": "dsistudio_gqi",
+      "software": "DSI Studio",
+      "action": "reconstruction",
+      "input": "qsirecon",
+      "qsirecon_suffix": "DSIStudio",
+      "parameters": {"method": "gqi"}
+    },
+    {
+      "name": "autotrackgqi",
+      "software": "DSI Studio",
+      "action": "autotrack",
+      "input": "dsistudio_gqi",
+      "qsirecon_suffix": "DSIStudio",
+      "parameters": {
+        "track_id": "Fasciculus,Cingulum,Aslant,Corticos,Thalamic_R,Reticular,Optic,Fornix,Corpus",
+        "tolerance": "22,26,30",
+        "track_voxel_ratio": 2.0,
+        "yield_rate": 0.000001
+      }
+    },
+    {
+      "name": "gqi_scalars",
+      "software": "DSI Studio",
+      "action": "export",
+      "input": "dsistudio_gqi",
+      "qsirecon_suffix": "DSIStudio"
+    },
+    {
+      "name": "bundle_means",
+      "software": "qsirecon",
+      "action": "bundle_map",
+      "input": "autotrackgqi",
+      "scalars_from": ["gqi_scalars", "dipy_dki"]
+    },
+    {
+      "name": "template_map",
+      "software": "qsirecon",
+      "action": "template_map",
+      "input": "qsirecon",
+      "scalars_from": ["dipy_dki", "gqi_scalars"],
+      "parameters": {
+        "interpolation": "NearestNeighbor"
+      }
+    }
+  ]
+}

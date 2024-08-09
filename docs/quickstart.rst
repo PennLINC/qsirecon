@@ -3,7 +3,7 @@
 Quick Start
 -----------
 
-There are many options for running ``qsiprep`` but most have sensible defaults and
+There are many options for running ``qsirecon`` but most have sensible defaults and
 don't need to be changed. This page describes the options most likely to be
 needed to be adjusted for your specific data. Suppose the following data is available
 in the BIDS input::
@@ -13,9 +13,9 @@ in the BIDS input::
   sub-1/ses-1/dwi/sub-1_ses-1_acq-multishell_run-03_dwi.nii.gz
   sub-1/ses-1/fmap/sub-1_ses-1_dir-PA_epi.nii.gz
 
-One way to process these data would be to call ``qsiprep`` like this::
+One way to process these data would be to call ``qsirecon`` like this::
 
-  qsiprep \
+  qsirecon \
     /path/to/inputs /path/to/outputs participant \
     --output-resolution 1.2 \
     --fs-license-file /path/to/license.txt
@@ -36,11 +36,11 @@ Assuming that ``sub-1/ses-1/fmap/sub-1_dir-PA_epi.nii.gz`` has a JSON sidecar co
     "ses-1/dwi/sub-1_ses-1_acq-multishell_run-03_dwi.nii.gz"
   ]
 
-``qsiprep`` will infer that the dwi scans are in the same **warped space** - that their
+``qsirecon`` will infer that the dwi scans are in the same **warped space** - that their
 susceptibility distortions are shared and they can be combined before head motion correction. Since
 we didn't specify ``--separate-all-dwis`` the separate scans will be merged together before head motion
 correction and the fully preprocessed outputs will be written to
-``derivitaves/qsiprep/sub-1/ses-1/dwi/sub-1_ses-1_acq-multishell_desc-preproc_dwi.nii.gz``. otherwise
+``derivitaves/qsirecon/sub-1/ses-1/dwi/sub-1_ses-1_acq-multishell_desc-preproc_dwi.nii.gz``. otherwise
 there will be one output in the derivatives directory for each input image in the bids input
 directory.
 
@@ -87,7 +87,7 @@ your output to at least 1.3mm resolution. By choosing this resolution here,
 it means your data will only be interpolated once: head motion correction,
 susceptibility distortion correction, coregistration and upsampling will be
 done in a single step. If your are upsampling your data by more than 10%,
-QSIPrep will use BSpline interpolation instead of Lanczos windowed sinc
+QSIRecon will use BSpline interpolation instead of Lanczos windowed sinc
 interpolation.
 
 
@@ -110,7 +110,7 @@ can be motion corrected.
 Enabling and disabling preprocessing steps
 ==========================================
 
-The image processing operations performed by QSIPrep are configured by default
+The image processing operations performed by QSIRecon are configured by default
 to apply to most generic sequences. Depending on your sequence
 and sampling scheme, you can elect to enable, disable or alter the behavior
 of these steps to better match your data.
@@ -152,17 +152,17 @@ together *after* images are concatenated by specifying
 What is happening??
 ===================
 
-While QSIPrep runs with `-v -v`, you will see lots of unintuitive output
+While QSIRecon runs with `-v -v`, you will see lots of unintuitive output
 in the terminal like::
 
-  [Node] Setting-up "qsiprep_wf.single_subject_PNC_wf.dwi_finalize_acq_realistic_wf.transform_dwis_t1.final_b0_ref.b0ref_reportlet" in "/scratch/qsiprep_wf/single_subject_PNC_wf/dwi_finalize_acq_realistic_wf/transform_dwis_t1/final_b0_ref/b0ref_reportlet".
+  [Node] Setting-up "qsirecon_wf.single_subject_PNC_wf.dwi_finalize_acq_realistic_wf.transform_dwis_t1.final_b0_ref.b0ref_reportlet" in "/scratch/qsirecon_wf/single_subject_PNC_wf/dwi_finalize_acq_realistic_wf/transform_dwis_t1/final_b0_ref/b0ref_reportlet".
     201229-21:33:46,213 nipype.workflow INFO:
       [Node] Running "b0ref_reportlet" ("niworkflows.interfaces.registration.SimpleBeforeAfterRPT")
     201229-21:33:48,51 nipype.workflow INFO:
       [MultiProc] Running 2 tasks, and 3 jobs ready. Free memory (GB): 3.70/4.00, Free processors: 0/2.
                         Currently running:
-                          * qsiprep_wf.single_subject_PNC_wf.dwi_finalize_acq_realistic_wf.transform_dwis_t1.final_b0_ref.b0ref_reportlet
-                          * qsiprep_wf.single_subject_PNC_wf.anat_preproc_wf.mni_mask
+                          * qsirecon_wf.single_subject_PNC_wf.dwi_finalize_acq_realistic_wf.transform_dwis_t1.final_b0_ref.b0ref_reportlet
+                          * qsirecon_wf.single_subject_PNC_wf.anat_preproc_wf.mni_mask
 
 These print-outs describe what is currently running. In this case, we can see that
 ``b0ref_reportlet`` and ``mni_mask`` are being run simultaneously. What exactly
@@ -175,6 +175,6 @@ In the case of ``mni_mask`` it is part of :ref:`t1preproc_steps`, while
 jobs' parent workflows in the overall workflow can be seen in the graph of
 :ref:`dwi_overview`.
 
-Also in this example you can see that QSIPrep was run with ``--nthreads 2``
+Also in this example you can see that QSIRecon was run with ``--nthreads 2``
 (``Free processors: 0/2``) and that both open slots are running a job.
 

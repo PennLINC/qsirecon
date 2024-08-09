@@ -1,17 +1,17 @@
 import pytest
 from pkg_resources import resource_filename as pkgrf
-from qsiprep.workflows.base import init_qsiprep_wf
+from qsirecon.workflows.base import init_qsirecon_wf
 
 
 @pytest.mark.smoke
 def test_preproc_pepolar_sdc(tmp_path):
     # Get the empty bids data
-    bids_root = pkgrf("qsiprep", "data/abcd")
+    bids_root = pkgrf("qsirecon", "data/abcd")
     work_dir = str(tmp_path.absolute() / "preproc_pepolar_sdc_work")
     output_dir = str(tmp_path.absolute() / "preproc_pepolar_sdc_output")
     bids_dir = bids_root
     subject_list = ["abcd"]
-    wf = init_qsiprep_wf(
+    wf = init_qsirecon_wf(
         subject_list=subject_list,
         run_uuid="test",
         work_dir=work_dir,
@@ -47,12 +47,12 @@ def test_preproc_pepolar_sdc(tmp_path):
 @pytest.mark.smoke
 def test_preproc_syn_sdc(tmp_path):
     # Get the empty bids data
-    bids_root = pkgrf("qsiprep", "data/abcd")
+    bids_root = pkgrf("qsirecon", "data/abcd")
     work_dir = str(tmp_path.absolute() / "preproc_syn_sdc_work")
     output_dir = str(tmp_path.absolute() / "preproc_syn_sdc_output")
     bids_dir = bids_root
     subject_list = ["abcd"]
-    wf = init_qsiprep_wf(
+    wf = init_qsirecon_wf(
         subject_list=subject_list,
         run_uuid="test",
         work_dir=work_dir,
@@ -87,12 +87,12 @@ def test_preproc_syn_sdc(tmp_path):
 @pytest.mark.smoke
 def test_preproc_nonehmc_sdc(tmp_path):
     # Get the empty bids data
-    bids_root = pkgrf("qsiprep", "data/abcd")
+    bids_root = pkgrf("qsirecon", "data/abcd")
     work_dir = str(tmp_path.absolute() / "preproc_nonehmc_work")
     output_dir = str(tmp_path.absolute() / "preproc_nonehmc_output")
     bids_dir = bids_root
     subject_list = ["abcd"]
-    wf = init_qsiprep_wf(
+    wf = init_qsirecon_wf(
         subject_list=subject_list,
         run_uuid="test",
         work_dir=work_dir,
@@ -127,13 +127,13 @@ def test_preproc_nonehmc_sdc(tmp_path):
 @pytest.mark.smoke
 def test_preproc_buds(tmp_path):
     # Get the empty bids data
-    bids_root = pkgrf("qsiprep", "data/buds")
+    bids_root = pkgrf("qsirecon", "data/buds")
     work_dir = str(tmp_path.absolute() / "preproc_buds_work")
     output_dir = str(tmp_path.absolute() / "preproc_buds_output")
     bids_dir = bids_root
     subject_list = ["1"]
 
-    wf = init_qsiprep_wf(
+    wf = init_qsirecon_wf(
         subject_list=subject_list,
         run_uuid="test",
         work_dir=work_dir,

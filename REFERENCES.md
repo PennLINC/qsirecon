@@ -29,7 +29,7 @@
 | Framewise displacement | | https://nipype.readthedocs.io/en/latest/interfaces/generated/nipype.algorithms.confounds.html#framewisedisplacement |
 | **Other**
 | a/tCompCor | https://doi.org/10.1016/j.neuroimage.2007.04.042 | http://nipype.readthedocs.io/en/latest/interfaces/generated/nipype.algorithms.confounds.html#compcor |
-| phdiff2fmap | https://doi.org/10.1006/nimg.2001.1054 | https://qsiprep.readthedocs.io/en/stable/sdc/estimation.html#qsiprep.interfaces.fmap.phdiff2fmap |
+| phdiff2fmap | https://doi.org/10.1006/nimg.2001.1054 | https://qsirecon.readthedocs.io/en/stable/sdc/estimation.html#qsirecon.interfaces.fmap.phdiff2fmap |
 | nibabel | https://doi.org/10.5281/zenodo.60808 | https://github.com/nipy/nibabel/ |
 | nilearn | https://doi.org/10.3389/fninf.2014.00014 | https://github.com/nilearn/nilearn/ |
 | nipype | https://doi.org/10.3389/fninf.2011.00013 https://doi.org/10.5281/zenodo.581704 | https://github.com/nipy/nipype/ |

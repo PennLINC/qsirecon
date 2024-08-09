@@ -31,8 +31,8 @@ test_grouping_conditions = [
     test_grouping_conditions)
 def test_grouping_options(
     combine_all_dwis, ignore, use_syn, prefer_dedicated_fmaps,using_eddy, output_groups, fieldmap_types, bids_data):
-    from qsiprep.utils.bids import collect_data
-    from qsiprep.workflows.base import group_by_warpspace, get_session_groups, _get_output_fname
+    from qsirecon.utils.bids import collect_data
+    from qsirecon.workflows.base import group_by_warpspace, get_session_groups, _get_output_fname
     subject_data, layout = collect_data(BIDS_DIR, "tester")
 
     # Get session groups

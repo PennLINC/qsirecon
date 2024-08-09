@@ -11,7 +11,7 @@ assignees: ''
 
 ## Additional details
 <!--Please fill in the following details-->
-- QSIPrep version:
+- QSIRecon version:
 - Docker version:
 - Singularity version:
 

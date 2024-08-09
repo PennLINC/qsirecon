@@ -1,6 +1,6 @@
 import pytest
 import os
-from qsiprep.cli.run import set_freesurfer_license, validate_bids, get_parser
+from qsirecon.cli.run import set_freesurfer_license, validate_bids, get_parser
 
 base_args = "bids out participant --output_resolution 2.3"
 
@@ -29,7 +29,7 @@ def test_required_recononly(monkeypatch):
     base_args = "bids out participant --recon_only"
     args = base_args.split(' ')
     # sys.argv used to set if output-res required
-    monkeypatch.setattr('qsiprep.cli.run.sys.argv', args)
+    monkeypatch.setattr('qsirecon.cli.run.sys.argv', args)
     get_parser().parse_args(args)
 
 
@@ -75,6 +75,6 @@ def test_set_freesurfer_license(tmpdir):
 ))
 def test_validate_bids(monkeypatch, opts_str, will_validate):
     # from ..utils.bids import validate_input_dir
-    monkeypatch.setattr("qsiprep.utils.bids.validate_input_dir", lambda *kargs: True)
+    monkeypatch.setattr("qsirecon.utils.bids.validate_input_dir", lambda *kargs: True)
     opts = get_parser().parse_args(opts_str.split(' '))
     assert will_validate == validate_bids(opts)

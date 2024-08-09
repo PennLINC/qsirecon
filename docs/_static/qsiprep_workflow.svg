@@ -9,7 +9,7 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   sodipodi:docname="qsiprep_workflow.svg"
+   sodipodi:docname="qsirecon_workflow.svg"
    inkscape:version="0.92.2 5c3e80d, 2017-08-06"
    id="svg8"
    version="1.1"
@@ -2673,7 +2673,7 @@
              x="531.65131"
              style="stroke-width:0.5456152;stroke-linecap:butt;stroke-linejoin:round"
              id="tspan37407"
-             sodipodi:role="line">qsiprep</tspan></text>
+             sodipodi:role="line">qsirecon</tspan></text>
         <g
            style="stroke-linecap:butt;stroke-linejoin:round"
            transform="translate(-3.4184362,20.739415)"

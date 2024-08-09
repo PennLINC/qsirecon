@@ -8,7 +8,7 @@ Developers - API
 Internal configuration system
 *****************************
 
-.. automodule:: qsiprep.config
+.. automodule:: qsirecon.config
    :members: from_dict, load, get, dumps, to_filename, init_spaces
 
 
@@ -22,10 +22,10 @@ Preprocessing Workflows
 .. toctree::
    :glob:
 
-   api/qsiprep.workflows.base
-   api/qsiprep.workflows.anatomical
-   api/qsiprep.workflows.dwi
-   api/qsiprep.workflows.fieldmap
+   api/qsirecon.workflows.base
+   api/qsirecon.workflows.anatomical
+   api/qsirecon.workflows.dwi
+   api/qsirecon.workflows.fieldmap
 
 
 Reconstruction Workflows
@@ -34,7 +34,7 @@ Reconstruction Workflows
 .. toctree::
    :glob:
 
-   api/qsiprep.workflows.recon
+   api/qsirecon.workflows.recon
 
 
 Other Utilities
@@ -43,8 +43,8 @@ Other Utilities
 .. toctree::
    :glob:
 
-   api/qsiprep.interfaces
-   api/qsiprep.utils
-   api/qsiprep.report
-   api/qsiprep.viz
-   api/qsiprep.qc
+   api/qsirecon.interfaces
+   api/qsirecon.utils
+   api/qsirecon.report
+   api/qsirecon.viz
+   api/qsirecon.qc

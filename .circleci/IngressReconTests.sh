@@ -28,9 +28,9 @@ TEMPDIR=${TESTDIR}/${TESTNAME}/work
 OUTPUT_DIR=${TESTDIR}/${TESTNAME}/derivatives
 BIDS_INPUT_DIR=${TESTDIR}/data/ukb
 
-qsiprep-docker -i pennbbl/qsiprep:unstable \
-	-e qsiprep_DEV 1 -u $(id -u) \
-	--patch-qsiprep /Users/mcieslak/projects/qsiprep/qsiprep \
+qsirecon-docker -i pennlinc/qsirecon:unstable \
+	-e qsirecon_DEV 1 -u $(id -u) \
+	--patch-qsirecon /Users/mcieslak/projects/qsirecon/qsirecon \
 	--config ${CFG} ${PATCH} -w ${TEMPDIR} \
 	 ${BIDS_INPUT_DIR} ${OUTPUT_DIR} \
 	 participant \

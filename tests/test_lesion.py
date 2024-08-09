@@ -1,13 +1,13 @@
 import pkg_resources
 
-from qsiprep.workflows import base
+from qsirecon.workflows import base
 
 
 def test_roi_found(tmp_path):
     # ensure that a dataset with an image matching
     # sub*/anat/*roi.nii.gz
     # is picked up by the bidssrc
-    bids_dir = pkg_resources.resource_filename("qsiprep", "data/lesion")
+    bids_dir = pkg_resources.resource_filename("qsirecon", "data/lesion")
     output_dir = str(tmp_path.absolute() / "lesion_output")
     wf = base.init_single_subject_wf(
         subject_id="1",
