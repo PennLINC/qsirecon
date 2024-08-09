@@ -16,7 +16,7 @@ from qsirecon.tests.utils import (
     get_test_data_path,
 )
 from qsirecon.utils.bids import write_derivative_description
-from qsirecon.viz.reports import generate_reports
+from qsiprep.reports.core import generate_reports
 
 nipype_config.enable_debug_mode()
 
@@ -1064,7 +1064,7 @@ def _run_and_generate(test_name, parameters, test_main=True):
         retval = build_workflow(config_file, retval={})
         qsirecon_wf = retval["workflow"]
         qsirecon_wf.run()
-        write_derivative_description(config.execution.fmri_dir, config.execution.qsirecon_dir)
+        write_derivative_description(config.execution.bids_dir, config.execution.qsirecon_dir)
 
         build_boilerplate(str(config_file), qsirecon_wf)
         session_list = (
