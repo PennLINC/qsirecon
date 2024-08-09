@@ -33,7 +33,6 @@ from nipype.interfaces.base import (
     InputMultiObject,
     OutputMultiPath,
     SimpleInterface,
-    Str,
     TraitedSpec,
     isdefined,
     traits,
@@ -76,133 +75,6 @@ def get_bids_params(fullpath):
         params = match.groupdict() if match is not None else {}
         matches.update(params)
     return matches
-
-
-class FileNotFoundError(IOError):
-    pass
-
-
-class BIDSInfoInputSpec(BaseInterfaceInputSpec):
-    in_file = File(mandatory=True, desc="input file, part of a BIDS tree")
-
-
-class BIDSInfoOutputSpec(TraitedSpec):
-    subject_id = traits.Str()
-    session_id = traits.Str()
-    task_id = traits.Str()
-    acq_id = traits.Str()
-    rec_id = traits.Str()
-    run_id = traits.Str()
-
-
-class BIDSInfo(SimpleInterface):
-    """
-    Extract metadata from a BIDS-conforming filename
-
-    This interface uses only the basename, not the path, to determine the
-    subject, session, task, run, acquisition or reconstruction.
-
-    """
-
-    input_spec = BIDSInfoInputSpec
-    output_spec = BIDSInfoOutputSpec
-
-    def _run_interface(self, runtime):
-        match = BIDS_NAME.search(self.inputs.in_file)
-        params = match.groupdict() if match is not None else {}
-        self._results = {key: val for key, val in list(params.items()) if val is not None}
-        return runtime
-
-
-class BIDSDataGrabberInputSpec(BaseInterfaceInputSpec):
-    subject_data = traits.Dict(Str, traits.Any)
-    subject_id = Str()
-
-
-class BIDSDataGrabberOutputSpec(TraitedSpec):
-    out_dict = traits.Dict(desc="output data structure")
-    fmap = OutputMultiPath(desc="output fieldmaps")
-    bold = OutputMultiPath(desc="output functional images")
-    sbref = OutputMultiPath(desc="output sbrefs")
-    t1w = OutputMultiPath(desc="output T1w images")
-    roi = OutputMultiPath(desc="output ROI images")
-    t2w = OutputMultiPath(desc="output T2w images")
-    flair = OutputMultiPath(desc="output FLAIR images")
-    dwi = OutputMultiPath(desc="output DWI images")
-
-
-class BIDSDataGrabber(SimpleInterface):
-    """
-    Collect files from a BIDS directory structure
-
-    >>> from qsirecon.interfaces import BIDSDataGrabber
-    >>> from qsirecon.utils.bids import collect_data
-    >>> bids_src = BIDSDataGrabber(anat_only=False)
-    >>> bids_src.inputs.subject_data = collect_data('ds114', '01')[0]
-    >>> bids_src.inputs.subject_id = 'ds114'
-    >>> res = bids_src.run()
-    >>> res.outputs.t1w  # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-    ['.../ds114/sub-01/ses-retest/anat/sub-01_ses-retest_T1w.nii.gz',
-     '.../ds114/sub-01/ses-test/anat/sub-01_ses-test_T1w.nii.gz']
-
-    """
-
-    input_spec = BIDSDataGrabberInputSpec
-    output_spec = BIDSDataGrabberOutputSpec
-    _require_funcs = True
-
-    def __init__(self, *args, **kwargs):
-        anat_only = kwargs.pop("anat_only")
-        dwi_only = kwargs.pop("dwi_only")
-        anatomical_contrast = kwargs.pop("anatomical_contrast")
-        self._anatomical_contrast = anatomical_contrast
-        super(BIDSDataGrabber, self).__init__(*args, **kwargs)
-        if anat_only is not None:
-            self._require_funcs = not anat_only
-        self._no_anat_necessary = bool(dwi_only) or anatomical_contrast == "none"
-
-    def _run_interface(self, runtime):
-        bids_dict = self.inputs.subject_data
-
-        self._results["out_dict"] = bids_dict
-        self._results.update(bids_dict)
-
-        if not bids_dict["t1w"]:
-            message = "No T1w images found for subject sub-{}".format(self.inputs.subject_id)
-            if self._no_anat_necessary:
-                LOGGER.info("%s, but no problem because --dwi-only was selected.", message)
-            elif self._anatomical_contrast != "T1w":
-                LOGGER.info(
-                    "%s, but no problem because --anat-modality %s was selected.",
-                    message,
-                    self._anatomical_contrast,
-                )
-            else:
-                raise FileNotFoundError(message)
-
-        if not bids_dict["t2w"]:
-            message = "No T2w images found for subject sub-{}".format(self.inputs.subject_id)
-            if self._no_anat_necessary:
-                LOGGER.info("%s, but no problem because --dwi-only was selected.", message)
-            elif self._anatomical_contrast != "T2w":
-                LOGGER.info(
-                    "%s, but no problem because --anat-modality %s was selected.",
-                    message,
-                    self._anatomical_contrast,
-                )
-            else:
-                raise FileNotFoundError(message)
-
-        if self._no_anat_necessary and not bids_dict["dwi"]:
-            raise FileNotFoundError(
-                "No DWI images found for subject sub-{}".format(self.inputs.subject_id)
-            )
-
-        for imtype in ["flair", "fmap", "sbref", "roi", "dwi"]:
-            if not bids_dict[imtype]:
-                LOGGER.warning("No '%s' images found for sub-%s", imtype, self.inputs.subject_id)
-
-        return runtime
 
 
 class DerivativesDataSinkInputSpec(BaseInterfaceInputSpec):
@@ -344,24 +216,6 @@ class DerivativesDataSink(SimpleInterface):
             self._results["out_file"].append(out_file)
             self._results["compression"].append(_copy_any(fname, out_file))
         return runtime
-
-
-class _DerivativesMaybeDataSinkInputSpec(DerivativesDataSinkInputSpec):
-    in_file = traits.Either(
-        traits.Directory(exists=True),
-        InputMultiObject(File(exists=True)),
-        mandatory=False,
-        desc="the object to be saved",
-    )
-
-
-class DerivativesMaybeDataSink(DerivativesDataSink):
-    input_spec = _DerivativesMaybeDataSinkInputSpec
-
-    def _run_interface(self, runtime):
-        if not isdefined(self.inputs.in_file):
-            return runtime
-        return super(DerivativesMaybeDataSink, self)._run_interface(runtime)
 
 
 recon_entity_order = ["atlas", "model", "bundles", "fit", "mdp", "mfp", "bundle", "label"]
