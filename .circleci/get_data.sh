@@ -1,4 +1,4 @@
-IMAGE=pennbbl/qsirecon:unstable
+IMAGE=pennlinc/qsirecon:unstable
 
 # Set this to be comfortable on the testing machine
 MAX_CPUS=18

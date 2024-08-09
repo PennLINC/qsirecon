@@ -232,7 +232,7 @@ def write_derivative_description(bids_dir, deriv_dir):
                 "CodeURL": DOWNLOAD_URL,
             }
         ],
-        "CodeURL": "https://github.com/pennbbl/qsirecon",
+        "CodeURL": "https://github.com/pennlinc/qsirecon",
         "HowToAcknowledge": "Please cite our paper "
         "(https://www.nature.com/articles/s41592-021-01185-5#citeas), and "
         "include the generated citation boilerplate within the Methods "

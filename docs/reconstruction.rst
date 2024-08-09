@@ -57,7 +57,7 @@ Instead of specifying a path to a file you can choose from the following:
 These workflows each take considerable processing time, because they output as many versions of
 connectivity as possible. All :ref:`connectivity_atlases`  and all possible weightings are
 included. Each workflow corresponds to a JSON file that can be found in QSIRecon's
-`github <https://github.com/PennBBL/qsirecon/tree/master/qsirecon/data/pipelines>`_. For extra
+`github <https://github.com/PennLINC/qsirecon/tree/master/qsirecon/data/pipelines>`_. For extra
 information about how to customize these, see :ref:`custom_reconstruction`.
 
 To use a pre-packaged workflow, simply provide the name from the leftmost column above for the
@@ -606,7 +606,7 @@ if you're running on your own system (not recommended) you can set the environme
 ``QSIRECON_ATLAS=/path/to/my/atlases``.
 
 The nifti images should be registered to the
-`MNI152NLin2009cAsym <https://github.com/PennBBL/qsirecon/blob/master/qsirecon/data/mni_1mm_t1w_lps.nii.gz>`_
+`MNI152NLin2009cAsym <https://github.com/PennLINC/qsirecon/blob/master/qsirecon/data/mni_1mm_t1w_lps.nii.gz>`_
 included in ``qsirecon``.
 It is essential that your images are in the LPS+ orientation and have the sform zeroed-out
 in the header. **Be sure to check for alignment and orientation** in your outputs.

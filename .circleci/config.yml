@@ -4,7 +4,7 @@ orbs:
 
 .dockersetup: &dockersetup
   docker:
-    - image: pennbbl/qsirecon_build:24.7.4
+    - image: pennlinc/qsirecon_build:24.7.4
   working_directory: /src/qsirecon
 
 runinstall: &runinstall
@@ -753,9 +753,9 @@ jobs:
             # Build docker image
             e=1 && for i in {1..5}; do
               docker build \
-                --cache-from=pennbbl/qsirecon \
+                --cache-from=pennlinc/qsirecon \
                 --rm=false \
-                -t pennbbl/qsirecon:latest \
+                -t pennlinc/qsirecon:latest \
                 --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
                 --build-arg VCS_REF=`git rev-parse --short HEAD` \
                 --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" . \
@@ -767,12 +767,12 @@ jobs:
           command: |
             if [[ -n "$DOCKER_PASS" ]]; then
               docker login -u $DOCKER_USER -p $DOCKER_PASS
-              docker tag pennbbl/qsirecon pennbbl/qsirecon:unstable
-              docker push pennbbl/qsirecon:unstable
+              docker tag pennlinc/qsirecon pennlinc/qsirecon:unstable
+              docker push pennlinc/qsirecon:unstable
               if [[ -n "$CIRCLE_TAG" ]]; then
-                docker push pennbbl/qsirecon:latest
-                docker tag pennbbl/qsirecon pennbbl/qsirecon:$CIRCLE_TAG
-                docker push pennbbl/qsirecon:$CIRCLE_TAG
+                docker push pennlinc/qsirecon:latest
+                docker tag pennlinc/qsirecon pennlinc/qsirecon:$CIRCLE_TAG
+                docker push pennlinc/qsirecon:$CIRCLE_TAG
               fi
             fi
 

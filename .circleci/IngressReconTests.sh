@@ -28,7 +28,7 @@ TEMPDIR=${TESTDIR}/${TESTNAME}/work
 OUTPUT_DIR=${TESTDIR}/${TESTNAME}/derivatives
 BIDS_INPUT_DIR=${TESTDIR}/data/ukb
 
-qsirecon-docker -i pennbbl/qsirecon:unstable \
+qsirecon-docker -i pennlinc/qsirecon:unstable \
 	-e qsirecon_DEV 1 -u $(id -u) \
 	--patch-qsirecon /Users/mcieslak/projects/qsirecon/qsirecon \
 	--config ${CFG} ${PATCH} -w ${TEMPDIR} \

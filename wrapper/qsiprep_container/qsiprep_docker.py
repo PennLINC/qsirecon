@@ -10,7 +10,7 @@ running ::
   docker info
 
 Please report any feedback to our GitHub repository
-(https://github.com/pennbbl/qsirecon) and do not
+(https://github.com/pennlinc/qsirecon) and do not
 forget to credit all the authors of software that qsirecon
 uses (https://qsirecon.readthedocs.io/en/latest/citing.html).
 """
@@ -27,8 +27,8 @@ __credits__ = []
 __license__ = "3-clause BSD"
 __maintainer__ = ""
 __email__ = ""
-__url__ = "https://github.com/pennbbl/qsirecon"
-__bugreports__ = "https://github.com/pennbbl/qsirecon/issues"
+__url__ = "https://github.com/pennlinc/qsirecon"
+__bugreports__ = "https://github.com/pennlinc/qsirecon/issues"
 
 __description__ = """\
 qsirecon is a non-DTI diffusion-weighted image pre-processing pipeline \
@@ -273,7 +273,7 @@ def get_parser():
         "--image",
         metavar="IMG",
         type=str,
-        default="pennbbl/qsirecon:{}".format(__version__),
+        default="pennlinc/qsirecon:{}".format(__version__),
         help="image name",
     )
 

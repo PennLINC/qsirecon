@@ -9,8 +9,8 @@ update an existing environment, as necessary.
 
 Development in Docker is encouraged, for the sake of consistency and
 portability.
-By default, work should be built off of `pennbbl/qsirecon:latest
-<https://hub.docker.com/r/pennbbl/qsirecon/>`_ (see the
+By default, work should be built off of `pennlinc/qsirecon:latest
+<https://hub.docker.com/r/pennlinc/qsirecon/>`_ (see the
 installation_ guide for the basic procedure for running).
 
 
@@ -30,7 +30,7 @@ For instance, if your repositories are contained in ``$HOME/projects``::
 
     $ qsirecon-docker -f $HOME/projects/qsirecon/qsirecon \
                       -p $HOME/projects/nipype/nipype \
-                      -i pennbbl/qsirecon:latest \
+                      -i pennlinc/qsirecon:latest \
                       $HOME/fullds005 $HOME/dockerout participant
 
 Note the ``-i`` flag allows you to specify an image.
@@ -45,7 +45,7 @@ For example, ::
 
     $ docker run --rm -v $HOME/fullds005:/data:ro -v $HOME/dockerout:/out \
         -v $HOME/projects/qsirecon/qsirecon:/usr/local/miniconda/lib/python3.10/site-packages/qsirecon:ro \
-        pennbbl/qsirecon:latest /data /out/out participant \
+        pennlinc/qsirecon:latest /data /out/out participant \
         -w /out/work/
 
 In order to work directly in the container, pass the ``--shell`` flag to
@@ -58,7 +58,7 @@ arguments in a ``docker`` command::
 
     $ docker run --rm -v $HOME/fullds005:/data:ro -v $HOME/dockerout:/out \
         -v $HOME/projects/qsirecon/qsirecon:/usr/local/miniconda/lib/python3.10/site-packages/qsirecon:ro --entrypoint=bash \
-        pennbbl/qsirecon:latest
+        pennlinc/qsirecon:latest
 
 Patching containers can be achieved in Singularity analogous to ``docker``
 using the ``--bind`` (``-B``) option: ::
@@ -85,14 +85,14 @@ dependency changes.
 
 Python dependencies should generally be included in the ``REQUIRES``
 list in `qsirecon/info.py
-<https://github.com/pennbbl/qsirecon/blob/29133e5e9f92aae4b23dd897f9733885a60be311/qsirecon/info.py#L46-L61>`_.
+<https://github.com/pennlinc/qsirecon/blob/29133e5e9f92aae4b23dd897f9733885a60be311/qsirecon/info.py#L46-L61>`_.
 If the latest version in `PyPI <https://pypi.org/>`_ is sufficient,
 then no further action is required.
 
 For large Python dependencies where there will be a benefit to
 pre-compiled binaries, `conda <https://github.com/conda/conda>`_ packages
 may also be added to the ``conda install`` line in the `Dockerfile
-<https://github.com/pennbbl/qsirecon/blob/29133e5e9f92aae4b23dd897f9733885a60be311/Dockerfile#L46>`_.
+<https://github.com/pennlinc/qsirecon/blob/29133e5e9f92aae4b23dd897f9733885a60be311/Dockerfile#L46>`_.
 
 Non-Python dependencies must also be installed in the Dockerfile, via a
 ``RUN`` command.
@@ -109,7 +109,7 @@ repository, located in ``~/projects/qsirecon``: ::
 
     ~/projects/qsirecon$ docker build -t qsirecon .
 
-To work in this image, replace ``pennbbl/qsirecon:latest`` with
+To work in this image, replace ``pennlinc/qsirecon:latest`` with
 ``qsirecon`` in any of the above commands.
 This image may be accessed by the ``qsirecon-docker`` wrapper via the
 ``-i`` flag, e.g. ::

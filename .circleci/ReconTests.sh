@@ -37,7 +37,7 @@ TEMPDIR=${TESTDIR}/${TESTNAME}/work
 OUTPUT_DIR=${TESTDIR}/${TESTNAME}/derivatives
 BIDS_INPUT_DIR=${TESTDIR}/data/multishell_output/qsirecon
 
-qsirecon-docker -i pennbbl/qsirecon:latest \
+qsirecon-docker -i pennlinc/qsirecon:latest \
 	-e qsirecon_DEV 1 -u $(id -u) \
 	--config ${CFG} ${PATCH} -w ${TEMPDIR} \
 	 ${BIDS_INPUT_DIR} ${OUTPUT_DIR} \
@@ -58,7 +58,7 @@ TEMPDIR=${TESTDIR}/${TESTNAME}/work
 OUTPUT_DIR=${TESTDIR}/${TESTNAME}/derivatives
 BIDS_INPUT_DIR=${TESTDIR}/data/multishell_output/qsirecon
 
-qsirecon-docker -i pennbbl/qsirecon:latest \
+qsirecon-docker -i pennlinc/qsirecon:latest \
 	-e qsirecon_DEV 1 \
 	--config ${CFG} ${PATCH} -w ${TEMPDIR} \
 	 ${BIDS_INPUT_DIR} ${OUTPUT_DIR} \
@@ -78,7 +78,7 @@ TEMPDIR=${TESTDIR}/${TESTNAME}/work
 OUTPUT_DIR=${TESTDIR}/${TESTNAME}/derivatives
 BIDS_INPUT_DIR=${TESTDIR}/data/multishell_output/qsirecon
 
-qsirecon-docker -i pennbbl/qsirecon:latest \
+qsirecon-docker -i pennlinc/qsirecon:latest \
 	-e qsirecon_DEV 1 -u $(id -u) \
 	--config ${CFG} ${PATCH} -w ${TEMPDIR} \
 	 ${BIDS_INPUT_DIR} ${OUTPUT_DIR} \
@@ -98,7 +98,7 @@ TEMPDIR=${TESTDIR}/${TESTNAME}/work
 OUTPUT_DIR=${TESTDIR}/${TESTNAME}/derivatives
 BIDS_INPUT_DIR=${TESTDIR}/data/multishell_output/qsirecon
 
-qsirecon-docker -i pennbbl/qsirecon:latest \
+qsirecon-docker -i pennlinc/qsirecon:latest \
 	-e qsirecon_DEV 1 -u $(id -u) \
 	--config ${CFG} ${PATCH} -w ${TEMPDIR} \
 	 ${BIDS_INPUT_DIR} ${OUTPUT_DIR} \
@@ -118,7 +118,7 @@ TEMPDIR=${TESTDIR}/${TESTNAME}/work
 OUTPUT_DIR=${TESTDIR}/${TESTNAME}/derivatives
 BIDS_INPUT_DIR=${TESTDIR}/data/singleshell_output/qsirecon
 
-qsirecon-docker -i pennbbl/qsirecon:latest \
+qsirecon-docker -i pennlinc/qsirecon:latest \
 	-e qsirecon_DEV 1 -u $(id -u) \
 	--config ${CFG} ${PATCH} -w ${TEMPDIR} \
 	 ${BIDS_INPUT_DIR} ${OUTPUT_DIR} \
@@ -138,7 +138,7 @@ TEMPDIR=${TESTDIR}/${TESTNAME}/work
 OUTPUT_DIR=${TESTDIR}/${TESTNAME}/derivatives
 BIDS_INPUT_DIR=${TESTDIR}/data/singleshell_output/qsirecon
 
-qsirecon-docker -i pennbbl/qsirecon:latest \
+qsirecon-docker -i pennlinc/qsirecon:latest \
 	-e qsirecon_DEV 1 -u $(id -u) \
 	--config ${CFG} ${PATCH} -w ${TEMPDIR} \
 	 ${BIDS_INPUT_DIR} ${OUTPUT_DIR} \
@@ -159,7 +159,7 @@ TEMPDIR=${TESTDIR}/${TESTNAME}/work
 OUTPUT_DIR=${TESTDIR}/${TESTNAME}/derivatives
 BIDS_INPUT_DIR=${TESTDIR}/data/multishell_output/qsirecon
 
-qsirecon-docker -i pennbbl/qsirecon:latest \
+qsirecon-docker -i pennlinc/qsirecon:latest \
 	-e qsirecon_DEV 1 -u $(id -u) \
 	--config ${CFG} ${PATCH} -w ${TEMPDIR} \
 	 ${BIDS_INPUT_DIR} ${OUTPUT_DIR} \

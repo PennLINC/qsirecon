@@ -22,7 +22,7 @@ dependencies = [
 version = "0.20.1"
 
 [project.urls]
-Homepage = "https://github.com/pennbbl/qsirecon"
+Homepage = "https://github.com/pennlinc/qsirecon"
 Documentation = "https://www.qsirecon.readthedocs.io"
 Paper = "https://doi.org/10.1038/s41592-022-01458-7"
 "Docker Images" = "https://hub.docker.com/r/pennlinc/qsirecon/tags/"

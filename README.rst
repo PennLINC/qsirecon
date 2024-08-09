@@ -11,8 +11,8 @@ QSIRecon: Preprocessing and analysis of q-space images
   :target: http://qsirecon.readthedocs.io/en/latest/?badge=latest
   :alt: Documentation Status
 
-.. image:: https://img.shields.io/badge/docker-pennbbl/qsirecon-brightgreen.svg?logo=docker&style=flat
-  :target: https://hub.docker.com/r/pennbbl/qsirecon/tags/
+.. image:: https://img.shields.io/badge/docker-pennlinc/qsirecon-brightgreen.svg?logo=docker&style=flat
+  :target: https://hub.docker.com/r/pennlinc/qsirecon/tags/
   :alt: Docker
 
 .. image:: https://circleci.com/gh/PennLINC/qsirecon/tree/master.svg?style=svg
@@ -44,7 +44,7 @@ The main features of this software are
      from Dipy_, MRTrix_, `DSI Studio`_  and others.
   4. A novel motion correction algorithm that works on DSI and random q-space sampling schemes
 
-.. image:: https://github.com/PennBBL/qsirecon/raw/master/docs/_static/workflow_full.png
+.. image:: https://github.com/PennLINC/qsirecon/raw/master/docs/_static/workflow_full.png
 
 
 .. _preprocessing_def:

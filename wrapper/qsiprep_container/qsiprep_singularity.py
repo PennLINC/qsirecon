@@ -9,7 +9,7 @@ This is the preferred method for HPCs. For example ::
   singularity run --cleanenv -B /data/:/home/$user/data qsirecon-<version>.simg
 
 Please report any feedback to our GitHub repository
-(https://github.com/pennbbl/qsirecon) and do not
+(https://github.com/pennlinc/qsirecon) and do not
 forget to credit all the authors of software that qsirecon
 uses (https://qsirecon.readthedocs.io/en/latest/citing.html).
 """
@@ -27,8 +27,8 @@ __credits__ = []
 __license__ = "3-clause BSD"
 __maintainer__ = ""
 __email__ = ""
-__url__ = "https://github.com/pennbbl/qsirecon"
-__bugreports__ = "https://github.com/pennbbl/qsirecon/issues"
+__url__ = "https://github.com/pennlinc/qsirecon"
+__bugreports__ = "https://github.com/pennlinc/qsirecon/issues"
 
 __description__ = """\
 qsirecon is a non-DTI diffusion-weighted image pre-processing pipeline \
@@ -365,7 +365,7 @@ def main():
             return 0
         print("Downloading and building image. This may take a while...")
         ret = subprocess.run(
-            "singularity build {} docker://pennbbl/qsirecon:latest".format(opts.image)
+            "singularity build {} docker://pennlinc/qsirecon:latest".format(opts.image)
         )
         if ret > 0:
             print("Critical Error: Unable to create singularity image {}".format(opts.image))

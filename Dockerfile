@@ -5,7 +5,7 @@ RUN pip install build
 RUN apt-get update && \
     apt-get install -y --no-install-recommends git
 
-FROM pennbbl/qsirecon_build:24.7.4
+FROM pennlinc/qsirecon_build:24.7.4
 
 # Install qsirecon
 COPY . /src/qsirecon
@@ -29,6 +29,6 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.description="qsirecon - q Space Images preprocessing tool" \
       org.label-schema.url="http://qsirecon.readthedocs.io" \
       org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.vcs-url="https://github.com/pennbbl/qsirecon" \
+      org.label-schema.vcs-url="https://github.com/pennlinc/qsirecon" \
       org.label-schema.version=$VERSION \
       org.label-schema.schema-version="1.0"
