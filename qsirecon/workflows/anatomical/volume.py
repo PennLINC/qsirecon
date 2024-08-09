@@ -36,12 +36,12 @@ from nipype.interfaces import utility as niu
 from nipype.interfaces.ants import BrainExtraction, N4BiasFieldCorrection
 from nipype.interfaces.base import traits
 from nipype.pipeline import engine as pe
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from niworkflows.interfaces.images import TemplateDimensions
 from niworkflows.interfaces.reportlets.masks import ROIsPlot
 from pkg_resources import resource_filename as pkgr
 
 from ... import config
-from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces import Conform
 from ...interfaces import DerivativesDataSink as FDerivativesDataSink
 from ...interfaces.anatomical import DesaturateSkull, GetTemplate, VoxelSizeChooser

@@ -22,11 +22,11 @@ from dipy import __version__ as dipy_ver
 from nilearn import __version__ as nilearn_ver
 from nipype import __version__ as nipype_ver
 from nipype.utils.filemanip import split_filename
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from packaging.version import Version
 from pkg_resources import resource_filename as pkgrf
 
 from .. import config
-from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 
 def init_qsirecon_wf():

@@ -10,8 +10,8 @@ import logging
 
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
-
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
+
 from ...interfaces.anatomical import CalculateSOP
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.mrtrix import MRConvert

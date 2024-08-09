@@ -14,9 +14,9 @@ from copy import deepcopy
 
 from nipype.interfaces import utility as niu
 from nipype.pipeline import engine as pe
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from .. import config
-from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ..interfaces import DerivativesDataSink
 from ..interfaces.ingress import QsiReconDWIIngress
 from ..interfaces.interchange import qsirecon_output_names, recon_workflow_input_fields

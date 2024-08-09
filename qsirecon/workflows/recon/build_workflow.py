@@ -1,8 +1,8 @@
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ... import config
-from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces.interchange import default_input_set, recon_workflow_input_fields
 from .amico import init_amico_noddi_fit_wf
 from .converters import init_mif_to_fibgz_wf, init_qsirecon_to_fsl_wf

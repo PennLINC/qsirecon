@@ -11,8 +11,8 @@ import logging
 
 import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
-
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
+
 from ...interfaces.bids import ReconDerivativesDataSink
 from ...interfaces.converters import FODtoFIBGZ
 from ...interfaces.images import ConformDwi
