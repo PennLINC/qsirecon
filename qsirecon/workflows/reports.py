@@ -16,7 +16,7 @@ from nipype.interfaces import utility as niu
 from nipype.pipeline import engine as pe
 
 from .. import config
-from ..engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ..interfaces import DerivativesDataSink
 from ..interfaces.ingress import QsiReconDWIIngress
 from ..interfaces.interchange import qsirecon_output_names, recon_workflow_input_fields

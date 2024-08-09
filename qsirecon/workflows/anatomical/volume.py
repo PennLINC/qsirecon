@@ -41,7 +41,7 @@ from niworkflows.interfaces.reportlets.masks import ROIsPlot
 from pkg_resources import resource_filename as pkgr
 
 from ... import config
-from ...engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces import Conform
 from ...interfaces import DerivativesDataSink as FDerivativesDataSink
 from ...interfaces.anatomical import DesaturateSkull, GetTemplate, VoxelSizeChooser

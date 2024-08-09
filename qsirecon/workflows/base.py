@@ -26,7 +26,7 @@ from packaging.version import Version
 from pkg_resources import resource_filename as pkgrf
 
 from .. import config
-from ..engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 
 def init_qsirecon_wf():

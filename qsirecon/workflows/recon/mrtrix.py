@@ -19,7 +19,7 @@ import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
 
 from ... import config
-from ...engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces.bids import ReconDerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport

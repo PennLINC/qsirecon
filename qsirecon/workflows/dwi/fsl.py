@@ -15,7 +15,7 @@ from nipype.pipeline import engine as pe
 from pkg_resources import resource_filename as pkgr_fn
 
 from ... import config
-from ...engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces import DerivativesDataSink
 from ...interfaces.eddy import (
     Eddy2SPMMotion,

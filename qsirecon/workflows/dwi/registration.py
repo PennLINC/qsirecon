@@ -8,7 +8,7 @@ from nipype.pipeline import engine as pe
 from pkg_resources import resource_filename as pkgrf
 
 from ... import config
-from ...engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces.itk import ACPCReport, AffineToRigid
 from ...interfaces.niworkflows import ANTSRegistrationRPT
 

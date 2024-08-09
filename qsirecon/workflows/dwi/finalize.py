@@ -14,7 +14,7 @@ from nipype.pipeline import engine as pe
 from niworkflows.interfaces.reportlets.registration import SimpleBeforeAfterRPT
 
 from ... import config
-from ...engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces import DerivativesDataSink
 from ...interfaces.dsi_studio import DSIStudioBTable
 from ...interfaces.dwi_merge import MergeFinalConfounds, SplitResampledDWIs

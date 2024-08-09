@@ -12,7 +12,7 @@ from nipype.algorithms import confounds as nac
 from nipype.interfaces import utility as niu
 from nipype.pipeline import engine as pe
 
-from ...engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces import AddTSVHeader, GatherConfounds
 
 DEFAULT_MEMORY_MIN_GB = 0.01

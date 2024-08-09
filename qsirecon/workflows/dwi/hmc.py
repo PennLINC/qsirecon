@@ -13,7 +13,7 @@ from nipype.interfaces import utility as niu
 from pkg_resources import resource_filename as pkgrf
 
 from ... import config
-from ...engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces import DerivativesDataSink
 from ...interfaces.gradients import CombineMotions, GradientRotation, MatchTransforms
 from ...interfaces.shoreline import (

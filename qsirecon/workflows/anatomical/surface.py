@@ -17,7 +17,7 @@ from nipype.pipeline import engine as pe
 from niworkflows.interfaces.freesurfer import RobustRegister
 from niworkflows.interfaces.reportlets.segmentation import ReconAllRPT
 
-from ...engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces import DerivativesDataSink as FDerivativesDataSink
 from ...interfaces import (
     FSDetectInputs,

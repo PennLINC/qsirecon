@@ -16,7 +16,7 @@ from nipype.pipeline import engine as pe
 from nipype.utils.filemanip import split_filename
 
 from ... import config
-from ...engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces import ConformDwi, DerivativesDataSink
 from ...interfaces.dipy import Patch2Self
 from ...interfaces.dwi_merge import MergeDWIs, PhaseToRad, StackConfounds

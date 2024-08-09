@@ -17,7 +17,7 @@ from nipype.pipeline import engine as pe
 from nipype.utils.filemanip import split_filename
 from niworkflows.interfaces.reportlets.registration import SimpleBeforeAfterRPT
 
-from ...engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces import DerivativesDataSink
 from ..anatomical import init_synthstrip_wf
 

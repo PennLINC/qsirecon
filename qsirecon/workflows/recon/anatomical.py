@@ -21,7 +21,7 @@ from niworkflows.interfaces.reportlets.registration import SpatialNormalizationR
 from pkg_resources import resource_filename as pkgrf
 
 from ... import config
-from ...engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces.anatomical import QSIReconAnatomicalIngress, UKBAnatomicalIngress
 from ...interfaces.ants import ConvertTransformFile
 from ...interfaces.bids import ReconDerivativesDataSink

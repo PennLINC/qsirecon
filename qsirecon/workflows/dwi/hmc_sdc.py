@@ -12,7 +12,7 @@ from nipype.interfaces import utility as niu
 from nipype.pipeline import engine as pe
 
 from ... import config
-from ...engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces.gradients import CombineMotions, GradientRotation, SliceQC
 from ...interfaces.images import SplitDWIsBvals, TSplit
 from ..fieldmap.base import init_sdc_wf

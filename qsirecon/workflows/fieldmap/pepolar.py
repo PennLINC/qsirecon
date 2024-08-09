@@ -18,7 +18,7 @@ from niworkflows.interfaces.header import CopyHeader
 from niworkflows.interfaces.reportlets.registration import ANTSApplyTransformsRPT
 
 from ... import config
-from ...engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces import StructuralReference
 from ...interfaces.fmap import B0RPEFieldmap, PEPOLARReport
 from ...interfaces.images import ExtractWM

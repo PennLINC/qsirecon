@@ -11,7 +11,7 @@ from nipype.interfaces import utility as niu
 from nipype.pipeline import engine as pe
 
 from ... import config
-from ...engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces.anatomical import DiceOverlap
 from ...interfaces.dipy import TensorReconstruction
 from ...interfaces.dsi_studio import (

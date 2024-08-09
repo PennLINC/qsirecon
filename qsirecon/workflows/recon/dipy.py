@@ -12,7 +12,7 @@ import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
 
 from ... import config
-from ...engine import Workflow
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces.dipy import (
     BrainSuiteShoreReconstruction,
     KurtosisReconstruction,
