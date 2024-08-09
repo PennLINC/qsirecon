@@ -15,5 +15,3 @@ Reconstruction pipeline nodes
 .. automodule:: qsirecon.workflows.recon.utils
 
 """
-
-from .base import init_qsirecon_wf
