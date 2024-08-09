@@ -1,6 +1,6 @@
 .. include:: links.rst
 
-QSIRecon: Preprocessing and analysis of q-space images
+QSIRecon: Reconstruction of preprocessed q-space images
 =======================================================
 
 .. image:: https://img.shields.io/badge/Source%20Code-pennlinc%2Fqsirecon-purple
@@ -45,17 +45,6 @@ The main features of this software are
   4. A novel motion correction algorithm that works on DSI and random q-space sampling schemes
 
 .. image:: https://github.com/PennLINC/qsirecon/raw/main/docs/_static/workflow_full.png
-
-
-.. _preprocessing_def:
-
-Preprocessing
-~~~~~~~~~~~~~~~
-
-The preprocessing pipelines are built based on the available BIDS inputs, ensuring that fieldmaps
-are handled correctly. The preprocessing workflow performs head motion correction, susceptibility
-distortion correction, MP-PCA denoising, coregistration to T1w images, spatial normalization
-using ANTs_ and tissue segmentation.
 
 
 .. _reconstruction_def:
