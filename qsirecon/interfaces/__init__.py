@@ -4,5 +4,3 @@
 from .bids import DerivativesDataSink
 from .images import ConformDwi, ValidateImage
 from .reports import AboutSummary, SubjectSummary
-from .surf import NormalizeSurf
-from .utils import AddTSVHeader, ConcatAffines
