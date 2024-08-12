@@ -167,7 +167,7 @@ def test_autotrack(data_dir, output_dir, working_dir):
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -211,7 +211,7 @@ def test_dipy_mapmri(data_dir, output_dir, working_dir):
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -255,7 +255,7 @@ def test_dipy_dki(data_dir, output_dir, working_dir):
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -289,7 +289,7 @@ def test_scalar_mapper(data_dir, output_dir, working_dir):
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -327,7 +327,7 @@ def test_pyafq_recon_external_trk(data_dir, output_dir, working_dir):
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -364,7 +364,7 @@ def test_pyafq_recon_full(data_dir, output_dir, working_dir):
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -405,7 +405,7 @@ def test_mrtrix3_recon(data_dir, output_dir, working_dir):
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -439,7 +439,7 @@ def test_tortoise_recon(data_dir, output_dir, working_dir):
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsirecon")
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
