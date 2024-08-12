@@ -420,6 +420,8 @@ class execution(_Config):
     """Only build the reports, based on the reportlets found in a cached working directory."""
     run_uuid = f"{strftime('%Y%m%d-%H%M%S')}_{uuid4()}"
     """Unique identifier of this particular run."""
+    skip_odf_reports = False
+    """Disable ODF recon reports."""
     participant_label = None
     """List of participant identifiers that are to be preprocessed."""
     freesurfer_input = None
@@ -541,6 +543,8 @@ del _oc_policy
 class workflow(_Config):
     """Configure the particular execution graph of this workflow."""
 
+    b0_threshold = None
+    """Any value in the .bval file less than this will be considered a b=0 image."""
     infant = False
     """Configure pipelines specifically for infant brains"""
     longitudinal = False

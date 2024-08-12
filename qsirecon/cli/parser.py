@@ -220,11 +220,6 @@ def _build_parser(**kwargs):
 
     g_subset = parser.add_argument_group("Options for performing only a subset of the workflow")
     g_subset.add_argument(
-        "--dwi-only",
-        action="store_true",
-        help="ignore anatomical (T1w/T2w) data and process DWIs only",
-    )
-    g_subset.add_argument(
         "--boilerplate-only",
         "--boilerplate_only",
         "--boilerplate",
@@ -254,6 +249,16 @@ def _build_parser(**kwargs):
         "--longitudinal",
         action="store_true",
         help="Treat dataset as longitudinal - may increase runtime",
+    )
+    g_conf.add_argument(
+        "--b0-threshold",
+        "--b0_threshold",
+        action="store",
+        type=int,
+        default=100,
+        help="any value in the .bval file less than this will be considered "
+        "a b=0 image. Current default threshold = 100; this threshold can be "
+        "lowered or increased. Note, setting this too high can result in inaccurate results.",
     )
 
     # FreeSurfer options
@@ -295,6 +300,13 @@ def _build_parser(**kwargs):
         metavar="PATH",
         type=Path,
         help="Directory containing freesurfer outputs to be integrated into recon.",
+    )
+    g_recon.add_argument(
+        "--skip-odf-reports",
+        "--skip_odf_reports",
+        action="store_true",
+        default=False,
+        help="run only reconstruction, assumes preprocessing has already completed.",
     )
 
     g_other = parser.add_argument_group("Other options")
