@@ -18,7 +18,7 @@ The common parts of the command are similar to the `BIDS-Apps
 
 Example: ::
 
-    qsirecon data/bids_root/ out/ participant -w work/
+   qsirecon data/bids_root/ out/ participant -w work/
 
 
 Command-Line Arguments
