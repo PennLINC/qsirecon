@@ -134,7 +134,6 @@ exclude = '''
     | _build
     | build
     | dist
-    | qsirecon/niworkflows
   )/
   | qsirecon/_version.py
 )
@@ -156,7 +155,6 @@ exclude = [
     "qsirecon/config.py",
     "qsirecon/data/",
     "qsirecon/tests/",
-    "qsirecon/niworkflows/",
     "qsirecon/utils/sentry.py",
 ]
 ignore = ["D107", "E203", "E402", "E722", "W503", "N803", "N806", "N815", "W605"]
