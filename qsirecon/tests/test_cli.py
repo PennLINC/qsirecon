@@ -43,7 +43,7 @@ def test_mrtrix_singleshell_ss3t_act(data_dir, output_dir, working_dir):
     TEST_NAME = "mrtrix_singleshell_ss3t_act"
 
     dataset_dir = download_test_data("singleshell_output", data_dir)
-    dataset_dir = os.path.join(dataset_dir, "qsirecon")
+    dataset_dir = os.path.join(dataset_dir, "qsiprep")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -84,7 +84,7 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
     TEST_NAME = "mrtrix_singleshell_ss3t_noact"
 
     dataset_dir = download_test_data("singleshell_output", data_dir)
-    dataset_dir = os.path.join(dataset_dir, "qsirecon")
+    dataset_dir = os.path.join(dataset_dir, "qsiprep")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -125,7 +125,7 @@ def test_amico_noddi(data_dir, output_dir, working_dir):
 
     dataset_dir = download_test_data("singleshell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "qsirecon")
+    dataset_dir = os.path.join(dataset_dir, "qsiprep")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
