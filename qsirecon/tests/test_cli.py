@@ -275,48 +275,6 @@ def test_dipy_dki(data_dir, output_dir, working_dir):
 
 
 @pytest.mark.integration
-@pytest.mark.dsdti_topup
-def test_dsdti_topup(data_dir, output_dir, working_dir):
-    """DSCDTI_TOPUP test
-
-    This tests the following features:
-    - TOPUP on a single-shell sequence
-    - Eddy is run on a CPU
-    - mrdegibbs is run
-    - A follow-up reconstruction using the dsi_studio_gqi workflow
-
-    Inputs
-    ------
-    - DSDTI BIDS data (data/DSDTI)
-    """
-    TEST_NAME = "dsdti_topup"
-
-    dataset_dir = download_test_data("DSDTI", data_dir)
-    # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "DSDTI")
-    out_dir = os.path.join(output_dir, TEST_NAME)
-    work_dir = os.path.join(working_dir, TEST_NAME)
-    test_data_path = get_test_data_path()
-    eddy_config = os.path.join(test_data_path, "eddy_config.json")
-
-    parameters = [
-        dataset_dir,
-        out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        f"--eddy-config={eddy_config}",
-        "--unringing-method=mrdegibbs",
-        "--b1-biascorrect-stage=legacy",
-        "--output-resolution=5",
-        "--recon-spec=dsi_studio_gqi",
-        "--nthreads=1",
-    ]
-
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
-
-
-@pytest.mark.integration
 @pytest.mark.scalar_mapper
 def test_scalar_mapper(data_dir, output_dir, working_dir):
     """Test the TORTOISE recon workflow.

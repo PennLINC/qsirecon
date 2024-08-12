@@ -74,50 +74,6 @@ jobs:
           paths:
             - /src/qsirecon/.circleci/data/multishell_output
 
-  download_DSDTI:
-    <<: *dockersetup
-    steps:
-      - checkout
-      - restore_cache:
-          key: DSDTI-01
-      - run: *runinstall
-      - run:
-          name: Download DSDTI test data
-          command: |
-            cd /src/qsirecon/.circleci
-            python get_data.py $PWD/data DSDTI
-      - save_cache:
-          key: DSDTI-01
-          paths:
-            - /src/qsirecon/.circleci/data/DSDTI
-
-  DSDTI_TOPUP:
-    resource_class: large
-    environment:
-      CIRCLE_CPUS: 4
-    <<: *dockersetup
-    steps:
-      - checkout
-      - restore_cache:
-          key: DSDTI-01
-      - run: *runinstall
-      - run:
-          name: Run DTI with TOPUP/Eddy
-          no_output_timeout: 1h
-          command: |
-            pytest -rP -o log_cli=true -m "dsdti_topup" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.dsdti_topup
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.dsdti_topup
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/dsdti_topup/
-
   Recon_3Tissue_Singleshell_ACT:
     <<: *dockersetup
     steps:
@@ -488,23 +444,6 @@ workflows:
             tags:
               only: /.*/
 
-      - download_DSDTI:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /.*/
-
-      - DSDTI_TOPUP:
-          requires:
-            - download_DSDTI
-          filters:
-            branches:
-              ignore:
-                - /recon\/.*/
-            tags:
-              only: /.*/
-
       - Recon_3Tissue_Singleshell_ACT:
           requires:
             - download_singleshell_output
@@ -605,7 +544,6 @@ workflows:
 
       - deployable:
           requires:
-            - DSDTI_TOPUP
             - Recon_3Tissue_Singleshell_ACT
             - Recon_3Tissue_Singleshell_NoACT
             - Recon_MRtrix3

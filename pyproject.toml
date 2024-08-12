@@ -174,7 +174,6 @@ markers = [
     "amico_noddi: test 5",
     "dipy_mapmri: test 7",
     "dipy_dki: test 8",
-    "dsdti_topup: test 15",
     "scalar_mapper: test 17",
     "pyafq_recon_external_trk: test 18",
     "pyafq_recon_full: test 19",
