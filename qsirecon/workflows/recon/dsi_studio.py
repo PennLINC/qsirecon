@@ -12,9 +12,9 @@ import logging
 
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ... import config
-from ...engine import Workflow
 from ...interfaces.bids import ReconDerivativesDataSink
 from ...interfaces.converters import DSIStudioTrkToTck
 from ...interfaces.interchange import recon_workflow_input_fields
