@@ -17,11 +17,11 @@ import nipype.interfaces.io as nio
 from nipype.interfaces import afni, ants, mrtrix3
 from nipype.interfaces import utility as niu
 from nipype.pipeline import engine as pe
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from niworkflows.interfaces.reportlets.registration import SpatialNormalizationRPT
 from pkg_resources import resource_filename as pkgrf
 
 from ... import config
-from ...engine import Workflow
 from ...interfaces.anatomical import QSIReconAnatomicalIngress, UKBAnatomicalIngress
 from ...interfaces.ants import ConvertTransformFile
 from ...interfaces.bids import ReconDerivativesDataSink
