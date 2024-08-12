@@ -6,6 +6,5 @@ include requirements.txt
 include CHANGES.rst
 include LICENSE
 
-# versioneer
-include versioneer.py
+# hatchling
 include qsirecon/_version.py
