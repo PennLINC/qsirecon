@@ -28,7 +28,7 @@ A Python module to maintain unique, run-wide *QSIRecon* settings.
 This module implements the memory structures to keep a consistent, singleton config.
 Settings are passed across processes via filesystem, and a copy of the settings for
 each run and subject is left under
-``<qsirecon_dir>/sub-<participant_id>/log/<run_unique_id>/qsirecon.toml``.
+``<output_dir>/sub-<participant_id>/log/<run_unique_id>/qsirecon.toml``.
 Settings are stored using :abbr:`ToML (Tom's Markup Language)`.
 The module has a :py:func:`~qsirecon.config.to_filename` function to allow writing out
 the settings to hard disk in *ToML* format, which looks like:
@@ -412,15 +412,10 @@ class execution(_Config):
     """Output verbosity."""
     low_mem = None
     """Utilize uncompressed NIfTIs and other tricks to minimize memory allocation."""
-    # md_only_boilerplate = False
-    # """Do not convert boilerplate from MarkDown to LaTex and HTML."""
     notrack = False
     """Do not collect telemetry information for *QSIRecon*."""
     output_dir = None
     """Folder where derivatives will be stored."""
-    # output_spaces = None
-    # """List of (non)standard spaces designated (with the ``--output-spaces`` flag of
-    # the command line) as spatial references for outputs."""
     reports_only = False
     """Only build the reports, based on the reportlets found in a cached working directory."""
     run_uuid = f"{strftime('%Y%m%d-%H%M%S')}_{uuid4()}"

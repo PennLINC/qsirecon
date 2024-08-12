@@ -1064,7 +1064,7 @@ def _run_and_generate(test_name, parameters, test_main=True):
         retval = build_workflow(config_file, retval={})
         qsirecon_wf = retval["workflow"]
         qsirecon_wf.run()
-        write_derivative_description(config.execution.fmri_dir, config.execution.qsirecon_dir)
+        write_derivative_description(config.execution.fmri_dir, config.execution.output_dir)
 
         build_boilerplate(str(config_file), qsirecon_wf)
         session_list = (
@@ -1074,7 +1074,7 @@ def _run_and_generate(test_name, parameters, test_main=True):
         )
         generate_reports(
             subject_list=config.execution.participant_label,
-            output_dir=config.execution.qsirecon_dir,
+            output_dir=config.execution.output_dir,
             run_uuid=config.execution.run_uuid,
             session_list=session_list,
         )

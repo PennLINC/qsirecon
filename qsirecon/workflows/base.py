@@ -72,7 +72,7 @@ def init_qsirecon_wf():
         single_subject_wf = init_single_subject_recon_wf(subject_id=subject_id)
 
         single_subject_wf.config["execution"]["crashdump_dir"] = str(
-            config.execution.qsirecon_dir / f"sub-{subject_id}" / "log" / config.execution.run_uuid
+            config.execution.output_dir / f"sub-{subject_id}" / "log" / config.execution.run_uuid
         )
         for node in single_subject_wf._get_all_nodes():
             node.config = deepcopy(single_subject_wf.config)
@@ -80,7 +80,7 @@ def init_qsirecon_wf():
 
         # Dump a copy of the config file into the log directory
         log_dir = (
-            config.execution.qsirecon_dir / f"sub-{subject_id}" / "log" / config.execution.run_uuid
+            config.execution.output_dir / f"sub-{subject_id}" / "log" / config.execution.run_uuid
         )
         log_dir.mkdir(exist_ok=True, parents=True)
         config.to_filename(log_dir / "qsirecon.toml")

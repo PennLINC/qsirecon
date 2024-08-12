@@ -420,28 +420,10 @@ def parse_args(args=None, namespace=None):
             f"total threads (--nthreads/--n_cpus={config.nipype.nprocs})"
         )
 
-    if config.workflow.recon_spec and not config.execution.recon_input:
-        build_log.info("Running BOTH preprocessing and recon.")
-        config.execution.running_preproc_and_recon = True
-        config.execution.recon_input = config.execution.qsirecon_dir
-
-    # Validate the tricky options here
-    if config.workflow.dwi_denoise_window != "auto":
-        try:
-            _ = int(config.workflow.dwi_denoise_window)
-        except ValueError:
-            raise Exception("--dwi-denoise-window must be an integer or 'auto'")
-
     bids_dir = config.execution.bids_dir
     output_dir = config.execution.output_dir
     work_dir = config.execution.work_dir
     version = config.environment.version
-
-    if config.execution.qsirecon_dir is None:
-        config.execution.qsirecon_dir = output_dir / "qsirecon"
-
-    if config.execution.qsirecon_dir is None:
-        config.execution.qsirecon_dir = output_dir / "qsirecon"
 
     if config.execution.reportlets_dir is None:
         config.execution.reportlets_dir = work_dir / "reportlets"
@@ -486,7 +468,7 @@ def parse_args(args=None, namespace=None):
             )
 
     # Setup directories
-    config.execution.log_dir = config.execution.qsirecon_dir / "logs"
+    config.execution.log_dir = config.execution.output_dir / "logs"
     # Check and create output and working directories
     config.execution.log_dir.mkdir(exist_ok=True, parents=True)
     config.execution.reportlets_dir.mkdir(exist_ok=True, parents=True)
