@@ -30,21 +30,15 @@ from .. import config
 
 
 def init_qsirecon_wf():
-    """
-    This workflow organizes the execution of qsirecon, with a sub-workflow for
-    each subject.
+    """Organize the execution of qsirecon, with a sub-workflow for each subject.
 
     .. workflow::
         :graph2use: orig
         :simple_form: yes
 
         from qsirecon.workflows.base import init_qsirecon_wf
+
         wf = init_qsirecon_wf()
-
-
-    Parameters
-
-
     """
     ver = Version(config.environment.version)
     qsirecon_wf = Workflow(name=f"qsirecon_{ver.major}_{ver.minor}_wf")
@@ -89,15 +83,14 @@ def init_qsirecon_wf():
 
 
 def init_single_subject_recon_wf(subject_id):
-    """
-    This workflow organizes the reconstruction pipeline for a single subject.
+    """Organize the reconstruction pipeline for a single subject.
+
     Reconstruction is performed using a separate workflow for each dwi series.
 
     Parameters
-
-        subject_id : str
-            Single subject label
-
+    ----------
+    subject_id : str
+        Single subject label
     """
     from ..interfaces.ingress import QsiReconDWIIngress, UKBioBankDWIIngress
     from ..interfaces.interchange import (

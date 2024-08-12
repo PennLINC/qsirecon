@@ -27,8 +27,7 @@ LOGGER = logging.getLogger("nipype.workflow")
 
 
 def init_json_preproc_report_wf(subject_list):
-    """
-    This workflow creates a json report for the dmriprep-viewer.
+    """Create a json report for the dmriprep-viewer.
 
     .. workflow::
         :graph2use: orig
@@ -42,16 +41,15 @@ def init_json_preproc_report_wf(subject_list):
             output_dir='.')
 
 
-    Parameters:
-
-        subject_list : list
-            List of subject labels
-        work_dir : str
-            Directory in which to store workflow execution state and temporary
-            files
-        output_dir : str
-            Directory in which to save derivatives
-
+    Parameters
+    ----------
+    subject_list : list
+        List of subject labels
+    work_dir : str
+        Directory in which to store workflow execution state and temporary
+        files
+    output_dir : str
+        Directory in which to save derivatives
     """
     work_dir = config.execution.work_dir
     output_dir = config.execution.output_dir
