@@ -54,8 +54,8 @@ connectivity.
 
 
 Note
-------
+----
 
-The ``qsirecon`` pipeline uses much of the code from ``FMRIPREP``. It is critical
-to note that the similarities in the code **do not imply that the authors of
-FMRIPREP in any way endorse or support this code or its pipelines**.
+The ``QSIRecon`` pipeline uses much of the code from ``fMRIPrep``.
+It is critical to note that the similarities in the code
+**do not imply that the authors of fMRIPrep in any way endorse or support this code or its pipelines**.
