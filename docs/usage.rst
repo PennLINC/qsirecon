@@ -7,10 +7,10 @@ The ``qsirecon`` postprocessing workflow takes as principal input the path of
 the preprocessing derivatives dataset that is to be processed.
 The input dataset is required to be in
 valid :abbr:`BIDS (Brain Imaging Data Structure)` format with at least one
-diffusion MRI series. The T1w image and the DWI may be in separate BIDS
-<session> folders for a given subject. We highly recommend that you validate
-your dataset with the free, online `BIDS Validator
-<http://bids-standard.github.io/bids-validator/>`_.
+diffusion MRI series.
+The T1w image and the DWI may be in separate BIDS <session> folders for a given subject.
+We highly recommend that you validate your dataset with the free,
+online `BIDS Validator <http://bids-standard.github.io/bids-validator/>`_.
 
 The exact command to run ``qsirecon`` depends on the Installation_ method.
 The common parts of the command are similar to the `BIDS-Apps
