@@ -52,10 +52,8 @@ def test_mrtrix_singleshell_ss3t_act(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=mrtrix_singleshell_ss3t_ACT-fast",
-        "--recon-only",
         "--output-resolution=5",
     ]
 
@@ -93,10 +91,8 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=mrtrix_singleshell_ss3t_noACT",
-        "--recon-only",
         "--output-resolution=5",
     ]
 
@@ -134,10 +130,8 @@ def test_amico_noddi(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=amico_noddi",
-        "--recon-only",
         "--output-resolution=5",
     ]
 
@@ -176,10 +170,8 @@ def test_autotrack(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=dsi_studio_autotrack",
-        "--recon-only",
         "--output-resolution=5",
     ]
 
@@ -221,9 +213,7 @@ def test_dipy_mapmri(data_dir, output_dir, working_dir):
         "participant",
         f"-w={work_dir}",
         "--sloppy",
-        f"--recon-input={dataset_dir}",
         "--recon-spec=dipy_mapmri",
-        "--recon-only",
         "--output-resolution=5",
     ]
 
@@ -265,9 +255,7 @@ def test_dipy_dki(data_dir, output_dir, working_dir):
         "participant",
         f"-w={work_dir}",
         "--sloppy",
-        f"--recon-input={dataset_dir}",
         "--recon-spec=dipy_dki",
-        "--recon-only",
         "--output-resolution=5",
     ]
 
@@ -298,10 +286,8 @@ def test_scalar_mapper(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=test_scalar_maps",
-        "--recon-only",
         "--output-resolution=3.5",
         "--nthreads=1",
     ]
@@ -336,10 +322,8 @@ def test_pyafq_recon_external_trk(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=mrtrix_multishell_msmt_pyafq_tractometry",
-        "--recon-only",
         "--output-resolution=5",
     ]
 
@@ -373,10 +357,8 @@ def test_pyafq_recon_full(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=pyafq_tractometry",
-        "--recon-only",
         "--output-resolution=5",
     ]
 
@@ -414,10 +396,8 @@ def test_mrtrix3_recon(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=mrtrix_multishell_msmt_ACT-fast",
-        "--recon-only",
         "--output-resolution=5",
     ]
 
@@ -448,10 +428,8 @@ def test_tortoise_recon(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=TORTOISE",
-        "--recon-only",
         "--output-resolution=5",
     ]
 
