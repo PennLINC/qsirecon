@@ -584,7 +584,6 @@ workflows:
 
       - merge_coverage:
           requires:
-            - DSDTI_TOPUP
             - Recon_3Tissue_Singleshell_ACT
             - Recon_3Tissue_Singleshell_NoACT
             - Recon_MRtrix3

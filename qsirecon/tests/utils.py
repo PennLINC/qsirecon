@@ -18,14 +18,12 @@ LOGGER = logging.getLogger("nipype.utils")
 def download_test_data(dset, data_dir=None):
     """Download test data."""
     URLS = {
-        "DSDTI": "https://upenn.box.com/shared/static/iefjtvfez0c2oug0g1a9ulozqe5il5xy.xz",
         "multishell_output": (
             "https://upenn.box.com/shared/static/hr7xnxicbx9iqndv1yl35bhtd61fpalp.xz"
         ),
         "singleshell_output": (
             "https://upenn.box.com/shared/static/9jhf0eo3ml6ojrlxlz6lej09ny12efgg.gz"
         ),
-        "DSDTI_fmap": "https://upenn.box.com/shared/static/rxr6qbi6ezku9gw3esfpnvqlcxaw7n5n.gz",
     }
     if dset == "*":
         for k in URLS:
