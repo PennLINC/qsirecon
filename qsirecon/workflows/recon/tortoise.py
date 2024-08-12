@@ -11,9 +11,9 @@ import logging
 
 import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ... import config
-from ...engine import Workflow
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import ReconScalarsDataSink, TORTOISEReconScalars
 from qsirecon.interfaces.tortoise import (
