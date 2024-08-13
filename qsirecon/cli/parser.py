@@ -260,6 +260,17 @@ def _build_parser(**kwargs):
         "a b=0 image. Current default threshold = 100; this threshold can be "
         "lowered or increased. Note, setting this too high can result in inaccurate results.",
     )
+    g_conf.add_argument(
+        "--output-resolution",
+        "--output_resolution",
+        action="store",
+        # required when not recon-only (which can be specified in sysargs 2 ways)
+        required=False,
+        type=float,
+        help="the isotropic voxel size in mm the data will be resampled to "
+        "after preprocessing. If set to a lower value than the original voxel "
+        "size, your data will be upsampled using BSpline interpolation.",
+    )
 
     # FreeSurfer options
     g_fs = parser.add_argument_group("Specific options for FreeSurfer preprocessing")

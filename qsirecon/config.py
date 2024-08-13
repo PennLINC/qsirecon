@@ -553,6 +553,8 @@ class workflow(_Config):
     """Specifies which pipeline was used to preprocess data in ``bids_dir``."""
     recon_spec = None
     """Recon workflow specification."""
+    output_resolution = None
+    """Isotropic voxel size for outputs."""
 
 
 class loggers:
