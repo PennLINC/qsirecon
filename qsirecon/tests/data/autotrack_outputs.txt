@@ -1,13 +1,10 @@
-qsirecon
 dataset_description.json
-qsirecon/dwiqc.json
 logs
 logs/CITATION.bib
 logs/CITATION.html
 logs/CITATION.md
 logs/CITATION.tex
-sub-ABCD
-qsirecon/sub-ABCD.html
+qsirecon
 qsirecon
 qsirecon-DSIStudio
 qsirecon-DSIStudio/sub-ABCD
@@ -17,4 +14,7 @@ qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_bun
 qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_bundlestats.csv
 qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_dwimap.fib.gz
 qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_mapping.map.gz
+qsirecon/dwiqc.json
 qsirecon/sub-ABCD
+qsirecon/sub-ABCD.html
+sub-ABCD
