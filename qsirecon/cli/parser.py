@@ -462,23 +462,6 @@ def parse_args(args=None, namespace=None):
             "Please modify the output path."
         )
 
-    # Validate inputs
-    if not opts.skip_bids_validation:
-        if opts.recon_input is not None:
-            build_log.info("Skipping BIDS validation because inputs are BIDS derivatives")
-        else:
-            from ..utils.bids import validate_input_dir
-
-            build_log.info(
-                "Making sure the input data is BIDS compliant (warnings can be ignored in most "
-                "cases)."
-            )
-            validate_input_dir(
-                config.environment.exec_env,
-                opts.bids_dir,
-                opts.participant_label,
-            )
-
     # Setup directories
     config.execution.log_dir = config.execution.output_dir / "logs"
     # Check and create output and working directories

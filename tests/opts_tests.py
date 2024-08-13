@@ -65,16 +65,3 @@ def test_set_freesurfer_license(tmpdir):
     opts = get_parser().parse_args(fsarg.split(' '))
     set_freesurfer_license(opts)
     assert os.getenv('FS_LICENSE') == f'{lic3}'
-
-
-@pytest.mark.parametrize("will_validate,opts_str", (
-  (True, base_args),                                           # run if base args
-  (False, base_args + " --skip_bids_validation"),              # not if skipped
-  (False, base_args + " --recon-only"),                        # or recon all
-  (False, base_args + " --skip_bids_validation --recon-only")  # or both
-))
-def test_validate_bids(monkeypatch, opts_str, will_validate):
-    # from ..utils.bids import validate_input_dir
-    monkeypatch.setattr("qsirecon.utils.bids.validate_input_dir", lambda *kargs: True)
-    opts = get_parser().parse_args(opts_str.split(' '))
-    assert will_validate == validate_bids(opts)
