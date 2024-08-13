@@ -1,11 +1,11 @@
 qsirecon
 qsirecon/dataset_description.json
 qsirecon/dwiqc.json
-qsirecon/logs
-qsirecon/logs/CITATION.bib
-qsirecon/logs/CITATION.html
-qsirecon/logs/CITATION.md
-qsirecon/logs/CITATION.tex
+logs
+logs/CITATION.bib
+logs/CITATION.html
+logs/CITATION.md
+logs/CITATION.tex
 qsirecon/sub-PNC
 qsirecon/sub-PNC.html
 qsirecon
