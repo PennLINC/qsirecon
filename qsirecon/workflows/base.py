@@ -30,32 +30,26 @@ from .. import config
 
 
 def init_qsirecon_wf():
-    """
-    This workflow organizes the execution of qsirecon, with a sub-workflow for
-    each subject.
+    """Organize the execution of qsirecon, with a sub-workflow for each subject.
 
     .. workflow::
         :graph2use: orig
         :simple_form: yes
 
         from qsirecon.workflows.base import init_qsirecon_wf
+
         wf = init_qsirecon_wf()
-
-
-    Parameters
-
-
     """
     ver = Version(config.environment.version)
     qsirecon_wf = Workflow(name=f"qsirecon_{ver.major}_{ver.minor}_wf")
     qsirecon_wf.base_dir = config.execution.work_dir
 
-    if config.workflow.recon_input_pipeline not in ("qsirecon", "ukb"):
+    if config.workflow.recon_input_pipeline not in ("qsiprep", "ukb"):
         raise NotImplementedError(
             f"{config.workflow.recon_input_pipeline} is not supported as recon-input yet."
         )
 
-    if config.workflow.recon_input_pipeline == "qsirecon":
+    if config.workflow.recon_input_pipeline == "qsiprep":
         # This should work for --recon-input as long as the same dataset is in bids_dir
         # or if the call is doing preproc+recon
         to_recon_list = config.execution.participant_label
@@ -72,7 +66,7 @@ def init_qsirecon_wf():
         single_subject_wf = init_single_subject_recon_wf(subject_id=subject_id)
 
         single_subject_wf.config["execution"]["crashdump_dir"] = str(
-            config.execution.qsirecon_dir / f"sub-{subject_id}" / "log" / config.execution.run_uuid
+            config.execution.output_dir / f"sub-{subject_id}" / "log" / config.execution.run_uuid
         )
         for node in single_subject_wf._get_all_nodes():
             node.config = deepcopy(single_subject_wf.config)
@@ -80,7 +74,7 @@ def init_qsirecon_wf():
 
         # Dump a copy of the config file into the log directory
         log_dir = (
-            config.execution.qsirecon_dir / f"sub-{subject_id}" / "log" / config.execution.run_uuid
+            config.execution.output_dir / f"sub-{subject_id}" / "log" / config.execution.run_uuid
         )
         log_dir.mkdir(exist_ok=True, parents=True)
         config.to_filename(log_dir / "qsirecon.toml")
@@ -89,21 +83,20 @@ def init_qsirecon_wf():
 
 
 def init_single_subject_recon_wf(subject_id):
-    """
-    This workflow organizes the reconstruction pipeline for a single subject.
+    """Organize the reconstruction pipeline for a single subject.
+
     Reconstruction is performed using a separate workflow for each dwi series.
 
     Parameters
-
-        subject_id : str
-            Single subject label
-
+    ----------
+    subject_id : str
+        Single subject label
     """
     from ..interfaces.ingress import QsiReconDWIIngress, UKBioBankDWIIngress
     from ..interfaces.interchange import (
         ReconWorkflowInputs,
         anatomical_workflow_outputs,
-        qsirecon_output_names,
+        qsiprep_output_names,
         recon_workflow_anatomical_input_fields,
         recon_workflow_input_fields,
     )
@@ -147,9 +140,9 @@ to workflows in *qsirecon*'s documentation]\
     atlas_names = spec.get("atlases", [])
     needs_t1w_transform = spec_needs_to_template_transform(spec)
 
-    # This is here because qsirecon currently only makes one anatomical result per subject
+    # This is here because qsiprep currently only makes one anatomical result per subject
     # regardless of sessions. So process it on its
-    if config.workflow.recon_input_pipeline == "qsirecon":
+    if config.workflow.recon_input_pipeline == "qsiprep":
         anat_ingress_node, available_anatomical_data = init_highres_recon_anatomical_wf(
             subject_id=subject_id,
             extras_to_make=spec.get("anatomical", []),
@@ -173,7 +166,7 @@ to workflows in *qsirecon*'s documentation]\
         wf_name = _get_wf_name(dwi_file)
 
         # Get the preprocessed DWI and all the related preprocessed images
-        if config.workflow.recon_input_pipeline == "qsirecon":
+        if config.workflow.recon_input_pipeline == "qsiprep":
             dwi_ingress_nodes[dwi_file] = pe.Node(
                 QsiReconDWIIngress(dwi_file=dwi_file), name=wf_name + "_ingressed_dwi_data"
             )
@@ -224,11 +217,11 @@ to workflows in *qsirecon*'s documentation]\
         workflow.connect([
             # The dwi data
             (dwi_ingress_nodes[dwi_file], recon_full_inputs[dwi_file], [
-                (trait, trait) for trait in qsirecon_output_names]),
+                (trait, trait) for trait in qsiprep_output_names]),
 
             # Session-specific anatomical data
             (dwi_ingress_nodes[dwi_file], dwi_individual_anatomical_wfs[dwi_file],
-             [(trait, "inputnode." + trait) for trait in qsirecon_output_names]),
+             [(trait, "inputnode." + trait) for trait in qsiprep_output_names]),
 
             # subject dwi-specific anatomical to a special node in recon_full_inputs so
             # we have a record of what went in. Otherwise it would be lost in an IdentityInterface
@@ -239,7 +232,7 @@ to workflows in *qsirecon*'s documentation]\
             (recon_full_inputs[dwi_file], dwi_recon_wfs[dwi_file],
              [(trait, "inputnode." + trait) for trait in recon_workflow_input_fields]),
 
-            (anat_ingress_node if config.workflow.recon_input_pipeline == "qsirecon"
+            (anat_ingress_node if config.workflow.recon_input_pipeline == "qsiprep"
              else anat_ingress_nodes[dwi_file],
              dwi_individual_anatomical_wfs[dwi_file],
              [(f"outputnode.{trait}", f"inputnode.{trait}")
@@ -308,25 +301,12 @@ def _get_iterable_dwi_inputs(subject_id):
     """
     from ..utils.ingress import create_ukb_layout
 
-    recon_input_directory = config.execution.recon_input
-    if config.workflow.recon_input_pipeline == "qsirecon":
-        # If recon_input is specified without qsirecon, check if we can find the subject dir
-        if not (recon_input_directory / f"sub-{subject_id}").exists():
-            config.loggers.workflow.info(
-                "%s not in %s, trying recon_input=%s",
-                subject_id,
-                recon_input_directory,
-                recon_input_directory / "qsirecon",
-            )
+    dwi_dir = config.execution.bids_dir
+    if config.workflow.recon_input_pipeline == "qsiprep":
+        if not (dwi_dir / f"sub-{subject_id}").exists():
+            raise Exception(f"Unable to find subject directory in {config.execution.bids_dir}")
 
-            recon_input_directory = recon_input_directory / "qsirecon"
-            if not (recon_input_directory / f"sub-{subject_id}").exists():
-                raise Exception(
-                    "Unable to find subject directory in %s or %s"
-                    % (config.execution.recon_input, recon_input_directory)
-                )
-
-        layout = BIDSLayout(recon_input_directory, validate=False, absolute_paths=True)
+        layout = BIDSLayout(dwi_dir, validate=False, absolute_paths=True)
         # Get all the output files that are in this space
         dwi_files = [
             f.path
@@ -335,7 +315,7 @@ def _get_iterable_dwi_inputs(subject_id):
             )
             if "space-T1w" in f.filename
         ]
-        config.loggers.workflow.info("found %s in %s", dwi_files, recon_input_directory)
+        config.loggers.workflow.info("found %s in %s", dwi_files, dwi_dir)
         return [{"bids_dwi_file": dwi_file} for dwi_file in dwi_files]
 
     if config.workflow.recon_input_pipeline == "ukb":

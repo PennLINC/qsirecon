@@ -1,6 +1,6 @@
 import pytest
 import os
-from qsirecon.cli.run import set_freesurfer_license, validate_bids, get_parser
+from qsirecon.cli.run import set_freesurfer_license, get_parser
 
 base_args = "bids out participant --output_resolution 2.3"
 
@@ -22,15 +22,6 @@ def test_required():
         with pytest.raises(SystemExit) as pa_fail:
             get_parser().parse_args(part_args.split(' '))
         assert pa_fail.value.code == 2
-
-
-def test_required_recononly(monkeypatch):
-    # dont need output_resolution if we have recon_only
-    base_args = "bids out participant --recon_only"
-    args = base_args.split(' ')
-    # sys.argv used to set if output-res required
-    monkeypatch.setattr('qsirecon.cli.run.sys.argv', args)
-    get_parser().parse_args(args)
 
 
 def test_set_freesurfer_license(tmpdir):
@@ -65,16 +56,3 @@ def test_set_freesurfer_license(tmpdir):
     opts = get_parser().parse_args(fsarg.split(' '))
     set_freesurfer_license(opts)
     assert os.getenv('FS_LICENSE') == f'{lic3}'
-
-
-@pytest.mark.parametrize("will_validate,opts_str", (
-  (True, base_args),                                           # run if base args
-  (False, base_args + " --skip_bids_validation"),              # not if skipped
-  (False, base_args + " --recon-only"),                        # or recon all
-  (False, base_args + " --skip_bids_validation --recon-only")  # or both
-))
-def test_validate_bids(monkeypatch, opts_str, will_validate):
-    # from ..utils.bids import validate_input_dir
-    monkeypatch.setattr("qsirecon.utils.bids.validate_input_dir", lambda *kargs: True)
-    opts = get_parser().parse_args(opts_str.split(' '))
-    assert will_validate == validate_bids(opts)

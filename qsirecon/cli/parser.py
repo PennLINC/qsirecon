@@ -24,8 +24,6 @@
 #
 """Parser."""
 
-import sys
-
 from .. import config
 
 
@@ -34,51 +32,11 @@ def _build_parser(**kwargs):
 
     ``kwargs`` are passed to ``argparse.ArgumentParser`` (mainly useful for debugging).
     """
-    from argparse import Action, ArgumentDefaultsHelpFormatter, ArgumentParser
+    from argparse import ArgumentDefaultsHelpFormatter, ArgumentParser
     from functools import partial
     from pathlib import Path
 
     from packaging.version import Version
-
-    deprecations = {
-        # parser attribute name: (replacement flag, version slated to be removed in)
-        "dwi_only": ("--anat-modality none", "0.23.0"),
-        "prefer_dedicated_fmaps": (None, "0.23.0"),
-        "do_reconall": (None, "0.23.0"),
-        "dwi_no_biascorr": ("--b1-biascorrect-stage none", "0.23.0"),
-        "recon_only": (None, "0.23.0"),
-        "b0_motion_corr_to": (None, "0.23.0"),
-        "b0_to_t1w_transform": ("--b0-t0-anat-transform", "0.23.0"),
-    }
-
-    class DeprecatedAction(Action):
-        def __call__(self, parser, namespace, values, option_string=None):
-            new_opt, rem_vers = deprecations.get(self.dest, (None, None))
-            msg = (
-                f"{self.option_strings} has been deprecated and will be removed in "
-                f"{rem_vers or 'a later version'}."
-            )
-            if new_opt:
-                msg += f" Please use `{new_opt}` instead."
-            print(msg, file=sys.stderr)
-            delattr(namespace, self.dest)
-
-    class ToDict(Action):
-        def __call__(self, parser, namespace, values, option_string=None):
-            d = {}
-            for spec in values:
-                try:
-                    name, loc = spec.split("=")
-                    loc = Path(loc)
-                except ValueError:
-                    loc = Path(spec)
-                    name = loc.name
-
-                if name in d:
-                    raise ValueError(f"Received duplicate derivative name: {name}")
-
-                d[name] = loc
-            setattr(namespace, self.dest, d)
 
     def _path_exists(path, parser):
         """Ensure a given path exists."""
@@ -178,13 +136,6 @@ def _build_parser(**kwargs):
 
     g_bids = parser.add_argument_group("Options for filtering BIDS queries")
     g_bids.add_argument(
-        "--skip_bids_validation",
-        "--skip-bids-validation",
-        action="store_true",
-        default=False,
-        help="Assume the input dataset is BIDS compliant and skip the validation",
-    )
-    g_bids.add_argument(
         "--participant-label",
         "--participant_label",
         action="store",
@@ -268,12 +219,6 @@ def _build_parser(**kwargs):
     )
 
     g_subset = parser.add_argument_group("Options for performing only a subset of the workflow")
-    g_subset.add_argument("--anat-only", action="store_true", help="Run anatomical workflows only")
-    g_subset.add_argument(
-        "--dwi-only",
-        action="store_true",
-        help="ignore anatomical (T1w/T2w) data and process DWIs only",
-    )
     g_subset.add_argument(
         "--boilerplate-only",
         "--boilerplate_only",
@@ -298,38 +243,12 @@ def _build_parser(**kwargs):
 
     g_conf = parser.add_argument_group("Workflow configuration")
     g_conf.add_argument(
-        "--ignore",
-        required=False,
-        action="store",
-        nargs="+",
-        default=[],
-        choices=["fieldmaps", "sbref", "t2w", "flair", "fmap-jacobian"],
-        help="Ignore selected aspects of the input dataset to disable corresponding "
-        "parts of the workflow (a space delimited list)",
-    )
-    g_conf.add_argument(
         "--infant", action="store_true", help="configure pipelines to process infant brains"
     )
     g_conf.add_argument(
         "--longitudinal",
         action="store_true",
         help="Treat dataset as longitudinal - may increase runtime",
-    )
-    g_conf.add_argument(
-        "--skip-anat-based-spatial-normalization",
-        action="store_true",
-        default=False,
-        help="skip running the anat-based normalization to template space. "
-        "Default is to run the normalization.",
-    )
-    g_conf.add_argument(
-        "--anat-modality",
-        "--anat_modality",
-        choices=["T1w", "T2w", "none"],
-        default="T1w",
-        help="Modality to use as the anatomical reference. Images of this "
-        "contrast will be skull stripped and segmented for use in the "
-        "visual reports and reconstruction. If --infant, T2w is forced.",
     )
     g_conf.add_argument(
         "--b0-threshold",
@@ -342,129 +261,15 @@ def _build_parser(**kwargs):
         "lowered or increased. Note, setting this too high can result in inaccurate results.",
     )
     g_conf.add_argument(
-        "--dwi_denoise_window",
-        "--dwi-denoise-window",
-        action="store",
-        default="auto",
-        help='window size in voxels for image-based denoising, integer or "auto".'
-        'If "auto", 5 will be used for dwidenoise and auto-configured for '
-        "patch2self based on the number of b>0 images.",
-    )
-    g_conf.add_argument(
-        "--denoise-method",
-        "--denoise_method",
-        action="store",
-        choices=["dwidenoise", "patch2self", "none"],
-        default="dwidenoise",
-        help='Image-based denoising method. Either "dwidenoise" (MRtrix), '
-        '"patch2self" (DIPY) or none. (default: dwidenoise)',
-    )
-    g_conf.add_argument(
-        "--unringing-method",
-        "--unringing_method",
-        action="store",
-        choices=["none", "mrdegibbs", "rpg"],
-        help="Method for Gibbs-ringing removal.\n - none: no action\n - mrdegibbs: "
-        "use mrdegibbs from mrtrix3\n - rpg: Gibbs from TORTOISE, suggested for partial"
-        " Fourier acquisitions (default: none).",
-    )
-    g_conf.add_argument(
-        "--dwi-no-biascorr",
-        "--dwi_no_biascorr",
-        action="store_true",
-        help="DEPRECATED: see --b1-biascorrect-stage",
-    )
-    g_conf.add_argument(
-        "--b1-biascorrect-stage",
-        "--b1_biascorrect_stage",
-        action="store",
-        choices=["final", "none", "legacy"],
-        default="final",
-        help="Which stage to apply B1 bias correction. The default 'final' will "
-        "apply it after all the data has been resampled to its final space. "
-        "'none' will skip B1 bias correction and 'legacy' will behave consistent "
-        "with qsirecon < 0.17.",
-    )
-    g_conf.add_argument(
-        "--no-b0-harmonization",
-        "--no_b0_harmonization",
-        action="store_true",
-        help="skip re-scaling dwi scans to have matching b=0 intensities",
-    )
-    g_conf.add_argument(
-        "--denoise-after-combining",
-        "--denoise_after_combining",
-        action="store_true",
-        help="run ``dwidenoise`` after combining dwis, but before motion correction",
-    )
-    g_conf.add_argument(
-        "--separate_all_dwis",
-        "--separate-all-dwis",
-        action="store_true",
-        help="don't attempt to combine dwis from multiple runs. Each will be "
-        "processed separately.",
-    )
-    g_conf.add_argument(
-        "--distortion-group-merge",
-        "--distortion_group_merge",
-        action="store",
-        choices=["concat", "average", "none"],
-        default="none",
-        help="How to combine images across distorted groups.\n"
-        " - concatenate: append images in the 4th dimension\n "
-        " - average: if a whole sequence was duplicated in both PE\n"
-        "            directions, average the corrected images of the same\n"
-        "            q-space coordinate\n"
-        " - none: Default. Keep distorted groups separate",
-    )
-    g_conf.add_argument(
-        "--anatomical-template",
-        required=False,
-        action="store",
-        choices=["MNI152NLin2009cAsym"],
-        default="MNI152NLin2009cAsym",
-        help="volume template space (default: MNI152NLin2009cAsym)",
-    )
-    g_conf.add_argument(
         "--output-resolution",
         "--output_resolution",
         action="store",
         # required when not recon-only (which can be specified in sysargs 2 ways)
-        required=not any(rcn in sys.argv for rcn in ["--recon-only", "--recon_only"]),
+        required=False,
         type=float,
         help="the isotropic voxel size in mm the data will be resampled to "
         "after preprocessing. If set to a lower value than the original voxel "
         "size, your data will be upsampled using BSpline interpolation.",
-    )
-
-    g_coreg = parser.add_argument_group("Options for dwi-to-Anatomical coregistration")
-    g_coreg.add_argument(
-        "--b0-to-t1w-transform",
-        "--b0_to_t1w_transform",
-        action="store",
-        default="Rigid",
-        choices=["Rigid", "Affine"],
-        help="Degrees of freedom when registering b0 to anatomical images. "
-        "6 degrees (rotation and translation) are used by default.",
-    )
-    g_coreg.add_argument(
-        "--intramodal-template-iters",
-        "--intramodal_template_iters",
-        action="store",
-        default=0,
-        type=int,
-        help="Number of iterations for finding the midpoint image "
-        "from the b0 templates from all groups. Has no effect if there "
-        "is only one group. If 0, all b0 templates are directly registered "
-        "to the t1w image.",
-    )
-    g_coreg.add_argument(
-        "--intramodal-template-transform",
-        "--intramodal_template_transform",
-        default="BSplineSyN",
-        choices=["Rigid", "Affine", "BSplineSyN", "SyN"],
-        action="store",
-        help="Transformation used for building the intramodal template.",
     )
 
     # FreeSurfer options
@@ -478,105 +283,8 @@ def _build_parser(**kwargs):
         "at https://surfer.nmr.mgh.harvard.edu/registration.html",
     )
 
-    g_moco = parser.add_argument_group("Specific options for motion correction and coregistration")
-    g_moco.add_argument(
-        "--b0-motion-corr-to",
-        "--bo_motion_corr_to",
-        action="store",
-        default="iterative",
-        choices=["iterative", "first"],
-        help='align to the "first" b0 volume or do an "iterative" registration'
-        " of all b0 images to their midpoint image (default: iterative)",
-    )
-    g_moco.add_argument(
-        "--hmc-transform",
-        "--hmc_transform",
-        action="store",
-        default="Affine",
-        choices=["Affine", "Rigid"],
-        help="transformation to be optimized during head motion correction " "(default: affine)",
-    )
-    g_moco.add_argument(
-        "--hmc_model",
-        "--hmc-model",
-        action="store",
-        default="eddy",
-        choices=["none", "3dSHORE", "eddy", "tensor"],
-        help='model used to generate target images for hmc. If "none" the '
-        "non-b0 images will be warped using the same transform as their "
-        'nearest b0 image. If "3dSHORE", SHORELine will be used. if "tensor", '
-        "SHORELine iterations with a tensor model will be used",
-    )
-    g_moco.add_argument(
-        "--eddy-config",
-        "--eddy_config",
-        action="store",
-        help="path to a json file with settings for the call to eddy. If no "
-        "json is specified, a default one will be used. The current default "
-        "json can be found here: "
-        "https://github.com/PennLINC/qsirecon/blob/main/qsirecon/data/eddy_params.json",
-    )
-    g_moco.add_argument(
-        "--shoreline_iters",
-        "--shoreline-iters",
-        action="store",
-        type=int,
-        default=2,
-        help="number of SHORELine iterations. (default: 2)",
-    )
-
-    # Fieldmap options
-    g_fmap = parser.add_argument_group("Specific options for handling fieldmaps")
-    g_fmap.add_argument(
-        "--pepolar-method",
-        "--pepolar_method",
-        action="store",
-        default="TOPUP",
-        choices=["TOPUP", "DRBUDDI", "TOPUP+DRBUDDI"],
-        help="select which SDC method to use for PEPOLAR fieldmaps (default: TOPUP)",
-    )
-    g_fmap.add_argument(
-        "--fmap-bspline",
-        action="store_true",
-        default=False,
-        help="Fit a B-Spline field using least-squares (experimental)",
-    )
-    g_fmap.add_argument(
-        "--fmap-no-demean",
-        action="store_false",
-        default=True,
-        help="Do not remove median (within mask) from fieldmap",
-    )
-
-    # SyN-unwarp options
-    g_syn = parser.add_argument_group("Specific options for SyN distortion correction")
-    g_syn.add_argument(
-        "--use-syn-sdc",
-        nargs="?",
-        choices=["warn", "error"],
-        action="store",
-        const="error",
-        default=False,
-        help="Use fieldmap-less distortion correction based on anatomical image; "
-        "if unable, error (default) or warn based on optional argument.",
-    )
-    g_syn.add_argument(
-        "--force-syn",
-        action="store_true",
-        default=False,
-        help="EXPERIMENTAL/TEMPORARY: Use SyN correction in addition to "
-        "fieldmap correction, if available",
-    )
-
     # arguments for reconstructing QSI data
     g_recon = parser.add_argument_group("Options for reconstructing qsirecon outputs")
-    g_recon.add_argument(
-        "--recon-only",
-        "--recon_only",
-        action="store_true",
-        default=False,
-        help="run only reconstruction, assumes preprocessing has already completed.",
-    )
     g_recon.add_argument(
         "--recon-spec",
         "--recon_spec",
@@ -585,19 +293,11 @@ def _build_parser(**kwargs):
         help="json file specifying a reconstruction pipeline to be run after preprocessing",
     )
     g_recon.add_argument(
-        "--recon-input",
-        "--recon_input",
-        action="store",
-        metavar="PATH",
-        type=Path,
-        help="use this directory as inputs to qsirecon. This option skips qsirecon.",
-    )
-    g_recon.add_argument(
         "--recon-input-pipeline",
         "--recon_input_pipeline",
         action="store",
-        default="qsirecon",
-        choices=["qsirecon", "ukb", "hcpya"],
+        default="qsiprep",
+        choices=["qsiprep", "ukb", "hcpya"],
         help="specify which pipeline was used to create the data specified "
         "as the --recon-input. Not necessary to specify if the data was "
         'processed by qsirecon. Other options include "ukb" for data processed '
@@ -667,10 +367,12 @@ def _build_parser(**kwargs):
         "--notrack",
         action="store_true",
         default=False,
-        help="Opt-out of sending tracking information of this run to "
-        "the QSIRecon developers. This information helps to "
-        "improve QSIRecon and provides an indicator of real "
-        "world usage crucial for obtaining funding.",
+        help=(
+            "Opt-out of sending tracking information of this run to "
+            "the QSIRecon developers. This information helps to "
+            "improve QSIRecon and provides an indicator of real "
+            "world usage crucial for obtaining funding."
+        ),
     )
     g_other.add_argument(
         "--debug",
@@ -743,28 +445,10 @@ def parse_args(args=None, namespace=None):
             f"total threads (--nthreads/--n_cpus={config.nipype.nprocs})"
         )
 
-    if config.workflow.recon_spec and not config.execution.recon_input:
-        build_log.info("Running BOTH preprocessing and recon.")
-        config.execution.running_preproc_and_recon = True
-        config.execution.recon_input = config.execution.qsirecon_dir
-
-    # Validate the tricky options here
-    if config.workflow.dwi_denoise_window != "auto":
-        try:
-            _ = int(config.workflow.dwi_denoise_window)
-        except ValueError:
-            raise Exception("--dwi-denoise-window must be an integer or 'auto'")
-
     bids_dir = config.execution.bids_dir
     output_dir = config.execution.output_dir
     work_dir = config.execution.work_dir
     version = config.environment.version
-
-    if config.execution.qsirecon_dir is None:
-        config.execution.qsirecon_dir = output_dir / "qsirecon"
-
-    if config.execution.qsirecon_dir is None:
-        config.execution.qsirecon_dir = output_dir / "qsirecon"
 
     if config.execution.reportlets_dir is None:
         config.execution.reportlets_dir = work_dir / "reportlets"
@@ -791,25 +475,8 @@ def parse_args(args=None, namespace=None):
             "Please modify the output path."
         )
 
-    # Validate inputs
-    if not opts.skip_bids_validation:
-        if opts.recon_input is not None:
-            build_log.info("Skipping BIDS validation because inputs are BIDS derivatives")
-        else:
-            from ..utils.bids import validate_input_dir
-
-            build_log.info(
-                "Making sure the input data is BIDS compliant (warnings can be ignored in most "
-                "cases)."
-            )
-            validate_input_dir(
-                config.environment.exec_env,
-                opts.bids_dir,
-                opts.participant_label,
-            )
-
     # Setup directories
-    config.execution.log_dir = config.execution.qsirecon_dir / "logs"
+    config.execution.log_dir = config.execution.output_dir / "logs"
     # Check and create output and working directories
     config.execution.log_dir.mkdir(exist_ok=True, parents=True)
     config.execution.reportlets_dir.mkdir(exist_ok=True, parents=True)

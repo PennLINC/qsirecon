@@ -1,13 +1,10 @@
+dataset_description.json
+logs
+logs/CITATION.bib
+logs/CITATION.html
+logs/CITATION.md
+logs/CITATION.tex
 qsirecon
-qsirecon/dataset_description.json
-qsirecon/dwiqc.json
-qsirecon/logs
-qsirecon/logs/CITATION.bib
-qsirecon/logs/CITATION.html
-qsirecon/logs/CITATION.md
-qsirecon/logs/CITATION.tex
-qsirecon/sub-ABCD
-qsirecon/sub-ABCD.html
 qsirecon
 qsirecon-DIPYDKI
 qsirecon-DIPYDKI/sub-ABCD
@@ -73,4 +70,7 @@ qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_mod
 qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-tensor_mfp-tyy_dwimap.nii.gz
 qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-tensor_mfp-tyz_dwimap.nii.gz
 qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-tensor_mfp-tzz_dwimap.nii.gz
+qsirecon/dwiqc.json
 qsirecon/sub-ABCD
+qsirecon/sub-ABCD.html
+sub-ABCD
