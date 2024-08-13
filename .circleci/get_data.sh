@@ -309,8 +309,8 @@ Contents:
 ^^^^^^^^^
 
  - data/singleshell_output/qsirecon/dataset_description.json
- - data/singleshell_output/qsirecon/logs/CITATION.html
- - data/singleshell_output/qsirecon/logs/CITATION.md
+ - data/singleshell_output/logs/CITATION.html
+ - data/singleshell_output/logs/CITATION.md
  - data/singleshell_output/qsirecon/logs/CITATION.tex
  - data/singleshell_output/qsirecon/sub-PNC/anat/sub-PNC_desc-brain_mask.nii.gz
  - data/singleshell_output/qsirecon/sub-PNC/anat/sub-PNC_desc-preproc_T1w.nii.gz

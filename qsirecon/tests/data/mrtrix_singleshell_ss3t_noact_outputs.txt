@@ -1,5 +1,5 @@
 qsirecon
-qsirecon/dataset_description.json
+dataset_description.json
 qsirecon/dwiqc.json
 logs
 logs/CITATION.bib

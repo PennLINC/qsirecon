@@ -2,7 +2,7 @@ qsirecon
 dataset_description.json
 qsirecon/dwiqc.json
 logs
-CITATION.bib
+logs/CITATION.bib
 logs/CITATION.html
 logs/CITATION.md
 logs/CITATION.tex
