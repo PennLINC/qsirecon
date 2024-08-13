@@ -54,7 +54,6 @@ def test_mrtrix_singleshell_ss3t_act(data_dir, output_dir, working_dir):
         f"-w={work_dir}",
         "--sloppy",
         "--recon-spec=mrtrix_singleshell_ss3t_ACT-fast",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -93,7 +92,6 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
         f"-w={work_dir}",
         "--sloppy",
         "--recon-spec=mrtrix_singleshell_ss3t_noACT",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -132,7 +130,6 @@ def test_amico_noddi(data_dir, output_dir, working_dir):
         f"-w={work_dir}",
         "--sloppy",
         "--recon-spec=amico_noddi",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -172,7 +169,6 @@ def test_autotrack(data_dir, output_dir, working_dir):
         f"-w={work_dir}",
         "--sloppy",
         "--recon-spec=dsi_studio_autotrack",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -214,7 +210,6 @@ def test_dipy_mapmri(data_dir, output_dir, working_dir):
         f"-w={work_dir}",
         "--sloppy",
         "--recon-spec=dipy_mapmri",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -256,7 +251,6 @@ def test_dipy_dki(data_dir, output_dir, working_dir):
         f"-w={work_dir}",
         "--sloppy",
         "--recon-spec=dipy_dki",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -324,7 +318,6 @@ def test_pyafq_recon_external_trk(data_dir, output_dir, working_dir):
         f"-w={work_dir}",
         "--sloppy",
         "--recon-spec=mrtrix_multishell_msmt_pyafq_tractometry",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -359,7 +352,6 @@ def test_pyafq_recon_full(data_dir, output_dir, working_dir):
         f"-w={work_dir}",
         "--sloppy",
         "--recon-spec=pyafq_tractometry",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -398,7 +390,6 @@ def test_mrtrix3_recon(data_dir, output_dir, working_dir):
         f"-w={work_dir}",
         "--sloppy",
         "--recon-spec=mrtrix_multishell_msmt_ACT-fast",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -430,7 +421,6 @@ def test_tortoise_recon(data_dir, output_dir, working_dir):
         f"-w={work_dir}",
         "--sloppy",
         "--recon-spec=TORTOISE",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
