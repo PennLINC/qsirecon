@@ -74,7 +74,6 @@ See `External Dependencies`_ for more information on what is included in the Doc
 and how it's built.
 
 
-
 Singularity Container
 =====================
 
@@ -97,8 +96,8 @@ As with Docker, you will need to bind the Freesurfer license.txt when running Si
 External Dependencies
 ---------------------
 
-qsirecon is written using Python 3.10 (or above), and is based on
-nipype_. The external dependencies are built in the `qsirecon_build
-<https://github.com/PennLINC/qsirecon_build>`_ repository. There
-you can find the URLs used to download the dependency source code
+QSIRecon is written using Python 3.10, and is based on nipype_.
+The external dependencies are built in the
+`qsirecon_build <https://github.com/PennLINC/qsirecon_build>`_ repository.
+There you can find the URLs used to download the dependency source code
 and the steps to compile each dependency.
