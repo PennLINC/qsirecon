@@ -44,12 +44,12 @@ def init_qsirecon_wf():
     qsirecon_wf = Workflow(name=f"qsirecon_{ver.major}_{ver.minor}_wf")
     qsirecon_wf.base_dir = config.execution.work_dir
 
-    if config.workflow.recon_input_pipeline not in ("qsirecon", "ukb"):
+    if config.workflow.recon_input_pipeline not in ("qsiprep", "ukb"):
         raise NotImplementedError(
             f"{config.workflow.recon_input_pipeline} is not supported as recon-input yet."
         )
 
-    if config.workflow.recon_input_pipeline == "qsirecon":
+    if config.workflow.recon_input_pipeline == "qsiprep":
         # This should work for --recon-input as long as the same dataset is in bids_dir
         # or if the call is doing preproc+recon
         to_recon_list = config.execution.participant_label
@@ -140,9 +140,9 @@ to workflows in *qsirecon*'s documentation]\
     atlas_names = spec.get("atlases", [])
     needs_t1w_transform = spec_needs_to_template_transform(spec)
 
-    # This is here because qsirecon currently only makes one anatomical result per subject
+    # This is here because qsiprep currently only makes one anatomical result per subject
     # regardless of sessions. So process it on its
-    if config.workflow.recon_input_pipeline == "qsirecon":
+    if config.workflow.recon_input_pipeline == "qsiprep":
         anat_ingress_node, available_anatomical_data = init_highres_recon_anatomical_wf(
             subject_id=subject_id,
             extras_to_make=spec.get("anatomical", []),
@@ -166,7 +166,7 @@ to workflows in *qsirecon*'s documentation]\
         wf_name = _get_wf_name(dwi_file)
 
         # Get the preprocessed DWI and all the related preprocessed images
-        if config.workflow.recon_input_pipeline == "qsirecon":
+        if config.workflow.recon_input_pipeline == "qsiprep":
             dwi_ingress_nodes[dwi_file] = pe.Node(
                 QsiReconDWIIngress(dwi_file=dwi_file), name=wf_name + "_ingressed_dwi_data"
             )
@@ -232,7 +232,7 @@ to workflows in *qsirecon*'s documentation]\
             (recon_full_inputs[dwi_file], dwi_recon_wfs[dwi_file],
              [(trait, "inputnode." + trait) for trait in recon_workflow_input_fields]),
 
-            (anat_ingress_node if config.workflow.recon_input_pipeline == "qsirecon"
+            (anat_ingress_node if config.workflow.recon_input_pipeline == "qsiprep"
              else anat_ingress_nodes[dwi_file],
              dwi_individual_anatomical_wfs[dwi_file],
              [(f"outputnode.{trait}", f"inputnode.{trait}")

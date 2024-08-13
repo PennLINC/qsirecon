@@ -285,8 +285,8 @@ def _build_parser(**kwargs):
         "--recon-input-pipeline",
         "--recon_input_pipeline",
         action="store",
-        default="qsirecon",
-        choices=["qsirecon", "ukb", "hcpya"],
+        default="qsiprep",
+        choices=["qsiprep", "ukb", "hcpya"],
         help="specify which pipeline was used to create the data specified "
         "as the --recon-input. Not necessary to specify if the data was "
         'processed by qsirecon. Other options include "ukb" for data processed '
