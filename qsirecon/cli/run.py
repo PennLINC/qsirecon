@@ -205,4 +205,5 @@ def main():
                 config.loggers.workflow.critical(
                     "Errors occurred during preprocessing - Recon will not run."
                 )
-                sys.exit(int(errno + failed_reports) > 0)
+
+        sys.exit(int((errno + failed_reports) > 0))
