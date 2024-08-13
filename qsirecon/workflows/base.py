@@ -301,25 +301,14 @@ def _get_iterable_dwi_inputs(subject_id):
     """
     from ..utils.ingress import create_ukb_layout
 
-    recon_input_directory = config.execution.recon_input
-    if config.workflow.recon_input_pipeline == "qsirecon":
-        # If recon_input is specified without qsirecon, check if we can find the subject dir
-        if not (recon_input_directory / f"sub-{subject_id}").exists():
-            config.loggers.workflow.info(
-                "%s not in %s, trying recon_input=%s",
-                subject_id,
-                recon_input_directory,
-                recon_input_directory / "qsirecon",
+    dwi_dir = config.execution.bids_dir
+    if config.workflow.recon_input_pipeline == "qsiprep":
+        if not (dwi_dir / f"sub-{subject_id}").exists():
+            raise Exception(
+                f"Unable to find subject directory in {config.execution.bids_dir}"
             )
 
-            recon_input_directory = recon_input_directory / "qsirecon"
-            if not (recon_input_directory / f"sub-{subject_id}").exists():
-                raise Exception(
-                    "Unable to find subject directory in %s or %s"
-                    % (config.execution.recon_input, recon_input_directory)
-                )
-
-        layout = BIDSLayout(recon_input_directory, validate=False, absolute_paths=True)
+        layout = BIDSLayout(dwi_dir, validate=False, absolute_paths=True)
         # Get all the output files that are in this space
         dwi_files = [
             f.path
@@ -328,7 +317,7 @@ def _get_iterable_dwi_inputs(subject_id):
             )
             if "space-T1w" in f.filename
         ]
-        config.loggers.workflow.info("found %s in %s", dwi_files, recon_input_directory)
+        config.loggers.workflow.info("found %s in %s", dwi_files, dwi_dir)
         return [{"bids_dwi_file": dwi_file} for dwi_file in dwi_files]
 
     if config.workflow.recon_input_pipeline == "ukb":

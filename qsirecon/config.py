@@ -550,7 +550,7 @@ class workflow(_Config):
     longitudinal = False
     """Run FreeSurfer ``recon-all`` with the ``-logitudinal`` flag."""
     recon_input_pipeline = None
-    """Specifies which pipeline was used to preprocess data in ``recon_input``"""
+    """Specifies which pipeline was used to preprocess data in ``bids_dir``."""
     recon_spec = None
     """Recon workflow specification."""
 

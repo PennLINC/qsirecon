@@ -225,7 +225,7 @@ def gather_ukb_anatomical_data(subject_id):
         "has_freesurfer_5tt_hsvs": False,
         "has_freesurfer": False,
     }
-    recon_input_dir = config.execution.recon_input
+    recon_input_dir = config.execution.bids_dir
 
     # Check to see if we have a T1w preprocessed by QSIRecon
     missing_ukb_anats = check_ukb_anatomical_outputs(recon_input_dir)
@@ -264,7 +264,7 @@ def gather_qsirecon_anatomical_data(subject_id):
         "has_freesurfer_5tt_hsvs": False,
         "has_freesurfer": False,
     }
-    recon_input_dir = config.execution.recon_input
+    recon_input_dir = config.execution.bids_dir
     # Check to see if we have a T1w preprocessed by QSIRecon
     missing_qsirecon_anats = check_qsirecon_anatomical_outputs(recon_input_dir, subject_id, "T1w")
     has_qsirecon_t1w = not missing_qsirecon_anats

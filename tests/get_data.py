@@ -80,7 +80,6 @@ def get_default_cli_args():
         use_syn_sdc=False,
         force_syn=False,
         verbose_count=2,
-        recon_input=None,
         recon_spec=None,
         use_plugin=None,
         nthreads=1,

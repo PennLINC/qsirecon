@@ -233,10 +233,6 @@ def get_parser():
         "analysis_level", nargs="?", choices=["participant"], default="participant"
     )
 
-    # For qsirecon
-    parser.add_argument(
-        "--recon-input", "--recon_input", required=False, action="store", type=os.path.abspath
-    )
     # For eddy
     parser.add_argument(
         "--eddy-config", "--eddy_config", required=False, action="store", type=os.path.abspath
@@ -430,9 +426,6 @@ def main():
     main_args = ["/data", "/out", opts.analysis_level]
     if opts.bids_dir:
         command.extend(["-v", ":".join((opts.bids_dir, "/data", "ro"))])
-    if opts.recon_input:
-        command.extend(["-v", ":".join((opts.recon_input, "/qsirecon-output", "ro"))])
-        main_args.extend(["--recon-input", "/qsirecon-output"])
     if opts.freesurfer_input:
         command.extend(["-v", ":".join((opts.freesurfer_input, "/sngl/freesurfer-input", "ro"))])
         main_args.extend(["--freesurfer-input", "/sngl/freesurfer-input"])
