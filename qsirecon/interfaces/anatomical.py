@@ -21,6 +21,7 @@ from nipype.interfaces.base import (
     File,
     SimpleInterface,
     TraitedSpec,
+    isdefined,
     traits,
 )
 from nipype.utils.filemanip import fname_presuffix
@@ -306,4 +307,40 @@ class CalculateSOP(SimpleInterface):
         for order in range(2, self.inputs.order + 2, 2):
             calculate_order(order)
 
+        return runtime
+
+
+class _VoxelSizeChooserInputSpec(BaseInterfaceInputSpec):
+    voxel_size = traits.Float()
+    input_image = File(exists=True)
+    anisotropic_strategy = traits.Enum("min", "max", "mean", usedefault=True)
+
+
+class _VoxelSizeChooserOutputSpec(TraitedSpec):
+    voxel_size = traits.Float()
+
+
+class VoxelSizeChooser(SimpleInterface):
+    input_spec = _VoxelSizeChooserInputSpec
+    output_spec = _VoxelSizeChooserOutputSpec
+
+    def _run_interface(self, runtime):
+        if not isdefined(self.inputs.input_image) and not isdefined(self.inputs.voxel_size):
+            raise Exception("Either voxel_size or input_image need to be defined")
+
+        # A voxel size was specified without an image
+        if isdefined(self.inputs.voxel_size):
+            voxel_size = self.inputs.voxel_size
+        else:
+            # An image was provided
+            img = nb.load(self.inputs.input_image)
+            zooms = img.header.get_zooms()[:3]
+            if self.inputs.anisotropic_strategy == "min":
+                voxel_size = min(zooms)
+            elif self.inputs.anisotropic_strategy == "max":
+                voxel_size = max(zooms)
+            else:
+                voxel_size = np.round(np.mean(zooms), 2)
+
+        self._results["voxel_size"] = voxel_size
         return runtime
