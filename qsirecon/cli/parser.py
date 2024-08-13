@@ -356,10 +356,12 @@ def _build_parser(**kwargs):
         "--notrack",
         action="store_true",
         default=False,
-        help="Opt-out of sending tracking information of this run to "
-        "the QSIRecon developers. This information helps to "
-        "improve QSIRecon and provides an indicator of real "
-        "world usage crucial for obtaining funding.",
+        help=(
+            "Opt-out of sending tracking information of this run to "
+            "the QSIRecon developers. This information helps to "
+            "improve QSIRecon and provides an indicator of real "
+            "world usage crucial for obtaining funding."
+        ),
     )
     g_other.add_argument(
         "--debug",
