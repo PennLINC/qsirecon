@@ -249,7 +249,7 @@ def init_mrtrix_csd_recon_wf(
         ])  # fmt:skip
 
         # Plot targeted regions
-        if available_anatomical_data["has_qsirecon_t1w_transforms"]:
+        if available_anatomical_data["has_qsiprep_t1w_transforms"]:
             ds_report_odfs = pe.Node(
                 ReconDerivativesDataSink(extension=".png", desc="wmFOD", suffix="odfs"),
                 name="ds_report_odfs",

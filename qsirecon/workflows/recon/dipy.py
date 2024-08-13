@@ -196,7 +196,7 @@ def init_dipy_brainsuite_shore_recon_wf(
         ])  # fmt:skip
 
     # Plot targeted regions
-    if available_anatomical_data["has_qsirecon_t1w_transforms"] and plot_reports:
+    if available_anatomical_data["has_qsiprep_t1w_transforms"] and plot_reports:
         ds_report_odfs = pe.Node(
             ReconDerivativesDataSink(extension=".png", desc="3dSHOREODF", suffix="odfs"),
             name="ds_report_odfs",
@@ -481,7 +481,7 @@ def init_dipy_mapmri_recon_wf(
         ])  # fmt:skip
 
     # Plot targeted regions
-    if available_anatomical_data["has_qsirecon_t1w_transforms"] and plot_reports:
+    if available_anatomical_data["has_qsiprep_t1w_transforms"] and plot_reports:
         ds_report_odfs = pe.Node(
             ReconDerivativesDataSink(extension=".png", desc="MAPLMRIODF", suffix="odfs"),
             name="ds_report_odfs",
