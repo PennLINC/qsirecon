@@ -52,11 +52,8 @@ def test_mrtrix_singleshell_ss3t_act(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=mrtrix_singleshell_ss3t_ACT-fast",
-        "--recon-only",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -93,11 +90,8 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=mrtrix_singleshell_ss3t_noACT",
-        "--recon-only",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -134,11 +128,8 @@ def test_amico_noddi(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=amico_noddi",
-        "--recon-only",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -176,11 +167,8 @@ def test_autotrack(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=dsi_studio_autotrack",
-        "--recon-only",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -221,10 +209,7 @@ def test_dipy_mapmri(data_dir, output_dir, working_dir):
         "participant",
         f"-w={work_dir}",
         "--sloppy",
-        f"--recon-input={dataset_dir}",
         "--recon-spec=dipy_mapmri",
-        "--recon-only",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -265,10 +250,7 @@ def test_dipy_dki(data_dir, output_dir, working_dir):
         "participant",
         f"-w={work_dir}",
         "--sloppy",
-        f"--recon-input={dataset_dir}",
         "--recon-spec=dipy_dki",
-        "--recon-only",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -298,10 +280,8 @@ def test_scalar_mapper(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=test_scalar_maps",
-        "--recon-only",
         "--output-resolution=3.5",
         "--nthreads=1",
     ]
@@ -336,11 +316,8 @@ def test_pyafq_recon_external_trk(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=mrtrix_multishell_msmt_pyafq_tractometry",
-        "--recon-only",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -373,11 +350,8 @@ def test_pyafq_recon_full(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=pyafq_tractometry",
-        "--recon-only",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -414,11 +388,8 @@ def test_mrtrix3_recon(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=mrtrix_multishell_msmt_ACT-fast",
-        "--recon-only",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -448,11 +419,8 @@ def test_tortoise_recon(data_dir, output_dir, working_dir):
         out_dir,
         "participant",
         f"-w={work_dir}",
-        f"--recon-input={dataset_dir}",
         "--sloppy",
         "--recon-spec=TORTOISE",
-        "--recon-only",
-        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -484,7 +452,7 @@ def _run_and_generate(test_name, parameters, test_main=True):
         retval = build_workflow(config_file, retval={})
         qsirecon_wf = retval["workflow"]
         qsirecon_wf.run()
-        write_derivative_description(config.execution.fmri_dir, config.execution.qsirecon_dir)
+        write_derivative_description(config.execution.fmri_dir, config.execution.output_dir)
 
         build_boilerplate(str(config_file), qsirecon_wf)
         session_list = (
@@ -494,7 +462,7 @@ def _run_and_generate(test_name, parameters, test_main=True):
         )
         generate_reports(
             subject_list=config.execution.participant_label,
-            output_dir=config.execution.qsirecon_dir,
+            output_dir=config.execution.output_dir,
             run_uuid=config.execution.run_uuid,
             session_list=session_list,
         )

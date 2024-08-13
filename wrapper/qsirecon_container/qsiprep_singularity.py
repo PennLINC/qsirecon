@@ -216,10 +216,6 @@ def get_parser():
         "analysis_level", nargs="?", choices=["participant"], default="participant"
     )
 
-    # For qsirecon
-    parser.add_argument(
-        "--recon-input", "--recon_input", required=False, action="store", type=os.path.abspath
-    )
     parser.add_argument(
         "--bids-filter-file",
         "--bids_filter_file",
@@ -411,9 +407,6 @@ def main():
         main_args.extend(["--fs-license-file", mounted_license])
     if opts.bids_dir:
         command.extend(["-B", ":".join((opts.bids_dir, "/sngl/data"))])
-    if opts.recon_input:
-        command.extend(["-B", ":".join((opts.recon_input, "/sngl/qsirecon-output"))])
-        main_args.extend(["--recon-input", "/sngl/qsirecon-output"])
     if opts.recon_spec:
         if os.path.exists(opts.recon_spec):
             spec_dir, spec_fname = op.split(opts.recon_spec)

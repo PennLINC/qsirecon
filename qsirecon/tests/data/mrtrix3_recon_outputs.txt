@@ -1,13 +1,10 @@
+dataset_description.json
+logs
+logs/CITATION.bib
+logs/CITATION.html
+logs/CITATION.md
+logs/CITATION.tex
 qsirecon
-qsirecon/dataset_description.json
-qsirecon/dwiqc.json
-qsirecon/logs
-qsirecon/logs/CITATION.bib
-qsirecon/logs/CITATION.html
-qsirecon/logs/CITATION.md
-qsirecon/logs/CITATION.tex
-qsirecon/sub-ABCD
-qsirecon/sub-ABCD.html
 qsirecon
 qsirecon-MRtrix3_act-FAST
 qsirecon-MRtrix3_act-FAST/sub-ABCD
@@ -49,4 +46,7 @@ qsirecon-anat/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_atlas-sc
 qsirecon-anat/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_atlas-schaefer400_dseg.mif.gz
 qsirecon-anat/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_atlas-schaefer400_dseg.nii.gz
 qsirecon-anat/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_atlas-schaefer400_dseg.txt
+qsirecon/dwiqc.json
 qsirecon/sub-ABCD
+qsirecon/sub-ABCD.html
+sub-ABCD

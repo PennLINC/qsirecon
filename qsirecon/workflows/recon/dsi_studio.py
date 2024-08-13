@@ -116,7 +116,7 @@ distance of %02f in DSI Studio (version %s). """ % (
             (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')])
         ])  # fmt:skip
         # Plot targeted regions
-        if available_anatomical_data["has_qsirecon_t1w_transforms"]:
+        if available_anatomical_data["has_qsiprep_t1w_transforms"]:
             ds_report_odfs = pe.Node(
                 ReconDerivativesDataSink(extension=".png", desc="GQIODF", suffix="odfs"),
                 name="ds_report_odfs",
