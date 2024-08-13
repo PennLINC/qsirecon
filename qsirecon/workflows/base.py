@@ -96,7 +96,7 @@ def init_single_subject_recon_wf(subject_id):
     from ..interfaces.interchange import (
         ReconWorkflowInputs,
         anatomical_workflow_outputs,
-        qsirecon_output_names,
+        qsiprep_output_names,
         recon_workflow_anatomical_input_fields,
         recon_workflow_input_fields,
     )
@@ -217,11 +217,11 @@ to workflows in *qsirecon*'s documentation]\
         workflow.connect([
             # The dwi data
             (dwi_ingress_nodes[dwi_file], recon_full_inputs[dwi_file], [
-                (trait, trait) for trait in qsirecon_output_names]),
+                (trait, trait) for trait in qsiprep_output_names]),
 
             # Session-specific anatomical data
             (dwi_ingress_nodes[dwi_file], dwi_individual_anatomical_wfs[dwi_file],
-             [(trait, "inputnode." + trait) for trait in qsirecon_output_names]),
+             [(trait, "inputnode." + trait) for trait in qsiprep_output_names]),
 
             # subject dwi-specific anatomical to a special node in recon_full_inputs so
             # we have a record of what went in. Otherwise it would be lost in an IdentityInterface

@@ -19,7 +19,7 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from .. import config
 from ..interfaces import DerivativesDataSink
 from ..interfaces.ingress import QsiReconDWIIngress
-from ..interfaces.interchange import qsirecon_output_names, recon_workflow_input_fields
+from ..interfaces.interchange import qsiprep_output_names, recon_workflow_input_fields
 from ..interfaces.reports import InteractiveReport
 from ..utils.bids import collect_data
 
@@ -136,7 +136,7 @@ def init_single_subject_json_report_wf(subject_id, name):
     workflow.connect([
         (scans_iter, qsirecon_preprocessed_dwi_data, ([('dwi_file', 'dwi_file')])),
         (qsirecon_preprocessed_dwi_data, inputnode, [
-            (trait, trait) for trait in qsirecon_output_names]),
+            (trait, trait) for trait in qsiprep_output_names]),
         (inputnode, interactive_report, [
             ('dwi_file', 'processed_dwi_file'),
             ('confounds_file', 'confounds_file'),
