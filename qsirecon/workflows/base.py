@@ -304,9 +304,7 @@ def _get_iterable_dwi_inputs(subject_id):
     dwi_dir = config.execution.bids_dir
     if config.workflow.recon_input_pipeline == "qsiprep":
         if not (dwi_dir / f"sub-{subject_id}").exists():
-            raise Exception(
-                f"Unable to find subject directory in {config.execution.bids_dir}"
-            )
+            raise Exception(f"Unable to find subject directory in {config.execution.bids_dir}")
 
         layout = BIDSLayout(dwi_dir, validate=False, absolute_paths=True)
         # Get all the output files that are in this space
