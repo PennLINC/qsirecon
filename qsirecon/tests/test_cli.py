@@ -465,6 +465,7 @@ def _run_and_generate(test_name, parameters, test_main=True):
             output_dir=config.execution.output_dir,
             run_uuid=config.execution.run_uuid,
             session_list=session_list,
+            qsirecon_suffix="",
         )
 
     output_list_file = os.path.join(get_test_data_path(), f"{test_name}_outputs.txt")

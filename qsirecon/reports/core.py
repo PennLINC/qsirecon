@@ -67,7 +67,13 @@ def run_reports(
 
 
 def generate_reports(
-    subject_list, output_dir, run_uuid, session_list=None, bootstrap_file=None, work_dir=None
+    subject_list,
+    output_dir,
+    run_uuid,
+    session_list=None,
+    bootstrap_file=None,
+    work_dir=None,
+    qsirecon_suffix="",
 ):
     """Generate reports for a list of subjects."""
     reportlets_dir = None
@@ -105,6 +111,7 @@ def generate_reports(
             out_filename=html_report,
             reportlets_dir=reportlets_dir,
             errorname=f"report-{run_uuid}-{subject_label}.err",
+            metadata={"qsirecon_suffix": qsirecon_suffix},
             subject=subject_label,
         )
         # If the report generation failed, append the subject label for which it failed
@@ -136,6 +143,7 @@ def generate_reports(
                     out_filename=html_report,
                     reportlets_dir=reportlets_dir,
                     errorname=f"report-{run_uuid}-{subject_label}-func.err",
+                    metadata={"qsirecon_suffix": qsirecon_suffix},
                     subject=subject_label,
                     session=session_label,
                 )

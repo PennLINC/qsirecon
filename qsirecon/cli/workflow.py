@@ -99,6 +99,7 @@ def build_workflow(config_file, retval):
             config.execution.output_dir,
             config.execution.run_uuid,
             session_list=session_list,
+            qsirecon_suffix="",
         )
         if failed_reports:
             config.loggers.cli.error(

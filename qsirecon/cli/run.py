@@ -195,6 +195,7 @@ def main():
                 suffix_dir,
                 config.execution.run_uuid,
                 session_list=session_list,
+                qsirecon_suffix=qsirecon_suffix,
             )
             failed_reports += suffix_failed_reports
             write_derivative_description(
