@@ -531,7 +531,7 @@ def init_dwi_recon_anatomical_workflow(
         name="mask_template",
     )
     reorient_to_lps = pe.Node(
-        afni.Resample(orientation="LPS", outputtype="NIFTI_GZ"),
+        afni.Resample(orientation="RAI", outputtype="NIFTI_GZ"),
         name="reorient_to_lps",
     )
 
