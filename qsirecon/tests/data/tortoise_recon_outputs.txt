@@ -4,10 +4,15 @@ logs/CITATION.bib
 logs/CITATION.html
 logs/CITATION.md
 logs/CITATION.tex
-qsirecon
-qsirecon
 qsirecon-TORTOISE
+qsirecon-TORTOISE/dataset_description.json
+qsirecon-TORTOISE/logs
+qsirecon-TORTOISE/logs/CITATION.bib
+qsirecon-TORTOISE/logs/CITATION.html
+qsirecon-TORTOISE/logs/CITATION.md
+qsirecon-TORTOISE/logs/CITATION.tex
 qsirecon-TORTOISE/sub-ABCD
+qsirecon-TORTOISE/sub-ABCD.html
 qsirecon-TORTOISE/sub-ABCD/dwi
 qsirecon-TORTOISE/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-mapmri_mdp-NG_dwimap.nii.gz
 qsirecon-TORTOISE/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-mapmri_mdp-NGpar_dwimap.nii.gz
@@ -22,7 +27,4 @@ qsirecon-TORTOISE/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_mode
 qsirecon-TORTOISE/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-tensor_mdp-li_dwimap.nii.gz
 qsirecon-TORTOISE/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-tensor_mdp-rd_dwimap.nii.gz
 qsirecon-TORTOISE/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-tensor_mfp-AM_dwimap.nii.gz
-qsirecon/dwiqc.json
-qsirecon/sub-ABCD
-qsirecon/sub-ABCD.html
 sub-ABCD

@@ -426,8 +426,6 @@ class execution(_Config):
     """List of participant identifiers that are to be preprocessed."""
     freesurfer_input = None
     """Directory containing FreeSurfer directories to use for recon workflows."""
-    reportlets_dir = None
-    """Path where reportlets are written."""
     templateflow_home = _templateflow_home
     """The root folder of the TemplateFlow client."""
     work_dir = Path("work").absolute()
@@ -436,6 +434,8 @@ class execution(_Config):
     """Write out the computational graph corresponding to the planned postprocessing."""
     dataset_links = {}
     """A dictionary of dataset links to be used to track Sources in sidecars."""
+    aggr_ses_reports = 4  # TODO: Change to None when implemented on command line
+    """Maximum number of sessions aggregated in one subject's visual report."""
 
     _layout = None
 
@@ -450,7 +450,6 @@ class execution(_Config):
         "layout",
         "log_dir",
         "output_dir",
-        "reportlets_dir",
         "templateflow_home",
         "work_dir",
     )

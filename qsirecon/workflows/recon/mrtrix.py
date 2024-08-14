@@ -291,8 +291,7 @@ def init_mrtrix_csd_recon_wf(
             name="ds_wm_txt",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, 'wm_txt',
-                         ds_wm_txt, 'in_file')  # fmt:skip
+        workflow.connect([(outputnode, ds_wm_txt, [("wm_txt", "in_file")])])
 
         # If multitissue write out FODs for csf, gm
         if using_multitissue:

@@ -4,10 +4,15 @@ logs/CITATION.bib
 logs/CITATION.html
 logs/CITATION.md
 logs/CITATION.tex
-qsirecon
-qsirecon
 qsirecon-DKI
+qsirecon-DKI/dataset_description.json
+qsirecon-DKI/logs
+qsirecon-DKI/logs/CITATION.bib
+qsirecon-DKI/logs/CITATION.html
+qsirecon-DKI/logs/CITATION.md
+qsirecon-DKI/logs/CITATION.tex
 qsirecon-DKI/sub-ABCD
+qsirecon-DKI/sub-ABCD.html
 qsirecon-DKI/sub-ABCD/dwi
 qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-dki_mdp-AD_dwimap.nii.gz
 qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-dki_mdp-AK_dwimap.nii.gz
@@ -18,7 +23,4 @@ qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-dki
 qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-dki_mdp-RD_dwimap.nii.gz
 qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-dki_mdp-RK_dwimap.nii.gz
 qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-tensor_mdp-FA_dwimap.nii.gz
-qsirecon/dwiqc.json
-qsirecon/sub-ABCD
-qsirecon/sub-ABCD.html
 sub-ABCD

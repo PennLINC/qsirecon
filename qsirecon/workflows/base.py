@@ -225,16 +225,10 @@ to workflows in *qsirecon*'s documentation]\
               for trait in anatomical_workflow_outputs])
         ])  # fmt:skip
 
-    # Fill-in datasinks and reportlet datasinks for the anatomical workflow
-    for _node in workflow.list_node_names():
-        node_suffix = _node.split(".")[-1]
-        if node_suffix.startswith("ds"):
-            base_dir = (
-                config.execution.reportlets_dir
-                if "report" in node_suffix
-                else config.execution.output_dir
-            )
-            workflow.get_node(_node).inputs.base_directory = base_dir
+    # Fill-in datasinks of reportlets seen so far
+    for node in workflow.list_node_names():
+        if node.split(".")[-1].startswith("ds"):
+            workflow.get_node(node).inputs.base_directory = config.execution.output_dir
 
     return workflow
 

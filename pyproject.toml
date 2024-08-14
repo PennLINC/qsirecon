@@ -28,6 +28,7 @@ dependencies = [
     "nibabel <= 5.2.0",
     "nilearn == 0.10.1",
     "nipype == 1.8.6",
+    "nireports",
     "niworkflows >=1.9,<= 1.10",
     "numpy <= 1.26.3",
     "pandas < 2.0.0",
@@ -177,6 +178,7 @@ markers = [
     "pyafq_recon_full: test 19",
     "mrtrix3_recon: test 20",
     "tortoise_recon: test 21",
+    "autotrack: test 22",
 ]
 env = [
     "RUNNING_PYTEST = 1",
