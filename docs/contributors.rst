@@ -111,10 +111,6 @@ repository, located in ``~/projects/qsirecon``: ::
 
 To work in this image, replace ``pennlinc/qsirecon:latest`` with
 ``qsirecon`` in any of the above commands.
-This image may be accessed by the ``qsirecon-docker`` wrapper via the
-``-i`` flag, e.g. ::
-
-    $ qsirecon-docker -i qsirecon --shell
 
 
 Adding new features to the citation boilerplate

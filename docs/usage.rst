@@ -31,25 +31,6 @@ Command-Line Arguments
    :nodefaultconst:
 
 
-The docker wrapper CLI
-======================
-
-.. argparse::
-   :ref: qsirecon_docker.get_parser
-   :prog: qsirecon-docker
-   :nodefault:
-   :nodefaultconst:
-
-
-The singularity wrapper CLI
-=============================
-
-.. argparse::
-   :ref: qsirecon_singularity.get_parser
-   :prog: qsirecon-docker
-   :nodefault:
-   :nodefaultconst:
-
 Note on using CUDA
 ==================
 
