@@ -144,6 +144,7 @@ diffusivity.""" % (
         ds_fibgz = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
+                suffix="dwimap",
                 extension="fib.gz",
                 compress=True,
             ),
@@ -164,6 +165,7 @@ diffusivity.""" % (
                 dismiss_entities=("desc",),
                 mfp="AMICOconfig",
                 model="NODDI",
+                suffix="dwimap",
                 compress=True,
             ),
             name="ds_noddi_config",
