@@ -199,20 +199,13 @@ def main():
             )
             failed_reports += suffix_failed_reports
             write_derivative_description(
+                config.execution.bids_dir,
                 suffix_dir,
-                config.execution.output_dir,
                 # dataset_links=config.execution.dataset_links,
             )
             write_bidsignore(suffix_dir)
 
         if failed_reports:
             print(failed_reports)
-            # msg = (
-            #     'Report generation was not successful for the following participants '
-            #     f': {", ".join(failed_reports)}.'
-            # )
-            # config.loggers.cli.error(msg)
-            # if sentry_sdk is not None:
-            #     sentry_sdk.capture_message(msg, level='error')
 
         sys.exit(int(errno + len(failed_reports)) > 0)

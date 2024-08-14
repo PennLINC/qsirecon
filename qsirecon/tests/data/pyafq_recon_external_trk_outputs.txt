@@ -1,16 +1,14 @@
-qsirecon
 dataset_description.json
-qsirecon/dwiqc.json
 logs
 logs/CITATION.bib
 logs/CITATION.html
 logs/CITATION.md
 logs/CITATION.tex
 sub-ABCD
-qsirecon/sub-ABCD.html
-qsirecon
 qsirecon-MRtrix3
+qsirecon-MRtrix3/dataset_description.json
 qsirecon-MRtrix3/sub-ABCD
+qsirecon-MRtrix3/sub-ABCD.html
 qsirecon-MRtrix3/sub-ABCD/dwi
 qsirecon-MRtrix3/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-SD_Stream_streamlines.tck
 qsirecon-MRtrix3/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-msmt_csd_mfp-FOD_label-CSF_dwimap.mif.gz
@@ -24,7 +22,9 @@ qsirecon-MRtrix3/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model
 qsirecon-MRtrix3/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-sift2_mu.txt
 qsirecon-MRtrix3/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-sift2_streamlineweights.csv
 qsirecon-PYAFQ
+qsirecon-PYAFQ/dataset_description.json
 qsirecon-PYAFQ/sub-ABCD
+qsirecon-PYAFQ/sub-ABCD.html
 qsirecon-PYAFQ/sub-ABCD/dwi
 qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_dwimap
 qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_dwimap/ROIs
@@ -120,4 +120,3 @@ qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_dwimap/
 qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_dwimap/viz_core_bundles/sub-ABCD_acq-10per000_coordsys-RASMM_trkmethod-probCSD_recogmethod-AFQ_desc-LeftCorticospinalviz_dwi.html
 qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_dwimap/viz_core_bundles/sub-ABCD_acq-10per000_coordsys-RASMM_trkmethod-probCSD_recogmethod-AFQ_desc-LeftSuperiorLongitudinalviz_dwi.html
 qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_dwimap/viz_core_bundles/sub-ABCD_acq-10per000_coordsys-RASMM_trkmethod-probCSD_recogmethod-AFQ_desc-RightCorticospinalviz_dwi.html
-qsirecon/sub-ABCD

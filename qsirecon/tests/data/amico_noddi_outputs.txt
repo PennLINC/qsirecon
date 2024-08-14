@@ -4,10 +4,10 @@ logs/CITATION.bib
 logs/CITATION.html
 logs/CITATION.md
 logs/CITATION.tex
-qsirecon
-qsirecon
 qsirecon-NODDI
+qsirecon-NODDI/dataset_description.json
 qsirecon-NODDI/sub-PNC
+qsirecon-NODDI/sub-PNC.html
 qsirecon-NODDI/sub-PNC/dwi
 qsirecon-NODDI/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_desc-preproc_dwimap.fib.gz
 qsirecon-NODDI/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_desc-preproc_model-NODDI_mfp-AMICOconfig_dwimap.pickle.gz
@@ -15,8 +15,4 @@ qsirecon-NODDI/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_desc-preproc_model-no
 qsirecon-NODDI/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_desc-preproc_model-noddi_mdp-isovf_dwimap.nii.gz
 qsirecon-NODDI/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_desc-preproc_model-noddi_mdp-od_dwimap.nii.gz
 qsirecon-NODDI/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_desc-preproc_model-noddi_mfp-direction_dwimap.nii.gz
-qsirecon/dwiqc.json
-qsirecon/sub-PNC
-qsirecon/sub-PNC
-qsirecon/sub-PNC.html
 sub-PNC
