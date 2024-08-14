@@ -171,6 +171,7 @@ def main():
         errno = 0
     finally:
 
+        from .workflow import copy_boilerplate
         from ..reports.core import generate_reports
         from ..workflows.base import _load_recon_spec
 
@@ -211,6 +212,8 @@ def main():
                 # dataset_links=config.execution.dataset_links,
             )
             write_bidsignore(suffix_dir)
+            # Copy the boilerplate files as well
+            copy_boilerplate(config.execution.output_dir, suffix_dir)
 
         if failed_reports:
             print(failed_reports)

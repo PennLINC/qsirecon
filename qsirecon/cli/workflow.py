@@ -225,3 +225,18 @@ def build_boilerplate(config_file, workflow):
             check_call(cmd, timeout=10)
         except (FileNotFoundError, CalledProcessError, TimeoutExpired):
             config.loggers.cli.warning("Could not generate CITATION.tex file:\n%s", " ".join(cmd))
+
+
+def copy_boilerplate(in_dir, out_dir):
+    import shutil
+
+    in_logs_path = Path(in_dir) / "logs"
+    out_logs_path = Path(out_dir) / "logs"
+    out_logs_path.mkdir(exist_ok=True, parents=True)
+    citation_files = {
+        ext: in_logs_path / ("CITATION.%s" % ext) for ext in ("bib", "tex", "md", "html")
+    }
+    for ext, citation_file in citation_files.items():
+        if citation_file.exists():
+            citation_file.rename()
+            shutil.copy(citation_file, out_logs_path / f"CITATION.{ext}")
