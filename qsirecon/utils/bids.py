@@ -41,6 +41,9 @@ import warnings
 from pathlib import Path
 
 from bids import BIDSLayout
+from nipype.pipeline import engine as pe
+
+from .. import config
 
 
 class BIDSError(ValueError):
@@ -308,3 +311,13 @@ def validate_input_dir(exec_env, bids_dir, participant_label):
 
 def _get_shub_version(singularity_url):
     raise ValueError("Not yet implemented")
+
+
+def clean_datasinks(workflow: pe.Workflow, qsirecon_suffix: str) -> pe.Workflow:
+    """Overwrite the base_directory of Datasinks."""
+    out_dir = Path(config.execution.output_dir) / f"qsirecon-{qsirecon_suffix}"
+    for node in workflow.list_node_names():
+        if node.split(".")[-1].startswith("ds_"):
+            workflow.get_node(node).interface.base_directory = str(out_dir)
+
+    return workflow

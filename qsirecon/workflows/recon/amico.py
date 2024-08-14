@@ -12,11 +12,12 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ... import config
 from ...interfaces.amico import NODDI
+from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.converters import NODDItoFIBGZ
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import AMICOReconScalars, ReconScalarsDataSink
 from ...interfaces.reports import CLIReconPeaksReport
-from qsirecon.interfaces.bids import ReconDerivativesDataSink
+from ...utils.bids import clean_datasinks
 
 
 def init_amico_noddi_fit_wf(
@@ -116,7 +117,11 @@ diffusivity.""" % (
     if plot_reports:
         plot_peaks = pe.Node(CLIReconPeaksReport(), name="plot_peaks", n_procs=omp_nthreads)
         ds_report_peaks = pe.Node(
-            ReconDerivativesDataSink(extension=".png", desc="NODDI", suffix="peaks"),
+            DerivativesDataSink(
+                desc="NODDI",
+                suffix="peaks",
+                extension=".png",
+            ),
             name="ds_report_peaks",
             run_without_submitting=True,
         )
@@ -130,8 +135,9 @@ diffusivity.""" % (
 
     if qsirecon_suffix:
         ds_fibgz = pe.Node(
-            ReconDerivativesDataSink(
-                extension=".fib.gz", qsirecon_suffix=qsirecon_suffix, compress=True
+            DerivativesDataSink(
+                extension=".fib.gz",
+                compress=True,
             ),
             name="ds_{}_fibgz".format(qsirecon_suffix),
             run_without_submitting=True,
@@ -148,8 +154,10 @@ diffusivity.""" % (
             "recon_scalars")  # fmt:skip
 
         ds_config = pe.Node(
-            ReconDerivativesDataSink(
-                mfp="AMICOconfig", model="NODDI", qsirecon_suffix=qsirecon_suffix, compress=True
+            DerivativesDataSink(
+                mfp="AMICOconfig",
+                model="NODDI",
+                compress=True,
             ),
             name="ds_noddi_config",
             run_without_submitting=True,
@@ -157,4 +165,5 @@ diffusivity.""" % (
         workflow.connect(outputnode, "config_file", ds_config, "in_file")
 
     workflow.__desc__ = desc
-    return workflow
+
+    return clean_datasinks(workflow, qsirecon_suffix)
