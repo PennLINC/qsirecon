@@ -25,7 +25,6 @@ from nipype.interfaces.base import (
     traits,
 )
 from nipype.utils.filemanip import fname_presuffix
-from pkg_resources import resource_filename as pkgrf
 
 from ..utils.ingress import ukb_dirname_to_bids
 from .images import to_lps
@@ -135,15 +134,6 @@ class QSIPrepAnatomicalIngress(SimpleInterface):
             "t1_2_mni_forward_transform",
             "%s/sub-%s*_from-T*w_to-MNI152NLin2009cAsym_mode-image_xfm.h5" % (anat_root, sub),
         )
-        if not self.inputs.infant_mode:
-            self._results["template_image"] = pkgrf(
-                "qsirecon",
-                "data/mni_1mm_t1w_lps_brain.nii.gz",
-            )
-        else:
-            self._results["template_image"] = pkgrf(
-                "qsirecon", "data/mni_1mm_t1w_lps_brain_infant.nii.gz"
-            )
 
         return runtime
 
@@ -341,4 +331,39 @@ class VoxelSizeChooser(SimpleInterface):
                 voxel_size = np.round(np.mean(zooms), 2)
 
         self._results["voxel_size"] = voxel_size
+        return runtime
+
+
+class _GetTemplateInputSpec(BaseInterfaceInputSpec):
+    template_name = traits.Enum(
+        "MNI152NLin2009cAsym",
+        "MNIInfant",
+        mandatory=True,
+    )
+
+
+class _GetTemplateOutputSpec(BaseInterfaceInputSpec):
+    template_file = File(exists=True)
+
+
+class GetTemplate(SimpleInterface):
+    input_spec = _GetTemplateInputSpec
+    output_spec = _GetTemplateOutputSpec
+
+    def _run_interface(self, runtime):
+        from templateflow.api import get as get_template
+
+        template_file = str(
+            get_template(
+                self.inputs.template_name,
+                cohort=[None, "1"],
+                resolution="1",
+                desc=None,
+                suffix="T1w",
+                extension=".nii.gz",
+            ),
+        )
+
+        self._results["template_file"] = template_file
+
         return runtime

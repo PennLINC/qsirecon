@@ -23,6 +23,7 @@ from pkg_resources import resource_filename as pkgrf
 
 from ... import config
 from ...interfaces.anatomical import (
+    GetTemplate,
     QSIPrepAnatomicalIngress,
     UKBAnatomicalIngress,
     VoxelSizeChooser,
@@ -518,13 +519,24 @@ def init_dwi_recon_anatomical_workflow(
             "has_qsiprep_t1w_transforms": has_qsiprep_t1w_transforms,
         }
 
+    # XXX: This is a temporary solution until QSIRecon supports flexible output spaces.
+    get_template = pe.Node(
+        GetTemplate(
+            template_name="MNI152NLin2009cAsym" if not config.workflow.infant else "MNIInfant",
+        ),
+        name="get_template",
+    )
+    reorient_to_lps = pe.Node(
+        afni.Resample(orientation="LPS", outputtype="NIFTI_GZ"),
+        name="reorient_to_lps",
+    )
+
     reference_grid_wf = init_output_grid_wf()
     workflow.connect([
-        (inputnode, reference_grid_wf, [
-            ('template_image', 'inputnode.template_image'),
-            ('dwi_ref', 'inputnode.input_image')]),
-        (reference_grid_wf, buffernode, [
-            ('outputnode.grid_image', 'resampling_template')])
+        (get_template, reorient_to_lps, [('template_file', 'inputnode.in_file')]),
+        (inputnode, reference_grid_wf, [('dwi_ref', 'inputnode.input_image')]),
+        (reorient_to_lps, reference_grid_wf, [('out_file', 'inputnode.template_image')]),
+        (reference_grid_wf, buffernode, [('outputnode.grid_image', 'resampling_template')]),
     ])  # fmt:skip
 
     # Missing Freesurfer AND QSIRecon T1ws, or the user wants a DWI-based mask
