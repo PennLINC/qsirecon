@@ -344,7 +344,7 @@ class _GetTemplateInputSpec(BaseInterfaceInputSpec):
 
 class _GetTemplateOutputSpec(BaseInterfaceInputSpec):
     template_file = File(exists=True)
-    brain_mask_file = File(exists=True)
+    mask_file = File(exists=True)
 
 
 class GetTemplate(SimpleInterface):
@@ -364,7 +364,7 @@ class GetTemplate(SimpleInterface):
                 extension=".nii.gz",
             ),
         )
-        brain_mask_file = str(
+        mask_file = str(
             get_template(
                 self.inputs.template_name,
                 cohort=[None, "2"],
@@ -376,6 +376,6 @@ class GetTemplate(SimpleInterface):
         )
 
         self._results["template_file"] = template_file
-        self._results["brain_mask_file"] = brain_mask_file
+        self._results["mask_file"] = mask_file
 
         return runtime
