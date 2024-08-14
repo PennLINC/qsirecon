@@ -171,9 +171,9 @@ def main():
         errno = 0
     finally:
 
-        from .workflow import copy_boilerplate
         from ..reports.core import generate_reports
         from ..workflows.base import _load_recon_spec
+        from .workflow import copy_boilerplate
 
         # Generate reports phase
         session_list = config.execution.get().get("bids_filters", {}).get("dwi", {}).get("session")
