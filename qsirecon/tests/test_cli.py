@@ -10,13 +10,13 @@ from nipype import config as nipype_config
 from qsirecon.cli import run
 from qsirecon.cli.parser import parse_args
 from qsirecon.cli.workflow import build_boilerplate, build_workflow
+from qsirecon.reports.core import generate_reports
 from qsirecon.tests.utils import (
     check_generated_files,
     download_test_data,
     get_test_data_path,
 )
 from qsirecon.utils.bids import write_derivative_description
-from qsirecon.reports.core import generate_reports
 
 nipype_config.enable_debug_mode()
 
