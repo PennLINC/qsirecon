@@ -783,8 +783,9 @@ def init_dwi_recon_anatomical_workflow(
         for node in workflow.list_node_names():
             node_suffix = node.split(".")[-1]
             if node_suffix.startswith("dsatlas_"):
-                workflow.connect(
-                    inputnode, 'dwi_file', workflow.get_node(node), 'source_file')  # fmt:skip
+                workflow.connect([
+                    (inputnode, workflow.get_node(node), [("dwi_file", "source_file")]),
+                ])  # fmt:skip
 
     if "mrtrix_5tt_hsv" in extras_to_make and not has_qsiprep_5tt_hsvs:
         raise Exception("Unable to create a 5tt HSV image given input data.")

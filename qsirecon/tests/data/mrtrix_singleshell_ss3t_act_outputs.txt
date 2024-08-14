@@ -4,9 +4,14 @@ logs/CITATION.bib
 logs/CITATION.html
 logs/CITATION.md
 logs/CITATION.tex
-qsirecon
-qsirecon
 qsirecon-MRtrix3_fork-SS3T_act-FAST
+qsirecon-MRtrix3_fork-SS3T_act-FAST/dataset_description.json
+qsirecon-MRtrix3_fork-SS3T_act-FAST/logs
+qsirecon-MRtrix3_fork-SS3T_act-FAST/logs/CITATION.bib
+qsirecon-MRtrix3_fork-SS3T_act-FAST/logs/CITATION.html
+qsirecon-MRtrix3_fork-SS3T_act-FAST/logs/CITATION.md
+qsirecon-MRtrix3_fork-SS3T_act-FAST/logs/CITATION.tex
+qsirecon-MRtrix3_fork-SS3T_act-FAST/sub-PNC.html
 qsirecon-MRtrix3_fork-SS3T_act-FAST/sub-PNC
 qsirecon-MRtrix3_fork-SS3T_act-FAST/sub-PNC/dwi
 qsirecon-MRtrix3_fork-SS3T_act-FAST/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_desc-preproc_connectivity.mat
@@ -46,8 +51,4 @@ qsirecon-anat/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_desc-preproc_atlas-sch
 qsirecon-anat/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_desc-preproc_atlas-schaefer400_dseg.mif.gz
 qsirecon-anat/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_desc-preproc_atlas-schaefer400_dseg.nii.gz
 qsirecon-anat/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_desc-preproc_atlas-schaefer400_dseg.txt
-qsirecon/dwiqc.json
-qsirecon/sub-PNC
-qsirecon/sub-PNC
-qsirecon/sub-PNC.html
 sub-PNC

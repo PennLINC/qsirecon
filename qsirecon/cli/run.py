@@ -171,17 +171,13 @@ def main():
         errno = 0
     finally:
 
-        from ..viz.reports import generate_reports
+        from ..reports.core import generate_reports
+        from ..workflows.base import _load_recon_spec
+        from .workflow import copy_boilerplate
 
         # Generate reports phase
-        # session_list = (
-        #     config.execution.get().get('bids_filters', {}).get('dwi', {}).get('session')
-        # )
+        session_list = config.execution.get().get("bids_filters", {}).get("dwi", {}).get("session")
 
-        failed_reports = generate_reports(
-            config.execution.participant_label,
-            # session_list=session_list,
-        )
         write_derivative_description(
             config.execution.bids_dir,
             config.execution.output_dir,
@@ -189,21 +185,39 @@ def main():
         )
         write_bidsignore(config.execution.output_dir)
 
+        workflow_spec = _load_recon_spec()
+        # Compile list of output folders
+        # TODO: Retain QSIRecon pipeline names in the config object
+        qsirecon_suffixes = []
+        for node_spec in workflow_spec["nodes"]:
+            qsirecon_suffix = node_spec.get("qsirecon_suffix", None)
+            qsirecon_suffixes += [qsirecon_suffix] if qsirecon_suffix else []
+
+        qsirecon_suffixes = sorted(list(set(qsirecon_suffixes)))
+        config.loggers.cli.info(f"QSIRecon pipeline suffixes: {qsirecon_suffixes}")
+        failed_reports = []
+        for qsirecon_suffix in qsirecon_suffixes:
+            suffix_dir = str(config.execution.output_dir / f"qsirecon-{qsirecon_suffix}")
+
+            # Copy the boilerplate files
+            copy_boilerplate(config.execution.output_dir, suffix_dir)
+
+            suffix_failed_reports = generate_reports(
+                config.execution.participant_label,
+                suffix_dir,
+                config.execution.run_uuid,
+                session_list=session_list,
+                qsirecon_suffix=qsirecon_suffix,
+            )
+            failed_reports += suffix_failed_reports
+            write_derivative_description(
+                config.execution.bids_dir,
+                suffix_dir,
+                # dataset_links=config.execution.dataset_links,
+            )
+            write_bidsignore(suffix_dir)
+
         if failed_reports:
             print(failed_reports)
-            # msg = (
-            #     'Report generation was not successful for the following participants '
-            #     f': {", ".join(failed_reports)}.'
-            # )
-            # config.loggers.cli.error(msg)
-            # if sentry_sdk is not None:
-            #     sentry_sdk.capture_message(msg, level='error')
 
-        # If preprocessing and recon are requested in the same call, start the recon workflow now.
-        if errno > 0:
-            if config.nipype.stop_on_first_crash:
-                config.loggers.workflow.critical(
-                    "Errors occurred during preprocessing - Recon will not run."
-                )
-
-        sys.exit(int((errno + failed_reports) > 0))
+        sys.exit(int(errno + len(failed_reports)) > 0)
