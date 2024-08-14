@@ -28,10 +28,7 @@ from shutil import copyfileobj, copytree
 
 from bids.layout import Config, parse_file_entities
 from nipype import logging
-from nipype.interfaces.base import (
-    isdefined,
-    traits,
-)
+from nipype.interfaces.base import isdefined, traits
 from nipype.utils.filemanip import copyfile, split_filename
 from niworkflows.interfaces.bids import DerivativesDataSink as BaseDerivativesDataSink
 from niworkflows.interfaces.bids import _DerivativesDataSinkInputSpec
