@@ -16,13 +16,18 @@ from pathlib import Path
 import nipype.interfaces.io as nio
 from nipype.interfaces import afni, ants, mrtrix3
 from nipype.interfaces import utility as niu
+from nipype.interfaces.base import traits
 from nipype.pipeline import engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from niworkflows.interfaces.reportlets.registration import SpatialNormalizationRPT
 from pkg_resources import resource_filename as pkgrf
 
 from ... import config
-from ...interfaces.anatomical import QSIReconAnatomicalIngress, UKBAnatomicalIngress
+from ...interfaces.anatomical import (
+    QSIReconAnatomicalIngress,
+    UKBAnatomicalIngress,
+    VoxelSizeChooser,
+)
 from ...interfaces.ants import ConvertTransformFile
 from ...interfaces.bids import ReconDerivativesDataSink
 from ...interfaces.freesurfer import find_fs_path
@@ -34,7 +39,6 @@ from ...interfaces.interchange import (
     recon_workflow_input_fields,
 )
 from ...interfaces.mrtrix import GenerateMasked5tt, ITKTransformConvert, TransformHeader
-from ..anatomical.volume import init_output_grid_wf
 from qsirecon.interfaces.utils import GetConnectivityAtlases
 
 # Required freesurfer files for mrtrix's HSV 5tt generation
@@ -841,3 +845,47 @@ def get_t1w_registration_node(infant_mode, sloppy, omp_nthreads):
     t1_2_mni.inputs.reference_image = ref_img_brain
     t1_2_mni.inputs.orientation = "LPS"
     return t1_2_mni
+
+
+def init_output_grid_wf() -> Workflow:
+    """Generate a non-oblique, uniform voxel-size grid around a brain."""
+    workflow = Workflow(name="output_grid_wf")
+    inputnode = pe.Node(
+        niu.IdentityInterface(fields=["template_image", "input_image"]), name="inputnode"
+    )
+    outputnode = pe.Node(niu.IdentityInterface(fields=["grid_image"]), name="outputnode")
+    # Create the output reference grid_image
+    if config.workflow.output_resolution is None:
+        voxel_size = traits.Undefined
+    else:
+        voxel_size = config.workflow.output_resolution
+    padding = 4 if config.workflow.infant else 8
+
+    autobox_template = pe.Node(
+        afni.Autobox(outputtype="NIFTI_GZ", padding=padding), name="autobox_template"
+    )
+    deoblique_autobox = pe.Node(
+        afni.Warp(outputtype="NIFTI_GZ", deoblique=True), name="deoblique_autobox"
+    )
+    voxel_size_chooser = pe.Node(
+        VoxelSizeChooser(voxel_size=voxel_size), name="voxel_size_chooser"
+    )
+    resample_to_voxel_size = pe.Node(
+        afni.Resample(outputtype="NIFTI_GZ"), name="resample_to_voxel_size"
+    )
+
+    workflow.connect([
+        (inputnode, autobox_template, [('template_image', 'in_file')]),
+        (autobox_template, deoblique_autobox, [('out_file', 'in_file')]),
+        (deoblique_autobox, resample_to_voxel_size, [('out_file', 'in_file')]),
+        (resample_to_voxel_size, outputnode, [('out_file', 'grid_image')]),
+        (inputnode, voxel_size_chooser, [('input_image', 'input_image')]),
+        (voxel_size_chooser, resample_to_voxel_size, [(('voxel_size', _tupleize), 'voxel_size')])
+    ])  # fmt:skip
+
+    return workflow
+
+
+def _tupleize(value):
+    # Nipype did not like having a Tuple output trait
+    return (value, value, value)
