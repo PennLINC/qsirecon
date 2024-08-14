@@ -35,6 +35,7 @@ def run_reports(
     out_filename="report.html",
     reportlets_dir=None,
     errorname="report.err",
+    metadata=None,
     **entities,
 ):
     """
@@ -48,7 +49,7 @@ def run_reports(
         reportlets_dir=reportlets_dir,
         plugins=None,
         plugin_meta=None,
-        metadata=None,
+        metadata=metadata,
         **entities,
     )
 
