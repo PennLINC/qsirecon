@@ -151,6 +151,14 @@ def init_dwi_recon_workflow(
                 node,
                 "inputnode.mapping_metadata")  # fmt:skip
 
+    # Set the source_file for any datasinks
+    for node in workflow.list_node_names():
+        node_name = node.split(".")[-1]
+        if node_name.startswith("ds_") or node_name.startswith("recon_scalars"):
+            workflow.connect([
+                (inputnode, workflow.get_node(node), [("dwi_file", "source_file")]),
+            ])  # fmt:skip
+
     return workflow
 
 
