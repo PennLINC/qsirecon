@@ -356,7 +356,7 @@ class GetTemplate(SimpleInterface):
         template_file = str(
             get_template(
                 self.inputs.template_name,
-                cohort=[None, "1"],
+                cohort=[None, "2"],
                 resolution="1",
                 desc=None,
                 suffix="T1w",
