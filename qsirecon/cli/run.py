@@ -189,7 +189,7 @@ def main():
         config.loggers.cli.info(f"QSIRecon pipeline suffixes: {qsirecon_suffixes}")
         failed_reports = []
         for qsirecon_suffix in qsirecon_suffixes:
-            suffix_dir = Path(str(config.execution.output_dir) + f"-{qsirecon_suffix}")
+            suffix_dir = str(config.execution.output_dir / f"qsirecon-{qsirecon_suffix}")
             suffix_failed_reports = generate_reports(
                 config.execution.participant_label,
                 suffix_dir,
