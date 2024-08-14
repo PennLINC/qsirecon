@@ -19,21 +19,6 @@ Patching working repositories
 In order to test new code without rebuilding the Docker image, it is
 possible to mount working repositories as source directories within the
 container.
-The ``qsirecon-docker`` script simplifies this for the most common repositories::
-
-    -f PATH, --patch-qsirecon PATH
-                          working qsirecon repository (default: None)
-    -p PATH, --patch-nipype PATH
-                          working nipype repository (default: None)
-
-For instance, if your repositories are contained in ``$HOME/projects``::
-
-    $ qsirecon-docker -f $HOME/projects/qsirecon/qsirecon \
-                      -p $HOME/projects/nipype/nipype \
-                      -i pennlinc/qsirecon:latest \
-                      $HOME/fullds005 $HOME/dockerout participant
-
-Note the ``-i`` flag allows you to specify an image.
 
 When invoking ``docker`` directly, the mount options must be specified
 with the ``-v`` flag::
@@ -48,12 +33,7 @@ For example, ::
         pennlinc/qsirecon:latest /data /out/out participant \
         -w /out/work/
 
-In order to work directly in the container, pass the ``--shell`` flag to
-``qsirecon-docker``::
-
-    $ qsirecon-docker --shell $HOME/fullds005 $HOME/dockerout participant
-
-This is the equivalent of using ``--entrypoint=bash`` and omitting the qsirecon
+In order to work directly in the container, use ``--entrypoint=bash`` and omit the qsirecon
 arguments in a ``docker`` command::
 
     $ docker run --rm -v $HOME/fullds005:/data:ro -v $HOME/dockerout:/out \
