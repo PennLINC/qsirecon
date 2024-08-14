@@ -67,7 +67,7 @@ class QSIPrepAnatomicalIngressOutputSpec(TraitedSpec):
 
 
 class QSIPrepAnatomicalIngress(SimpleInterface):
-    """Get only the useful files from a QSIRecon anatomical output.
+    """Get only the useful files from a QSIPrep anatomical output.
 
     Many of the preprocessed outputs aren't useful for reconstruction
     (mainly anything that has been mapped forward into template space).
