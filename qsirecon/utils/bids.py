@@ -318,6 +318,7 @@ def clean_datasinks(workflow: pe.Workflow, qsirecon_suffix: str) -> pe.Workflow:
     out_dir = Path(config.execution.output_dir) / f"qsirecon-{qsirecon_suffix}"
     for node in workflow.list_node_names():
         if node.split(".")[-1].startswith("ds_"):
+            config.loggers.utils.info(f"Setting {node} base_directory to {out_dir}")
             workflow.get_node(node).interface.base_directory = str(out_dir)
 
     return workflow
