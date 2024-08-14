@@ -198,6 +198,10 @@ def main():
         failed_reports = []
         for qsirecon_suffix in qsirecon_suffixes:
             suffix_dir = str(config.execution.output_dir / f"qsirecon-{qsirecon_suffix}")
+
+            # Copy the boilerplate files
+            copy_boilerplate(config.execution.output_dir, suffix_dir)
+
             suffix_failed_reports = generate_reports(
                 config.execution.participant_label,
                 suffix_dir,
@@ -212,8 +216,6 @@ def main():
                 # dataset_links=config.execution.dataset_links,
             )
             write_bidsignore(suffix_dir)
-            # Copy the boilerplate files as well
-            copy_boilerplate(config.execution.output_dir, suffix_dir)
 
         if failed_reports:
             print(failed_reports)
