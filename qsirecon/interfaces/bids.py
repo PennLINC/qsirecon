@@ -33,7 +33,7 @@ from nipype.utils.filemanip import copyfile, split_filename
 from niworkflows.interfaces.bids import DerivativesDataSink as BaseDerivativesDataSink
 from niworkflows.interfaces.bids import _DerivativesDataSinkInputSpec
 
-from qsirecon.data import load_data
+from qsirecon.data import load as load_data
 
 LOGGER = logging.getLogger("nipype.interface")
 BIDS_NAME = re.compile(
