@@ -533,7 +533,7 @@ def init_dwi_recon_anatomical_workflow(
 
     reference_grid_wf = init_output_grid_wf()
     workflow.connect([
-        (get_template, reorient_to_lps, [('template_file', 'inputnode.in_file')]),
+        (get_template, reorient_to_lps, [('template_file', 'in_file')]),
         (inputnode, reference_grid_wf, [('dwi_ref', 'inputnode.input_image')]),
         (reorient_to_lps, reference_grid_wf, [('out_file', 'inputnode.template_image')]),
         (reference_grid_wf, buffernode, [('outputnode.grid_image', 'resampling_template')]),
