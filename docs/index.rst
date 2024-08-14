@@ -13,13 +13,11 @@ Contents
    :maxdepth: 3
 
    installation
-   quickstart
    usage
    reconstruction
    contributors
    citing
    changes
-   api
    comparisons
    help
    license

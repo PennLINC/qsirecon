@@ -1,10 +1,10 @@
 .. include:: links.rst
 
-.. _reconstruction:
+.. _builtin_reconstruction:
 
 
-Reconstruction
-==============
+Built-In Reconstruction Workflows
+=================================
 
 You can send the outputs from ``qsiprep`` to other software packages
 by specifying a JSON file with the ``--recon-spec`` option. Here we use
@@ -71,7 +71,7 @@ To use a pre-packaged workflow, simply provide the name from the leftmost column
 nipype workflows and can be configured and connected based on the
 recon spec JSON file.  The output from one workflow can be the input to
 another as long as the output from the upstream workflow matches the inputs to
-the downstream workflow. The :ref:`recon_workflows` section lists all the
+the downstream workflow. The :ref:`builtin_reconstruction` section lists all the
 available workflows and their inputs and outputs.
 
 .. _other_pipeline_input:
@@ -171,7 +171,7 @@ regardless even if the ``--dwi-only`` flag wasn't used. This means two possible
 things can happen
 
 If ``qsirecon`` performed anatomical preprocessing
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In most cases human MRI experiments include a T1-weighted anatomical image.
 By default ``qsirecon`` performs some processing steps on this image,
@@ -226,8 +226,8 @@ The source of the brain mask depends on available data and user options.
 
 .. _preconfigured_workflows:
 
-Pre-configured recon_workflows
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Detailed Descriptions of Built-In Workflows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. note::
   The MRtrix workflows are identical up to the FOD estimation. In each case the fiber response
@@ -324,7 +324,7 @@ those pathways. See the `pyAFQ documentation <https://yeatmanlab.github.io/pyAFQ
 .. _pyafq_input_trk:
 
 ``mrtrix_multishell_msmt_pyafq_tractometry``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Identical to :ref:`pyafq` except that tractography generated using IFOD2 from MRTrix3,
 instead of using pyAFQ's default DIPY tractography.
@@ -335,7 +335,7 @@ reconstruciton pipelines to pyAFQ.
 .. _amico_noddi:
 
 ``amico_noddi``
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 This workflow estimates the NODDI [Zhang2012]_ model using the implementation from
 AMICO [Daducci2015]_. Images with intra-cellular volume fraction (ICVF), isotropic volume
@@ -362,7 +362,7 @@ Additionally, a number of anisotropy scalar images are produced such as QA, GFA 
 .. _dsi_studio_autotrack:
 
 ``dsi_studio_autotrack``
-^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 This workflow implements DSI Studio's q-space diffeomorphic reconstruction (QSDR), the MNI space
 (ICBM-152) version of GQI, followed by automatic fiber tracking (autotrack) [Yeh2020]_ [Yeh2022]_
@@ -423,14 +423,14 @@ are then used for two purposes
 
  1. To calculate ODFs, which are then sent to DSI Studio for tractography
  2. To estimate signal for a multishell (specifically HCP) sampling scheme, which is run
-    through the :ref:`mrtrix_multishell_msmt` pipeline
+    through the  pipeline
 
 All outputs, including the imputed HCP sequence are saved in the outputs directory.
 
 .. _custom_reconstruction:
 
-Building a custom reconstruction pipeline
-==========================================
+Building a Custom Reconstruction Workflow
+=========================================
 
 
 Instead of going through each possible element of a pipeline, we will go through
@@ -446,7 +446,7 @@ file similar to the following::
     "name": "dsistudio_pipeline",
     "space": "T1w",
     "anatomical": ["mrtrix_5tt_fast"],
-    "atlases": ["schaefer100x7", "schaefer100x17", "schaefer200x7", "schaefer200x7", "schaefer400x7", "schaefer400x17", "brainnetome246", "aicha384", "gordon333", "aal116", "power264"],
+    "atlases": ["schaefer100x7", "schaefer100x17", "schaefer200x7", "schaefer200x7", "schaefer400x7", "schaefer400x17", "brainnetome246", "aicha384", "gordon333", "aal116"],
     "nodes": [
       {
         "name": "dsistudio_gqi",
@@ -496,11 +496,11 @@ things that `DSI Studio`_ can do, we specify that we want to reconstruct the
 output from ``qsirecon`` by adding ``"action": "reconstruction"``. Additional
 parameters can be sent to specify how the reconstruction should take place in
 the ``"parameters"`` item. Possible options for ``"software"``, ``"action"``
-and ``"parameters"`` can be found in the :ref:`recon_workflows` section.
+and ``"parameters"`` can be found in the :ref:`builtin_reconstruction` section.
 
 You will have access to all the intermediate data in the pipeline's working directory,
 but can specify which outputs you want to save to the output directory by setting
-an ``"output_suffix"``. Looking at the outputs for a workflow in the :ref:`recon_workflows`
+an ``"output_suffix"``. Looking at the outputs for a workflow in the :ref:`builtin_reconstruction`
 section you can see what is produced by each workflow. Each of these files
 will be saved in your output directory for each subject with a name matching
 your specified ``"output_suffix"``. In this case it will produce a file
@@ -568,7 +568,6 @@ the relevant publication.
  * ``aicha384``: [Joliot2015]_
  * ``gordon333``: [Gordon2014]_
  * ``aal116``: [TzourioMazoyer2002]_
- * ``power264``: [Power2011]_
 
 .. _custom_atlases:
 

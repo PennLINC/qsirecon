@@ -90,3 +90,10 @@ Citing qsirecon
          the NIH diffusion MRI processing pipeline." Program and proceedings of the ISMRM
          25th annual meeting and exhibition, Honolulu, HI, USA. 2017.
 
+.. [Kruper2021] Kruper, J., Yeatman, J. D., Richie-Halford, A., Bloom, D., Grotheer, M.,
+         Caffarra, S., ... & Rokem, A. (2021). Evaluating the reliability of human brain white
+         matter tractometry. Aperture neuro
+
+.. [Yeatman2012] Yeatman, J. D., Dougherty, R. F., Myall, N. J., Wandell, B. A., & Feldman,
+         H. M. (2012). Tract profiles of white matter properties: automating fiber-tract quantification.
+         PloS one, 7(11), e49790.

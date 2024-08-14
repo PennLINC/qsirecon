@@ -7,5 +7,5 @@ in the ``qsirecon`` distribution.
 
 All trademarks referenced herein are property of their respective holders.
 
-Copyright (c) 2018-2019 PennLINC
+Copyright (c) 2018-2024 PennLINC
 All rights reserved.

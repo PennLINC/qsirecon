@@ -1,12 +1,13 @@
 .. include:: links.rst
 
+.. _Installation:
+
 ------------
 Installation
 ------------
 
-There are two easy ways to use qsirecon:
-in a `Docker Container`_, or in a `Singularity Container`_.
-Using a local container method is highly recommended.
+The official source of QSIRecon is the `docker repository
+<https://hub.docker.com/pennlinc/qsirecon>`_. The image
 
 
 .. _`Docker Container`:

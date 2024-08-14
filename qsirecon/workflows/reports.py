@@ -2,13 +2,7 @@
 # -*- coding: utf-8 -*-
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
-qsirecon interactive report workflow
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: init_qsirecon_wf
-
-"""
 import logging
 from copy import deepcopy
 
@@ -21,25 +15,12 @@ from ..interfaces import DerivativesDataSink
 from ..interfaces.ingress import QsiReconDWIIngress
 from ..interfaces.interchange import qsiprep_output_names, recon_workflow_input_fields
 from ..interfaces.reports import InteractiveReport
-from ..utils.bids import collect_data
 
 LOGGER = logging.getLogger("nipype.workflow")
 
 
 def init_json_preproc_report_wf(subject_list):
     """Create a json report for the dmriprep-viewer.
-
-    .. workflow::
-        :graph2use: orig
-        :simple_form: yes
-
-        import os
-        from qsirecon.workflows.reports import init_json_preproc_report_wf
-        wf = init_json_preproc_report_wf(
-            subject_list=['qsirecontest'],
-            work_dir='.',
-            output_dir='.')
-
 
     Parameters
     ----------
@@ -75,18 +56,6 @@ def init_single_subject_json_report_wf(subject_id, name):
     """
     This workflow examines the output of a qsirecon run and creates a json report for
     dmriprep-viewer. These are very useful for batch QC-ing QSIRecon runs.
-
-    .. workflow::
-        :graph2use: orig
-        :simple_form: yes
-
-        from qsirecon.workflows.reports import init_single_subject_json_report_wf
-
-        wf = init_single_subject_json_report_wf(
-            subject_id='test',
-            name='single_subject_qsirecontest_wf',
-            reportlets_dir='.',
-            output_dir='.')
 
     Parameters
 

@@ -3,7 +3,7 @@ TORTOISE recon workflows
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
-.. autofunction:: init_tortoise_estimate_wf
+.. autofunction:: init_tortoise_estimator_wf
 
 """
 

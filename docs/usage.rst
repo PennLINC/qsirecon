@@ -3,16 +3,27 @@
 Usage
 -----
 
-We strongly recommend running ``qsirecon`` from a container.
-The common parts of the command are similar to the `BIDS-Apps
-<https://github.com/BIDS-Apps>`_ definition, but the input should
-*not* be a BIDS dataset, but rather one of the supported preprocessed
-inputs (qsiprep, or UKBB results).
+Before you can use QSIRecon, you must have some preprocessed dMRI.
+*Raw BIDS dMRI should not be used and will not work*. Instead,
+gather data processed by QSIPrep_ or UKBioBank_. The directory
+containing the ``sub-*`` directories (if from QSIPrep) or the
+directory with the numerals/underscores per subject if UKBB
+will be the first argument to QSIRecon.
 
-Suppose I'm in a directory where there are some qsiprep results in
-``inputs/qsiprep``. I'd like to save my ``qsirecon`` outputs in ``results``. I
-have access to 8 cpus.  To run the ``dsi_studio_autotrack`` workflow from
-``qsirecon-latest.sif`` I could use:
+The next step is to get a containerized version of QSIRecon. This can be
+done with Singularity_, Apptainer_ or Docker_. Most users run QSIRecon on
+a high performance computing cluster, so we will assume Apptainer is being
+used throughout this documentation. See :ref:`Installation` on how to create
+a `sif` file or pull the image with Docker.
+
+Next, you need to decide which workflow you'd like to run. You can pick
+from any of the :ref:`builtin_reconstruction` or :ref:`custom_reconstruction`.
+Here we'll pick the ``dsi_studio_autotrack`` workflow.
+
+Finally, you'll need to craft a command to set up your QSIRecon run.
+Suppose you're in a directory where there are some qsiprep results in
+``inputs/qsiprep``. You'd like to save QSIRecon outputs in ``results``. You
+have access to 8 cpus.  To run the from ``qsirecon-latest.sif`` you could use:
 
 Apptainer Example: ::
 

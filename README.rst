@@ -1,7 +1,7 @@
 .. include:: links.rst
 
-QSIRecon: Reconstruction of preprocessed q-space images
-=======================================================
+QSIRecon: Reconstruction of preprocessed q-space images (dMRI)
+==============================================================
 
 .. image:: https://img.shields.io/badge/Source%20Code-pennlinc%2Fqsirecon-purple
   :target: https://github.com/PennLINC/qsirecon
@@ -33,11 +33,10 @@ Full documentation at https://qsirecon.readthedocs.io
 About
 -----
 
-``qsirecon`` configures pipelines for processing diffusion-weighted MRI (dMRI) data.
-The main features of this software are
-
-  1. A system for running state-of-the-art reconstruction pipelines that include algorithms
-     from Dipy_, MRTrix_, `DSI Studio`_  and others.
+QSIRecon builds post-processing workflows that produce many of the biologically-interesting dMRI
+derivatives used for hypothesis testing. The main goal of QSIRecon is to make the state-of-the-art
+methods available in Dipy_, MRTrix_, `DSI Studio`_, PyAFQ_  and other software packages easy to apply on
+preprocessed dMRI data.
 
 .. image:: https://github.com/PennLINC/qsirecon/raw/main/docs/_static/workflow_full.png
 
@@ -47,15 +46,12 @@ The main features of this software are
 Reconstruction
 ~~~~~~~~~~~~~~~~
 
-The outputs from BIDS-compliant preprocessing pipelines can be reconstructed in many other
-software packages. We provide a curated set of :ref:`recon_workflows` in ``qsirecon``
-that can run ODF/FOD reconstruction, tractography, Fixel estimation and regional
-connectivity.
+Take outputs from QSIPrep_ or UKBioBank_ and apply one or more of our curated set of
+QSIRecon's :ref:`builtin_reconstruction`. These workflows produce outputs such as
 
-
-Note
-----
-
-The ``QSIRecon`` pipeline uses much of the code from ``fMRIPrep``.
-It is critical to note that the similarities in the code
-**do not imply that the authors of fMRIPrep in any way endorse or support this code or its pipelines**.
+ * ODF/FOD reconstruction
+ * Model fits and parameter estimation
+ * Tractography
+ * Tractometry
+ * Regional connectivity
+ * Tabular data
