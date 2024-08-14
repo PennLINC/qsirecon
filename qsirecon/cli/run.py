@@ -177,6 +177,13 @@ def main():
         # Generate reports phase
         session_list = config.execution.get().get("bids_filters", {}).get("dwi", {}).get("session")
 
+        write_derivative_description(
+            config.execution.bids_dir,
+            config.execution.output_dir,
+            # dataset_links=config.execution.dataset_links,
+        )
+        write_bidsignore(config.execution.output_dir)
+
         workflow_spec = _load_recon_spec()
         # Compile list of output folders
         # TODO: Retain QSIRecon pipeline names in the config object
