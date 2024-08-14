@@ -15,23 +15,6 @@ Citing qsirecon
     Focal Lesions Using Cost Function Masking. NeuroImage 14(2)
     doi:`10.006/nimg.2001.0845 <https://doi.org/10.1006/nimg.2001.0845>`_.
 
-.. [Jezzard1995] P. Jezzard, R.S. Balaban
-                 Correction for geometric distortion in echo planar images from B0
-                 field variations Magn. Reson. Med., 34 (1) (1995), pp. 65-73,
-                 doi:`10.1002/mrm.1910340111 <https://doi.org/10.1002/mrm.1910340111>`_.
-
-.. [Huntenburg2014] Huntenburg, J. M. (2014) Evaluating Nonlinear
-                    Coregistration of BOLD EPI and T1w Images. Berlin: Master
-                    Thesis, Freie Universität. `PDF <http://pubman.mpdl.mpg.de/pubman/item/escidoc:2327525:5/component/escidoc:2327523/master_thesis_huntenburg_4686947.pdf>`_.
-
-.. [Treiber2016] Treiber, J. M. et al. (2016) Characterization and Correction
-                 of Geometric Distortions in 814 Diffusion Weighted Images,
-                 PLoS ONE 11(3): e0152472. doi:`10.1371/journal.pone.0152472 <https://doi.org/10.1371/journal.pone.0152472>`_.
-
-.. [Wang2017] Wang S, et al. (2017) Evaluation of Field Map and Nonlinear
-              Registration Methods for Correction of Susceptibility Artifacts
-              in Diffusion MRI. Front. Neuroinform. 11:17.
-
 .. [Jeurissen2014] Jeurissen, B.; Tournier, J.-D.; Dhollander, T.; Connelly, A. & Sijbers, J.
                    Multi-tissue constrained spherical deconvolution for improved analysis of
                    multi-shell diffusion MRI data. NeuroImage, 2014, 103, 411-426
@@ -93,10 +76,6 @@ Citing qsirecon
           in SPM using a macroscopic anatomical parcellation of the MNI MRI single-subject brain.
           Neuroimage, 15(1), 273-289.
 
-.. [Power2011] Power, J. D., Cohen, A. L., Nelson, S. M., Wig, G. S., Barnes, K. A., Church,
-          J. A., ... & Petersen, S. E. (2011). Functional network organization of the human brain.
-          Neuron, 72(4), 665-678.
-
 .. [Daducci2015] Daducci, Alessandro, et al. "Accelerated microstructure imaging via convex
           optimization (AMICO) from diffusion MRI data." NeuroImage 105 (2015): 32-44.
 
@@ -106,10 +85,6 @@ Citing qsirecon
 .. [Smith2020] Smith, R.; Skoch, A.; Bajada, C.; Caspers, S.; Connelly, A. Hybrid Surface-
      Volume Segmentation for improved Anatomically-Constrained Tractography. In
      Proc OHBM 2020
-
-.. [Irfanoglu] Irfanoglu, M.O., et al. (2015) DR-BUDDI (Diffeomorphic Registration for
-     Blip-Up blip-Down Diffusion Imaging) method for correcting echo planar imaging distortions.
-      Neuroimage 106:284-299
 
 .. [Irfanoglu2017] Irfanoglu, M.O., et al. TORTOISE v3: Improvements and new features of
          the NIH diffusion MRI processing pipeline." Program and proceedings of the ISMRM
