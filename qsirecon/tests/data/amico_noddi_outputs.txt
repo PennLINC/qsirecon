@@ -6,6 +6,11 @@ logs/CITATION.md
 logs/CITATION.tex
 qsirecon-NODDI
 qsirecon-NODDI/dataset_description.json
+qsirecon-NODDI/logs
+qsirecon-NODDI/logs/CITATION.bib
+qsirecon-NODDI/logs/CITATION.html
+qsirecon-NODDI/logs/CITATION.md
+qsirecon-NODDI/logs/CITATION.tex
 qsirecon-NODDI/sub-PNC
 qsirecon-NODDI/sub-PNC.html
 qsirecon-NODDI/sub-PNC/dwi

@@ -7,6 +7,11 @@ logs/CITATION.tex
 sub-ABCD
 qsirecon-MRtrix3
 qsirecon-MRtrix3/dataset_description.json
+qsirecon-MRtrix3/logs
+qsirecon-MRtrix3/logs/CITATION.bib
+qsirecon-MRtrix3/logs/CITATION.html
+qsirecon-MRtrix3/logs/CITATION.md
+qsirecon-MRtrix3/logs/CITATION.tex
 qsirecon-MRtrix3/sub-ABCD
 qsirecon-MRtrix3/sub-ABCD.html
 qsirecon-MRtrix3/sub-ABCD/dwi
@@ -23,6 +28,11 @@ qsirecon-MRtrix3/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model
 qsirecon-MRtrix3/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-preproc_model-sift2_streamlineweights.csv
 qsirecon-PYAFQ
 qsirecon-PYAFQ/dataset_description.json
+qsirecon-PYAFQ/logs
+qsirecon-PYAFQ/logs/CITATION.bib
+qsirecon-PYAFQ/logs/CITATION.html
+qsirecon-PYAFQ/logs/CITATION.md
+qsirecon-PYAFQ/logs/CITATION.tex
 qsirecon-PYAFQ/sub-ABCD
 qsirecon-PYAFQ/sub-ABCD.html
 qsirecon-PYAFQ/sub-ABCD/dwi

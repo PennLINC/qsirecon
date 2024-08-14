@@ -6,6 +6,11 @@ logs/CITATION.md
 logs/CITATION.tex
 qsirecon-TORTOISE
 qsirecon-TORTOISE/dataset_description.json
+qsirecon-TORTOISE/logs
+qsirecon-TORTOISE/logs/CITATION.bib
+qsirecon-TORTOISE/logs/CITATION.html
+qsirecon-TORTOISE/logs/CITATION.md
+qsirecon-TORTOISE/logs/CITATION.tex
 qsirecon-TORTOISE/sub-ABCD
 qsirecon-TORTOISE/sub-ABCD.html
 qsirecon-TORTOISE/sub-ABCD/dwi

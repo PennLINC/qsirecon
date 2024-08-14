@@ -6,6 +6,11 @@ logs/CITATION.md
 logs/CITATION.tex
 qsirecon-MRtrix3_fork-SS3T_act-None
 qsirecon-MRtrix3_fork-SS3T_act-None/dataset_description.json
+qsirecon-MRtrix3_fork-SS3T_act-None/logs
+qsirecon-MRtrix3_fork-SS3T_act-None/logs/CITATION.bib
+qsirecon-MRtrix3_fork-SS3T_act-None/logs/CITATION.html
+qsirecon-MRtrix3_fork-SS3T_act-None/logs/CITATION.md
+qsirecon-MRtrix3_fork-SS3T_act-None/logs/CITATION.tex
 qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC
 qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC.html
 qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi

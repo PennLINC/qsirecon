@@ -6,6 +6,11 @@ logs/CITATION.md
 logs/CITATION.tex
 qsirecon-PYAFQ
 qsirecon-PYAFQ/dataset_description.json
+qsirecon-PYAFQ/logs
+qsirecon-PYAFQ/logs/CITATION.bib
+qsirecon-PYAFQ/logs/CITATION.html
+qsirecon-PYAFQ/logs/CITATION.md
+qsirecon-PYAFQ/logs/CITATION.tex
 qsirecon-PYAFQ/sub-ABCD
 qsirecon-PYAFQ/sub-ABCD.html
 qsirecon-PYAFQ/sub-ABCD/dwi

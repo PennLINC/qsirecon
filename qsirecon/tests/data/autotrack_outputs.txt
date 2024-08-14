@@ -6,6 +6,11 @@ logs/CITATION.md
 logs/CITATION.tex
 qsirecon-DSIStudio
 qsirecon-DSIStudio/dataset_description.json
+qsirecon-DSIStudio/logs
+qsirecon-DSIStudio/logs/CITATION.bib
+qsirecon-DSIStudio/logs/CITATION.html
+qsirecon-DSIStudio/logs/CITATION.md
+qsirecon-DSIStudio/logs/CITATION.tex
 qsirecon-DSIStudio/sub-ABCD.html
 qsirecon-DSIStudio/sub-ABCD
 qsirecon-DSIStudio/sub-ABCD/dwi

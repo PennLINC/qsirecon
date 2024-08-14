@@ -6,6 +6,11 @@ logs/CITATION.md
 logs/CITATION.tex
 qsirecon-DKI
 qsirecon-DKI/dataset_description.json
+qsirecon-DKI/logs
+qsirecon-DKI/logs/CITATION.bib
+qsirecon-DKI/logs/CITATION.html
+qsirecon-DKI/logs/CITATION.md
+qsirecon-DKI/logs/CITATION.tex
 qsirecon-DKI/sub-ABCD
 qsirecon-DKI/sub-ABCD.html
 qsirecon-DKI/sub-ABCD/dwi
