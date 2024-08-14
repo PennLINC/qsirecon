@@ -238,5 +238,4 @@ def copy_boilerplate(in_dir, out_dir):
     }
     for ext, citation_file in citation_files.items():
         if citation_file.exists():
-            citation_file.rename()
             shutil.copy(citation_file, out_logs_path / f"CITATION.{ext}")
