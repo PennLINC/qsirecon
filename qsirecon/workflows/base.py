@@ -13,7 +13,6 @@ qsirecon base reconstruction workflows
 
 import json
 import os.path as op
-import sys
 from copy import deepcopy
 from glob import glob
 
@@ -28,7 +27,6 @@ from packaging.version import Version
 from pkg_resources import resource_filename as pkgrf
 
 from .. import config
-from ..interfaces.bids import BIDSDataGrabber, DerivativesDataSink
 
 
 def init_qsirecon_wf():
@@ -102,7 +100,6 @@ def init_single_subject_recon_wf(subject_id):
         recon_workflow_anatomical_input_fields,
         recon_workflow_input_fields,
     )
-    from ..interfaces.reports import AboutSummary, SubjectSummary
     from .recon.anatomical import (
         init_dwi_recon_anatomical_workflow,
         init_highres_recon_anatomical_wf,
@@ -156,48 +153,6 @@ to workflows in *qsirecon*'s documentation]\
         config.loggers.workflow.info(
             "Anatomical (T1w) available for recon: %s", available_anatomical_data
         )
-
-    bidssrc = pe.Node(
-        BIDSDataGrabber(
-            subject_data=subject_data,
-            dwi_only=config.workflow.anat_modality == "none",
-            anat_only=config.workflow.anat_only,
-            anatomical_contrast=config.workflow.anat_modality,
-        ),
-        name="bidssrc",
-    )
-
-    summary = pe.Node(
-        SubjectSummary(template=config.workflow.anatomical_template),
-        name="summary",
-        run_without_submitting=True,
-    )
-
-    about = pe.Node(
-        AboutSummary(version=config.environment.version, command=" ".join(sys.argv)),
-        name="about",
-        run_without_submitting=True,
-    )
-
-    ds_report_summary = pe.Node(
-        DerivativesDataSink(
-            base_directory=config.execution.output_dir,
-            datatype="figures",
-            suffix="summary",
-        ),
-        name="ds_report_summary",
-        run_without_submitting=True,
-    )
-
-    ds_report_about = pe.Node(
-        DerivativesDataSink(
-            base_directory=config.execution.output_dir,
-            datatype="figures",
-            suffix="about",
-        ),
-        name="ds_report_about",
-        run_without_submitting=True,
-    )
 
     # create a processing pipeline for the dwis in each session
     dwi_recon_wfs = {}
