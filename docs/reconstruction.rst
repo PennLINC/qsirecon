@@ -64,8 +64,9 @@ To use a pre-packaged workflow, simply provide the name from the leftmost column
 ``--recon-spec`` argument. For example::
 
   $ qsirecon-docker \
-      /path/to/bids /path/for/reconstruction/outputs participant \
-      --recon_input /output/from/qsirecon \
+      /output/from/qsiprep \
+      /path/for/reconstruction/outputs \
+      participant \
       --recon_spec dsi_studio_gqi \
       --fs-license-file /path/to/license.txt
 
@@ -163,8 +164,7 @@ and from ``qsirecon``::
 You can run::
 
   $ qsirecon-docker \
-      derivatives/qsirecon derivatives participant \
-      --recon_input derivatives/qsirecon \
+      derivatives/qsiprep derivatives participant \
       --recon_spec mrtrix_multishell_msmt_ACT-hsvs \
       --freesurfer-input derivatives/freesurfer \
       --fs-license-file /path/to/license.txt
@@ -519,8 +519,9 @@ Assuming this file is called ``qgi_scalar_export.json`` and you've installed
 ``qsirecon-container`` you can execute this pipeline with::
 
   $ qsirecon-docker \
-      /path/to/bids /where/my/reconstructed/data/goes participant \
-      --recon_input /output/from/qsirecon \
+      /output/from/qsiprep \
+      /where/my/reconstructed/data/goes \
+      participant \
       --recon_spec gqi_scalar_export.json \
       --fs-license-file /path/to/license.txt
 

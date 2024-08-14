@@ -19,7 +19,7 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from .. import config
 from ..interfaces import DerivativesDataSink
 from ..interfaces.ingress import QsiReconDWIIngress
-from ..interfaces.interchange import qsirecon_output_names, recon_workflow_input_fields
+from ..interfaces.interchange import qsiprep_output_names, recon_workflow_input_fields
 from ..interfaces.reports import InteractiveReport
 from ..utils.bids import collect_data
 
@@ -27,8 +27,7 @@ LOGGER = logging.getLogger("nipype.workflow")
 
 
 def init_json_preproc_report_wf(subject_list):
-    """
-    This workflow creates a json report for the dmriprep-viewer.
+    """Create a json report for the dmriprep-viewer.
 
     .. workflow::
         :graph2use: orig
@@ -42,16 +41,15 @@ def init_json_preproc_report_wf(subject_list):
             output_dir='.')
 
 
-    Parameters:
-
-        subject_list : list
-            List of subject labels
-        work_dir : str
-            Directory in which to store workflow execution state and temporary
-            files
-        output_dir : str
-            Directory in which to save derivatives
-
+    Parameters
+    ----------
+    subject_list : list
+        List of subject labels
+    work_dir : str
+        Directory in which to store workflow execution state and temporary
+        files
+    output_dir : str
+        Directory in which to save derivatives
     """
     work_dir = config.execution.work_dir
     output_dir = config.execution.output_dir
@@ -138,7 +136,7 @@ def init_single_subject_json_report_wf(subject_id, name):
     workflow.connect([
         (scans_iter, qsirecon_preprocessed_dwi_data, ([('dwi_file', 'dwi_file')])),
         (qsirecon_preprocessed_dwi_data, inputnode, [
-            (trait, trait) for trait in qsirecon_output_names]),
+            (trait, trait) for trait in qsiprep_output_names]),
         (inputnode, interactive_report, [
             ('dwi_file', 'processed_dwi_file'),
             ('confounds_file', 'confounds_file'),

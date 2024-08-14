@@ -1,12 +1,10 @@
 import base64
-import os.path as op
 from io import BytesIO
 
 import matplotlib.pyplot as plt
 import nibabel as nib
 import numpy as np
 from dipy.segment.mask import median_otsu
-from nipype.utils.filemanip import load_json, save_json
 
 
 def reorient_array(data, aff):
@@ -260,35 +258,3 @@ def createB0_ColorFA_Mask_Sprites(b0_file, colorFA_file, mask_file):
     outmask["img"] = img
 
     return outb0, outcolorFA, outmask
-
-
-def create_report_json(
-    dwi_corrected_file,
-    eddy_rms,
-    eddy_report,
-    color_fa_file,
-    anat_mask_file,
-    outlier_indices,
-    eddy_qc_file,
-    outpath=op.abspath("./report.json"),
-):
-
-    report = {}
-    report["dwi_corrected"] = createSprite4D(dwi_corrected_file)
-
-    b0, colorFA, mask = createB0_ColorFA_Mask_Sprites(
-        dwi_corrected_file, color_fa_file, anat_mask_file
-    )
-    report["b0"] = b0
-    report["colorFA"] = colorFA
-    report["anat_mask"] = mask
-    report["outlier_volumes"] = outlier_indices.tolist()
-
-    with open(eddy_report, "r") as f:
-        report["eddy_report"] = f.readlines()
-
-    report["eddy_params"] = np.genfromtxt(eddy_rms).tolist()
-    eddy_qc = load_json(eddy_qc_file)
-    report["eddy_quad"] = eddy_qc
-    save_json(outpath, report)
-    return outpath

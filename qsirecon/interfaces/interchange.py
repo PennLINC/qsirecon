@@ -17,14 +17,14 @@ FS_FILES_TO_REGISTER = [
 ]
 CREATEABLE_ANATOMICAL_OUTPUTS = [
     "fs_5tt_hsvs",
-    "qsirecon_5tt_hsvs",
-    "qsirecon_5tt_fast",
-    "fs_to_qsirecon_transform_itk",
-    "fs_to_qsirecon_transform_mrtrix",
+    "qsiprep_5tt_hsvs",
+    "qsiprep_5tt_fast",
+    "fs_to_qsiprep_transform_itk",
+    "fs_to_qsiprep_transform_mrtrix",
 ]
 
 # These come directly from QSIRecon outputs. They're aligned to the DWIs in AC-PC
-qsirecon_highres_anatomical_ingressed_fields = (
+qsiprep_highres_anatomical_ingressed_fields = (
     QSIReconAnatomicalIngress.output_spec.class_editable_traits()
 )
 
@@ -32,13 +32,13 @@ qsirecon_highres_anatomical_ingressed_fields = (
 # anatomical files (segmentations/masks/etc) that can be used downstream.
 # These are **independent** of the DWI data and handled separately
 anatomical_workflow_outputs = (
-    qsirecon_highres_anatomical_ingressed_fields
+    qsiprep_highres_anatomical_ingressed_fields
     + FS_FILES_TO_REGISTER
     + CREATEABLE_ANATOMICAL_OUTPUTS
 )
 
 # These are read directly from QSIRecon's dwi results.
-qsirecon_output_names = QsiReconDWIIngress().output_spec.class_editable_traits()
+qsiprep_output_names = QsiReconDWIIngress().output_spec.class_editable_traits()
 
 # dMRI + registered anatomical fields
 recon_workflow_anatomical_input_fields = anatomical_workflow_outputs + [
@@ -50,14 +50,14 @@ recon_workflow_anatomical_input_fields = anatomical_workflow_outputs + [
 ]
 
 # Check that no conflicts have been introduced
-overlapping_names = set(qsirecon_output_names).intersection(recon_workflow_anatomical_input_fields)
+overlapping_names = set(qsiprep_output_names).intersection(recon_workflow_anatomical_input_fields)
 if overlapping_names:
     raise Exception(
         "Someone has added overlapping outputs between the anatomical "
         "and dwi inputs: " + " ".join(overlapping_names)
     )
 
-recon_workflow_input_fields = qsirecon_output_names + recon_workflow_anatomical_input_fields
+recon_workflow_input_fields = qsiprep_output_names + recon_workflow_anatomical_input_fields
 default_input_set = set(recon_workflow_input_fields)
 default_connections = [(trait, trait) for trait in recon_workflow_input_fields]
 

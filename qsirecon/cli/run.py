@@ -199,10 +199,10 @@ def main():
             failed_reports += suffix_failed_reports
             write_derivative_description(
                 config.execution.bids_dir,
-                config.execution.qsirecon_dir,
+                config.execution.output_dir,
                 # dataset_links=config.execution.dataset_links,
             )
-            write_bidsignore(config.execution.qsirecon_dir)
+            write_bidsignore(config.execution.output_dir)
 
         if failed_reports:
             print(failed_reports)

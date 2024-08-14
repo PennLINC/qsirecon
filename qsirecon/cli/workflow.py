@@ -52,7 +52,6 @@ def build_workflow(config_file, retval):
     config.load(config_file)
     build_log = config.loggers.workflow
 
-    # qsirecon_dir = config.execution.qsirecon_dir
     version = config.environment.version
 
     retval["return_code"] = 1
@@ -69,7 +68,7 @@ def build_workflow(config_file, retval):
     build_log.log(25, f"\n{' ' * 9}".join(banner))
 
     # warn if older results exist: check for dataset_description.json in output folder
-    # msg = check_pipeline_version("QSIRecon", version, qsirecon_dir / "dataset_description.json")
+    # msg = check_pipeline_version("QSIRecon", version, output_dir / "dataset_description.json")
     # if msg is not None:
     #     build_log.warning(msg)
 
@@ -97,7 +96,7 @@ def build_workflow(config_file, retval):
 
         failed_reports = generate_reports(
             config.execution.participant_label,
-            config.execution.qsirecon_dir,
+            config.execution.output_dir,
             config.execution.run_uuid,
             session_list=session_list,
         )
@@ -162,7 +161,7 @@ def build_boilerplate(config_file, workflow):
     from .. import config
 
     config.load(config_file)
-    logs_path = config.execution.qsirecon_dir / "logs"
+    logs_path = config.execution.output_dir / "logs"
     boilerplate = workflow.visit_desc()
     citation_files = {
         ext: logs_path / ("CITATION.%s" % ext) for ext in ("bib", "tex", "md", "html")
