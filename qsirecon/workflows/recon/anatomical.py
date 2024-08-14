@@ -526,6 +526,10 @@ def init_dwi_recon_anatomical_workflow(
         ),
         name="get_template",
     )
+    mask_template = pe.Node(
+        afni.Calc(expr="a*b", outputtype="NIFTI_GZ"),
+        name="mask_template",
+    )
     reorient_to_lps = pe.Node(
         afni.Resample(orientation="LPS", outputtype="NIFTI_GZ"),
         name="reorient_to_lps",
@@ -533,7 +537,11 @@ def init_dwi_recon_anatomical_workflow(
 
     reference_grid_wf = init_output_grid_wf()
     workflow.connect([
-        (get_template, reorient_to_lps, [('template_file', 'in_file')]),
+        (get_template, mask_template, [
+            ('template_file', 'in_file_a'),
+            ('mask_file', 'in_file_b'),
+        ]),
+        (mask_template, reorient_to_lps, [('out_file', 'in_file')]),
         (inputnode, reference_grid_wf, [('dwi_ref', 'inputnode.input_image')]),
         (reorient_to_lps, reference_grid_wf, [('out_file', 'inputnode.template_image')]),
         (reference_grid_wf, buffernode, [('outputnode.grid_image', 'resampling_template')]),
