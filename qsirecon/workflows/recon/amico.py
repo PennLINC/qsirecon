@@ -118,9 +118,10 @@ diffusivity.""" % (
         plot_peaks = pe.Node(CLIReconPeaksReport(), name="plot_peaks", n_procs=omp_nthreads)
         ds_report_peaks = pe.Node(
             DerivativesDataSink(
+                datatype="figures",
                 desc="NODDI",
                 suffix="peaks",
-                extension=".png",
+                extension="png",
             ),
             name="ds_report_peaks",
             run_without_submitting=True,
@@ -136,7 +137,7 @@ diffusivity.""" % (
     if qsirecon_suffix:
         ds_fibgz = pe.Node(
             DerivativesDataSink(
-                extension=".fib.gz",
+                extension="fib.gz",
                 compress=True,
             ),
             name="ds_{}_fibgz".format(qsirecon_suffix),
