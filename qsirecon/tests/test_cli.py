@@ -16,7 +16,7 @@ from qsirecon.tests.utils import (
     get_test_data_path,
 )
 from qsirecon.utils.bids import write_derivative_description
-from qsiprep.reports.core import generate_reports
+from qsirecon.reports.core import generate_reports
 
 nipype_config.enable_debug_mode()
 
