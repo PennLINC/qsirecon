@@ -18,7 +18,7 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from .. import config
 from ..interfaces import DerivativesDataSink
-from ..interfaces.ingress import QsiReconDWIIngress
+from ..interfaces.ingress import QSIPrepDWIIngress
 from ..interfaces.interchange import qsiprep_output_names, recon_workflow_input_fields
 from ..interfaces.reports import InteractiveReport
 from ..utils.bids import collect_data
@@ -117,7 +117,7 @@ def init_single_subject_json_report_wf(subject_id, name):
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
     )
     qsirecon_preprocessed_dwi_data = pe.Node(
-        QsiReconDWIIngress(), name="qsirecon_preprocessed_dwi_data"
+        QSIPrepDWIIngress(), name="qsirecon_preprocessed_dwi_data"
     )
 
     # For doctests

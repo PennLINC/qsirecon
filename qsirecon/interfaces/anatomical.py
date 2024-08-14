@@ -33,7 +33,7 @@ from .images import to_lps
 LOGGER = logging.getLogger("nipype.interface")
 
 
-class QSIReconAnatomicalIngressInputSpec(BaseInterfaceInputSpec):
+class QSIPrepAnatomicalIngressInputSpec(BaseInterfaceInputSpec):
     recon_input_dir = traits.Directory(
         exists=True, mandatory=True, help="directory containing subject results directories"
     )
@@ -42,7 +42,7 @@ class QSIReconAnatomicalIngressInputSpec(BaseInterfaceInputSpec):
     infant_mode = traits.Bool(mandatory=True)
 
 
-class QSIReconAnatomicalIngressOutputSpec(TraitedSpec):
+class QSIPrepAnatomicalIngressOutputSpec(TraitedSpec):
     # sub-1_desc-aparcaseg_dseg.nii.gz
     t1_aparc = File()
     # sub-1_dseg.nii.gz
@@ -65,19 +65,17 @@ class QSIReconAnatomicalIngressOutputSpec(TraitedSpec):
     t1_2_mni_reverse_transform = File()
     # sub-1_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5
     t1_2_mni_forward_transform = File()
-    # Generic: what template was used?
-    template_image = File()
 
 
-class QSIReconAnatomicalIngress(SimpleInterface):
+class QSIPrepAnatomicalIngress(SimpleInterface):
     """Get only the useful files from a QSIRecon anatomical output.
 
     Many of the preprocessed outputs aren't useful for reconstruction
     (mainly anything that has been mapped forward into template space).
     """
 
-    input_spec = QSIReconAnatomicalIngressInputSpec
-    output_spec = QSIReconAnatomicalIngressOutputSpec
+    input_spec = QSIPrepAnatomicalIngressInputSpec
+    output_spec = QSIPrepAnatomicalIngressOutputSpec
 
     def _run_interface(self, runtime):
         # The path to the output from the qsirecon run
@@ -163,13 +161,13 @@ class QSIReconAnatomicalIngress(SimpleInterface):
             self._results[name] = files[0]
 
 
-class UKBAnatomicalIngressInputSpec(QSIReconAnatomicalIngressInputSpec):
+class UKBAnatomicalIngressInputSpec(QSIPrepAnatomicalIngressInputSpec):
     recon_input_dir = traits.Directory(
         exists=True, mandatory=True, help="directory containing a single subject's results"
     )
 
 
-class UKBAnatomicalIngress(QSIReconAnatomicalIngress):
+class UKBAnatomicalIngress(QSIPrepAnatomicalIngress):
     input_spec = UKBAnatomicalIngressInputSpec
 
     def _run_interface(self, runtime):
