@@ -186,10 +186,10 @@ def main():
             qsirecon_suffixes += [qsirecon_suffix] if qsirecon_suffix else []
 
         qsirecon_suffixes = sorted(list(set(qsirecon_suffixes)))
-        config.loggers.cli.warning(f"QSIRecon suffixes: {qsirecon_suffixes}")
+        config.loggers.cli.info(f"QSIRecon pipeline suffixes: {qsirecon_suffixes}")
         failed_reports = []
         for qsirecon_suffix in qsirecon_suffixes:
-            suffix_dir = Path(str(config.execution.qsirecon_dir) + f"-{qsirecon_suffix}")
+            suffix_dir = Path(str(config.execution.output_dir) + f"-{qsirecon_suffix}")
             suffix_failed_reports = generate_reports(
                 config.execution.participant_label,
                 suffix_dir,
@@ -198,11 +198,11 @@ def main():
             )
             failed_reports += suffix_failed_reports
             write_derivative_description(
-                config.execution.bids_dir,
+                suffix_dir,
                 config.execution.output_dir,
                 # dataset_links=config.execution.dataset_links,
             )
-            write_bidsignore(config.execution.output_dir)
+            write_bidsignore(suffix_dir)
 
         if failed_reports:
             print(failed_reports)
