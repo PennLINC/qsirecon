@@ -29,7 +29,7 @@ from shutil import copyfileobj, copytree
 from bids.layout import Config, parse_file_entities
 from nipype import logging
 from nipype.interfaces.base import File, InputMultiObject, isdefined, traits
-from nipype.utils.filemanip import copyfile
+from nipype.utils.filemanip import copyfile, split_filename
 from niworkflows.interfaces.bids import DerivativesDataSink as BaseDerivativesDataSink
 from niworkflows.interfaces.bids import _DerivativesDataSinkInputSpec
 
@@ -118,7 +118,12 @@ def get_recon_output_name(
 
     # Infer the appropriate extension
     if "extension" not in output_bids_entities:
-        ext = "." + ".".join(os.path.basename(derivative_file).split(".")[1:])
+        ext_parts = os.path.basename(derivative_file).split(".")[1:]
+        if len(ext_parts) > 2:
+            ext = split_filename(derivative_file)[2]
+        else:
+            ext = "." + ".".join(ext_parts)
+
         output_bids_entities["extension"] = ext
 
     # Add the suffix
