@@ -29,7 +29,7 @@ from ...interfaces.anatomical import (
     VoxelSizeChooser,
 )
 from ...interfaces.ants import ConvertTransformFile
-from ...interfaces.bids import ReconDerivativesDataSink
+from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.freesurfer import find_fs_path
 from ...interfaces.gradients import ExtractB0s
 from ...interfaces.interchange import (
@@ -39,6 +39,7 @@ from ...interfaces.interchange import (
     recon_workflow_input_fields,
 )
 from ...interfaces.mrtrix import GenerateMasked5tt, ITKTransformConvert, TransformHeader
+from ...utils.bids import clean_datasinks
 from qsirecon.interfaces.utils import GetConnectivityAtlases
 
 # Required freesurfer files for mrtrix's HSV 5tt generation
@@ -91,6 +92,7 @@ def init_highres_recon_anatomical_wf(
     # the data is converted in this node to be qsiprep-like.
     pipeline_source = config.workflow.recon_input_pipeline
     freesurfer_dir = config.execution.freesurfer_input
+    qsirecon_suffix = "anat"
     if pipeline_source == "qsiprep":
         anat_ingress_node, status = gather_qsiprep_anatomical_data(subject_id)
     elif pipeline_source == "ukb":
@@ -115,6 +117,7 @@ def init_highres_recon_anatomical_wf(
         if "mrtrix_5tt_hsvs" in extras_to_make:
             raise Exception("FreeSurfer data is required to make HSVS 5tt image.")
         workflow.add_nodes([outputnode])
+        workflow = clean_datasinks(workflow, qsirecon_suffix)
         return workflow, status
 
     config.loggers.workflow.info(
@@ -160,15 +163,20 @@ def init_highres_recon_anatomical_wf(
             n_procs=config.nipype.omp_nthreads,
         )
         ds_qsiprep_5tt_hsvs = pe.Node(
-            ReconDerivativesDataSink(
-                atlas="hsvs", space="T1w", suffix="dseg", qsirecon_suffix="anat"
+            DerivativesDataSink(
+                atlas="hsvs",
+                space="T1w",
+                suffix="dseg",
             ),
             name="ds_qsiprep_5tt_hsvs",
             run_without_submitting=True,
         )
         ds_fs_5tt_hsvs = pe.Node(
-            ReconDerivativesDataSink(
-                desc="hsvs", space="fsnative", suffix="dseg", qsirecon_suffix="anat", compress=True
+            DerivativesDataSink(
+                desc="hsvs",
+                space="fsnative",
+                suffix="dseg",
+                compress=True,
             ),
             name="ds_fs_5tt_hsvs",
             run_without_submitting=True,
@@ -211,6 +219,7 @@ def init_highres_recon_anatomical_wf(
             ])  # fmt:skip
             workflow.__desc__ += "A hybrid surface/volume segmentation was created [Smith 2020]."
 
+    workflow = clean_datasinks(workflow, qsirecon_suffix)
     return workflow, status
 
 
@@ -489,6 +498,7 @@ def init_dwi_recon_anatomical_workflow(
     )
     connect_from_buffernode = set()
     b0_threshold = config.workflow.b0_threshold
+    qsirecon_suffix = "anat"
 
     def _get_source_node(fieldname):
         if fieldname in connect_from_inputnode:
@@ -604,10 +614,9 @@ def init_dwi_recon_anatomical_workflow(
             raise Exception("The 5tt image in fsnative should have been created by now")
         apply_header_to_5tt_hsvs = pe.Node(TransformHeader(), name="apply_header_to_5tt_hsvs")
         ds_qsiprep_5tt_hsvs = pe.Node(
-            ReconDerivativesDataSink(
+            DerivativesDataSink(
                 atlas="hsvs",
                 suffix="dseg",
-                qsirecon_suffix="anat",
             ),
             name="ds_qsiprep_5tt_hsvs",
             run_without_submitting=True,
@@ -723,11 +732,11 @@ def init_dwi_recon_anatomical_workflow(
                 (
                     get_atlases,
                     pe.Node(
-                        ReconDerivativesDataSink(
+                        DerivativesDataSink(
                             atlas=atlas,
                             suffix="dseg",
                             compress=True,
-                            qsirecon_suffix="anat"),
+                        ),
                         name='dsatlas_' + atlas,
                         run_without_submitting=True), [
                             (
@@ -737,12 +746,12 @@ def init_dwi_recon_anatomical_workflow(
                 (
                     get_atlases,
                     pe.Node(
-                        ReconDerivativesDataSink(
+                        DerivativesDataSink(
                             atlas=atlas,
                             suffix="dseg",
                             extension=".mif.gz",
                             compress=True,
-                            qsirecon_suffix="anat"),
+                        ),
                         name='dsatlas_mifs_' + atlas,
                         run_without_submitting=True), [
                             (
@@ -752,11 +761,11 @@ def init_dwi_recon_anatomical_workflow(
                 (
                     get_atlases,
                     pe.Node(
-                        ReconDerivativesDataSink(
+                        DerivativesDataSink(
                             atlas=atlas,
-                            extension=".txt",
                             suffix="dseg",
-                            qsirecon_suffix="anat"),
+                            extension=".txt",
+                        ),
                         name='dsatlas_mrtrix_lut_' + atlas,
                         run_without_submitting=True), [
                             (
@@ -766,11 +775,11 @@ def init_dwi_recon_anatomical_workflow(
                 (
                     get_atlases,
                     pe.Node(
-                        ReconDerivativesDataSink(
+                        DerivativesDataSink(
                             atlas=atlas,
-                            extension=".txt",
                             suffix="dseg",
-                            qsirecon_suffix="anat"),
+                            extension=".txt",
+                        ),
                         name='dsatlas_orig_lut_' + atlas,
                         run_without_submitting=True), [
                             (
@@ -795,6 +804,7 @@ def init_dwi_recon_anatomical_workflow(
         (inputnode, outputnode, [(name, name) for name in connect_from_inputnode]),
         (buffernode, outputnode, [(name, name) for name in connect_from_buffernode])
     ])  # fmt:skip
+    workflow = clean_datasinks(workflow, qsirecon_suffix)
     return workflow, _get_status()
 
 

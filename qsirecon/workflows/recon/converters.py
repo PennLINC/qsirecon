@@ -13,10 +13,11 @@ import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
-from ...interfaces.bids import ReconDerivativesDataSink
+from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.converters import FODtoFIBGZ
 from ...interfaces.images import ConformDwi
 from ...interfaces.interchange import recon_workflow_input_fields
+from ...utils.bids import clean_datasinks
 
 LOGGER = logging.getLogger("nipype.workflow")
 
@@ -61,15 +62,17 @@ def init_mif_to_fibgz_wf(
     if qsirecon_suffix:
         # Save the output in the outputs directory
         ds_fibgz = pe.Node(
-            ReconDerivativesDataSink(
-                extension=".fib.gz", qsirecon_suffix=qsirecon_suffix, compress=True
+            DerivativesDataSink(
+                extension=".fib.gz",
+                compress=True,
             ),
             name="ds_fibgz",
             run_without_submitting=True,
         )
         workflow.connect(convert_to_fib, 'fib_file',
                          ds_fibgz, 'in_file')  # fmt:skip
-    return workflow
+
+    return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_fibgz_to_mif_wf(name="fibgz_to_mif", qsirecon_suffix="", params={}):
@@ -87,7 +90,8 @@ def init_fibgz_to_mif_wf(name="fibgz_to_mif", qsirecon_suffix="", params={}):
         (inputnode, convert_to_fib, [('mif_file', 'mif_file')]),
         (convert_to_fib, outputnode, [('fib_file', 'fib_file')])
     ])  # fmt:skip
-    return workflow
+
+    return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_qsirecon_to_fsl_wf(
@@ -120,27 +124,28 @@ def init_qsirecon_to_fsl_wf(
     if qsirecon_suffix:
         # Save the output in the outputs directory
         ds_dwi_file = pe.Node(
-            ReconDerivativesDataSink(
-                qsirecon_suffix=qsirecon_suffix, suffix="dwi", extension="bvec"
+            DerivativesDataSink(
+                suffix="dwi",
+                extension="bvec",
             ),
             name="ds_dwi_" + name,
             run_without_submitting=True,
         )
         ds_bval_file = pe.Node(
-            ReconDerivativesDataSink(
-                qsirecon_suffix=qsirecon_suffix, suffix="dwi", extension="bval"
+            DerivativesDataSink(
+                suffix="dwi",
+                extension="bval",
             ),
             name="ds_bval_" + name,
             run_without_submitting=True,
         )
         ds_bvec_file = pe.Node(
-            ReconDerivativesDataSink(qsirecon_suffix=qsirecon_suffix, suffix="dwi"),
+            DerivativesDataSink(suffix="dwi"),
             name="ds_bvec_" + name,
             run_without_submitting=True,
         )
         ds_mask_file = pe.Node(
-            ReconDerivativesDataSink(qsirecon_suffix=qsirecon_suffix),
-            suffix="mask",
+            DerivativesDataSink(suffix="mask"),
             name="ds_mask_" + name,
             run_without_submitting=True,
         )
@@ -150,4 +155,5 @@ def init_qsirecon_to_fsl_wf(
             (convert_dwi_to_fsl, ds_dwi_file, [('dwi_file', 'in_file')]),
             (convert_mask_to_fsl, ds_mask_file, [('dwi_file', 'in_file')])
         ])  # fmt:skip
-    return workflow
+
+    return clean_datasinks(workflow, qsirecon_suffix)

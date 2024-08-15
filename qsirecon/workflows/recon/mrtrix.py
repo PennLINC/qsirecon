@@ -20,10 +20,9 @@ import nipype.pipeline.engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ... import config
-from ...interfaces.bids import ReconDerivativesDataSink
+from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport
-from qsirecon.interfaces.mrtrix import (
+from ...interfaces.mrtrix import (
     SIFT2,
     EstimateFOD,
     GlobalTractography,
@@ -34,6 +33,8 @@ from qsirecon.interfaces.mrtrix import (
     SS3TEstimateFOD,
     TckGen,
 )
+from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport
+from ...utils.bids import clean_datasinks
 
 LOGGER = logging.getLogger("nipype.interface")
 MULTI_RESPONSE_ALGORITHMS = ("dhollander", "msmt_5tt")
@@ -236,7 +237,11 @@ def init_mrtrix_csd_recon_wf(
         # Make a visual report of the model
         plot_peaks = pe.Node(CLIReconPeaksReport(), name="plot_peaks", n_procs=omp_nthreads)
         ds_report_peaks = pe.Node(
-            ReconDerivativesDataSink(extension=".png", desc="wmFOD", suffix="peaks"),
+            DerivativesDataSink(
+                desc="wmFOD",
+                suffix="peaks",
+                extension=".png",
+            ),
             name="ds_report_peaks",
             run_without_submitting=True,
         )
@@ -251,7 +256,11 @@ def init_mrtrix_csd_recon_wf(
         # Plot targeted regions
         if available_anatomical_data["has_qsiprep_t1w_transforms"]:
             ds_report_odfs = pe.Node(
-                ReconDerivativesDataSink(extension=".png", desc="wmFOD", suffix="odfs"),
+                DerivativesDataSink(
+                    desc="wmFOD",
+                    suffix="odfs",
+                    extension=".png",
+                ),
                 name="ds_report_odfs",
                 run_without_submitting=True,
             )
@@ -265,12 +274,11 @@ def init_mrtrix_csd_recon_wf(
 
     if qsirecon_suffix:
         ds_wm_odf = pe.Node(
-            ReconDerivativesDataSink(
-                extension=".mif.gz",
+            DerivativesDataSink(
                 model=fod_algorithm,
                 mfp="FOD",
                 label="WM",
-                qsirecon_suffix=qsirecon_suffix,
+                extension=".mif.gz",
                 compress=True,
             ),
             name="ds_wm_odf",
@@ -279,12 +287,11 @@ def init_mrtrix_csd_recon_wf(
         workflow.connect(outputnode, 'wm_odf',
                          ds_wm_odf, 'in_file')  # fmt:skip
         ds_wm_txt = pe.Node(
-            ReconDerivativesDataSink(
-                extension=".txt",
+            DerivativesDataSink(
                 model=fod_algorithm,
                 mfp="FOD",
                 label="WM",
-                qsirecon_suffix=qsirecon_suffix,
+                extension=".txt",
             ),
             name="ds_wm_txt",
             run_without_submitting=True,
@@ -294,12 +301,11 @@ def init_mrtrix_csd_recon_wf(
         # If multitissue write out FODs for csf, gm
         if using_multitissue:
             ds_gm_odf = pe.Node(
-                ReconDerivativesDataSink(
-                    extension=".mif.gz",
+                DerivativesDataSink(
                     model=fod_algorithm,
                     mfp="FOD",
                     label="GM",
-                    qsirecon_suffix=qsirecon_suffix,
+                    extension=".mif.gz",
                     compress=True,
                 ),
                 name="ds_gm_odf",
@@ -308,12 +314,11 @@ def init_mrtrix_csd_recon_wf(
             workflow.connect(outputnode, 'gm_odf',
                              ds_gm_odf, 'in_file')  # fmt:skip
             ds_gm_txt = pe.Node(
-                ReconDerivativesDataSink(
-                    extension=".txt",
+                DerivativesDataSink(
                     model=fod_algorithm,
                     mfp="FOD",
                     label="GM",
-                    qsirecon_suffix=qsirecon_suffix,
+                    extension=".txt",
                 ),
                 name="ds_gm_txt",
                 run_without_submitting=True,
@@ -322,12 +327,11 @@ def init_mrtrix_csd_recon_wf(
                              ds_gm_txt, 'in_file')  # fmt:skip
 
             ds_csf_odf = pe.Node(
-                ReconDerivativesDataSink(
-                    extension=".mif.gz",
+                DerivativesDataSink(
                     model=fod_algorithm,
                     mfp="FOD",
                     label="CSF",
-                    qsirecon_suffix=qsirecon_suffix,
+                    extension=".mif.gz",
                     compress=True,
                 ),
                 name="ds_csf_odf",
@@ -336,12 +340,11 @@ def init_mrtrix_csd_recon_wf(
             workflow.connect(outputnode, 'csf_odf',
                              ds_csf_odf, 'in_file')  # fmt:skip
             ds_csf_txt = pe.Node(
-                ReconDerivativesDataSink(
-                    extension=".txt",
+                DerivativesDataSink(
                     model=fod_algorithm,
                     mfp="FOD",
                     label="CSF",
-                    qsirecon_suffix=qsirecon_suffix,
+                    extension=".txt",
                 ),
                 name="ds_csf_txt",
                 run_without_submitting=True,
@@ -351,11 +354,10 @@ def init_mrtrix_csd_recon_wf(
 
             if run_mtnormalize:
                 ds_mt_norm = pe.Node(
-                    ReconDerivativesDataSink(
-                        extension=".mif.gz",
+                    DerivativesDataSink(
                         model="mtnorm",
                         mfp="norm",
-                        qsirecon_suffix=qsirecon_suffix,
+                        extension=".mif.gz",
                         compress=True,
                     ),
                     name="ds_mt_norm",
@@ -364,11 +366,10 @@ def init_mrtrix_csd_recon_wf(
                 workflow.connect(intensity_norm, 'norm_image',
                                  ds_mt_norm, 'in_file')  # fmt:skip
                 ds_inlier_mask = pe.Node(
-                    ReconDerivativesDataSink(
-                        extension=".mif.gz",
+                    DerivativesDataSink(
                         model="mtnorm",
                         mfp="inliermask",
-                        qsirecon_suffix=qsirecon_suffix,
+                        extension=".mif.gz",
                         compress=True,
                     ),
                     name="ds_inlier_mask",
@@ -378,7 +379,8 @@ def init_mrtrix_csd_recon_wf(
                                  ds_inlier_mask, 'in_file')  # fmt:skip
 
     workflow.__desc__ = desc
-    return workflow
+
+    return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_global_tractography_wf(
@@ -453,10 +455,9 @@ def init_global_tractography_wf(
 
     if qsirecon_suffix:
         ds_globalwm_odf = pe.Node(
-            ReconDerivativesDataSink(
-                extension=".mif.gz",
+            DerivativesDataSink(
                 desc="globalwmFOD",
-                qsirecon_suffix=qsirecon_suffix,
+                extension=".mif.gz",
                 compress=True,
             ),
             name="ds_globalwm_odf",
@@ -466,8 +467,9 @@ def init_global_tractography_wf(
                          ds_globalwm_odf, 'in_file')  # fmt:skip
 
         ds_isotropic_fraction = pe.Node(
-            ReconDerivativesDataSink(
-                extension=".mif.gz", desc="ISOfraction", qsirecon_suffix=qsirecon_suffix
+            DerivativesDataSink(
+                desc="ISOfraction",
+                extension=".mif.gz",
             ),
             name="ds_isotropic_fraction",
             run_without_submitting=True,
@@ -476,8 +478,10 @@ def init_global_tractography_wf(
                          ds_isotropic_fraction, 'in_file')  # fmt:skip
 
         ds_tck_file = pe.Node(
-            ReconDerivativesDataSink(
-                extension=".tck.gz", desc="global", qsirecon_suffix=qsirecon_suffix, compress=True
+            DerivativesDataSink(
+                desc="global",
+                extension=".tck.gz",
+                compress=True,
             ),
             name="ds_tck_file",
             run_without_submitting=True,
@@ -485,10 +489,9 @@ def init_global_tractography_wf(
         workflow.connect(outputnode, 'tck_file', ds_tck_file, 'in_file')  # fmt:skip
 
         ds_residual_energy = pe.Node(
-            ReconDerivativesDataSink(
-                extension=".tck.gz",
+            DerivativesDataSink(
                 desc="residualEnergy",
-                qsirecon_suffix=qsirecon_suffix,
+                extension=".tck.gz",
                 compress=True,
             ),
             name="ds_residual_energy",
@@ -497,7 +500,7 @@ def init_global_tractography_wf(
         workflow.connect(outputnode, 'residual_energy',
                          ds_residual_energy, 'in_file')  # fmt:skip
 
-    return workflow
+    return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_mrtrix_tractography_wf(
@@ -577,11 +580,10 @@ def init_mrtrix_tractography_wf(
         ])  # fmt:skip
         if qsirecon_suffix:
             ds_sift_weights = pe.Node(
-                ReconDerivativesDataSink(
-                    extension=".csv",
+                DerivativesDataSink(
                     model="sift2",
                     suffix="streamlineweights",
-                    qsirecon_suffix=qsirecon_suffix,
+                    extension=".csv",
                 ),
                 name="ds_sift_weights",
                 run_without_submitting=True,
@@ -589,11 +591,10 @@ def init_mrtrix_tractography_wf(
             workflow.connect(outputnode, 'sift_weights', ds_sift_weights, 'in_file')  # fmt:skip
         if qsirecon_suffix:
             ds_mu_file = pe.Node(
-                ReconDerivativesDataSink(
-                    extension=".txt",
+                DerivativesDataSink(
                     model="sift2",
                     suffix="mu",
-                    qsirecon_suffix=qsirecon_suffix,
+                    extension=".txt",
                 ),
                 name="ds_mu_file",
                 run_without_submitting=True,
@@ -604,18 +605,17 @@ def init_mrtrix_tractography_wf(
 
     if qsirecon_suffix:
         ds_tck_file = pe.Node(
-            ReconDerivativesDataSink(
-                extension=".tck",
+            DerivativesDataSink(
                 model=tracking_params["algorithm"],
                 suffix="streamlines",
-                qsirecon_suffix=qsirecon_suffix,
+                extension=".tck",
             ),
             name="ds_tck_file",
             run_without_submitting=True,
         )
         workflow.connect(outputnode, 'tck_file', ds_tck_file, 'in_file')  # fmt:skip
 
-    return workflow
+    return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_mrtrix_connectivity_wf(
@@ -670,8 +670,10 @@ def init_mrtrix_connectivity_wf(
             ConnectivityReport(), name="plot_connectivity", n_procs=omp_nthreads
         )
         ds_report_connectivity = pe.Node(
-            ReconDerivativesDataSink(
-                extension=".svg", desc="MRtrix3Connectivity", suffix="matrices"
+            DerivativesDataSink(
+                desc="MRtrix3Connectivity",
+                suffix="matrices",
+                extension=".svg",
             ),
             name="ds_report_connectivity",
             run_without_submitting=True,
@@ -685,12 +687,12 @@ def init_mrtrix_connectivity_wf(
     if qsirecon_suffix:
         # Save the output in the outputs directory
         ds_connectivity = pe.Node(
-            ReconDerivativesDataSink(suffix="connectivity", qsirecon_suffix=qsirecon_suffix),
+            DerivativesDataSink(suffix="connectivity"),
             name="ds_" + name,
             run_without_submitting=True,
         )
         ds_exemplars = pe.Node(
-            ReconDerivativesDataSink(qsirecon_suffix=qsirecon_suffix, suffix="exemplarbundles"),
+            DerivativesDataSink(suffix="exemplarbundles"),
             name="ds_exemplars",
             run_without_submitting=True,
         )
@@ -699,4 +701,4 @@ def init_mrtrix_connectivity_wf(
             (calc_connectivity, ds_exemplars, [('exemplar_files', 'in_file')])
         ])  # fmt:skip
 
-    return workflow
+    return clean_datasinks(workflow, qsirecon_suffix)

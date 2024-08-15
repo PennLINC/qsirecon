@@ -102,19 +102,27 @@ recon_entity_order = ["atlas", "model", "bundles", "fit", "mdp", "mfp", "bundle"
 
 
 def get_recon_output_name(
-    base_dir, source_file, derivative_file, qsirecon_suffix, output_bids_entities, use_ext=True
+    base_dir,
+    source_file,
+    derivative_file,
+    output_bids_entities,
+    use_ext=True,
+    qsirecon_suffix=None,
 ):
 
     source_entities = parse_file_entities(source_file)
-    out_path = op.join(base_dir, f"qsirecon-{qsirecon_suffix}")
-    out_path = op.join(out_path, "sub-" + source_entities["subject"])
+    out_path = base_dir
+    if qsirecon_suffix:
+        out_path = op.join(out_path, f"qsirecon-{qsirecon_suffix}")
+
+    out_path = op.join(base_dir, f"sub-{source_entities['subject']}")
     if "session" in source_entities:
-        out_path += "/ses-{session}".format(**source_entities)
+        out_path = op.join(out_path, f"ses-{source_entities['session']}")
 
     # Which datatype directory should this go under?
     # If it's not in the output bids entities use the source_file datatype
-    datatype_dir = output_bids_entities.get("datatype", op.basename(op.dirname(source_file)))
-    out_path += f"/{datatype_dir}"
+    datatype = output_bids_entities.get("datatype", op.basename(op.dirname(source_file)))
+    out_path = op.join(out_path, datatype)
     _, source_fname, _ = split_filename(source_file)
     # Remove the suffix
     source_fname, _ = source_fname.rsplit("_", 1)
@@ -132,6 +140,7 @@ def get_recon_output_name(
             )
         else:
             source_fname += f"_space-{output_bids_entities['space']}"
+
     base_fname = op.join(out_path, source_fname)
 
     # Add the new bids entities for the output file
@@ -212,7 +221,6 @@ class ReconDerivativesDataSink(DerivativesDataSink):
             base_dir=self.inputs.base_directory,
             source_file=self.inputs.source_file,
             derivative_file=self.inputs.in_file[0],
-            qsirecon_suffix=self.inputs.qsirecon_suffix,
             output_bids_entities=output_bids,
             use_ext=False,
         )

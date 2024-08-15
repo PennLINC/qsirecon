@@ -16,6 +16,7 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ... import config
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import ReconScalarsDataSink, TORTOISEReconScalars
+from ...utils.bids import clean_datasinks
 from qsirecon.interfaces.tortoise import (
     ComputeADMap,
     ComputeFAMap,
@@ -169,7 +170,7 @@ def init_tortoise_estimator_wf(
     # EstimateMAPMRI
     mapmri_opts = params.get("estimate_mapmri", {})
     if not mapmri_opts:
-        return workflow
+        return clean_datasinks(workflow, qsirecon_suffix)
 
     # Set deltas if we have them. Prevent only one from being defined
     if approximate_deltas:
@@ -238,4 +239,5 @@ def init_tortoise_estimator_wf(
             ds_recon_scalars,
             "recon_scalars")  # fmt:skip
     workflow.__desc__ = desc
-    return workflow
+
+    return clean_datasinks(workflow, qsirecon_suffix)

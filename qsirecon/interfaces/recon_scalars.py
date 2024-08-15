@@ -128,7 +128,6 @@ class ReconScalarsDataSink(SimpleInterface):
                 base_dir=self.inputs.base_directory,
                 source_file=self.inputs.source_file,
                 derivative_file=recon_scalar["path"],
-                qsirecon_suffix=recon_scalar["qsirecon_suffix"],
                 output_bids_entities=recon_scalar["bids"],
                 use_ext=True,
             )
@@ -155,8 +154,8 @@ class ReconScalarsTableSplitterDataSink(ReconScalarsDataSink):
     input_spec = _ReconScalarsTableSplitterDataSinkInputSpec
 
     def _run_interface(self, runtime):
-        summary_df = pd.read_csv(self.inputs.summary_tsv, sep="\t")
-        for groupname, group_df in summary_df.groupby("qsirecon_suffix"):
+        summary_df = pd.read_table(self.inputs.summary_tsv)
+        for qsirecon_suffix, group_df in summary_df.groupby("qsirecon_suffix"):
 
             # reset the index for this df
             group_df.reset_index(drop=True, inplace=True)
@@ -165,11 +164,11 @@ class ReconScalarsTableSplitterDataSink(ReconScalarsDataSink):
                 base_dir=self.inputs.base_directory,
                 source_file=group_df.loc[0, "source_file"],
                 derivative_file=self.inputs.summary_tsv,
-                qsirecon_suffix=group_df.loc[0, "qsirecon_suffix"],
                 output_bids_entities={
                     "suffix": self.inputs.suffix,
                     "bundles": group_df.loc[0, "bundle_source"],
                 },
+                qsirecon_suffix=qsirecon_suffix,
             )
             output_dir = op.dirname(qsirecon_suffixed_tsv)
             os.makedirs(output_dir, exist_ok=True)

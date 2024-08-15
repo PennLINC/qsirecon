@@ -15,12 +15,9 @@ from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ... import config
-from ...interfaces.bids import ReconDerivativesDataSink
+from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.converters import DSIStudioTrkToTck
-from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.recon_scalars import DSIStudioReconScalars, ReconScalarsDataSink
-from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport
-from qsirecon.interfaces.dsi_studio import (
+from ...interfaces.dsi_studio import (
     DSI_STUDIO_VERSION,
     AggregateAutoTrackResults,
     AutoTrack,
@@ -32,6 +29,10 @@ from qsirecon.interfaces.dsi_studio import (
     FixDSIStudioExportHeader,
     _get_dsi_studio_bundles,
 )
+from ...interfaces.interchange import recon_workflow_input_fields
+from ...interfaces.recon_scalars import DSIStudioReconScalars, ReconScalarsDataSink
+from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport
+from ...utils.bids import clean_datasinks
 
 LOGGER = logging.getLogger("nipype.interface")
 
@@ -102,7 +103,11 @@ distance of %02f in DSI Studio (version %s). """ % (
             CLIReconPeaksReport(subtract_iso=True), name="plot_peaks", n_procs=omp_nthreads
         )
         ds_report_peaks = pe.Node(
-            ReconDerivativesDataSink(extension=".png", desc="GQIODF", suffix="peaks"),
+            DerivativesDataSink(
+                desc="GQIODF",
+                suffix="peaks",
+                extension=".png",
+            ),
             name="ds_report_peaks",
             run_without_submitting=True,
         )
@@ -118,7 +123,11 @@ distance of %02f in DSI Studio (version %s). """ % (
         # Plot targeted regions
         if available_anatomical_data["has_qsiprep_t1w_transforms"]:
             ds_report_odfs = pe.Node(
-                ReconDerivativesDataSink(extension=".png", desc="GQIODF", suffix="odfs"),
+                DerivativesDataSink(
+                    desc="GQIODF",
+                    suffix="odfs",
+                    extension=".png",
+                ),
                 name="ds_report_odfs",
                 run_without_submitting=True,
             )
@@ -128,8 +137,9 @@ distance of %02f in DSI Studio (version %s). """ % (
     if qsirecon_suffix:
         # Save the output in the outputs directory
         ds_gqi_fibgz = pe.Node(
-            ReconDerivativesDataSink(
-                extension=".fib.gz", qsirecon_suffix=qsirecon_suffix, compress=True
+            DerivativesDataSink(
+                extension=".fib.gz",
+                compress=True,
             ),
             name="ds_gqi_fibgz",
             run_without_submitting=True,
@@ -137,7 +147,8 @@ distance of %02f in DSI Studio (version %s). """ % (
         workflow.connect(gqi_recon, 'output_fib',
                          ds_gqi_fibgz, 'in_file')  # fmt:skip
     workflow.__desc__ = desc
-    return workflow
+
+    return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_dsi_studio_tractography_wf(
@@ -230,8 +241,9 @@ def init_dsi_studio_tractography_wf(
     if qsirecon_suffix:
         # Save the output in the outputs directory
         ds_tracking = pe.Node(
-            ReconDerivativesDataSink(
-                model="QAthresh", suffix="streamlines", qsirecon_suffix=qsirecon_suffix
+            DerivativesDataSink(
+                model="QAthresh",
+                suffix="streamlines",
             ),
             name="ds_" + name,
             run_without_submitting=True,
@@ -239,7 +251,8 @@ def init_dsi_studio_tractography_wf(
         workflow.connect(tracking, 'output_trk',
                          ds_tracking, 'in_file')  # fmt:skip
     workflow.__desc__ = desc
-    return workflow
+
+    return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_dsi_studio_autotrack_wf(
@@ -331,8 +344,9 @@ def init_dsi_studio_autotrack_wf(
 
     # Save tck files of the bundles into the outputs
     ds_tckfiles = pe.MapNode(
-        ReconDerivativesDataSink(
-            suffix="streamlines", qsirecon_suffix=qsirecon_suffix, compress=True
+        DerivativesDataSink(
+            suffix="streamlines",
+            compress=True,
         ),
         iterfield=["in_file", "bundle"],
         name="ds_tckfiles",
@@ -340,14 +354,14 @@ def init_dsi_studio_autotrack_wf(
 
     # Save the bundle csv
     ds_bundle_csv = pe.Node(
-        ReconDerivativesDataSink(suffix="bundlestats", qsirecon_suffix=qsirecon_suffix),
+        DerivativesDataSink(suffix="bundlestats"),
         name="ds_bundle_csv",
         run_without_submitting=True,
     )
 
     # Save the mapping file
     ds_mapping = pe.Node(
-        ReconDerivativesDataSink(suffix="mapping", qsirecon_suffix=qsirecon_suffix),
+        DerivativesDataSink(suffix="mapping"),
         name="ds_mapping",
         run_without_submitting=True,
     )
@@ -371,7 +385,7 @@ def init_dsi_studio_autotrack_wf(
         (aggregate_atk_results, outputnode, [("found_bundle_names", "bundle_names")])
     ])  # fmt:skip
 
-    return workflow
+    return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_dsi_studio_connectivity_wf(
@@ -467,8 +481,10 @@ def init_dsi_studio_connectivity_wf(
     if plot_reports:
         plot_connectivity = pe.Node(ConnectivityReport(), name="plot_connectivity")
         ds_report_connectivity = pe.Node(
-            ReconDerivativesDataSink(
-                extension=".svg", desc="DSIStudioConnectivity", suffix="matrices"
+            DerivativesDataSink(
+                desc="DSIStudioConnectivity",
+                suffix="matrices",
+                extension=".svg",
             ),
             name="ds_report_connectivity",
             run_without_submitting=True,
@@ -481,13 +497,14 @@ def init_dsi_studio_connectivity_wf(
     if qsirecon_suffix:
         # Save the output in the outputs directory
         ds_connectivity = pe.Node(
-            ReconDerivativesDataSink(qsirecon_suffix=qsirecon_suffix, suffix="connectivity"),
-            name="ds_" + name,
+            DerivativesDataSink(suffix="connectivity"),
+            name=f"ds_{name}",
             run_without_submitting=True,
         )
         workflow.connect(calc_connectivity, 'connectivity_matfile',
                          ds_connectivity, 'in_file')  # fmt:skip
-    return workflow
+
+    return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_dsi_studio_export_wf(
@@ -579,4 +596,4 @@ def init_dsi_studio_export_wf(
         (recon_scalars, outputnode, [("scalar_info", "recon_scalars")])
     ])  # fmt:skip
 
-    return workflow
+    return clean_datasinks(workflow, qsirecon_suffix)

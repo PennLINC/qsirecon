@@ -12,13 +12,14 @@ import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
-from ...interfaces.bids import ReconDerivativesDataSink
+from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import (
     ReconScalarsDataSink,
     ReconScalarsTableSplitterDataSink,
 )
 from ...interfaces.scalar_mapping import BundleMapper, TemplateMapper
+from ...utils.bids import clean_datasinks
 
 LOGGER = logging.getLogger("nipype.workflow")
 
@@ -77,7 +78,7 @@ def init_scalar_to_bundle_wf(
             ("tdi_stats", "summary_tsv")])
     ])  # fmt:skip
 
-    return workflow
+    return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_scalar_to_atlas_wf(
@@ -119,14 +120,14 @@ def init_scalar_to_atlas_wf(
     if qsirecon_suffix:
 
         ds_bundle_summaries = pe.Node(
-            ReconDerivativesDataSink(desc="bundlemap", qsirecon_suffix=qsirecon_suffix),
+            DerivativesDataSink(desc="bundlemap"),
             name="ds_bundle_summaries",
             run_without_submitting=True,
         )
         workflow.connect([
             (bundle_mapper, ds_bundle_summaries, [("bundle_summaries", "in_file")])
         ])  # fmt:skip
-    return workflow
+    return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_scalar_to_template_wf(
@@ -178,7 +179,7 @@ def init_scalar_to_template_wf(
             ("template_space_scalar_info", "recon_scalars")])
     ])  # fmt:skip
 
-    return workflow
+    return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_scalar_to_surface_wf(
