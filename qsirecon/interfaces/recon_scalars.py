@@ -31,7 +31,7 @@ class ReconScalarsInputSpec(BaseInterfaceInputSpec):
     qsirecon_suffix = traits.Str(mandatory=True)
     model_info = traits.Dict()
     model_name = traits.Str()
-    dismiss_entities = traits.List()
+    dismiss_entities = traits.List([], usedefault=True)
 
 
 class ReconScalarsOutputSpec(TraitedSpec):
@@ -110,7 +110,7 @@ class _ReconScalarsDataSinkInputSpec(BaseInterfaceInputSpec):
     resampled_files = InputMultiObject(File(exists=True))
     recon_scalars = InputMultiObject(traits.Any())
     compress = traits.Bool(True, usedefault=True)
-    dismiss_entities = traits.List()
+    dismiss_entities = traits.List([], usedefault=True)
 
 
 class ReconScalarsDataSink(SimpleInterface):
