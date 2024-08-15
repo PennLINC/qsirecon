@@ -143,8 +143,8 @@ diffusivity.""" % (
             (inputnode, plot_peaks, [('dwi_mask', 'mask_file')]),
             (convert_to_fibgz, plot_peaks, [('fibgz_file', 'fib_file')]),
             (noddi_fit, plot_peaks, [('icvf_image', 'background_image')]),
-            (plot_peaks, peaks_png_to_svg, [('out_file', 'in_file')]),
-            (peaks_png_to_svg, ds_report_peaks, [('out_file', 'in_file')])
+            (plot_peaks, peaks_png_to_svg, [('peak_report', 'in_file')]),
+            (peaks_png_to_svg, ds_report_peaks, [('out_file', 'in_file')]),
         ])  # fmt:skip
 
     if qsirecon_suffix:
