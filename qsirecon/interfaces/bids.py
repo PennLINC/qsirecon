@@ -99,9 +99,6 @@ class DerivativesDataSink(BaseDerivativesDataSink):
     _file_patterns = qsirecon_spec["default_path_patterns"]
 
 
-recon_entity_order = ["atlas", "model", "bundles", "fit", "mdp", "mfp", "bundle", "label"]
-
-
 def get_recon_output_name(
     base_dir,
     source_file,

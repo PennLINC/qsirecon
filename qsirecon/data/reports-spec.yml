@@ -73,10 +73,10 @@ sections:
   - bids: {datatype: figures, desc: NODDI, suffix: peaks, extension: .png}
     subtitle: NODDI
     caption: Directionally color-coded ODF peaks overlaid on the b=0 reference image.
-  - bids: {datatype: figures, suffix: peaks, extension: .png}
+  - bids: {datatype: figures, suffix: peaks, extension: .svg}
     subtitle: NODDI
     caption: Directionally color-coded ODF peaks overlaid on the b=0 reference image.
-  - bids: {datatype: figures, suffix: peaks, extension: png}
+  - bids: {datatype: figures, suffix: peaks, extension: svg}
     subtitle: NODDI
     caption: Directionally color-coded ODF peaks overlaid on the b=0 reference image.
 

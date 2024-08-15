@@ -122,3 +122,36 @@ def label_convert(original_atlas, output_mif, orig_txt, mrtrix_txt, metadata):
                 mrtrix_f.write("{}\t{}\n".format(row_num + 1, roi_name))
     cmd = ["labelconvert", original_atlas, orig_txt, mrtrix_txt, output_mif]
     os.system(" ".join(cmd))
+
+
+class _PNGtoSVGInputSpec(BaseInterfaceInputSpec):
+    in_file = File(
+        exists=True,
+        mandatory=True,
+        desc="PNG to convert to SVG.",
+    )
+
+
+class _PNGtoSVGOutputSpec(TraitedSpec):
+    out_file = File(
+        exists=True,
+        desc="Converted SVG file.",
+    )
+
+
+class PNGtoSVG(SimpleInterface):
+    """Collect registration files for fsnative-to-fsLR transformation."""
+
+    input_spec = _PNGtoSVGInputSpec
+    output_spec = _PNGtoSVGOutputSpec
+
+    def _run_interface(self, runtime):
+        import cairosvg
+
+        # Convert the temporary PNG file to SVG
+        out_file = os.path.abspath("output.svg")
+        cairosvg.png2svg(url=self.inputs.png_file, write_to=out_file)
+
+        self._results["out_file"] = out_file
+
+        return runtime

@@ -17,6 +17,7 @@ from ...interfaces.converters import NODDItoFIBGZ
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import AMICOReconScalars, ReconScalarsDataSink
 from ...interfaces.reports import CLIReconPeaksReport
+from ...interfaces.utils import PNGtoSVG
 from ...utils.bids import clean_datasinks
 
 
@@ -123,12 +124,17 @@ diffusivity.""" % (
 
     if plot_reports:
         plot_peaks = pe.Node(CLIReconPeaksReport(), name="plot_peaks", n_procs=omp_nthreads)
+        peaks_png_to_svg = pe.Node(
+            PNGtoSVG(),
+            name="peaks_png_to_svg",
+            run_without_submitting=True,
+        )
         ds_report_peaks = pe.Node(
             DerivativesDataSink(
                 datatype="figures",
                 desc="NODDI",
                 suffix="peaks",
-                extension="png",
+                extension="svg",
             ),
             name="ds_report_peaks",
             run_without_submitting=True,
@@ -137,7 +143,8 @@ diffusivity.""" % (
             (inputnode, plot_peaks, [('dwi_mask', 'mask_file')]),
             (convert_to_fibgz, plot_peaks, [('fibgz_file', 'fib_file')]),
             (noddi_fit, plot_peaks, [('icvf_image', 'background_image')]),
-            (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')])
+            (plot_peaks, peaks_png_to_svg, [('out_file', 'in_file')]),
+            (peaks_png_to_svg, ds_report_peaks, [('out_file', 'in_file')])
         ])  # fmt:skip
 
     if qsirecon_suffix:
