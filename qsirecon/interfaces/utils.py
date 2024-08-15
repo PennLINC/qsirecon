@@ -146,8 +146,8 @@ class PNGtoSVG(SimpleInterface):
     output_spec = _PNGtoSVGOutputSpec
 
     def _run_interface(self, runtime):
-        from PIL import Image
         import svgwrite
+        from PIL import Image
 
         # Open the PNG file
         in_file = self.inputs.in_file
