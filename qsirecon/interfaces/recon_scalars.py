@@ -31,6 +31,7 @@ class ReconScalarsInputSpec(BaseInterfaceInputSpec):
     qsirecon_suffix = traits.Str(mandatory=True)
     model_info = traits.Dict()
     model_name = traits.Str()
+    dismiss_entities = traits.List()
 
 
 class ReconScalarsOutputSpec(TraitedSpec):
@@ -47,6 +48,7 @@ class ReconScalars(SimpleInterface):
         "scalar_metadata",
         "model_info",
         "source_file",
+        "dismiss_entities",
     )
 
     def __init__(self, from_file=None, resource_monitor=None, **inputs):
@@ -76,7 +78,8 @@ class ReconScalars(SimpleInterface):
 
         # Get the BIDS info from the source file
         source_file_bids = parse_file_entities(self.inputs.source_file)
-        del source_file_bids["extension"], source_file_bids["suffix"]
+        dismiss_entities = self.inputs.dismiss_entities + ["extension", "suffix"]
+        source_file_bids = {k: v for k, v in source_file_bids.items() if k not in dismiss_entities}
 
         file_traits = [
             name for name in self.inputs.editable_traits() if name not in self._ignore_traits
@@ -107,6 +110,7 @@ class _ReconScalarsDataSinkInputSpec(BaseInterfaceInputSpec):
     resampled_files = InputMultiObject(File(exists=True))
     recon_scalars = InputMultiObject(traits.Any())
     compress = traits.Bool(True, usedefault=True)
+    dismiss_entities = traits.List()
 
 
 class ReconScalarsDataSink(SimpleInterface):
@@ -130,6 +134,7 @@ class ReconScalarsDataSink(SimpleInterface):
                 derivative_file=recon_scalar["path"],
                 output_bids_entities=recon_scalar["bids"],
                 use_ext=True,
+                dismiss_entities=self.inputs.dismiss_entities,
             )
 
             if force_decompress and output_filename.endswith(".gz"):

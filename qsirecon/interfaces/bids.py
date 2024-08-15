@@ -108,9 +108,12 @@ def get_recon_output_name(
     output_bids_entities,
     use_ext=True,
     qsirecon_suffix=None,
+    dismiss_entities=None,
 ):
-
     source_entities = parse_file_entities(source_file)
+    if dismiss_entities:
+        source_entities = {k: v for k, v in source_entities.items() if k not in dismiss_entities}
+
     out_path = base_dir
     if qsirecon_suffix:
         out_path = op.join(out_path, f"qsirecon-{qsirecon_suffix}")

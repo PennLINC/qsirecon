@@ -524,7 +524,9 @@ def init_dipy_mapmri_recon_wf(
     if qsirecon_suffix:
         external_format_datasinks(qsirecon_suffix, params, workflow)
         ds_recon_scalars = pe.Node(
-            ReconScalarsDataSink(), name="ds_recon_scalars", run_without_submitting=True
+            ReconScalarsDataSink(dismiss_entities=["desc"]),
+            name="ds_recon_scalars",
+            run_without_submitting=True,
         )
         workflow.connect(
             recon_scalars,
@@ -670,7 +672,9 @@ def init_dipy_dki_recon_wf(
     if qsirecon_suffix:
         external_format_datasinks(qsirecon_suffix, params, workflow)
         ds_recon_scalars = pe.Node(
-            ReconScalarsDataSink(), name="ds_recon_scalars", run_without_submitting=True
+            ReconScalarsDataSink(dismiss_entities=["desc"]),
+            name="ds_recon_scalars",
+            run_without_submitting=True,
         )
         workflow.connect(
             recon_scalars,

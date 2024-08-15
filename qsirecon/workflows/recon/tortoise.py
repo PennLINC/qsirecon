@@ -231,7 +231,9 @@ def init_tortoise_estimator_wf(
     ])  # fmt:skip
     if qsirecon_suffix:
         ds_recon_scalars = pe.Node(
-            ReconScalarsDataSink(), name="ds_recon_scalars", run_without_submitting=True
+            ReconScalarsDataSink(dismiss_entities=["desc"]),
+            name="ds_recon_scalars",
+            run_without_submitting=True,
         )
         workflow.connect(
             recon_scalars,
