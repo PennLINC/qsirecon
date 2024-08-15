@@ -369,6 +369,10 @@ dipy_mapmri_scalars = {
         "desc": "Non-Gaussianity perpendicular from MAPMRI",
         "bids": {"mdp": "NGperp", "model": "mapmri"},
     },
+    "mapcoeffs_file": {
+        "desc": "MAPMRI coefficients",
+        "bids": {"mdp": "mapcoeffs", "model": "mapmri"},
+    },
 }
 
 
