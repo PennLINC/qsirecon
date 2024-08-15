@@ -151,20 +151,13 @@ def init_dwi_recon_workflow(
                 node,
                 "inputnode.mapping_metadata")  # fmt:skip
 
-    # Fill-in datasinks and reportlet datasinks seen so far
+    # Set the source_file for any datasinks
     for node in workflow.list_node_names():
-        node_suffix = node.split(".")[-1]
-        if node_suffix.startswith("ds_") or node_suffix.startswith("recon_scalars"):
-            base_dir = (
-                config.execution.reportlets_dir
-                if "report" in node_suffix
-                else config.execution.output_dir
-            )
-            workflow.connect(inputnode, 'dwi_file',
-                             workflow.get_node(node), 'source_file')  # fmt:skip
-            # config.loggers.workflow.info("setting %s base dir to %s", node_suffix, base_dir )
-            if node_suffix.startswith("ds"):
-                workflow.get_node(node).inputs.base_directory = base_dir
+        node_name = node.split(".")[-1]
+        if node_name.startswith("ds_") or node_name.startswith("recon_scalars"):
+            workflow.connect([
+                (inputnode, workflow.get_node(node), [("dwi_file", "source_file")]),
+            ])  # fmt:skip
 
     return workflow
 

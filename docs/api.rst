@@ -35,6 +35,5 @@ Other Utilities
 
    api/qsirecon.interfaces
    api/qsirecon.utils
-   api/qsirecon.report
-   api/qsirecon.viz
+   api/qsirecon.reports
    api/qsirecon.qc
