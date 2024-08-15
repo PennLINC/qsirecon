@@ -275,6 +275,7 @@ def init_mrtrix_csd_recon_wf(
     if qsirecon_suffix:
         ds_wm_odf = pe.Node(
             DerivativesDataSink(
+                dismiss_entities=("desc",),
                 model=fod_algorithm,
                 mfp="FOD",
                 label="WM",
@@ -288,6 +289,7 @@ def init_mrtrix_csd_recon_wf(
                          ds_wm_odf, 'in_file')  # fmt:skip
         ds_wm_txt = pe.Node(
             DerivativesDataSink(
+                dismiss_entities=("desc",),
                 model=fod_algorithm,
                 mfp="FOD",
                 label="WM",
@@ -302,6 +304,7 @@ def init_mrtrix_csd_recon_wf(
         if using_multitissue:
             ds_gm_odf = pe.Node(
                 DerivativesDataSink(
+                    dismiss_entities=("desc",),
                     model=fod_algorithm,
                     mfp="FOD",
                     label="GM",
@@ -315,6 +318,7 @@ def init_mrtrix_csd_recon_wf(
                              ds_gm_odf, 'in_file')  # fmt:skip
             ds_gm_txt = pe.Node(
                 DerivativesDataSink(
+                    dismiss_entities=("desc",),
                     model=fod_algorithm,
                     mfp="FOD",
                     label="GM",
@@ -328,6 +332,7 @@ def init_mrtrix_csd_recon_wf(
 
             ds_csf_odf = pe.Node(
                 DerivativesDataSink(
+                    dismiss_entities=("desc",),
                     model=fod_algorithm,
                     mfp="FOD",
                     label="CSF",
@@ -341,6 +346,7 @@ def init_mrtrix_csd_recon_wf(
                              ds_csf_odf, 'in_file')  # fmt:skip
             ds_csf_txt = pe.Node(
                 DerivativesDataSink(
+                    dismiss_entities=("desc",),
                     model=fod_algorithm,
                     mfp="FOD",
                     label="CSF",
@@ -355,6 +361,7 @@ def init_mrtrix_csd_recon_wf(
             if run_mtnormalize:
                 ds_mt_norm = pe.Node(
                     DerivativesDataSink(
+                        dismiss_entities=("desc",),
                         model="mtnorm",
                         mfp="norm",
                         extension=".mif.gz",
@@ -367,6 +374,7 @@ def init_mrtrix_csd_recon_wf(
                                  ds_mt_norm, 'in_file')  # fmt:skip
                 ds_inlier_mask = pe.Node(
                     DerivativesDataSink(
+                        dismiss_entities=("desc",),
                         model="mtnorm",
                         mfp="inliermask",
                         extension=".mif.gz",
@@ -581,6 +589,7 @@ def init_mrtrix_tractography_wf(
         if qsirecon_suffix:
             ds_sift_weights = pe.Node(
                 DerivativesDataSink(
+                    dismiss_entities=("desc",),
                     model="sift2",
                     suffix="streamlineweights",
                     extension=".csv",
@@ -592,6 +601,7 @@ def init_mrtrix_tractography_wf(
         if qsirecon_suffix:
             ds_mu_file = pe.Node(
                 DerivativesDataSink(
+                    dismiss_entities=("desc",),
                     model="sift2",
                     suffix="mu",
                     extension=".txt",
@@ -606,6 +616,7 @@ def init_mrtrix_tractography_wf(
     if qsirecon_suffix:
         ds_tck_file = pe.Node(
             DerivativesDataSink(
+                dismiss_entities=("desc",),
                 model=tracking_params["algorithm"],
                 suffix="streamlines",
                 extension=".tck",
@@ -687,12 +698,18 @@ def init_mrtrix_connectivity_wf(
     if qsirecon_suffix:
         # Save the output in the outputs directory
         ds_connectivity = pe.Node(
-            DerivativesDataSink(suffix="connectivity"),
+            DerivativesDataSink(
+                dismiss_entities=("desc",),
+                suffix="connectivity",
+            ),
             name="ds_" + name,
             run_without_submitting=True,
         )
         ds_exemplars = pe.Node(
-            DerivativesDataSink(suffix="exemplarbundles"),
+            DerivativesDataSink(
+                dismiss_entities=("desc",),
+                suffix="exemplarbundles",
+            ),
             name="ds_exemplars",
             run_without_submitting=True,
         )

@@ -164,6 +164,7 @@ def init_highres_recon_anatomical_wf(
         )
         ds_qsiprep_5tt_hsvs = pe.Node(
             DerivativesDataSink(
+                dismiss_entities=("desc",),
                 atlas="hsvs",
                 space="T1w",
                 suffix="dseg",
@@ -173,6 +174,7 @@ def init_highres_recon_anatomical_wf(
         )
         ds_fs_5tt_hsvs = pe.Node(
             DerivativesDataSink(
+                dismiss_entities=("desc",),
                 desc="hsvs",
                 space="fsnative",
                 suffix="dseg",
@@ -615,6 +617,7 @@ def init_dwi_recon_anatomical_workflow(
         apply_header_to_5tt_hsvs = pe.Node(TransformHeader(), name="apply_header_to_5tt_hsvs")
         ds_qsiprep_5tt_hsvs = pe.Node(
             DerivativesDataSink(
+                dismiss_entities=("desc",),
                 atlas="hsvs",
                 suffix="dseg",
             ),
@@ -733,6 +736,7 @@ def init_dwi_recon_anatomical_workflow(
                     get_atlases,
                     pe.Node(
                         DerivativesDataSink(
+                            dismiss_entities=("desc",),
                             atlas=atlas,
                             suffix="dseg",
                             compress=True,
@@ -747,6 +751,7 @@ def init_dwi_recon_anatomical_workflow(
                     get_atlases,
                     pe.Node(
                         DerivativesDataSink(
+                            dismiss_entities=("desc",),
                             atlas=atlas,
                             suffix="dseg",
                             extension=".mif.gz",
@@ -762,6 +767,7 @@ def init_dwi_recon_anatomical_workflow(
                     get_atlases,
                     pe.Node(
                         DerivativesDataSink(
+                            dismiss_entities=("desc",),
                             atlas=atlas,
                             suffix="dseg",
                             extension=".txt",
@@ -776,6 +782,7 @@ def init_dwi_recon_anatomical_workflow(
                     get_atlases,
                     pe.Node(
                         DerivativesDataSink(
+                            dismiss_entities=("desc",),
                             atlas=atlas,
                             suffix="dseg",
                             extension=".txt",

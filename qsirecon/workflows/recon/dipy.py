@@ -38,6 +38,7 @@ def external_format_datasinks(qsirecon_suffix, params, wf):
     if params["write_fibgz"]:
         ds_fibgz = pe.Node(
             DerivativesDataSink(
+                dismiss_entities=("desc",),
                 extension=".fib.gz",
                 compress=True,
             ),
@@ -50,6 +51,7 @@ def external_format_datasinks(qsirecon_suffix, params, wf):
     if params["write_mif"]:
         ds_mif = pe.Node(
             DerivativesDataSink(
+                dismiss_entities=("desc",),
                 extension=".mif",
                 compress=False,
             ),

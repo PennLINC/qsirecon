@@ -63,6 +63,7 @@ def init_mif_to_fibgz_wf(
         # Save the output in the outputs directory
         ds_fibgz = pe.Node(
             DerivativesDataSink(
+                dismiss_entities=("desc",),
                 extension=".fib.gz",
                 compress=True,
             ),
@@ -125,6 +126,7 @@ def init_qsirecon_to_fsl_wf(
         # Save the output in the outputs directory
         ds_dwi_file = pe.Node(
             DerivativesDataSink(
+                dismiss_entities=("desc",),
                 suffix="dwi",
                 extension="bvec",
             ),
@@ -133,6 +135,7 @@ def init_qsirecon_to_fsl_wf(
         )
         ds_bval_file = pe.Node(
             DerivativesDataSink(
+                dismiss_entities=("desc",),
                 suffix="dwi",
                 extension="bval",
             ),
@@ -140,12 +143,18 @@ def init_qsirecon_to_fsl_wf(
             run_without_submitting=True,
         )
         ds_bvec_file = pe.Node(
-            DerivativesDataSink(suffix="dwi"),
+            DerivativesDataSink(
+                dismiss_entities=("desc",),
+                suffix="dwi",
+            ),
             name="ds_bvec_" + name,
             run_without_submitting=True,
         )
         ds_mask_file = pe.Node(
-            DerivativesDataSink(suffix="mask"),
+            DerivativesDataSink(
+                dismiss_entities=("desc",),
+                suffix="mask",
+            ),
             name="ds_mask_" + name,
             run_without_submitting=True,
         )

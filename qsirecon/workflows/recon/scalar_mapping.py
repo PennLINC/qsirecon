@@ -120,7 +120,10 @@ def init_scalar_to_atlas_wf(
     if qsirecon_suffix:
 
         ds_bundle_summaries = pe.Node(
-            DerivativesDataSink(desc="bundlemap"),
+            DerivativesDataSink(
+                dismiss_entities=("desc",),
+                desc="bundlemap",
+            ),
             name="ds_bundle_summaries",
             run_without_submitting=True,
         )

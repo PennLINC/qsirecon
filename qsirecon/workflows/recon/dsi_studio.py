@@ -138,6 +138,7 @@ distance of %02f in DSI Studio (version %s). """ % (
         # Save the output in the outputs directory
         ds_gqi_fibgz = pe.Node(
             DerivativesDataSink(
+                dismiss_entities=("desc",),
                 extension=".fib.gz",
                 compress=True,
             ),
@@ -242,6 +243,7 @@ def init_dsi_studio_tractography_wf(
         # Save the output in the outputs directory
         ds_tracking = pe.Node(
             DerivativesDataSink(
+                dismiss_entities=("desc",),
                 model="QAthresh",
                 suffix="streamlines",
             ),
@@ -345,6 +347,7 @@ def init_dsi_studio_autotrack_wf(
     # Save tck files of the bundles into the outputs
     ds_tckfiles = pe.MapNode(
         DerivativesDataSink(
+            dismiss_entities=("desc",),
             suffix="streamlines",
             compress=True,
         ),
@@ -354,14 +357,20 @@ def init_dsi_studio_autotrack_wf(
 
     # Save the bundle csv
     ds_bundle_csv = pe.Node(
-        DerivativesDataSink(suffix="bundlestats"),
+        DerivativesDataSink(
+            dismiss_entities=("desc",),
+            suffix="bundlestats",
+        ),
         name="ds_bundle_csv",
         run_without_submitting=True,
     )
 
     # Save the mapping file
     ds_mapping = pe.Node(
-        DerivativesDataSink(suffix="mapping"),
+        DerivativesDataSink(
+            dismiss_entities=("desc",),
+            suffix="mapping",
+        ),
         name="ds_mapping",
         run_without_submitting=True,
     )
@@ -497,7 +506,10 @@ def init_dsi_studio_connectivity_wf(
     if qsirecon_suffix:
         # Save the output in the outputs directory
         ds_connectivity = pe.Node(
-            DerivativesDataSink(suffix="connectivity"),
+            DerivativesDataSink(
+                dismiss_entities=("desc",),
+                suffix="connectivity",
+            ),
             name=f"ds_{name}",
             run_without_submitting=True,
         )

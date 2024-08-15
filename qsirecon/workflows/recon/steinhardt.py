@@ -87,6 +87,7 @@ A series of Steinhardt order parameters (up to order %d) were calculated.
             key = f"q{i_sop_order}_file"
             sop_sinks[key] = pe.Node(
                 DerivativesDataSink(
+                    dismiss_entities=("desc",),
                     model="steinhardt",
                     mfp=f"q{i_sop_order}",
                     compress=True,
