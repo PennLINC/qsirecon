@@ -34,6 +34,7 @@ from niworkflows.interfaces.bids import DerivativesDataSink as BaseDerivativesDa
 from niworkflows.interfaces.bids import _DerivativesDataSinkInputSpec
 
 from qsirecon.data import load as load_data
+from qsirecon import config
 
 LOGGER = logging.getLogger("nipype.interface")
 BIDS_NAME = re.compile(
@@ -118,47 +119,28 @@ def get_recon_output_name(
     if qsirecon_suffix:
         out_path = op.join(out_path, f"qsirecon-{qsirecon_suffix}")
 
-    out_path = op.join(base_dir, f"sub-{source_entities['subject']}")
-    if "session" in source_entities:
-        out_path = op.join(out_path, f"ses-{source_entities['session']}")
-
-    # Which datatype directory should this go under?
-    # If it's not in the output bids entities use the source_file datatype
-    datatype = output_bids_entities.get("datatype", op.basename(op.dirname(source_file)))
-    out_path = op.join(out_path, datatype)
-    _, source_fname, _ = split_filename(source_file)
-    # Remove the suffix
-    source_fname, _ = source_fname.rsplit("_", 1)
-    _, _, extension = split_filename(derivative_file)
-
-    # It may be that the space has changed. Check if it has
-    if "space" in output_bids_entities:
-        if "_space-" in source_fname:
-            source_fname = re.sub(
-                "_space-[a-zA-Z0-9]+", "_space-" + output_bids_entities["space"], source_fname
-            )
-        elif "_desc-preproc" in source_fname:
-            source_fname = source_fname.replace(
-                "_desc-preproc", f"_space-{output_bids_entities['space']}_desc-preproc"
-            )
-        else:
-            source_fname += f"_space-{output_bids_entities['space']}"
-
-    base_fname = op.join(out_path, source_fname)
-
-    # Add the new bids entities for the output file
-    for entity_name in recon_entity_order:
-        if entity_name in output_bids_entities:
-            base_fname += "_{entity}-{value}".format(
-                entity=entity_name, value=output_bids_entities[entity_name]
-            )
+    # Infer the appropriate extension
+    if "extension" not in output_bids_entities:
+        ext = "." + ".".join(os.path.basename(derivative_file).split(".")[1:])
+        output_bids_entities["extension"] = ext
 
     # Add the suffix
-    suffix = output_bids_entities.get("suffix", "dwimap")
-    if use_ext:
-        return f"{base_fname}_{suffix}{extension}"
+    output_bids_entities["suffix"] = output_bids_entities.get("suffix", "dwimap")
 
-    return f"{base_fname}_{suffix}"
+    # Add any missing entities from the source file
+    output_bids_entities = {**source_entities, **output_bids_entities}
+
+    out_filename = config.execution.layout.build_path(
+        source=output_bids_entities,
+        path_patterns=qsirecon_spec["default_path_patterns"],
+        validate=False,
+        absolute_paths=False,
+    )
+    if not use_ext:
+        # Drop the extension from the filename
+        out_filename = out_filename.split(".")[0]
+
+    return os.path.join(out_path, out_filename)
 
 
 class _ReconDerivativesDataSinkInputSpec(_DerivativesDataSinkInputSpec):

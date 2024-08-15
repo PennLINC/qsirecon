@@ -350,6 +350,7 @@ def init_dsi_studio_autotrack_wf(
         DerivativesDataSink(
             dismiss_entities=("desc",),
             suffix="streamlines",
+            extension=".tck.gz",
             compress=True,
         ),
         iterfield=["in_file", "bundle"],
