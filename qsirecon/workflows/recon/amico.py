@@ -154,7 +154,7 @@ diffusivity.""" % (
         workflow.connect([(outputnode, ds_fibgz, [("fibgz", "in_file")])])
 
         ds_recon_scalars = pe.Node(
-            ReconScalarsDataSink(),
+            ReconScalarsDataSink(dismiss_entities=["desc"]),
             name="ds_recon_scalars",
             run_without_submitting=True,
         )

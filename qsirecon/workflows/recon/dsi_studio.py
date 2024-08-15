@@ -361,6 +361,7 @@ def init_dsi_studio_autotrack_wf(
         DerivativesDataSink(
             dismiss_entities=("desc",),
             suffix="bundlestats",
+            extension=".csv",
         ),
         name="ds_bundle_csv",
         run_without_submitting=True,
@@ -371,6 +372,7 @@ def init_dsi_studio_autotrack_wf(
         DerivativesDataSink(
             dismiss_entities=("desc",),
             suffix="mapping",
+            extension=".map",
         ),
         name="ds_mapping",
         run_without_submitting=True,

@@ -39,6 +39,7 @@ def external_format_datasinks(qsirecon_suffix, params, wf):
         ds_fibgz = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
+                suffix="dwimap",
                 extension=".fib.gz",
                 compress=True,
             ),
@@ -52,6 +53,7 @@ def external_format_datasinks(qsirecon_suffix, params, wf):
         ds_mif = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
+                suffix="dwimap",
                 extension=".mif",
                 compress=False,
             ),
