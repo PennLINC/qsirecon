@@ -139,7 +139,7 @@ distance of %02f in DSI Studio (version %s). """ % (
                 DerivativesDataSink(
                     desc="GQIODF",
                     suffix="odfs",
-                    extension=".png",
+                    extension=".svg",
                 ),
                 name="ds_report_odfs",
                 run_without_submitting=True,

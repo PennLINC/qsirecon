@@ -556,6 +556,7 @@ def init_dwi_recon_anatomical_workflow(
             (mask_b0s, outputnode, [("out_file", "dwi_mask")]),
             (inputnode, outputnode, [(field, field) for field in connect_from_inputnode])
         ])  # fmt:skip
+        workflow = clean_datasinks(workflow, qsirecon_suffix)
         return workflow, _get_status()
 
     # No data from QSIRecon was available, BUT we have freesurfer! register it and
@@ -741,7 +742,7 @@ def init_dwi_recon_anatomical_workflow(
                             suffix="dseg",
                             compress=True,
                         ),
-                        name='dsatlas_' + atlas,
+                        name=f'ds_atlas_{atlas}',
                         run_without_submitting=True), [
                             (
                                 ('atlas_configs',
@@ -757,7 +758,7 @@ def init_dwi_recon_anatomical_workflow(
                             extension=".mif.gz",
                             compress=True,
                         ),
-                        name='dsatlas_mifs_' + atlas,
+                        name=f'ds_atlas_mifs_{atlas}',
                         run_without_submitting=True), [
                             (
                                 ('atlas_configs',
@@ -772,7 +773,7 @@ def init_dwi_recon_anatomical_workflow(
                             suffix="dseg",
                             extension=".txt",
                         ),
-                        name='dsatlas_mrtrix_lut_' + atlas,
+                        name=f'ds_atlas_mrtrix_lut_{atlas}',
                         run_without_submitting=True), [
                             (
                                 ('atlas_configs',
@@ -787,7 +788,7 @@ def init_dwi_recon_anatomical_workflow(
                             suffix="dseg",
                             extension=".txt",
                         ),
-                        name='dsatlas_orig_lut_' + atlas,
+                        name=f'ds_atlas_orig_lut_{atlas}',
                         run_without_submitting=True), [
                             (
                                 ('atlas_configs',
@@ -798,7 +799,7 @@ def init_dwi_recon_anatomical_workflow(
         # Fill in the atlas datasinks
         for node in workflow.list_node_names():
             node_suffix = node.split(".")[-1]
-            if node_suffix.startswith("dsatlas_"):
+            if node_suffix.startswith("ds_atlas_"):
                 workflow.connect([
                     (inputnode, workflow.get_node(node), [("dwi_file", "source_file")]),
                 ])  # fmt:skip
