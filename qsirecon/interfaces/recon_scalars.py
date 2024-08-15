@@ -161,7 +161,6 @@ class ReconScalarsTableSplitterDataSink(ReconScalarsDataSink):
     def _run_interface(self, runtime):
         summary_df = pd.read_table(self.inputs.summary_tsv)
         for qsirecon_suffix, group_df in summary_df.groupby("qsirecon_suffix"):
-
             # reset the index for this df
             group_df.reset_index(drop=True, inplace=True)
 
