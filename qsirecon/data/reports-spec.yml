@@ -73,6 +73,12 @@ sections:
   - bids: {datatype: figures, desc: NODDI, suffix: peaks, extension: .png}
     subtitle: NODDI
     caption: Directionally color-coded ODF peaks overlaid on the b=0 reference image.
+  - bids: {datatype: figures, suffix: peaks, extension: .png}
+    subtitle: NODDI
+    caption: Directionally color-coded ODF peaks overlaid on the b=0 reference image.
+  - bids: {datatype: figures, suffix: peaks, extension: png}
+    subtitle: NODDI
+    caption: Directionally color-coded ODF peaks overlaid on the b=0 reference image.
 
 - name: Connectome
   ordering: session,task,acquisition,ceagent,reconstruction,direction,run,echo
