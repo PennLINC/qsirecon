@@ -28,7 +28,7 @@ from shutil import copyfileobj, copytree
 
 from bids.layout import Config, parse_file_entities
 from nipype import logging
-from nipype.interfaces.base import isdefined, traits
+from nipype.interfaces.base import File, InputMultiObject, isdefined, traits
 from nipype.utils.filemanip import copyfile
 from niworkflows.interfaces.bids import DerivativesDataSink as BaseDerivativesDataSink
 from niworkflows.interfaces.bids import _DerivativesDataSinkInputSpec
@@ -141,6 +141,12 @@ def get_recon_output_name(
 
 
 class _ReconDerivativesDataSinkInputSpec(_DerivativesDataSinkInputSpec):
+    in_file = traits.Either(
+        traits.Directory(exists=True),
+        InputMultiObject(File(exists=True)),
+        mandatory=True,
+        desc="the object to be saved",
+    )
     mdp = traits.Str("", usedefault=True, desc="Label for model derived parameter field")
     mfp = traits.Str("", usedefault=True, desc="Label for model fit parameter field")
     model = traits.Str("", usedefault=True, desc="Label for model field")
