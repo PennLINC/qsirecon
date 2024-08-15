@@ -70,13 +70,7 @@ sections:
 - name: AMICO
   ordering: session,task,acquisition,ceagent,reconstruction,direction,run,echo
   reportlets:
-  - bids: {datatype: figures, desc: NODDI, suffix: peaks, extension: .png}
-    subtitle: NODDI
-    caption: Directionally color-coded ODF peaks overlaid on the b=0 reference image.
-  - bids: {datatype: figures, suffix: peaks, extension: .svg}
-    subtitle: NODDI
-    caption: Directionally color-coded ODF peaks overlaid on the b=0 reference image.
-  - bids: {datatype: figures, suffix: peaks, extension: svg}
+  - bids: {datatype: figures, desc: NODDI, suffix: peaks, extension: svg}
     subtitle: NODDI
     caption: Directionally color-coded ODF peaks overlaid on the b=0 reference image.
 

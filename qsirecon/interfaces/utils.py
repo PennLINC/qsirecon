@@ -146,11 +146,25 @@ class PNGtoSVG(SimpleInterface):
     output_spec = _PNGtoSVGOutputSpec
 
     def _run_interface(self, runtime):
-        import cairosvg
+        from PIL import Image
+        import svgwrite
 
-        # Convert the temporary PNG file to SVG
+        # Open the PNG file
+        in_file = self.inputs.in_file
+        png_image = Image.open(in_file)
+
+        # Get the dimensions of the PNG image
+        width, height = png_image.size
+
+        # Create an SVG drawing
         out_file = os.path.abspath("output.svg")
-        cairosvg.png2svg(url=self.inputs.png_file, write_to=out_file)
+        dwg = svgwrite.Drawing(out_file, profile="tiny", size=(width, height))
+
+        # Embed the PNG image within the SVG
+        dwg.add(dwg.image(in_file, insert=(0, 0), size=(width, height)))
+
+        # Save the SVG file
+        dwg.save()
 
         self._results["out_file"] = out_file
 

@@ -34,6 +34,7 @@ from ...interfaces.mrtrix import (
     TckGen,
 )
 from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport
+from ...interfaces.utils import PNGtoSVG
 from ...utils.bids import clean_datasinks
 
 LOGGER = logging.getLogger("nipype.interface")
@@ -236,11 +237,16 @@ def init_mrtrix_csd_recon_wf(
     if plot_reports:
         # Make a visual report of the model
         plot_peaks = pe.Node(CLIReconPeaksReport(), name="plot_peaks", n_procs=omp_nthreads)
+        peaks_png_to_svg = pe.Node(
+            PNGtoSVG(),
+            name="peaks_png_to_svg",
+            run_without_submitting=True,
+        )
         ds_report_peaks = pe.Node(
             DerivativesDataSink(
                 desc="wmFOD",
                 suffix="peaks",
-                extension=".png",
+                extension=".svg",
             ),
             name="ds_report_peaks",
             run_without_submitting=True,
@@ -249,22 +255,32 @@ def init_mrtrix_csd_recon_wf(
             (inputnode, plot_peaks, [
                 ('dwi_ref', 'background_image'),
                 ('odf_rois', 'odf_rois'),
-                ('dwi_mask', 'mask_file')]),
-            (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')])
+                ('dwi_mask', 'mask_file'),
+            ]),
+            (plot_peaks, peaks_png_to_svg, [('peak_report', 'in_file')]),
+            (peaks_png_to_svg, ds_report_peaks, [('out_file', 'in_file')]),
         ])  # fmt:skip
 
         # Plot targeted regions
         if available_anatomical_data["has_qsiprep_t1w_transforms"]:
+            odfs_png_to_svg = pe.Node(
+                PNGtoSVG(),
+                name="odfs_png_to_svg",
+                run_without_submitting=True,
+            )
             ds_report_odfs = pe.Node(
                 DerivativesDataSink(
                     desc="wmFOD",
                     suffix="odfs",
-                    extension=".png",
+                    extension=".svg",
                 ),
                 name="ds_report_odfs",
                 run_without_submitting=True,
             )
-            workflow.connect(plot_peaks, "odf_report", ds_report_odfs, "in_file")
+            workflow.connect([
+                (plot_peaks, odfs_png_to_svg, [('odf_report', 'in_file')]),
+                (odfs_png_to_svg, ds_report_odfs, [('out_file', 'in_file')]),
+            ])  # fmt:skip
 
         fod_source, fod_key = (
             (estimate_fod, "wm_odf") if not run_mtnormalize else (intensity_norm, "wm_normed_odf")

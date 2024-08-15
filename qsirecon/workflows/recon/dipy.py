@@ -504,6 +504,7 @@ def init_dipy_mapmri_recon_wf(
             ('lapnorm', 'lapnorm_file')]),
         (recon_scalars, outputnode, [("scalar_info", "recon_scalars")])
     ])  # fmt:skip
+
     if plot_reports:
         plot_peaks = pe.Node(CLIReconPeaksReport(), name="plot_peaks", n_procs=omp_nthreads)
         peaks_png_to_svg = pe.Node(
@@ -515,7 +516,7 @@ def init_dipy_mapmri_recon_wf(
             DerivativesDataSink(
                 desc="MAPLMRIODF",
                 suffix="peaks",
-                extension=".png",
+                extension=".svg",
             ),
             name="ds_report_peaks",
             run_without_submitting=True,
@@ -536,14 +537,14 @@ def init_dipy_mapmri_recon_wf(
     if available_anatomical_data["has_qsiprep_t1w_transforms"] and plot_reports:
         odfs_png_to_svg = pe.Node(
             PNGtoSVG(),
-            name="peaks_png_to_svg",
+            name="odfs_png_to_svg",
             run_without_submitting=True,
         )
         ds_report_odfs = pe.Node(
             DerivativesDataSink(
                 desc="MAPLMRIODF",
                 suffix="odfs",
-                extension=".png",
+                extension=".svg",
             ),
             name="ds_report_odfs",
             run_without_submitting=True,
@@ -675,31 +676,33 @@ def init_dipy_dki_recon_wf(
             name="plot_peaks",
             n_procs=config.nipype.omp_nthreads,
         )
+        peaks_png_to_svg = pe.Node(
+            PNGtoSVG(),
+            name="peaks_png_to_svg",
+            run_without_submitting=True,
+        )
         ds_report_peaks = pe.Node(
             DerivativesDataSink(
                 desc="DKI",
                 suffix="peaks",
-                extension=".png",
+                extension=".svg",
             ),
             name="ds_report_peaks",
             run_without_submitting=True,
         )
-        workflow.connect(
-            [
-                (
-                    inputnode,
-                    plot_peaks,
-                    [("dwi_ref", "background_image"), ("odf_rois", "odf_rois")],
-                ),
-                (inputnode, plot_peaks, [("dwi_mask", "mask_file")]),
-                (
-                    recon_dki,
-                    plot_peaks,
-                    [("odf_directions", "directions_file"), ("odf_amplitudes", "odf_file")],
-                ),
-                (plot_peaks, ds_report_peaks, [("peak_report", "in_file")]),
-            ]
-        )
+        workflow.connect([
+            (inputnode, plot_peaks, [
+                ("dwi_ref", "background_image"),
+                ("odf_rois", "odf_rois"),
+                ("dwi_mask", "mask_file"),
+            ]),
+            (recon_dki, plot_peaks, [
+                ("odf_directions", "directions_file"),
+                ("odf_amplitudes", "odf_file"),
+            ]),
+            (plot_peaks, peaks_png_to_svg, [("peak_report", "in_file")]),
+            (peaks_png_to_svg, ds_report_peaks, [("out_file", "in_file")]),
+        ])  # fmt:skip
 
     if qsirecon_suffix:
         external_format_datasinks(qsirecon_suffix, params, workflow)
