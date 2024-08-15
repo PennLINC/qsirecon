@@ -139,6 +139,7 @@ distance of %02f in DSI Studio (version %s). """ % (
         ds_gqi_fibgz = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
+                suffix="dwimap",
                 extension=".fib.gz",
                 compress=True,
             ),
