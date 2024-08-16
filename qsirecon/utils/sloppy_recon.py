@@ -29,10 +29,10 @@ def make_sloppy(spec):
         ("MRTrix3", "connectivity"): {"tck2connectome": {"search_radius": "DELETE"}},
         ("MRTrix3", "global_tractography"): {"niters": 10000},
         ("pyAFQ", "pyafq_tractometry"): {
-            "mapping_definition": 'AffMap(affine_kwargs={"level_iters": [10, 10, 10]})',
-            "bundle_info": 'default18_bd()["Left Superior Longitudinal", "Left Arcuate", '
-            '"Left Corticospinal", "Right Corticospinal"]',
-            "n_seeds": 10000,
+            "mapping_definition": 'AffMap(affine_kwargs={"pipeline": ["center_of_mass"]})',
+            "bundle_info": 'default18_bd()["Left Superior Longitudinal", '
+            '"Right Corticospinal"]',
+            "n_seeds": 1000,
             "random_seeds": True,
             "export": "all_bundles_figure",
         },
