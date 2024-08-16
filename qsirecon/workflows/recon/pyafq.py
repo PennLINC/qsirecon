@@ -89,7 +89,11 @@ def init_pyafq_wf(available_anatomical_data, name="afq", qsirecon_suffix="", par
     if qsirecon_suffix:
         # Save the output in the outputs directory
         ds_afq = pe.Node(
-            ReconDerivativesDataSink(qsirecon_suffix=qsirecon_suffix),
+            ReconDerivativesDataSink(
+                qsirecon_suffix=qsirecon_suffix,
+                extension=".nii.gz",
+                use_ext=False,
+            ),
             name="ds_" + name,
             run_without_submitting=True,
         )

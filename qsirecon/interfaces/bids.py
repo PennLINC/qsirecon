@@ -160,6 +160,7 @@ class _ReconDerivativesDataSinkInputSpec(_DerivativesDataSinkInputSpec):
     fit = traits.Str("", usedefault=True, desc="Label for fit field")
     label = traits.Str("", usedefault=True, desc="Label for label field")
     atlas = traits.Str("", usedefault=True, desc="Label for label field")
+    extension = traits.Str("", usedefault=True, desc="Extension (will be ignored)")
     qsirecon_suffix = traits.Str(
         "", usedefault=True, desc="name appended to qsirecon- in the derivatives"
     )
@@ -212,6 +213,8 @@ class ReconDerivativesDataSink(DerivativesDataSink):
             output_bids["suffix"] = self.inputs.suffix
         if self.inputs.label:
             output_bids["label"] = self.inputs.label
+        if self.inputs.extension:
+            output_bids["extension"] = self.inputs.extension
 
         # Get the output name without an extension
         bname = get_recon_output_name(
