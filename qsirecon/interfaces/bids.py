@@ -216,7 +216,7 @@ class ReconDerivativesDataSink(DerivativesDataSink):
         # Get the output name without an extension
         bname = get_recon_output_name(
             base_dir=self.inputs.base_directory,
-            source_file=self.inputs.source_file,
+            source_file=source_file,
             derivative_file=self.inputs.in_file[0],
             output_bids_entities=output_bids,
             use_ext=False,
