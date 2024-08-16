@@ -294,6 +294,16 @@ class MAPMRIReconstruction(DipyReconInterface):
         coeffs = mapfit_aniso.mapmri_coeff
         self._results["mapmri_coeffs"] = self._save_scalar(coeffs, "_mapcoeffs", runtime, dwi_img)
 
+        if self.inputs.anisotropic_scaling:
+            ng = mapfit_aniso.ng()
+            self._results["ng"] = self._save_scalar(ng, "_ng", runtime, dwi_img)
+
+            perng = mapfit_aniso.ng_perpendicular()
+            self._results["perng"] = self._save_scalar(perng, "_perng", runtime, dwi_img)
+
+            parng = mapfit_aniso.ng_parallel()
+            self._results["parng"] = self._save_scalar(parng, "_parng", runtime, dwi_img)
+
         # Write DSI Studio or MRtrix
         self._write_external_formats(runtime, mapfit_aniso, mask_img, "_MAPMRI")
 
