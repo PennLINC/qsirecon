@@ -169,7 +169,7 @@ def init_scalar_to_template_wf(
     # Datasink will always be used, and the qsirecon-suffix is determined when
     # the scalars are originally calculated
     ds_template_scalars = pe.Node(
-        ReconScalarsDataSink(dismiss_entities=["desc"]),
+        ReconScalarsDataSink(dismiss_entities=["desc"], infer_suffix=True),
         name="ds_template_scalars",
         run_without_submitting=True,
     )

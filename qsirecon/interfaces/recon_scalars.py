@@ -111,6 +111,7 @@ class _ReconScalarsDataSinkInputSpec(BaseInterfaceInputSpec):
     recon_scalars = InputMultiObject(traits.Any())
     compress = traits.Bool(True, usedefault=True)
     dismiss_entities = traits.List([], usedefault=True)
+    infer_suffix = traits.Bool(False, usedefault=True)
 
 
 class ReconScalarsDataSink(SimpleInterface):
@@ -128,6 +129,10 @@ class ReconScalarsDataSink(SimpleInterface):
                 force_decompress = True
 
         for recon_scalar in self.inputs.recon_scalars:
+            qsirecon_suffix = None
+            if self.inputs.infer_suffix:
+                qsirecon_suffix = recon_scalar["qsirecon_suffix"]
+
             output_filename = get_recon_output_name(
                 base_dir=self.inputs.base_directory,
                 source_file=self.inputs.source_file,
@@ -135,6 +140,7 @@ class ReconScalarsDataSink(SimpleInterface):
                 output_bids_entities=recon_scalar["bids"],
                 use_ext=True,
                 dismiss_entities=self.inputs.dismiss_entities,
+                qsirecon_suffix=qsirecon_suffix,
             )
 
             if force_decompress and output_filename.endswith(".gz"):
