@@ -23,9 +23,7 @@ from .. import config
 
 
 def init_qsirecon_wf():
-    """Organize the execution of qsirecon, with a sub-workflow for each subject.
-
-    """
+    """Organize the execution of qsirecon, with a sub-workflow for each subject."""
     ver = Version(config.environment.version)
     qsirecon_wf = Workflow(name=f"qsirecon_{ver.major}_{ver.minor}_wf")
     qsirecon_wf.base_dir = config.execution.work_dir
