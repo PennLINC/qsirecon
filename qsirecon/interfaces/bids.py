@@ -231,6 +231,7 @@ class ReconDerivativesDataSink(DerivativesDataSink):
             derivative_file=self.inputs.in_file[0],
             output_bids_entities=output_bids,
             use_ext=False,
+            dismiss_entities=self.inputs.dismiss_entities,
         )
 
         # Ensure the directory exists
