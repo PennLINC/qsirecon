@@ -173,6 +173,7 @@ class ReconScalarsTableSplitterDataSink(ReconScalarsDataSink):
                     "bundles": group_df.loc[0, "bundle_source"],
                 },
                 qsirecon_suffix=qsirecon_suffix,
+                dismiss_entities=self.inputs.dismiss_entities,
             )
             output_dir = op.dirname(qsirecon_suffixed_tsv)
             os.makedirs(output_dir, exist_ok=True)
