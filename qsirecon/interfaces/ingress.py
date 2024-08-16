@@ -177,3 +177,61 @@ class UKBioBankDWIIngress(SimpleInterface):
         to_lps(nb.load(ukb_dwiref_file)).to_filename(dwiref_file)
         self._results["dwi_ref"] = dwiref_file
         return runtime
+    
+class _HCPDWIIngressInputSpec(QsiReconDWIIngressInputSpec):
+    dwi_file = File(exists=False, help="The name of what a BIDS dwi file may have been")
+    data_dir = traits.Directory(
+        exists=True, help="The HCP data directory for a subject. Must contain T1w/ (where preprocessed data are)"
+    )
+
+
+class HCPDWIIngress(SimpleInterface):
+    input_spec = _HCPDWIIngressInputSpec
+    output_spec = QsiReconDWIIngressOutputSpec
+
+    def _run_interface(self, runtime):
+        runpath = Path(runtime.cwd)
+
+        # The UKB input files
+        in_dir = Path(self.inputs.data_dir)
+        dwi_dir = in_dir / "Diffusion"
+        hcp_bval_file = dwi_dir / "bvals"
+        hcp_bvec_file = dwi_dir / "bvecs"  # These are the same as eddy rotated
+        hcp_dwi_file = dwi_dir / "data.nii.gz"
+        #hcp_dwiref_file = dwi_dir / "dti_FA.nii.gz"
+
+        # The bids_name is what the images will be renamed to
+        bids_name = Path(self.inputs.dwi_file).name.replace(".nii.gz", "")
+        dwi_file = str(runpath / (bids_name + ".nii.gz"))
+        bval_file = str(runpath / (bids_name + ".bval"))
+        bvec_file = str(runpath / (bids_name + ".bvec"))
+        b_file = str(runpath / (bids_name + ".b"))
+        btable_file = str(runpath / (bids_name + "btable.txt"))
+        #dwiref_file = str(runpath / (bids_name.replace("_dwi", "_dwiref") + ".nii.gz"))
+
+        dwi_conform = ConformDwi(
+            dwi_file=str(hcp_dwi_file), bval_file=str(hcp_bval_file), bvec_file=str(hcp_bvec_file)
+        )
+
+        result = dwi_conform.run()
+        Path(result.outputs.dwi_file).rename(dwi_file)
+        Path(result.outputs.bvec_file).rename(bvec_file)
+        shutil.copyfile(result.outputs.bval_file, bval_file)
+        # Reorient the dwi file to LPS+
+        self._results["dwi_file"] = dwi_file
+        self._results["bvec_file"] = bvec_file
+        self._results["bval_file"] = bval_file
+
+        # Create a btable_txt file for DSI Studio
+        btable_from_bvals_bvecs(bval_file, bvec_file, btable_file)
+        self._results["btable_file"] = btable_file
+
+        # Create a mrtrix .b file
+        _convert_fsl_to_mrtrix(bval_file, bvec_file, b_file)
+        self._results["b_file"] = b_file
+
+        # Create a dwi ref file
+        #to_lps(nb.load(hcp_dwiref_file)).to_filename(dwiref_file)
+        #self._results["dwi_ref"] = dwiref_file
+        return runtime
+

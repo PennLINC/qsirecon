@@ -44,7 +44,7 @@ def init_qsirecon_wf():
     qsirecon_wf = Workflow(name=f"qsirecon_{ver.major}_{ver.minor}_wf")
     qsirecon_wf.base_dir = config.execution.work_dir
 
-    if config.workflow.recon_input_pipeline not in ("qsiprep", "ukb"):
+    if config.workflow.recon_input_pipeline not in ("qsiprep", "ukb", "hcpya"):
         raise NotImplementedError(
             f"{config.workflow.recon_input_pipeline} is not supported as recon-input yet."
         )
@@ -60,6 +60,14 @@ def init_qsirecon_wf():
         ukb_layout = create_ukb_layout(config.execution.bids_dir)
         to_recon_list = collect_ukb_participants(
             ukb_layout, participant_label=config.execution.participant_label
+        )
+    elif config.workflow.recon_input_pipeline == "hcpya":
+        from ..utils.ingress import collect_hcp_participants, create_hcp_layout
+
+        # The hcp input will always be specified as the bids input - we can't preproc it first
+        hcp_layout = create_hcp_layout(config.execution.bids_dir)
+        to_recon_list = collect_hcp_participants(
+            hcp_layout, participant_label=config.execution.participant_label
         )
 
     for subject_id in to_recon_list:
