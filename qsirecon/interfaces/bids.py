@@ -168,12 +168,14 @@ class _ReconDerivativesDataSinkInputSpec(_DerivativesDataSinkInputSpec):
         "", usedefault=True, desc="name appended to qsirecon- in the derivatives"
     )
 
+
 class _ReconDerivativesDataSinkOutputSpec(_DerivativesDataSinkOutputSpec):
     out_file = traits.Str(desc="the output file/folder")
 
 
 class ReconDerivativesDataSink(DerivativesDataSink):
     input_spec = _ReconDerivativesDataSinkInputSpec
+    output_spec = _ReconDerivativesDataSinkOutputSpec
     out_path_base = "qsirecon"
 
     def _run_interface(self, runtime):
