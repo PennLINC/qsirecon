@@ -78,7 +78,9 @@ def init_scalar_to_bundle_wf(
             ("tdi_stats", "summary_tsv")])
     ])  # fmt:skip
 
-    return clean_datasinks(workflow, qsirecon_suffix)
+    # NOTE: Don't call clean_datasinks here, as the qsirecon_suffix is determined within
+    # ReconScalarsTableSplitterDataSink.
+    return workflow
 
 
 def init_scalar_to_atlas_wf(
