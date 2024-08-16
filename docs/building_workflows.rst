@@ -50,8 +50,8 @@ A *node* in the QSIRecon ``"nodes"`` list represents a unit of processing.
 Unlike NiPype nodes, which represent a single call to a commandline program
 or function, a node here represents a set of steps that accomplish a task.
 For example, if you want to perform CSD there are other steps that should
-happen before actually fitting spherical harmonics to the data. The entry
-for this in the ``"nodes"`` list could look like:
+happen before actually fitting spherical harmonics to the data.
+The entry for this in the ``"nodes"`` list could look like:
 
 .. code-block:: json
 
