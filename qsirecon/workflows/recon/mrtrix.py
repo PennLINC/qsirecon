@@ -10,6 +10,8 @@ To keep threading consistent between nipype and mrtrix, the
 
 
 .. autofunction:: init_mrtrix_csd_recon_wf
+.. autofunction:: init_mrtrix_tractography_wf
+.. autofunction:: init_mrtrix_connectivity_wf
 
 """
 

@@ -1,11 +1,3 @@
-"""
-Steinhardt Order Parameters
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-.. autofunction:: init_steinhardt_order_param_wf
-
-"""
-
 import logging
 
 import nipype.pipeline.engine as pe

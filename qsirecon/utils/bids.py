@@ -22,18 +22,7 @@
 #
 #     https://www.nipreps.org/community/licensing/
 #
-"""
-Utilities to handle BIDS inputs
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Fetch some test data
-
-    >>> import os
-    >>> from niworkflows import data
-    >>> data_root = data.get_bids_examples(variant='BIDS-examples-1-enh-ds054')
-    >>> os.chdir(data_root)
-
-"""
 import json
 import os
 import sys

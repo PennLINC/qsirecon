@@ -3,6 +3,8 @@ Dipy Reconstruction workflows
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autofunction:: init_dipy_brainsuite_shore_recon_wf
+.. autofunction:: init_dipy_mapmri_recon_wf
+.. autofunction:: init_dipy_dki_recon_wf
 
 """
 

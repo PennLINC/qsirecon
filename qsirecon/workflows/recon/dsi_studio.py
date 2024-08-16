@@ -5,6 +5,10 @@ DSI Studio workflows
 .. autofunction:: init_dsi_studio_recon_wf
 .. autofunction:: init_dsi_studio_connectivity_wf
 .. autofunction:: init_dsi_studio_export_wf
+.. autofunction:: init_dsi_studio_autotrack_wf
+.. autofunction:: init_dsi_studio_connectivity_wf
+.. autofunction:: init_dsi_studio_export_wf
+
 
 """
 

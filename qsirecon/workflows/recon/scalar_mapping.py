@@ -2,6 +2,10 @@
 Summarize and Transform recon outputs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. autofunction:: init_scalar_to_bundle_wf
+.. autofunction:: init_scalar_to_atlas_wf
+.. autofunction:: init_scalar_to_template_wf
+.. autofunction:: init_scalar_to_surface_wf
 
 
 """
