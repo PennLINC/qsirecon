@@ -3,6 +3,7 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
+from ast import NotIn
 import logging
 from copy import deepcopy
 
@@ -67,6 +68,7 @@ def init_single_subject_json_report_wf(subject_id, name):
             Directory in which to read and save derivatives
 
     """
+    raise NotImplementedError()
     output_dir = config.execution.output_dir
     if name in ("single_subject_wf", "single_subject_qsirecontest_wf"):
         # for documentation purposes
@@ -74,10 +76,9 @@ def init_single_subject_json_report_wf(subject_id, name):
             "t1w": ["/completely/made/up/path/sub-01_T1w.nii.gz"],
             "dwi": ["/completely/made/up/path/sub-01_dwi.nii.gz"],
         }
-        layout = None
         LOGGER.warning("Building a test workflow")
     else:
-        subject_data, layout = collect_data(output_dir, subject_id, bids_validate=False)
+        pass
     dwi_files = subject_data["dwi"]
     workflow = Workflow(name=name)
     scans_iter = pe.Node(niu.IdentityInterface(fields=["dwi_file"]), name="scans_iter")
