@@ -25,13 +25,6 @@ from .. import config
 def init_qsirecon_wf():
     """Organize the execution of qsirecon, with a sub-workflow for each subject.
 
-    .. workflow::
-        :graph2use: orig
-        :simple_form: yes
-
-        from qsirecon.workflows.base import init_qsirecon_wf
-
-        wf = init_qsirecon_wf()
     """
     ver = Version(config.environment.version)
     qsirecon_wf = Workflow(name=f"qsirecon_{ver.major}_{ver.minor}_wf")

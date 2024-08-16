@@ -134,7 +134,7 @@ def _build_parser(**kwargs):
         help='Processing stage to be run, only "participant" in the case of QSIRecon (for now).',
     )
 
-    g_bids = parser.add_argument_group("Options for filtering BIDS queries")
+    g_bids = parser.add_argument_group("Options for filtering input data")
     g_bids.add_argument(
         "--participant-label",
         "--participant_label",
@@ -284,7 +284,7 @@ def _build_parser(**kwargs):
     )
 
     # arguments for reconstructing QSI data
-    g_recon = parser.add_argument_group("Options for reconstructing qsirecon outputs")
+    g_recon = parser.add_argument_group("Options for recon workflows")
     g_recon.add_argument(
         "--recon-spec",
         "--recon_spec",

@@ -425,6 +425,101 @@ the model-fitting workflows and which sampling schemes work with them.
 \* Not recommended
 
 
+.. _custom_reconstruction:
+
+Building a Custom Reconstruction Workflow
+=========================================
+
+
+Instead of going through each possible element of a pipeline, we will go through
+a simple example and describe its components.
+
+Simple DSI Studio example
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The reconstruction pipeline is created by the user and specified in a JSON
+file similar to the following::
+
+  {
+    "name": "dsistudio_pipeline",
+    "space": "T1w",
+    "anatomical": ["mrtrix_5tt_fast"],
+    "atlases": ["schaefer100x7", "schaefer100x17", "schaefer200x7", "schaefer200x7", "schaefer400x7", "schaefer400x17", "brainnetome246", "aicha384", "gordon333", "aal116"],
+    "nodes": [
+      {
+        "name": "dsistudio_gqi",
+        "software": "DSI Studio",
+        "action": "reconstruction",
+        "input": "qsirecon",
+        "output_suffix": "gqi",
+        "parameters": {"method": "gqi"}
+      },
+      {
+        "name": "scalar_export",
+        "software": "DSI Studio",
+        "action": "export",
+        "input": "dsistudio_gqi",
+        "output_suffix": "gqiscalar"
+      }
+    ]
+  }
+
+Pipeline level metadata
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``"name"`` element defines the name of the pipeline. This will ultimately
+be the name of the output directory. By setting ``"space": "T1w"`` we specify
+that all operations will take place in subject anatomical (``"T1w"``) space.
+Many "connectomics" algorithms require a brain parcellation. A number of these
+come packaged with ``qsirecon`` in the Docker image. In this case, the
+atlases will be transformed from group template space to subject anatomical space
+because we specified  ``"space": "T1w"`` earlier. Be sure a warp is calculated if
+using these (transforms_).
+
+Pipeline nodes
+^^^^^^^^^^^^^^^
+
+The ``"nodes"`` list contains the workflows that will be run as a part of the
+reconstruction pipeline. All nodes must have a ``name`` element, this serves
+as an id for this node and is used to connect its outputs to a downstream
+node. In this example we can see that the node with ``"name": "dsistudio_gqi"``
+sends its outputs to the node with ``"name": "scalar_export"`` because
+the ``"name": "scalar_export"`` node specifies ``"input": "dsistudio_gqi"``.
+If no ``"input"`` is specified for a node, it is assumed that the
+outputs from ``qsirecon`` will be its inputs.
+
+By specifying ``"software": "DSI Studio"`` we will be using algorithms implemented
+in `DSI Studio`_. Other options include MRTrix_ and Dipy_. Since there are many
+things that `DSI Studio`_ can do, we specify that we want to reconstruct the
+output from ``qsirecon`` by adding ``"action": "reconstruction"``. Additional
+parameters can be sent to specify how the reconstruction should take place in
+the ``"parameters"`` item. Possible options for ``"software"``, ``"action"``
+and ``"parameters"`` can be found in the :ref:`builtin_reconstruction` section.
+
+You will have access to all the intermediate data in the pipeline's working directory,
+but can specify which outputs you want to save to the output directory by setting
+an ``"output_suffix"``. Looking at the outputs for a workflow in the :ref:`builtin_reconstruction`
+section you can see what is produced by each workflow. Each of these files
+will be saved in your output directory for each subject with a name matching
+your specified ``"output_suffix"``. In this case it will produce a file
+``something_space-T1w_gqi.fib.gz``.  Since a fib file is produced by this node
+and the downstream ``export_scalars`` node uses it, the scalars produced from
+that node will be from this same fib file.
+
+Executing the reconstruction pipeline
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Assuming this file is called ``qgi_scalar_export.json`` and you've installed
+``qsirecon-container`` you can execute this pipeline with::
+
+  $ qsirecon-docker \
+      /output/from/qsiprep \
+      /where/my/reconstructed/data/goes \
+      participant \
+      --recon_spec gqi_scalar_export.json \
+      --fs-license-file /path/to/license.txt
+
+
 .. _transforms:
 
 Spaces and transforms

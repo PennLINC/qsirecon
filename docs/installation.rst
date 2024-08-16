@@ -1,19 +1,23 @@
 .. include:: links.rst
 
-.. _Installation:
+.. _install_qsirecon:
 
-------------
+############
 Installation
-------------
+############
 
 The official source of QSIRecon is the `docker repository
 <https://hub.docker.com/pennlinc/qsirecon>`_. The image
 
+*******************************
+Running QSIRecon via containers
+*******************************
 
-.. _`Docker Container`:
 
-Docker Container
-================
+.. _install_docker`:
+
+Docker
+======
 
 In order to run qsirecon in a Docker container, Docker must be `installed
 <https://docs.docker.com/engine/installation/>`_.
@@ -22,9 +26,11 @@ In order to run qsirecon in a Docker container, Docker must be `installed
     the memory to 6 or more GB. Too little memory assigned to Docker Desktop can result
     in a message like ``Killed.``
 
-A Docker command line may look like::
+A Docker command line may look like:
 
-    $ docker run -ti --rm \
+.. code-block:: bash
+
+    docker run -ti --rm \
         -v /filepath/to/data/dir \
         -v /filepath/to/output/dir \
         -v ${FREESURFER_HOME}/license.txt:/opt/freesurfer/license.txt \
@@ -33,25 +39,36 @@ A Docker command line may look like::
         --fs-license-file /opt/freesurfer/license.txt \
         --recon-spec pyafq_tractometry
 
+.. _install_apptainer:
 
-Singularity/Apptainer Container
-===============================
+Singularity/Apptainer
+=====================
 
-The easiest way to get a Sigularity image is to run::
+The easiest way to get a Sigularity image is to run:
 
-    $ singularity build qsirecon-<version>.sif docker://pennlinc/qsirecon:<version>
+.. code-block:: bash
+
+    apptainer build qsirecon-<version>.sif docker://pennlinc/qsirecon:<version>
 
 Where ``<version>`` should be replaced with the desired version of qsirecon that you want to download.
 Do not use ``latest`` or ``unstable`` unless you are performing limited testing.
 
-As with Docker, you will need to bind the Freesurfer license.txt when running Singularity ::
+As with Docker, you will need to bind the Freesurfer license.txt when running Singularity :
 
-    $ singularity run --containall --writable-tmpfs \
-        -B $HOME/qsiprep_outputs,$HOME/dockerout,${FREESURFER_HOME}/license.txt:/opt/freesurfer/license.txt \
+.. code-block:: bash
+
+    apptainer run \
+        --containall \
+        --writable-tmpfs \
+        -B "${PWD}","${FREESURFER_HOME}"/license.txt:/opt/freesurfer/license.txt \
         qsirecon-<version>.sif \
-        $HOME/qsiprep_outputs $HOME/dockerout participant \
+        "${PWD}"/derivatives/qsiprep \
+        "${PWD}"/derivatives/qsirecon \
+        participant \
         --fs-license-file /opt/freesurfer/license.txt \
-        --recon-spec ss3t_autotrack
+        --recon-spec ss3t_autotrack \
+        -w "${PWD}/work" \
+        -v -v
 
 
 External Dependencies
