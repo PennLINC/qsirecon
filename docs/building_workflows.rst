@@ -114,9 +114,10 @@ to MRtrix3 tractography.
       "input": "msmt_csd"
     },
 
-NOTE: there can only be zero (inputs come from the input data) or one
-(inputs come from a mixture of the input data and the "input" node)
-name specified for ``"input"``.
+.. note::
+    There can only be zero (inputs come from the input data) or one
+    (inputs come from a mixture of the input data and the "input" node)
+    name specified for ``"input"``.
 
 .. _scalars_resampling:
 
