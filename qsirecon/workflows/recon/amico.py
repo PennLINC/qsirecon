@@ -128,7 +128,6 @@ diffusivity.""" % (
                 datatype="figures",
                 desc="NODDI",
                 suffix="peaks",
-                extension="svg",
             ),
             name="ds_report_peaks",
             run_without_submitting=True,
