@@ -42,7 +42,6 @@ dependencies = [
     "sentry_sdk",
     "SimpleITK",
     "svgutils <= 0.3.4",
-    "svgwrite",
     "transforms3d",
     "vtk",
     "xvfbwrapper",

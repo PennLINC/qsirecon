@@ -32,7 +32,6 @@ from ...interfaces.dsi_studio import (
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import DSIStudioReconScalars, ReconScalarsDataSink
 from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport
-from ...interfaces.utils import PNGtoSVG
 from ...utils.bids import clean_datasinks
 
 LOGGER = logging.getLogger("nipype.interface")
@@ -103,16 +102,11 @@ distance of %02f in DSI Studio (version %s). """ % (
         plot_peaks = pe.Node(
             CLIReconPeaksReport(subtract_iso=True), name="plot_peaks", n_procs=omp_nthreads
         )
-        peaks_png_to_svg = pe.Node(
-            PNGtoSVG(),
-            name="peaks_png_to_svg",
-            run_without_submitting=True,
-        )
         ds_report_peaks = pe.Node(
             DerivativesDataSink(
                 desc="GQIODF",
                 suffix="peaks",
-                extension=".svg",
+                extension=".png",
             ),
             name="ds_report_peaks",
             run_without_submitting=True,
@@ -124,30 +118,21 @@ distance of %02f in DSI Studio (version %s). """ % (
                 ('dwi_mask', 'mask_file'),
             ]),
             (gqi_recon, plot_peaks, [('output_fib', 'fib_file')]),
-            (plot_peaks, peaks_png_to_svg, [('peak_report', 'in_file')]),
-            (peaks_png_to_svg, ds_report_peaks, [('out_file', 'in_file')]),
+            (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')]),
         ])  # fmt:skip
 
         # Plot targeted regions
         if available_anatomical_data["has_qsiprep_t1w_transforms"]:
-            odfs_png_to_svg = pe.Node(
-                PNGtoSVG(),
-                name="odfs_png_to_svg",
-                run_without_submitting=True,
-            )
             ds_report_odfs = pe.Node(
                 DerivativesDataSink(
                     desc="GQIODF",
                     suffix="odfs",
-                    extension=".svg",
+                    extension=".png",
                 ),
                 name="ds_report_odfs",
                 run_without_submitting=True,
             )
-            workflow.connect([
-                (plot_peaks, odfs_png_to_svg, [('odf_report', 'in_file')]),
-                (odfs_png_to_svg, ds_report_odfs, [('out_file', 'in_file')]),
-            ])  # fmt:skip
+            workflow.connect([(plot_peaks, ds_report_odfs, [("odf_report", "in_file")])])
 
     if qsirecon_suffix:
         # Save the output in the outputs directory
@@ -513,7 +498,7 @@ def init_dsi_studio_connectivity_wf(
             DerivativesDataSink(
                 desc="DSIStudioConnectivity",
                 suffix="matrices",
-                extension=".svg",
+                extension=".png",
             ),
             name="ds_report_connectivity",
             run_without_submitting=True,
