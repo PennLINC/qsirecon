@@ -486,7 +486,9 @@ def init_dipy_mapmri_recon_wf(
             ('perng', 'ngperp_file'),
             ('msd', 'msd_file'),
             ('qiv', 'qiv_file'),
-            ('lapnorm', 'lapnorm_file')]),
+            ('lapnorm', 'lapnorm_file'),
+            ('mapmri_coeffs', 'mapcoeffs_file'),
+        ]),
         (recon_scalars, outputnode, [("scalar_info", "recon_scalars")])
     ])  # fmt:skip
 
