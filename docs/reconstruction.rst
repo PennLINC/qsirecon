@@ -10,7 +10,7 @@ information about how to customize these, see :ref:`custom_reconstruction`.
 To use a pre-packaged workflow, simply provide the name from the leftmost column above for the
 ``--recon-spec`` argument. For example::
 
-  $ qsirecon-docker \
+  $ qsirecon \
       /output/from/qsiprep \
       /path/for/reconstruction/outputs \
       participant \
@@ -110,7 +110,7 @@ and from ``qsirecon``::
 
 You can run::
 
-  $ qsirecon-docker \
+  $ qsirecon \
       derivatives/qsiprep derivatives participant \
       --recon_spec mrtrix_multishell_msmt_ACT-hsvs \
       --freesurfer-input derivatives/freesurfer \
@@ -499,9 +499,8 @@ Where ``"node_names"`` are the text names of the regions in ``"my_custom_atlas"`
 section.
 
 The directory containing ``atlas_config.json`` and the atlas nifti files should be mounted in
-the container at ``/atlas/qsirecon_atlases``. If using ``qsirecon-docker`` or
-``qsirecon-singularity`` this can be done with ``--custom-atlases /path/to/my/atlases`` or
-if you're running on your own system (not recommended) you can set the environment variable
+the container at ``/atlas/qsirecon_atlases``.
+If you're running on your own system (not recommended) you can set the environment variable
 ``QSIRECON_ATLAS=/path/to/my/atlases``.
 
 The nifti images should be registered to the
