@@ -29,7 +29,7 @@ def make_sloppy(spec):
         ("MRTrix3", "connectivity"): {"tck2connectome": {"search_radius": "DELETE"}},
         ("MRTrix3", "global_tractography"): {"niters": 10000},
         ("pyAFQ", "pyafq_tractometry"): {
-            "mapping_definition": "IdentityMap()",
+            "mapping_definition": 'AffMap(affine_kwargs={"pipeline": ["center_of_mass"]})',
             "bundle_info": 'default18_bd()["Left Superior Longitudinal", '
             '"Right Corticospinal"]',
             "n_seeds": 1000,
