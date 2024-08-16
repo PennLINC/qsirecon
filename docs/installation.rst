@@ -20,24 +20,12 @@ Docker Container
 
 In order to run qsirecon in a Docker container, Docker must be `installed
 <https://docs.docker.com/engine/installation/>`_.
-Once Docker is installed, the recommended way to run qsirecon is to use the
-``qsirecon-docker`` wrapper, which requires Python and an Internet connection
-and that you install the ``qsirecon-container`` package with ``pip``.
 
 .. note:: If running Docker Desktop on MacOS (or via Docker Desktop), be sure to set
     the memory to 6 or more GB. Too little memory assigned to Docker Desktop can result
     in a message like ``Killed.``
 
-When run, ``qsirecon-docker`` will generate a Docker command line for you,
-print it out for reporting purposes, and then run the command, e.g.::
-
-    $ qsirecon-docker /path/to/data/dir /path/to/output/dir participant
-    RUNNING: docker run --rm -it -v /path/to/data/dir:/data \
-        -v /path/to_output/dir:/out pennlinc/qsirecon:latest \
-        /data /out participant
-    ...
-
-You may also invoke ``docker`` directly::
+You may invoke ``docker`` directly::
 
     $ docker run -ti --rm \
         -v /filepath/to/data/dir \
