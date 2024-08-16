@@ -31,7 +31,10 @@ from nipype import logging
 from nipype.interfaces.base import File, InputMultiObject, isdefined, traits
 from nipype.utils.filemanip import copyfile, split_filename
 from niworkflows.interfaces.bids import DerivativesDataSink as BaseDerivativesDataSink
-from niworkflows.interfaces.bids import _DerivativesDataSinkInputSpec
+from niworkflows.interfaces.bids import (
+    _DerivativesDataSinkInputSpec,
+    _DerivativesDataSinkOutputSpec,
+)
 
 from qsirecon import config
 from qsirecon.data import load as load_data
@@ -164,6 +167,9 @@ class _ReconDerivativesDataSinkInputSpec(_DerivativesDataSinkInputSpec):
     qsirecon_suffix = traits.Str(
         "", usedefault=True, desc="name appended to qsirecon- in the derivatives"
     )
+
+class _ReconDerivativesDataSinkOutputSpec(_DerivativesDataSinkOutputSpec):
+    out_file = traits.Str(desc="the output file/folder")
 
 
 class ReconDerivativesDataSink(DerivativesDataSink):
