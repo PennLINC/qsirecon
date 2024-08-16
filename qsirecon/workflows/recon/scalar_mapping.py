@@ -54,12 +54,12 @@ def init_scalar_to_bundle_wf(
     workflow = Workflow(name=name)
     bundle_mapper = pe.Node(BundleMapper(**params), name="bundle_mapper")
     ds_bundle_mapper = pe.Node(
-        ReconScalarsTableSplitterDataSink(suffix="scalarstats"),
+        ReconScalarsTableSplitterDataSink(dismiss_entities=["desc"], suffix="scalarstats"),
         name="ds_bundle_mapper",
         run_without_submitting=True,
     )
     ds_tdi_summary = pe.Node(
-        ReconScalarsTableSplitterDataSink(suffix="tdistats"),
+        ReconScalarsTableSplitterDataSink(dismiss_entities=["desc"], suffix="tdistats"),
         name="ds_tdi_summary",
         run_without_submitting=True,
     )
