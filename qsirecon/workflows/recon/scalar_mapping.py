@@ -12,13 +12,14 @@ import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
-from ...interfaces.bids import ReconDerivativesDataSink
+from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import (
     ReconScalarsDataSink,
     ReconScalarsTableSplitterDataSink,
 )
 from ...interfaces.scalar_mapping import BundleMapper, TemplateMapper
+from ...utils.bids import clean_datasinks
 
 LOGGER = logging.getLogger("nipype.workflow")
 
@@ -53,12 +54,12 @@ def init_scalar_to_bundle_wf(
     workflow = Workflow(name=name)
     bundle_mapper = pe.Node(BundleMapper(**params), name="bundle_mapper")
     ds_bundle_mapper = pe.Node(
-        ReconScalarsTableSplitterDataSink(suffix="scalarstats"),
+        ReconScalarsTableSplitterDataSink(dismiss_entities=["desc"], suffix="scalarstats"),
         name="ds_bundle_mapper",
         run_without_submitting=True,
     )
     ds_tdi_summary = pe.Node(
-        ReconScalarsTableSplitterDataSink(suffix="tdistats"),
+        ReconScalarsTableSplitterDataSink(dismiss_entities=["desc"], suffix="tdistats"),
         name="ds_tdi_summary",
         run_without_submitting=True,
     )
@@ -77,7 +78,9 @@ def init_scalar_to_bundle_wf(
             ("tdi_stats", "summary_tsv")])
     ])  # fmt:skip
 
-    return workflow
+    # NOTE: Don't add qsirecon_suffix with clean_datasinks here,
+    # as the qsirecon_suffix is determined within ReconScalarsTableSplitterDataSink.
+    return clean_datasinks(workflow, qsirecon_suffix=None)
 
 
 def init_scalar_to_atlas_wf(
@@ -119,14 +122,17 @@ def init_scalar_to_atlas_wf(
     if qsirecon_suffix:
 
         ds_bundle_summaries = pe.Node(
-            ReconDerivativesDataSink(desc="bundlemap", qsirecon_suffix=qsirecon_suffix),
+            DerivativesDataSink(
+                dismiss_entities=("desc",),
+                desc="bundlemap",
+            ),
             name="ds_bundle_summaries",
             run_without_submitting=True,
         )
         workflow.connect([
             (bundle_mapper, ds_bundle_summaries, [("bundle_summaries", "in_file")])
         ])  # fmt:skip
-    return workflow
+    return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_scalar_to_template_wf(
@@ -163,7 +169,9 @@ def init_scalar_to_template_wf(
     # Datasink will always be used, and the qsirecon-suffix is determined when
     # the scalars are originally calculated
     ds_template_scalars = pe.Node(
-        ReconScalarsDataSink(), name="ds_template_scalars", run_without_submitting=True
+        ReconScalarsDataSink(dismiss_entities=["desc"], infer_suffix=True),
+        name="ds_template_scalars",
+        run_without_submitting=True,
     )
     workflow.connect([
         (inputnode, template_mapper, [
@@ -178,7 +186,7 @@ def init_scalar_to_template_wf(
             ("template_space_scalar_info", "recon_scalars")])
     ])  # fmt:skip
 
-    return workflow
+    return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_scalar_to_surface_wf(

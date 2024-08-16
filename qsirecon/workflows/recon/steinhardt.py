@@ -13,9 +13,10 @@ from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ...interfaces.anatomical import CalculateSOP
+from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.mrtrix import MRConvert
-from qsirecon.interfaces.bids import ReconDerivativesDataSink
+from ...utils.bids import clean_datasinks
 
 LOGGER = logging.getLogger("nipype.interface")
 
@@ -82,14 +83,20 @@ A series of Steinhardt order parameters (up to order %d) were calculated.
 
     sop_sinks = {}
     if qsirecon_suffix:
-        for sop_order in range(2, sop_order + 1, 2):
-            key = "q%d_file" % sop_order
+        for i_sop_order in range(2, sop_order + 1, 2):
+            key = f"q{i_sop_order}_file"
             sop_sinks[key] = pe.Node(
-                ReconDerivativesDataSink(model="steinhardt", mfp=f"q{sop_order}", compress=True),
-                name="ds_sop_q%d" % sop_order,
+                DerivativesDataSink(
+                    dismiss_entities=("desc",),
+                    model="steinhardt",
+                    mfp=f"q{i_sop_order}",
+                    compress=True,
+                ),
+                name=f"ds_sop_q{i_sop_order}",
                 run_without_submitting=True,
             )
             workflow.connect(outputnode, key, sop_sinks[key], 'in_file')  # fmt:skip
 
     workflow.__desc__ = desc
-    return workflow
+
+    return clean_datasinks(workflow, qsirecon_suffix)

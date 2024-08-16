@@ -241,8 +241,8 @@ to workflows in *qsirecon*'s documentation]\
 
     # Fill-in datasinks of reportlets seen so far
     for node in workflow.list_node_names():
-        if node.split(".")[-1].startswith("ds"):
-            workflow.get_node(node).inputs.base_directory = config.execution.output_dir
+        if node.split(".")[-1].startswith("ds_report"):
+            workflow.get_node(node).inputs.datatype = "figures"
 
     return workflow
 
