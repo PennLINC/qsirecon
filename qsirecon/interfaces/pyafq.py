@@ -37,6 +37,7 @@ class PyAFQInputSpec(BaseInterfaceInputSpec):
     itk_file = File(exists=True, mandatory=True)
     kwargs = traits.Dict(exists=True, mandatory=True)
     tck_file = traits.Either(None, File(exists=True))
+    n_procs = traits.Int(1, usedefault=True)
 
 
 class PyAFQOutputSpec(TraitedSpec):
@@ -79,19 +80,22 @@ class PyAFQRecon(SimpleInterface):
         if brain_mask_definition is None:
             brain_mask_definition = kwargs["brain_mask_definition"]
         kwargs.pop("brain_mask_definition", None)
-        # if itk_map is None:  # Use pyAFQ internal mapping
-        #     itk_map = kwargs['mapping_definition']
-        # kwargs.pop('mapping_definition', None)
 
-        if "parallel_segmentation" in kwargs:
-            if (
-                "n_jobs" not in kwargs["parallel_segmentation"]
-                or kwargs["parallel_segmentation"]["n_jobs"] == -1
-            ):
-                kwargs["parallel_segmentation"]["n_jobs"] = self.inputs.kwargs["omp_nthreads"]
+        # if "parallel_segmentation" in kwargs:
+        #     if (
+        #         "n_jobs" not in kwargs["parallel_segmentation"]
+        #         or kwargs["parallel_segmentation"]["n_jobs"] == -1
+        #     ):
+        #         kwargs["parallel_segmentation"]["n_jobs"] = self.inputs.kwargs["omp_nthreads"]
+        # else:
+        #     kwargs["parallel_segmentation"] = {}
+        #     kwargs["parallel_segmentation"]["n_jobs"] = self.inputs.kwargs["omp_nthreads"]
+
+        if self.inputs.n_procs > 1:
+            kwargs["parallel_segmentation"]["n_jobs"] = self.inputs.n_procs
         else:
             kwargs["parallel_segmentation"] = {}
-            kwargs["parallel_segmentation"]["n_jobs"] = self.inputs.kwargs["omp_nthreads"]
+            kwargs["parallel_segmentation"]["n_jobs"] = self.inputs.n_procs
 
         output_dir = shim_dir + "/PYAFQ/"
         os.makedirs(output_dir, exist_ok=True)

@@ -67,10 +67,12 @@ def init_pyafq_wf(available_anatomical_data, name="afq", qsirecon_suffix="", par
         niu.IdentityInterface(fields=["afq_dir", "recon_scalars"]), name="outputnode"
     )
     outputnode.inputs.recon_scalars = []
-
+    omp_nthreads = config.nipype.omp_nthreads
     kwargs = _parse_qsirecon_params_dict(params)
     kwargs["omp_nthreads"] = config.nipype.omp_nthreads
-    run_afq = pe.Node(PyAFQRecon(kwargs=kwargs), name="run_afq")
+    run_afq = pe.Node(
+        PyAFQRecon(kwargs=kwargs, nprocs=omp_nthreads), name="run_afq", n_procs=omp_nthreads
+    )
     workflow = pe.Workflow(name=name)
     if params.get("use_external_tracking", False):
         workflow.connect([
