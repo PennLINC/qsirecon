@@ -27,7 +27,7 @@ from nipype.interfaces.base import (
 from nipype.utils.filemanip import fname_presuffix
 from pkg_resources import resource_filename as pkgrf
 
-from ..utils.ingress import ukb_dirname_to_bids
+from ..utils.ingress import ukb_dirname_to_bids, hcp_dirname_to_bids
 from .images import to_lps
 
 LOGGER = logging.getLogger("nipype.interface")
@@ -185,6 +185,34 @@ class UKBAnatomicalIngress(QSIReconAnatomicalIngress):
 
         to_lps(nb.load(ukb_brain)).to_filename(conformed_t1w_file)
         to_lps(nb.load(ukb_brain_mask)).to_filename(conformed_mask_file)
+
+        self._results["t1_preproc"] = conformed_t1w_file
+        self._results["t1_brain_mask"] = conformed_mask_file
+
+        return runtime
+    
+class HCPAnatomicalIngressInputSpec(QSIReconAnatomicalIngressInputSpec):
+    recon_input_dir = traits.Directory(
+        exists=True, mandatory=True, help="directory containing a single subject's results"
+    )
+
+
+class HCPAnatomicalIngress(QSIReconAnatomicalIngress):
+    input_spec = HCPAnatomicalIngressInputSpec
+
+    def _run_interface(self, runtime):
+        # Load the Bias-corrected brain and brain mask
+        input_path = Path(self.inputs.recon_input_dir)
+        bids_name = hcp_dirname_to_bids(self.inputs.recon_input_dir)
+
+        hcp_brain = op.join(input_path, "T1w", "T1w_acpc_dc_restore.nii.gz")
+        hcp_brain_mask = op.join(input_path, "T1w", "brainmask_fs.nii.gz")
+
+        conformed_t1w_file = str(Path(runtime.cwd) / (bids_name + "_desc-preproc_T1w.nii.gz"))
+        conformed_mask_file = str(Path(runtime.cwd) / (bids_name + "_desc-brain_mask.nii.gz"))
+
+        to_lps(nb.load(hcp_brain)).to_filename(conformed_t1w_file)
+        to_lps(nb.load(hcp_brain_mask)).to_filename(conformed_mask_file)
 
         self._results["t1_preproc"] = conformed_t1w_file
         self._results["t1_brain_mask"] = conformed_mask_file

@@ -28,7 +28,7 @@ def init_qsirecon_wf():
     qsirecon_wf = Workflow(name=f"qsirecon_{ver.major}_{ver.minor}_wf")
     qsirecon_wf.base_dir = config.execution.work_dir
 
-    if config.workflow.recon_input_pipeline not in ("qsiprep", "ukb"):
+    if config.workflow.recon_input_pipeline not in ("qsiprep", "ukb", "hcpya"):
         raise NotImplementedError(
             f"{config.workflow.recon_input_pipeline} is not supported as recon-input yet."
         )
@@ -44,6 +44,13 @@ def init_qsirecon_wf():
         ukb_layout = create_ukb_layout(config.execution.bids_dir)
         to_recon_list = collect_ukb_participants(
             ukb_layout, participant_label=config.execution.participant_label
+        )
+    elif config.workflow.recon_input_pipeline == "hcpya":
+        from ..utils.ingress import collect_hcp_participants, create_hcp_layout
+        # The hcp input will always be specified as the bids input - we can't preproc it first
+        hcp_layout = create_hcp_layout(config.execution.bids_dir)
+        to_recon_list = collect_hcp_participants(
+            hcp_layout, participant_label=config.execution.participant_label
         )
 
     for subject_id in to_recon_list:
@@ -76,7 +83,7 @@ def init_single_subject_recon_wf(subject_id):
     subject_id : str
         Single subject label
     """
-    from ..interfaces.ingress import QsiReconDWIIngress, UKBioBankDWIIngress
+    from ..interfaces.ingress import QsiReconDWIIngress, UKBioBankDWIIngress, HCPDWIIngress
     from ..interfaces.interchange import (
         ReconWorkflowInputs,
         anatomical_workflow_outputs,
@@ -168,6 +175,22 @@ to workflows in *qsirecon*'s documentation]\
                     pipeline_source="ukb",
                     needs_t1w_transform=needs_t1w_transform,
                     name=wf_name + "_ingressed_ukb_anat_data",
+                )
+            )
+
+        elif config.workflow.recon_input_pipeline == "hcpya":
+            dwi_ingress_nodes[dwi_file] = pe.Node(
+                HCPDWIIngress(dwi_file=dwi_file, data_dir=str(dwi_input["path"].absolute())),
+                name=wf_name + "_ingressed_hcp_dwi_data",
+            )
+            anat_ingress_nodes[dwi_file], available_anatomical_data = (
+                init_highres_recon_anatomical_wf(
+                    subject_id=subject_id,
+                    recon_input_dir=dwi_input["path"],
+                    extras_to_make=spec.get("anatomical", []),
+                    pipeline_source="hcpya",
+                    needs_t1w_transform=needs_t1w_transform,
+                    name=wf_name + "_ingressed_hcp_anat_data",
                 )
             )
 
@@ -277,7 +300,7 @@ def _get_iterable_dwi_inputs(subject_id):
     the other files needed.
 
     """
-    from ..utils.ingress import create_ukb_layout
+    from ..utils.ingress import create_ukb_layout, create_hcp_layout
 
     dwi_dir = config.execution.bids_dir
     if config.workflow.recon_input_pipeline == "qsiprep":
@@ -296,7 +319,10 @@ def _get_iterable_dwi_inputs(subject_id):
         config.loggers.workflow.info("found %s in %s", dwi_files, dwi_dir)
         return [{"bids_dwi_file": dwi_file} for dwi_file in dwi_files]
 
-    if config.workflow.recon_input_pipeline == "ukb":
+    elif config.workflow.recon_input_pipeline == "ukb":
         return create_ukb_layout(ukb_dir=config.execution.bids_dir, participant_label=subject_id)
+    
+    elif config.workflow.recon_input_pipeline == "hcpya":
+        return create_hcp_layout(hcp_dir=config.execution.bids_dir, participant_label=subject_id)
 
     raise Exception("Unknown pipeline " + config.workflow.recon_input_pipeline)
