@@ -190,7 +190,8 @@ class UKBAnatomicalIngress(QSIReconAnatomicalIngress):
         self._results["t1_brain_mask"] = conformed_mask_file
 
         return runtime
-    
+
+
 class HCPAnatomicalIngressInputSpec(QSIReconAnatomicalIngressInputSpec):
     recon_input_dir = traits.Directory(
         exists=True, mandatory=True, help="directory containing a single subject's results"

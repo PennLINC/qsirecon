@@ -178,6 +178,7 @@ class UKBioBankDWIIngress(SimpleInterface):
         self._results["dwi_ref"] = dwiref_file
         return runtime
 
+
 class _HCPDWIIngressInputSpec(QsiReconDWIIngressInputSpec):
     dwi_file = File(exists=False, help="The name of what a BIDS dwi file may have been")
     data_dir = traits.Directory(
@@ -198,7 +199,7 @@ class HCPDWIIngress(SimpleInterface):
         hcp_bval_file = op.join(dwi_dir, "bvals")
         hcp_bvec_file = op.join(dwi_dir, "bvecs")  # These are the same as eddy rotated
         hcp_dwi_file = op.join(dwi_dir, "data.nii.gz")
-        #hcp_dwiref_file = op.join(dwi_dir, "dti_FA.nii.gz")
+        # hcp_dwiref_file = op.join(dwi_dir, "dti_FA.nii.gz")
 
         # The bids_name is what the images will be renamed to
         bids_name = Path(self.inputs.dwi_file).name.replace(".nii.gz", "")
@@ -207,7 +208,7 @@ class HCPDWIIngress(SimpleInterface):
         bvec_file = str(runpath / (bids_name + ".bvec"))
         b_file = str(runpath / (bids_name + ".b"))
         btable_file = str(runpath / (bids_name + "btable.txt"))
-        #dwiref_file = str(runpath / (bids_name.replace("_dwi", "_dwiref") + ".nii.gz"))
+        # dwiref_file = str(runpath / (bids_name.replace("_dwi", "_dwiref") + ".nii.gz"))
 
         dwi_conform = ConformDwi(
             dwi_file=str(hcp_dwi_file), bval_file=str(hcp_bval_file), bvec_file=str(hcp_bvec_file)
@@ -231,6 +232,6 @@ class HCPDWIIngress(SimpleInterface):
         self._results["b_file"] = b_file
 
         # Create a dwi ref file
-        #to_lps(nb.load(hcp_dwiref_file)).to_filename(dwiref_file)
-        #self._results["dwi_ref"] = dwiref_file
+        # to_lps(nb.load(hcp_dwiref_file)).to_filename(dwiref_file)
+        # self._results["dwi_ref"] = dwiref_file
         return runtime

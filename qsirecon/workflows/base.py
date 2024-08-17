@@ -47,6 +47,7 @@ def init_qsirecon_wf():
         )
     elif config.workflow.recon_input_pipeline == "hcpya":
         from ..utils.ingress import collect_hcp_participants, create_hcp_layout
+        
         # The hcp input will always be specified as the bids input - we can't preproc it first
         hcp_layout = create_hcp_layout(config.execution.bids_dir)
         to_recon_list = collect_hcp_participants(
@@ -321,7 +322,7 @@ def _get_iterable_dwi_inputs(subject_id):
 
     elif config.workflow.recon_input_pipeline == "ukb":
         return create_ukb_layout(ukb_dir=config.execution.bids_dir, participant_label=subject_id)
-    
+
     elif config.workflow.recon_input_pipeline == "hcpya":
         return create_hcp_layout(hcp_dir=config.execution.bids_dir, participant_label=subject_id)
 
