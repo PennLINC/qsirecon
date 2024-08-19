@@ -11,12 +11,12 @@ from nipype.interfaces import utility as niu
 from nipype.interfaces.base import traits
 from nipype.pipeline import engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
-from niworkflows.interfaces.reportlets.registration import SpatialNormalizationRPT
 from pkg_resources import resource_filename as pkgrf
 
 from ... import config
 from ...interfaces.anatomical import (
-    QSIReconAnatomicalIngress,
+    GetTemplate,
+    QSIPrepAnatomicalIngress,
     UKBAnatomicalIngress,
     HCPAnatomicalIngress,
     VoxelSizeChooser,
@@ -314,18 +314,18 @@ def gather_qsiprep_anatomical_data(subject_id):
         "has_freesurfer": False,
     }
     recon_input_dir = config.execution.bids_dir
-    # Check to see if we have a T1w preprocessed by QSIRecon
+    # Check to see if we have a T1w preprocessed by QSIPrep
     missing_qsiprep_anats = check_qsiprep_anatomical_outputs(recon_input_dir, subject_id, "T1w")
     has_qsiprep_t1w = not missing_qsiprep_anats
     status["has_qsiprep_t1w"] = has_qsiprep_t1w
     if missing_qsiprep_anats:
         config.loggers.workflow.info(
-            "Missing T1w QSIRecon outputs found: %s", " ".join(missing_qsiprep_anats)
+            "Missing T1w QSIPrep outputs found: %s", " ".join(missing_qsiprep_anats)
         )
     else:
-        config.loggers.workflow.info("Found usable QSIRecon-preprocessed T1w image and mask.")
+        config.loggers.workflow.info("Found usable QSIPrep-preprocessed T1w image and mask.")
     anat_ingress = pe.Node(
-        QSIReconAnatomicalIngress(subject_id=subject_id, recon_input_dir=recon_input_dir),
+        QSIPrepAnatomicalIngress(subject_id=subject_id, recon_input_dir=recon_input_dir),
         name="qsiprep_anat_ingress",
     )
 
@@ -338,7 +338,7 @@ def gather_qsiprep_anatomical_data(subject_id):
 
     if missing_qsiprep_transforms:
         config.loggers.workflow.info(
-            "Missing T1w QSIRecon outputs: %s", " ".join(missing_qsiprep_transforms)
+            "Missing T1w QSIPrep outputs: %s", " ".join(missing_qsiprep_transforms)
         )
 
     return anat_ingress, status
@@ -581,13 +581,32 @@ def init_dwi_recon_anatomical_workflow(
             "has_qsiprep_t1w_transforms": has_qsiprep_t1w_transforms,
         }
 
+    # XXX: This is a temporary solution until QSIRecon supports flexible output spaces.
+    get_template = pe.Node(
+        GetTemplate(
+            template_name="MNI152NLin2009cAsym" if not config.workflow.infant else "MNIInfant",
+        ),
+        name="get_template",
+    )
+    mask_template = pe.Node(
+        afni.Calc(expr="a*b", outputtype="NIFTI_GZ"),
+        name="mask_template",
+    )
+    reorient_to_lps = pe.Node(
+        afni.Resample(orientation="RAI", outputtype="NIFTI_GZ"),
+        name="reorient_to_lps",
+    )
+
     reference_grid_wf = init_output_grid_wf()
     workflow.connect([
-        (inputnode, reference_grid_wf, [
-            ('template_image', 'inputnode.template_image'),
-            ('dwi_ref', 'inputnode.input_image')]),
-        (reference_grid_wf, buffernode, [
-            ('outputnode.grid_image', 'resampling_template')])
+        (get_template, mask_template, [
+            ('template_file', 'in_file_a'),
+            ('mask_file', 'in_file_b'),
+        ]),
+        (mask_template, reorient_to_lps, [('out_file', 'in_file')]),
+        (inputnode, reference_grid_wf, [('dwi_ref', 'inputnode.input_image')]),
+        (reorient_to_lps, reference_grid_wf, [('out_file', 'inputnode.template_image')]),
+        (reference_grid_wf, buffernode, [('outputnode.grid_image', 'resampling_template')]),
     ])  # fmt:skip
 
     # Missing Freesurfer AND QSIRecon T1ws, or the user wants a DWI-based mask
@@ -874,46 +893,6 @@ def _get_first(item):
 
 def _get_resampled(atlas_configs, atlas_name, to_retrieve):
     return atlas_configs[atlas_name][to_retrieve]
-
-
-def get_t1w_registration_node(infant_mode, sloppy, omp_nthreads):
-
-    # Gets an ants interface for t1w-based normalization
-    if sloppy:
-        config.loggers.workflow.info("Using QuickSyN")
-        # Requires a warp file: make an inaccurate one
-        settings = pkgrf("qsirecon", "data/quick_syn.json")
-        t1_2_mni = pe.Node(
-            SpatialNormalizationRPT(
-                float=True,
-                generate_report=True,
-                settings=[settings],
-            ),
-            name="t1_2_mni",
-            n_procs=omp_nthreads,
-            mem_gb=2,
-        )
-    else:
-        t1_2_mni = pe.Node(
-            SpatialNormalizationRPT(
-                float=True,
-                generate_report=True,
-                flavor="precise",
-            ),
-            name="t1_2_mni",
-            n_procs=omp_nthreads,
-            mem_gb=2,
-        )
-        # Get the template image
-    if not infant_mode:
-        ref_img_brain = pkgrf("qsirecon", "data/mni_1mm_t1w_lps_brain.nii.gz")
-    else:
-        ref_img_brain = pkgrf("qsirecon", "data/mni_1mm_t1w_lps_brain_infant.nii.gz")
-
-    t1_2_mni.inputs.template = "MNI152NLin2009cAsym"
-    t1_2_mni.inputs.reference_image = ref_img_brain
-    t1_2_mni.inputs.orientation = "LPS"
-    return t1_2_mni
 
 
 def init_output_grid_wf() -> Workflow:
