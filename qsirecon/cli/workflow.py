@@ -247,7 +247,16 @@ def copy_reportlets(in_dir, out_dir, participant_labels):
     in_path = Path(in_dir)
     out_path = Path(out_dir)
 
+    if not participant_labels:
+        from bids.layout import BIDSLayout
+
+        layout = BIDSLayout(out_dir, config="figures", validate=False)
+        participant_labels = layout.get_subjects()
+
     for subject_id in participant_labels:
+        if not subject_id.startswith("sub-"):
+            subject_id = f"sub-{subject_id}"
+
         subject_htmls = (in_path / subject_id).glob("figures/*.html")
         for subject_html in subject_htmls:
             out_html = out_path / subject_html.relative_to(in_path)
