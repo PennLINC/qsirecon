@@ -156,6 +156,7 @@ to workflows in *qsirecon*'s documentation]\
     dwi_ingress_nodes = {}
     anat_ingress_nodes = {}
     print(dwi_recon_inputs)
+    dwi_files = [dwi_input["bids_dwi_file"] for dwi_input in dwi_recon_inputs]
     for i_run, dwi_input in enumerate(dwi_recon_inputs):
         dwi_file = dwi_input["bids_dwi_file"]
         wf_name = _get_wf_name(dwi_file)
@@ -248,7 +249,7 @@ to workflows in *qsirecon*'s documentation]\
         ])  # fmt:skip
 
     # Preprocessing of anatomical data (includes possible registration template)
-    dwi_basename = fix_multi_T1w_source_name(dwi_recon_inputs)
+    dwi_basename = fix_multi_T1w_source_name(dwi_files)
     about = pe.Node(
         AboutSummary(
             version=config.environment.version,
@@ -280,7 +281,7 @@ to workflows in *qsirecon*'s documentation]\
             subjects_dir=config.execution.fs_subjects_dir,
             std_spaces=["MNIInfant" if config.workflow.infant else "MNI152NLin2009cAsym"],
             nstd_spaces=[],
-            dwi=dwi_recon_inputs,
+            dwi=dwi_files,
         ),
         name="summary",
         run_without_submitting=True,
