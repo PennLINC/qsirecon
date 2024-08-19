@@ -1,96 +1,74 @@
 .. include:: links.rst
 
-------------
+.. _install_qsirecon:
+
+############
 Installation
-------------
+############
 
-There are two easy ways to use qsirecon:
-in a `Docker Container`_, or in a `Singularity Container`_.
-Using a local container method is highly recommended.
-Once you are ready to run qsirecon, see Usage_ for details.
+The official source of QSIRecon is the `docker repository
+<https://hub.docker.com/pennlinc/qsirecon>`_. The image
 
-To install::
+*******************************
+Running QSIRecon via containers
+*******************************
 
-    $ pip install --user --upgrade qsirecon-container
 
-.. _`Docker Container`:
+.. _install_docker`:
 
-Docker Container
-================
+Docker
+======
 
 In order to run qsirecon in a Docker container, Docker must be `installed
 <https://docs.docker.com/engine/installation/>`_.
-Once Docker is installed, the recommended way to run qsirecon is to use the
-``qsirecon-docker`` wrapper, which requires Python and an Internet connection
-and that you install the ``qsirecon-container`` package with ``pip``.
 
 .. note:: If running Docker Desktop on MacOS (or via Docker Desktop), be sure to set
     the memory to 6 or more GB. Too little memory assigned to Docker Desktop can result
     in a message like ``Killed.``
 
-When run, ``qsirecon-docker`` will generate a Docker command line for you,
-print it out for reporting purposes, and then run the command, e.g.::
+A Docker command line may look like:
 
-    $ qsirecon-docker /path/to/data/dir /path/to/output/dir participant
-    RUNNING: docker run --rm -it -v /path/to/data/dir:/data \
-        -v /path/to_output/dir:/out pennlinc/qsirecon:latest \
-        /data /out participant
-    ...
+.. code-block:: bash
 
-You may also invoke ``docker`` directly::
-
-    $ docker run -ti --rm \
+    docker run -ti --rm \
         -v /filepath/to/data/dir \
         -v /filepath/to/output/dir \
         -v ${FREESURFER_HOME}/license.txt:/opt/freesurfer/license.txt \
         pennlinc/qsirecon:latest \
         /filepath/to/data/dir /filepath/to/output/dir participant \
-        --fs-license-file /opt/freesurfer/license.txt
+        --fs-license-file /opt/freesurfer/license.txt \
+        --recon-spec pyafq_tractometry
 
-For example: ::
+.. _install_apptainer:
 
-    $ docker run -ti --rm \
-        -v $HOME/fullds005 \
-        -v $HOME/dockerout \
-        -v ${FREESURFER_HOME}/license.txt:/opt/freesurfer/license.txt \
-        pennlinc/qsirecon:latest \
-        $HOME/fullds005 $HOME/dockerout participant \
-        --ignore fieldmaps \
-        --fs-license-file /opt/freesurfer/license.txt
-
-If you are running Freesurfer as part of QSIRecon,
-you will need to mount your Freesurfer license.txt file when invoking ``docker`` ::
-
-    $ docker run -ti --rm \
-        -v $HOME/fullds005 \
-        -v $HOME/dockerout \
-        -v ${FREESURFER_HOME}/license.txt:/opt/freesurfer/license.txt \
-        pennlinc/qsirecon:latest \
-        $HOME/fullds005 -v $HOME/dockerout participant \
-        --fs-license-file /opt/freesurfer/license.txt
-
-
-See `External Dependencies`_ for more information on what is included in the Docker image
-and how it's built.
-
-
-Singularity Container
+Singularity/Apptainer
 =====================
 
-The easiest way to get a Sigularity image is to run::
+The easiest way to get a Sigularity image is to run:
 
-    $ singularity build qsirecon-<version>.sif docker://pennlinc/qsirecon:<version>
+.. code-block:: bash
+
+    apptainer build qsirecon-<version>.sif docker://pennlinc/qsirecon:<version>
 
 Where ``<version>`` should be replaced with the desired version of qsirecon that you want to download.
 Do not use ``latest`` or ``unstable`` unless you are performing limited testing.
 
-As with Docker, you will need to bind the Freesurfer license.txt when running Singularity ::
+As with Docker, you will need to bind the Freesurfer license.txt when running Singularity :
 
-    $ singularity run --containall --writable-tmpfs \
-        -B $HOME/fullds005,$HOME/dockerout,${FREESURFER_HOME}/license.txt:/opt/freesurfer/license.txt \
+.. code-block:: bash
+
+    apptainer run \
+        --containall \
+        --writable-tmpfs \
+        -B "${PWD}","${FREESURFER_HOME}"/license.txt:/opt/freesurfer/license.txt \
         qsirecon-<version>.sif \
-        $HOME/fullds005 $HOME/dockerout participant \
-        --fs-license-file /opt/freesurfer/license.txt
+        "${PWD}"/derivatives/qsiprep \
+        "${PWD}"/derivatives/qsirecon \
+        participant \
+        --fs-license-file /opt/freesurfer/license.txt \
+        --recon-spec ss3t_autotrack \
+        -w "${PWD}/work" \
+        -v -v
 
 
 External Dependencies

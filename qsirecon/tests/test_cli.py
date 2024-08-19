@@ -210,6 +210,7 @@ def test_dipy_mapmri(data_dir, output_dir, working_dir):
         f"-w={work_dir}",
         "--sloppy",
         "--recon-spec=dipy_mapmri",
+        "--output-resolution=5",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)

@@ -2,14 +2,7 @@
 # -*- coding: utf-8 -*-
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
-"""
-qsirecon base reconstruction workflows
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: init_qsirecon_wf
-.. autofunction:: init_single_subject_wf
-
-"""
 
 import json
 import os.path as op
@@ -30,16 +23,7 @@ from .. import config
 
 
 def init_qsirecon_wf():
-    """Organize the execution of qsirecon, with a sub-workflow for each subject.
-
-    .. workflow::
-        :graph2use: orig
-        :simple_form: yes
-
-        from qsirecon.workflows.base import init_qsirecon_wf
-
-        wf = init_qsirecon_wf()
-    """
+    """Organize the execution of qsirecon, with a sub-workflow for each subject."""
     ver = Version(config.environment.version)
     qsirecon_wf = Workflow(name=f"qsirecon_{ver.major}_{ver.minor}_wf")
     qsirecon_wf.base_dir = config.execution.work_dir
@@ -241,8 +225,8 @@ to workflows in *qsirecon*'s documentation]\
 
     # Fill-in datasinks of reportlets seen so far
     for node in workflow.list_node_names():
-        if node.split(".")[-1].startswith("ds"):
-            workflow.get_node(node).inputs.base_directory = config.execution.output_dir
+        if node.split(".")[-1].startswith("ds_report"):
+            workflow.get_node(node).inputs.datatype = "figures"
 
     return workflow
 

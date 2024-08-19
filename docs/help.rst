@@ -1,5 +1,5 @@
 Getting help
-============
+############
 
 If you have a problem, would like to ask a question about how to use QSIRecon,
 or have a question about the features and behavior of QSIRecon, please submit

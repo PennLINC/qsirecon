@@ -11,6 +11,7 @@ Interfaces to generate reportlets
 
 import json
 import os.path as op
+import time
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -20,8 +21,11 @@ from nipype.interfaces.base import (
     BaseInterfaceInputSpec,
     CommandLine,
     CommandLineInputSpec,
+    Directory,
     File,
+    InputMultiPath,
     SimpleInterface,
+    Str,
     TraitedSpec,
     isdefined,
     traits,
@@ -30,6 +34,45 @@ from nipype.interfaces.mixins import reporting
 from scipy.io.matlab import loadmat
 
 from .qc import createB0_ColorFA_Mask_Sprites, createSprite4D
+
+SUBJECT_TEMPLATE = """\t<ul class="elem-desc">
+\t\t<li>Subject ID: {subject_id}</li>
+\t\t<li>Structural images: {n_t1s:d} T1-weighted {t2w}</li>
+\t\t<li>Diffusion-weighted series: inputs {n_dwis:d}, outputs {n_outputs:d}</li>
+{groupings}
+\t\t<li>Resampling targets: T1wACPC
+\t</ul>
+"""
+
+DIFFUSION_TEMPLATE = """\t\t<h3 class="elem-title">Summary</h3>
+\t\t<ul class="elem-desc">
+\t\t\t<li>Phase-encoding (PE) direction: {pedir}</li>
+\t\t\t<li>Susceptibility distortion correction: {sdc}</li>
+\t\t\t<li>Coregistration Transform: {coregistration}</li>
+\t\t\t<li>Denoising Method: {denoise_method}</li>
+\t\t\t<li>Denoising Window: {denoise_window}</li>
+\t\t\t<li>HMC Transform: {hmc_transform}</li>
+\t\t\t<li>HMC Model: {hmc_model}</li>
+\t\t\t<li>DWI series resampled to spaces: T1wACPC</li>
+\t\t\t<li>Confounds collected: {confounds}</li>
+\t\t\t<li>Impute slice threshold: {impute_slice_threshold}</li>
+\t\t</ul>
+{validation_reports}
+"""
+
+ABOUT_TEMPLATE = """\t<ul>
+\t\t<li>QSIRecon version: {version}</li>
+\t\t<li>QSIRecon command: <code>{command}</code></li>
+\t\t<li>Date preprocessed: {date}</li>
+\t</ul>
+</div>
+"""
+
+GROUPING_TEMPLATE = """\t<ul>
+\t\t<li>Output Name: {output_name}</li>
+{input_files}
+</ul>
+"""
 
 INTERACTIVE_TEMPLATE = """
 <script src="https://unpkg.com/vue"></script>
@@ -59,6 +102,107 @@ var report = REPORT
 
 class SummaryOutputSpec(TraitedSpec):
     out_report = File(exists=True, desc="HTML segment containing summary")
+
+
+class AboutSummaryInputSpec(BaseInterfaceInputSpec):
+    version = Str(desc="QSIRecon version")
+    command = Str(desc="QSIRecon command")
+    # Date not included - update timestamp only if version or command changes
+
+
+class SummaryInterface(SimpleInterface):
+    output_spec = SummaryOutputSpec
+
+    def _generate_segment(self):
+        raise NotImplementedError()
+
+    def _run_interface(self, runtime):
+        segment = self._generate_segment()
+        fname = op.join(runtime.cwd, "report.html")
+        with open(fname, "w") as fobj:
+            fobj.write(segment)
+        self._results["out_report"] = fname
+        return runtime
+
+
+class SubjectSummaryInputSpec(BaseInterfaceInputSpec):
+    t1w = InputMultiPath(File(exists=True), desc="T1w structural images")
+    t2w = InputMultiPath(File(exists=True), desc="T2w structural images")
+    subjects_dir = Directory(desc="FreeSurfer subjects directory")
+    subject_id = Str(desc="Subject ID")
+    dwi_groupings = traits.Dict(desc="groupings of DWI files and their output names")
+    output_spaces = traits.List(desc="Target spaces")
+    template = traits.Enum("MNI152NLin2009cAsym", desc="Template space")
+
+
+class SubjectSummaryOutputSpec(SummaryOutputSpec):
+    # This exists to ensure that the summary is run prior to the first ReconAll
+    # call, allowing a determination whether there is a pre-existing directory
+    subject_id = Str(desc="FreeSurfer subject ID")
+
+
+class SubjectSummary(SummaryInterface):
+    input_spec = SubjectSummaryInputSpec
+    output_spec = SubjectSummaryOutputSpec
+
+    def _run_interface(self, runtime):
+        if isdefined(self.inputs.subject_id):
+            self._results["subject_id"] = self.inputs.subject_id
+        return super(SubjectSummary, self)._run_interface(runtime)
+
+    def _generate_segment(self):
+        t2w_seg = ""
+        if self.inputs.t2w:
+            t2w_seg = "(+ {:d} T2-weighted)".format(len(self.inputs.t2w))
+
+        # Add text for how the dwis are grouped
+        n_dwis = 0
+        n_outputs = 0
+        groupings = ""
+        if isdefined(self.inputs.dwi_groupings):
+            for output_fname, group_info in self.inputs.dwi_groupings.items():
+                n_outputs += 1
+                files_desc = []
+                files_desc.append(
+                    "\t\t\t<li>Scan group: %s (PE Dir %s)</li><ul>"
+                    % (output_fname, group_info["dwi_series_pedir"])
+                )
+                files_desc.append("\t\t\t\t<li>DWI Files: </li>")
+                for dwi_file in group_info["dwi_series"]:
+                    files_desc.append("\t\t\t\t\t<li> %s </li>" % dwi_file)
+                    n_dwis += 1
+                fieldmap_type = group_info["fieldmap_info"]["suffix"]
+                if fieldmap_type is not None:
+                    files_desc.append("\t\t\t\t<li>Fieldmap type: %s </li>" % fieldmap_type)
+
+                    for key, value in group_info["fieldmap_info"].items():
+                        files_desc.append("\t\t\t\t\t<li> %s: %s </li>" % (key, str(value)))
+                        n_dwis += 1
+                files_desc.append("</ul>")
+                groupings += GROUPING_TEMPLATE.format(
+                    output_name=output_fname, input_files="\n".join(files_desc)
+                )
+
+        return SUBJECT_TEMPLATE.format(
+            subject_id=self.inputs.subject_id,
+            n_t1s=len(self.inputs.t1w),
+            t2w=t2w_seg,
+            n_dwis=n_dwis,
+            n_outputs=n_outputs,
+            groupings=groupings,
+            output_spaces="T1wACPC",
+        )
+
+
+class AboutSummary(SummaryInterface):
+    input_spec = AboutSummaryInputSpec
+
+    def _generate_segment(self):
+        return ABOUT_TEMPLATE.format(
+            version=self.inputs.version,
+            command=self.inputs.command,
+            date=time.strftime("%Y-%m-%d %H:%M:%S %z"),
+        )
 
 
 class _InteractiveReportInputSpec(TraitedSpec):

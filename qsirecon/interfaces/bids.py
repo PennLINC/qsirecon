@@ -23,21 +23,21 @@ import gzip
 import os
 import os.path as op
 import re
+from json import loads
 from shutil import copyfileobj, copytree
 
-from bids.layout import parse_file_entities
+from bids.layout import Config, parse_file_entities
 from nipype import logging
-from nipype.interfaces.base import (
-    BaseInterfaceInputSpec,
-    File,
-    InputMultiObject,
-    OutputMultiPath,
-    SimpleInterface,
-    TraitedSpec,
-    isdefined,
-    traits,
-)
+from nipype.interfaces.base import File, InputMultiObject, isdefined, traits
 from nipype.utils.filemanip import copyfile, split_filename
+from niworkflows.interfaces.bids import DerivativesDataSink as BaseDerivativesDataSink
+from niworkflows.interfaces.bids import (
+    _DerivativesDataSinkInputSpec,
+    _DerivativesDataSinkOutputSpec,
+)
+
+from qsirecon import config
+from qsirecon.data import load as load_data
 
 LOGGER = logging.getLogger("nipype.interface")
 BIDS_NAME = re.compile(
@@ -46,6 +46,18 @@ BIDS_NAME = re.compile(
     "(_(?P<space_id>space-[a-zA-Z0-9]+))?"
     "(_(?P<rec_id>rec-[a-zA-Z0-9]+))?(_(?P<run_id>run-[a-zA-Z0-9]+))?"
 )
+
+# NOTE: Modified for QSIRecon's purposes
+qsirecon_spec = loads(load_data("io_spec.json").read_text())
+bids_config = Config.load("bids")
+deriv_config = Config.load("derivatives")
+
+qsirecon_entities = {v["name"]: v["pattern"] for v in qsirecon_spec["entities"]}
+merged_entities = {**bids_config.entities, **deriv_config.entities}
+merged_entities = {k: v.pattern for k, v in merged_entities.items()}
+merged_entities = {**merged_entities, **qsirecon_entities}
+merged_entities = [{"name": k, "pattern": v} for k, v in merged_entities.items()]
+config_entities = frozenset({e["name"] for e in merged_entities})
 
 
 def get_bids_params(fullpath):
@@ -77,199 +89,72 @@ def get_bids_params(fullpath):
     return matches
 
 
-class DerivativesDataSinkInputSpec(BaseInterfaceInputSpec):
-    base_directory = traits.Directory(desc="Path to the base directory for storing data.")
+class DerivativesDataSink(BaseDerivativesDataSink):
+    """Store derivative files.
+
+    A child class of the niworkflows DerivativesDataSink, using xcp_d's configuration files.
+    """
+
+    out_path_base = ""
+    _allowed_entities = set(config_entities)
+    _config_entities = config_entities
+    _config_entities_dict = merged_entities
+    _file_patterns = qsirecon_spec["default_path_patterns"]
+
+
+def get_recon_output_name(
+    base_dir,
+    source_file,
+    derivative_file,
+    output_bids_entities,
+    use_ext=True,
+    qsirecon_suffix=None,
+    dismiss_entities=None,
+):
+    source_entities = parse_file_entities(source_file)
+    if dismiss_entities:
+        source_entities = {k: v for k, v in source_entities.items() if k not in dismiss_entities}
+
+    out_path = base_dir
+    if qsirecon_suffix:
+        out_path = op.join(out_path, f"qsirecon-{qsirecon_suffix}")
+
+    # Infer the appropriate extension
+    if "extension" not in output_bids_entities:
+        ext_parts = os.path.basename(derivative_file).split(".")[1:]
+        if len(ext_parts) > 2:
+            ext = split_filename(derivative_file)[2]
+        else:
+            ext = "." + ".".join(ext_parts)
+
+        output_bids_entities["extension"] = ext
+
+    # Add the suffix
+    output_bids_entities["suffix"] = output_bids_entities.get("suffix", "dwimap")
+
+    # Add any missing entities from the source file
+    output_bids_entities = {**source_entities, **output_bids_entities}
+
+    out_filename = config.execution.layout.build_path(
+        source=output_bids_entities,
+        path_patterns=qsirecon_spec["default_path_patterns"],
+        validate=False,
+        absolute_paths=False,
+    )
+    if not use_ext:
+        # Drop the extension from the filename
+        out_filename = out_filename.split(".")[0]
+
+    return os.path.join(out_path, out_filename)
+
+
+class _ReconDerivativesDataSinkInputSpec(_DerivativesDataSinkInputSpec):
     in_file = traits.Either(
         traits.Directory(exists=True),
         InputMultiObject(File(exists=True)),
         mandatory=True,
         desc="the object to be saved",
     )
-    source_file = File(mandatory=True, desc="the original file or name of merged files")
-    space = traits.Str("", usedefault=True, desc="Label for space field")
-    desc = traits.Str("", usedefault=True, desc="Label for description field")
-    bundle = traits.Str("", usedefault=True, desc="Label for bundle field")
-    suffix = traits.Str("", usedefault=True, desc="suffix appended to source_file")
-    keep_dtype = traits.Bool(False, usedefault=True, desc="keep datatype suffix")
-    extra_values = traits.List(traits.Str)
-    compress = traits.Bool(
-        desc="force compression (True) or uncompression (False)"
-        " of the output file (default: same as input)"
-    )
-    extension = traits.Str()
-
-
-class DerivativesDataSinkOutputSpec(TraitedSpec):
-    out_file = traits.Either(
-        traits.Directory(exists=True),
-        InputMultiObject(File(exists=True)),
-        desc="written file path",
-    )
-    compression = OutputMultiPath(
-        traits.Bool,
-        desc="whether ``in_file`` was compressed/uncompressed " "or `it was copied directly.",
-    )
-
-
-class DerivativesDataSink(SimpleInterface):
-    """
-    Saves the `in_file` into a BIDS-Derivatives folder provided
-    by `base_directory`, given the input reference `source_file`.
-
-    >>> from pathlib import Path
-    >>> import tempfile
-    >>> from qsiprep.utils.bids import collect_data
-    >>> tmpdir = Path(tempfile.mkdtemp())
-    >>> tmpfile = tmpdir / 'a_temp_file.nii.gz'
-    >>> tmpfile.open('w').close()  # "touch" the file
-    >>> dsink = DerivativesDataSink(base_directory=str(tmpdir))
-    >>> dsink.inputs.in_file = str(tmpfile)
-    >>> dsink.inputs.source_file = collect_data('ds114', '01')[0]['t1w'][0]
-    >>> dsink.inputs.keep_dtype = True
-    >>> dsink.inputs.suffix = 'target-mni'
-    >>> res = dsink.run()
-    >>> res.outputs.out_file  # doctest: +ELLIPSIS
-    '.../qsirecon/sub-01/ses-retest/anat/sub-01_ses-retest_target-mni_T1w.nii.gz'
-
-    >>> bids_dir = tmpdir / 'bidsroot' / 'sub-02' / 'ses-noanat' / 'func'
-    >>> bids_dir.mkdir(parents=True, exist_ok=True)
-    >>> tricky_source = bids_dir / 'sub-02_ses-noanat_task-rest_run-01_bold.nii.gz'
-    >>> tricky_source.open('w').close()
-    >>> dsink = DerivativesDataSink(base_directory=str(tmpdir))
-    >>> dsink.inputs.in_file = str(tmpfile)
-    >>> dsink.inputs.source_file = str(tricky_source)
-    >>> dsink.inputs.keep_dtype = True
-    >>> dsink.inputs.desc = 'preproc'
-    >>> res = dsink.run()
-    >>> res.outputs.out_file  # doctest: +ELLIPSIS
-    '.../qsirecon/sub-02/ses-noanat/func/sub-02_ses-noanat_task-rest_run-01_desc-preproc_bold.nii.gz'
-
-    """
-
-    input_spec = DerivativesDataSinkInputSpec
-    output_spec = DerivativesDataSinkOutputSpec
-    out_path_base = "qsirecon"
-    _always_run = True
-
-    def __init__(self, out_path_base=None, **inputs):
-        super(DerivativesDataSink, self).__init__(**inputs)
-        self._results["out_file"] = []
-        if out_path_base:
-            self.out_path_base = out_path_base
-
-    def _run_interface(self, runtime):
-        src_fname, _ = _splitext(self.inputs.source_file)
-        src_fname, dtype = src_fname.rsplit("_", 1)
-        _, ext = _splitext(self.inputs.in_file[0])
-        if self.inputs.compress is True and not ext.endswith(".gz"):
-            ext += ".gz"
-        elif self.inputs.compress is False and ext.endswith(".gz"):
-            ext = ext[:-3]
-
-        m = BIDS_NAME.search(src_fname)
-
-        mod = op.basename(op.dirname(self.inputs.source_file))
-
-        base_directory = runtime.cwd
-        if isdefined(self.inputs.base_directory):
-            base_directory = str(self.inputs.base_directory)
-
-        out_path = "{}/{subject_id}".format(self.out_path_base, **m.groupdict())
-        if m.groupdict().get("session_id") is not None:
-            out_path += "/{session_id}".format(**m.groupdict())
-        out_path += "/{}".format(mod)
-
-        out_path = op.join(base_directory, out_path)
-
-        os.makedirs(out_path, exist_ok=True)
-        base_fname = op.join(out_path, src_fname)
-
-        formatstr = "{bname}{space}{desc}{suffix}{dtype}{ext}"
-
-        space = "_space-{}".format(self.inputs.space) if self.inputs.space else ""
-        desc = "_desc-{}".format(self.inputs.desc) if self.inputs.desc else ""
-        suffix = "_{}".format(self.inputs.suffix) if self.inputs.suffix else ""
-        dtype = "" if not self.inputs.keep_dtype else ("_%s" % dtype)
-
-        # If the derivative is a directory, copy it over
-        copy_dir = op.isdir(str(self.inputs.in_file))
-        if copy_dir:
-            out_file = formatstr.format(
-                bname=base_fname, space=space, desc=desc, suffix=suffix, dtype=dtype, ext=""
-            )
-            # os.makedirs(out_file, exist_ok=True)
-            copytree(str(self.inputs.in_file), out_file, dirs_exist_ok=True)
-            self._results["out_file"] = out_file
-            return runtime
-
-        if len(self.inputs.in_file) > 1 and not isdefined(self.inputs.extra_values):
-            formatstr = "{bname}{space}{desc}{suffix}{i:04d}{dtype}{ext}"
-
-        # Otherwise it's file(s)
-        self._results["compression"] = []
-        for i, fname in enumerate(self.inputs.in_file):
-            out_file = formatstr.format(
-                bname=base_fname, space=space, desc=desc, suffix=suffix, i=i, dtype=dtype, ext=ext
-            )
-            if isdefined(self.inputs.extra_values):
-                out_file = out_file.format(extra_value=self.inputs.extra_values[i])
-            self._results["out_file"].append(out_file)
-            self._results["compression"].append(_copy_any(fname, out_file))
-        return runtime
-
-
-recon_entity_order = ["atlas", "model", "bundles", "fit", "mdp", "mfp", "bundle", "label"]
-
-
-def get_recon_output_name(
-    base_dir, source_file, derivative_file, qsirecon_suffix, output_bids_entities, use_ext=True
-):
-
-    source_entities = parse_file_entities(source_file)
-    out_path = op.join(base_dir, f"qsirecon-{qsirecon_suffix}")
-    out_path = op.join(out_path, "sub-" + source_entities["subject"])
-    if "session" in source_entities:
-        out_path += "/ses-{session}".format(**source_entities)
-
-    # Which datatype directory should this go under?
-    # If it's not in the output bids entities use the source_file datatype
-    datatype_dir = output_bids_entities.get("datatype", op.basename(op.dirname(source_file)))
-    out_path += f"/{datatype_dir}"
-    _, source_fname, _ = split_filename(source_file)
-    # Remove the suffix
-    source_fname, _ = source_fname.rsplit("_", 1)
-    _, _, extension = split_filename(derivative_file)
-
-    # It may be that the space has changed. Check if it has
-    if "space" in output_bids_entities:
-        if "_space-" in source_fname:
-            source_fname = re.sub(
-                "_space-[a-zA-Z0-9]+", "_space-" + output_bids_entities["space"], source_fname
-            )
-        elif "_desc-preproc" in source_fname:
-            source_fname = source_fname.replace(
-                "_desc-preproc", f"_space-{output_bids_entities['space']}_desc-preproc"
-            )
-        else:
-            source_fname += f"_space-{output_bids_entities['space']}"
-    base_fname = op.join(out_path, source_fname)
-
-    # Add the new bids entities for the output file
-    for entity_name in recon_entity_order:
-        if entity_name in output_bids_entities:
-            base_fname += "_{entity}-{value}".format(
-                entity=entity_name, value=output_bids_entities[entity_name]
-            )
-
-    # Add the suffix
-    suffix = output_bids_entities.get("suffix", "dwimap")
-    if use_ext:
-        return f"{base_fname}_{suffix}{extension}"
-
-    return f"{base_fname}_{suffix}"
-
-
-class _ReconDerivativesDataSinkInputSpec(DerivativesDataSinkInputSpec):
     mdp = traits.Str("", usedefault=True, desc="Label for model derived parameter field")
     mfp = traits.Str("", usedefault=True, desc="Label for model fit parameter field")
     model = traits.Str("", usedefault=True, desc="Label for model field")
@@ -278,13 +163,19 @@ class _ReconDerivativesDataSinkInputSpec(DerivativesDataSinkInputSpec):
     fit = traits.Str("", usedefault=True, desc="Label for fit field")
     label = traits.Str("", usedefault=True, desc="Label for label field")
     atlas = traits.Str("", usedefault=True, desc="Label for label field")
+    extension = traits.Str("", usedefault=True, desc="Extension (will be ignored)")
     qsirecon_suffix = traits.Str(
         "", usedefault=True, desc="name appended to qsirecon- in the derivatives"
     )
 
 
+class _ReconDerivativesDataSinkOutputSpec(_DerivativesDataSinkOutputSpec):
+    out_file = traits.Str(desc="the output file/folder")
+
+
 class ReconDerivativesDataSink(DerivativesDataSink):
     input_spec = _ReconDerivativesDataSinkInputSpec
+    output_spec = _ReconDerivativesDataSinkOutputSpec
     out_path_base = "qsirecon"
 
     def _run_interface(self, runtime):
@@ -294,7 +185,11 @@ class ReconDerivativesDataSink(DerivativesDataSink):
             return runtime
 
         # Figure out what the extension should be based on the input file and compression
-        src_fname, _ = _splitext(self.inputs.source_file)
+        source_file = self.inputs.source_file
+        if not isinstance(source_file, str):
+            source_file = source_file[0]
+
+        src_fname, _ = _splitext(source_file)
         src_fname, dtype = src_fname.rsplit("_", 1)
         _, ext = _splitext(self.inputs.in_file[0])
         if self.inputs.compress is True and not ext.endswith(".gz"):
@@ -326,15 +221,17 @@ class ReconDerivativesDataSink(DerivativesDataSink):
             output_bids["suffix"] = self.inputs.suffix
         if self.inputs.label:
             output_bids["label"] = self.inputs.label
+        if self.inputs.extension:
+            output_bids["extension"] = self.inputs.extension
 
         # Get the output name without an extension
         bname = get_recon_output_name(
             base_dir=self.inputs.base_directory,
-            source_file=self.inputs.source_file,
+            source_file=source_file,
             derivative_file=self.inputs.in_file[0],
-            qsirecon_suffix=self.inputs.qsirecon_suffix,
             output_bids_entities=output_bids,
             use_ext=False,
+            dismiss_entities=self.inputs.dismiss_entities,
         )
 
         # Ensure the directory exists

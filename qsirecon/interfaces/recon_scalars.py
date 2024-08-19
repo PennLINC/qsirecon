@@ -31,6 +31,7 @@ class ReconScalarsInputSpec(BaseInterfaceInputSpec):
     qsirecon_suffix = traits.Str(mandatory=True)
     model_info = traits.Dict()
     model_name = traits.Str()
+    dismiss_entities = traits.List([], usedefault=True)
 
 
 class ReconScalarsOutputSpec(TraitedSpec):
@@ -47,6 +48,7 @@ class ReconScalars(SimpleInterface):
         "scalar_metadata",
         "model_info",
         "source_file",
+        "dismiss_entities",
     )
 
     def __init__(self, from_file=None, resource_monitor=None, **inputs):
@@ -76,7 +78,8 @@ class ReconScalars(SimpleInterface):
 
         # Get the BIDS info from the source file
         source_file_bids = parse_file_entities(self.inputs.source_file)
-        del source_file_bids["extension"], source_file_bids["suffix"]
+        dismiss_entities = self.inputs.dismiss_entities + ["extension", "suffix"]
+        source_file_bids = {k: v for k, v in source_file_bids.items() if k not in dismiss_entities}
 
         file_traits = [
             name for name in self.inputs.editable_traits() if name not in self._ignore_traits
@@ -107,6 +110,8 @@ class _ReconScalarsDataSinkInputSpec(BaseInterfaceInputSpec):
     resampled_files = InputMultiObject(File(exists=True))
     recon_scalars = InputMultiObject(traits.Any())
     compress = traits.Bool(True, usedefault=True)
+    dismiss_entities = traits.List([], usedefault=True)
+    infer_suffix = traits.Bool(False, usedefault=True)
 
 
 class ReconScalarsDataSink(SimpleInterface):
@@ -124,13 +129,18 @@ class ReconScalarsDataSink(SimpleInterface):
                 force_decompress = True
 
         for recon_scalar in self.inputs.recon_scalars:
+            qsirecon_suffix = None
+            if self.inputs.infer_suffix:
+                qsirecon_suffix = recon_scalar["qsirecon_suffix"]
+
             output_filename = get_recon_output_name(
                 base_dir=self.inputs.base_directory,
                 source_file=self.inputs.source_file,
                 derivative_file=recon_scalar["path"],
-                qsirecon_suffix=recon_scalar["qsirecon_suffix"],
                 output_bids_entities=recon_scalar["bids"],
                 use_ext=True,
+                dismiss_entities=self.inputs.dismiss_entities,
+                qsirecon_suffix=qsirecon_suffix,
             )
 
             if force_decompress and output_filename.endswith(".gz"):
@@ -155,9 +165,8 @@ class ReconScalarsTableSplitterDataSink(ReconScalarsDataSink):
     input_spec = _ReconScalarsTableSplitterDataSinkInputSpec
 
     def _run_interface(self, runtime):
-        summary_df = pd.read_csv(self.inputs.summary_tsv, sep="\t")
-        for groupname, group_df in summary_df.groupby("qsirecon_suffix"):
-
+        summary_df = pd.read_table(self.inputs.summary_tsv)
+        for qsirecon_suffix, group_df in summary_df.groupby("qsirecon_suffix"):
             # reset the index for this df
             group_df.reset_index(drop=True, inplace=True)
 
@@ -165,11 +174,12 @@ class ReconScalarsTableSplitterDataSink(ReconScalarsDataSink):
                 base_dir=self.inputs.base_directory,
                 source_file=group_df.loc[0, "source_file"],
                 derivative_file=self.inputs.summary_tsv,
-                qsirecon_suffix=group_df.loc[0, "qsirecon_suffix"],
                 output_bids_entities={
                     "suffix": self.inputs.suffix,
                     "bundles": group_df.loc[0, "bundle_source"],
                 },
+                qsirecon_suffix=qsirecon_suffix,
+                dismiss_entities=self.inputs.dismiss_entities,
             )
             output_dir = op.dirname(qsirecon_suffixed_tsv)
             os.makedirs(output_dir, exist_ok=True)
@@ -368,6 +378,10 @@ dipy_mapmri_scalars = {
     "ngperp_file": {
         "desc": "Non-Gaussianity perpendicular from MAPMRI",
         "bids": {"mdp": "NGperp", "model": "mapmri"},
+    },
+    "mapcoeffs_file": {
+        "desc": "MAPMRI coefficients",
+        "bids": {"mdp": "mapcoeffs", "model": "mapmri"},
     },
 }
 

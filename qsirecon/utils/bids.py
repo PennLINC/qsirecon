@@ -22,25 +22,18 @@
 #
 #     https://www.nipreps.org/community/licensing/
 #
-"""
-Utilities to handle BIDS inputs
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Fetch some test data
-
-    >>> import os
-    >>> from niworkflows import data
-    >>> data_root = data.get_bids_examples(variant='BIDS-examples-1-enh-ds054')
-    >>> os.chdir(data_root)
-
-"""
 import json
 import os
 import sys
 import warnings
 from pathlib import Path
+from typing import Union
 
 from bids import BIDSLayout
+from nipype.pipeline import engine as pe
+
+from .. import config
 
 
 class BIDSError(ValueError):
@@ -308,3 +301,16 @@ def validate_input_dir(exec_env, bids_dir, participant_label):
 
 def _get_shub_version(singularity_url):
     raise ValueError("Not yet implemented")
+
+
+def clean_datasinks(workflow: pe.Workflow, qsirecon_suffix: Union[str, None]) -> pe.Workflow:
+    """Overwrite the base_directory of Datasinks."""
+    out_dir = Path(config.execution.output_dir)
+    if qsirecon_suffix:
+        out_dir = out_dir / f"qsirecon-{qsirecon_suffix}"
+
+    for node in workflow.list_node_names():
+        if node.split(".")[-1].startswith("ds_"):
+            workflow.get_node(node).inputs.base_directory = str(out_dir)
+
+    return workflow

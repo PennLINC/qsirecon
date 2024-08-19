@@ -14,7 +14,8 @@ import nipype.pipeline.engine as pe
 from ... import config
 from ...interfaces.bids import ReconDerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
-from qsirecon.interfaces.pyafq import PyAFQRecon
+from ...interfaces.pyafq import PyAFQRecon
+from ...utils.bids import clean_datasinks
 
 
 def _parse_qsirecon_params_dict(params_dict):
@@ -67,10 +68,12 @@ def init_pyafq_wf(available_anatomical_data, name="afq", qsirecon_suffix="", par
         niu.IdentityInterface(fields=["afq_dir", "recon_scalars"]), name="outputnode"
     )
     outputnode.inputs.recon_scalars = []
-
+    omp_nthreads = config.nipype.omp_nthreads
     kwargs = _parse_qsirecon_params_dict(params)
     kwargs["omp_nthreads"] = config.nipype.omp_nthreads
-    run_afq = pe.Node(PyAFQRecon(kwargs=kwargs), name="run_afq")
+    run_afq = pe.Node(
+        PyAFQRecon(kwargs=kwargs, n_procs=omp_nthreads), name="run_afq", n_procs=omp_nthreads
+    )
     workflow = pe.Workflow(name=name)
     if params.get("use_external_tracking", False):
         workflow.connect([
@@ -88,7 +91,12 @@ def init_pyafq_wf(available_anatomical_data, name="afq", qsirecon_suffix="", par
     if qsirecon_suffix:
         # Save the output in the outputs directory
         ds_afq = pe.Node(
-            ReconDerivativesDataSink(qsirecon_suffix=qsirecon_suffix),
+            ReconDerivativesDataSink(
+                qsirecon_suffix=qsirecon_suffix,
+                extension=".nii.gz",
+                use_ext=False,
+                dismiss_entities=["desc"],
+            ),
             name="ds_" + name,
             run_without_submitting=True,
         )
@@ -98,4 +106,5 @@ def init_pyafq_wf(available_anatomical_data, name="afq", qsirecon_suffix="", par
         f"PyAFQ run on version {AFQ.__version__}"
         f" with the following configuration: {str(kwargs)}"
     )
-    return workflow
+
+    return clean_datasinks(workflow, qsirecon_suffix)
