@@ -172,7 +172,7 @@ def main():
 
         from ..reports.core import generate_reports
         from ..workflows.base import _load_recon_spec
-        from .workflow import copy_boilerplate
+        from .workflow import copy_boilerplate, copy_reportlets
 
         # Generate reports phase
         session_list = config.execution.get().get("bids_filters", {}).get("dwi", {}).get("session")
@@ -200,6 +200,13 @@ def main():
 
             # Copy the boilerplate files
             copy_boilerplate(config.execution.output_dir, suffix_dir)
+
+            # Copy general reportlets
+            copy_reportlets(
+                config.execution.output_dir,
+                suffix_dir,
+                config.execution.participant_label,
+            )
 
             suffix_failed_reports = generate_reports(
                 config.execution.participant_label,
