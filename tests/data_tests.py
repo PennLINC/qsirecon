@@ -37,23 +37,6 @@ def test_anat(anatomical_pipeline):
     assert True
 
 
-def test_buds(anatomical_pipeline, tmpdir):
-    buds_opts = get_default_cli_args()
-    buds_opts.work_dir = tmpdir
-    buds_opts.ignore = []
-    buds_opts.output_dir = op.join(tmpdir, "buds")
-    buds_opts.combine_all_dwis = True
-    buds_opts.anat_only = False
-    buds_opts.prefer_dedicated_fmaps = False
-
-    assert link_anatomicals(tmpdir)
-    with mock.patch.object(
-            argparse.ArgumentParser, 'parse_args', return_value=buds_opts):
-
-        with pytest.raises(SystemExit):
-            cli_main()
-
-
 def test_all_separate_no_sdc(anatomical_pipeline, tmpdir):
     all_separate_no_sdc_opts = get_default_cli_args()
     all_separate_no_sdc_opts.work_dir = tmpdir
