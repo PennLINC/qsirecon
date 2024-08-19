@@ -15,6 +15,7 @@ from bids.layout import BIDSLayout
 from dipy import __version__ as dipy_ver
 from nilearn import __version__ as nilearn_ver
 from nipype import __version__ as nipype_ver
+from nipype.interfaces import utility as niu
 from nipype.utils.filemanip import split_filename
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from niworkflows.utils.misc import fix_multi_T1w_source_name
@@ -87,7 +88,8 @@ def init_single_subject_recon_wf(subject_id):
         recon_workflow_anatomical_input_fields,
         recon_workflow_input_fields,
     )
-    from ..interfaces.reports import AboutSummary
+    from ..interfaces.reports import AboutSummary, SubjectSummary
+    from ..interfaces.utils import GetUnique
     from .recon.anatomical import (
         init_dwi_recon_anatomical_workflow,
         init_highres_recon_anatomical_wf,
@@ -142,6 +144,11 @@ to workflows in *qsirecon*'s documentation]\
             "Anatomical (T1w) available for recon: %s", available_anatomical_data
         )
 
+    aggregate_anatomical_nodes = pe.Node(
+        niu.Merge(len(dwi_recon_inputs)),
+        name="aggregate_anatomical_nodes",
+    )
+
     # create a processing pipeline for the dwis in each session
     dwi_recon_wfs = {}
     dwi_individual_anatomical_wfs = {}
@@ -149,7 +156,7 @@ to workflows in *qsirecon*'s documentation]\
     dwi_ingress_nodes = {}
     anat_ingress_nodes = {}
     print(dwi_recon_inputs)
-    for dwi_input in dwi_recon_inputs:
+    for i_run, dwi_input in enumerate(dwi_recon_inputs):
         dwi_file = dwi_input["bids_dwi_file"]
         wf_name = _get_wf_name(dwi_file)
 
@@ -159,6 +166,7 @@ to workflows in *qsirecon*'s documentation]\
                 QsiReconDWIIngress(dwi_file=dwi_file),
                 name=f"{wf_name}_ingressed_dwi_data",
             )
+            anat_ingress_nodes[dwi_file] = anat_ingress_node
 
         elif config.workflow.recon_input_pipeline == "ukb":
             dwi_ingress_nodes[dwi_file] = pe.Node(
@@ -175,6 +183,13 @@ to workflows in *qsirecon*'s documentation]\
                     name=f"{wf_name}_ingressed_ukb_anat_data",
                 )
             )
+
+        # Aggregate the anatomical data from all the dwi files
+        workflow.connect([
+            (anat_ingress_nodes[dwi_file], aggregate_anatomical_nodes, [
+                ("outputnode.t1_preproc", f"in{i_run + 1}")
+            ]),
+        ])  # fmt:skip
 
         # Create scan-specific anatomical data (mask, atlas configs, odf ROIs for reports)
         print(available_anatomical_data)
@@ -203,12 +218,6 @@ to workflows in *qsirecon*'s documentation]\
             name=f"{wf_name}_recon_wf",
         )
 
-        file_anat_ingress_node = (
-            anat_ingress_node
-            if config.workflow.recon_input_pipeline == "qsiprep"
-            else anat_ingress_nodes[dwi_file]
-        )
-
         # Connect the collected diffusion data (gradients, etc) to the inputnode
         workflow.connect([
             # The dwi data
@@ -232,7 +241,7 @@ to workflows in *qsirecon*'s documentation]\
                 (trait, f"inputnode.{trait}") for trait in recon_workflow_input_fields
             ]),
 
-            (file_anat_ingress_node, dwi_individual_anatomical_wfs[dwi_file], [
+            (anat_ingress_nodes[dwi_file], dwi_individual_anatomical_wfs[dwi_file], [
                 (f"outputnode.{trait}", f"inputnode.{trait}")
                 for trait in anatomical_workflow_outputs
             ]),
@@ -258,9 +267,36 @@ to workflows in *qsirecon*'s documentation]\
         name="ds_report_about",
         run_without_submitting=True,
     )
-    workflow.connect([
-        (about, ds_report_about, [('out_report', 'in_file')]),
-    ])  # fmt:skip
+    workflow.connect([(about, ds_report_about, [("out_report", "in_file")])])
+
+    reduce_t1_preproc = pe.Node(
+        GetUnique(),
+        name="reduce_t1_preproc",
+    )
+    workflow.connect([(aggregate_anatomical_nodes, reduce_t1_preproc, [("out", "inlist")])])
+    summary = pe.Node(
+        SubjectSummary(
+            subject_id=subject_id,
+            subjects_dir=config.execution.fs_subjects_dir,
+            std_spaces=["MNIInfant" if config.workflow.infant else "MNI152NLin2009cAsym"],
+            nstd_spaces=[],
+            dwi=dwi_recon_inputs,
+        ),
+        name="summary",
+        run_without_submitting=True,
+    )
+    workflow.connect([(reduce_t1_preproc, summary, [("out", "t1w")])])
+    ds_report_summary = pe.Node(
+        DerivativesDataSink(
+            source_file=dwi_basename,
+            base_directory=config.execution.output_dir,
+            datatype="figures",
+            suffix="summary",
+        ),
+        name="ds_report_summary",
+        run_without_submitting=True,
+    )
+    workflow.connect([(summary, ds_report_summary, [("out_report", "in_file")])])
 
     # Fill-in datasinks of reportlets seen so far
     for node in workflow.list_node_names():
