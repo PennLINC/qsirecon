@@ -25,7 +25,6 @@ from nipype.interfaces.base import (
     traits,
 )
 from nipype.utils.filemanip import fname_presuffix
-from pkg_resources import resource_filename as pkgrf
 
 from ..utils.ingress import ukb_dirname_to_bids, hcp_dirname_to_bids
 from .images import to_lps
@@ -33,7 +32,7 @@ from .images import to_lps
 LOGGER = logging.getLogger("nipype.interface")
 
 
-class QSIReconAnatomicalIngressInputSpec(BaseInterfaceInputSpec):
+class QSIPrepAnatomicalIngressInputSpec(BaseInterfaceInputSpec):
     recon_input_dir = traits.Directory(
         exists=True, mandatory=True, help="directory containing subject results directories"
     )
@@ -42,7 +41,7 @@ class QSIReconAnatomicalIngressInputSpec(BaseInterfaceInputSpec):
     infant_mode = traits.Bool(mandatory=True)
 
 
-class QSIReconAnatomicalIngressOutputSpec(TraitedSpec):
+class QSIPrepAnatomicalIngressOutputSpec(TraitedSpec):
     # sub-1_desc-aparcaseg_dseg.nii.gz
     t1_aparc = File()
     # sub-1_dseg.nii.gz
@@ -65,19 +64,17 @@ class QSIReconAnatomicalIngressOutputSpec(TraitedSpec):
     t1_2_mni_reverse_transform = File()
     # sub-1_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5
     t1_2_mni_forward_transform = File()
-    # Generic: what template was used?
-    template_image = File()
 
 
-class QSIReconAnatomicalIngress(SimpleInterface):
-    """Get only the useful files from a QSIRecon anatomical output.
+class QSIPrepAnatomicalIngress(SimpleInterface):
+    """Get only the useful files from a QSIPrep anatomical output.
 
     Many of the preprocessed outputs aren't useful for reconstruction
     (mainly anything that has been mapped forward into template space).
     """
 
-    input_spec = QSIReconAnatomicalIngressInputSpec
-    output_spec = QSIReconAnatomicalIngressOutputSpec
+    input_spec = QSIPrepAnatomicalIngressInputSpec
+    output_spec = QSIPrepAnatomicalIngressOutputSpec
 
     def _run_interface(self, runtime):
         # The path to the output from the qsirecon run
@@ -137,15 +134,6 @@ class QSIReconAnatomicalIngress(SimpleInterface):
             "t1_2_mni_forward_transform",
             "%s/sub-%s*_from-T*w_to-MNI152NLin2009cAsym_mode-image_xfm.h5" % (anat_root, sub),
         )
-        if not self.inputs.infant_mode:
-            self._results["template_image"] = pkgrf(
-                "qsirecon",
-                "data/mni_1mm_t1w_lps_brain.nii.gz",
-            )
-        else:
-            self._results["template_image"] = pkgrf(
-                "qsirecon", "data/mni_1mm_t1w_lps_brain_infant.nii.gz"
-            )
 
         return runtime
 
@@ -163,13 +151,13 @@ class QSIReconAnatomicalIngress(SimpleInterface):
             self._results[name] = files[0]
 
 
-class UKBAnatomicalIngressInputSpec(QSIReconAnatomicalIngressInputSpec):
+class UKBAnatomicalIngressInputSpec(QSIPrepAnatomicalIngressInputSpec):
     recon_input_dir = traits.Directory(
         exists=True, mandatory=True, help="directory containing a single subject's results"
     )
 
 
-class UKBAnatomicalIngress(QSIReconAnatomicalIngress):
+class UKBAnatomicalIngress(QSIPrepAnatomicalIngress):
     input_spec = UKBAnatomicalIngressInputSpec
 
     def _run_interface(self, runtime):
@@ -372,4 +360,51 @@ class VoxelSizeChooser(SimpleInterface):
                 voxel_size = np.round(np.mean(zooms), 2)
 
         self._results["voxel_size"] = voxel_size
+        return runtime
+
+
+class _GetTemplateInputSpec(BaseInterfaceInputSpec):
+    template_name = traits.Enum(
+        "MNI152NLin2009cAsym",
+        "MNIInfant",
+        mandatory=True,
+    )
+
+
+class _GetTemplateOutputSpec(BaseInterfaceInputSpec):
+    template_file = File(exists=True)
+    mask_file = File(exists=True)
+
+
+class GetTemplate(SimpleInterface):
+    input_spec = _GetTemplateInputSpec
+    output_spec = _GetTemplateOutputSpec
+
+    def _run_interface(self, runtime):
+        from templateflow.api import get as get_template
+
+        template_file = str(
+            get_template(
+                self.inputs.template_name,
+                cohort=[None, "2"],
+                resolution="1",
+                desc=None,
+                suffix="T1w",
+                extension=".nii.gz",
+            ),
+        )
+        mask_file = str(
+            get_template(
+                self.inputs.template_name,
+                cohort=[None, "2"],
+                resolution="1",
+                desc="brain",
+                suffix="mask",
+                extension=".nii.gz",
+            ),
+        )
+
+        self._results["template_file"] = template_file
+        self._results["mask_file"] = mask_file
+
         return runtime

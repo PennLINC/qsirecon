@@ -46,7 +46,7 @@ from .mrtrix import _convert_fsl_to_mrtrix
 LOGGER = logging.getLogger("nipype.interface")
 
 
-class QsiReconDWIIngressInputSpec(BaseInterfaceInputSpec):
+class QSIPrepDWIIngressInputSpec(BaseInterfaceInputSpec):
     # DWI files
     dwi_file = File(exists=True)
     bval_file = File(exists=True)
@@ -55,7 +55,7 @@ class QsiReconDWIIngressInputSpec(BaseInterfaceInputSpec):
     atlas_names = traits.List()
 
 
-class QsiReconDWIIngressOutputSpec(TraitedSpec):
+class QSIPrepDWIIngressOutputSpec(TraitedSpec):
     subject_id = traits.Str()
     session_id = traits.Str()
     space_id = traits.Str()
@@ -76,9 +76,9 @@ class QsiReconDWIIngressOutputSpec(TraitedSpec):
     slice_qc_file = File(exists=True)
 
 
-class QsiReconDWIIngress(SimpleInterface):
-    input_spec = QsiReconDWIIngressInputSpec
-    output_spec = QsiReconDWIIngressOutputSpec
+class QSIPrepDWIIngress(SimpleInterface):
+    input_spec = QSIPrepDWIIngressInputSpec
+    output_spec = QSIPrepDWIIngressOutputSpec
 
     def _run_interface(self, runtime):
         params = get_bids_params(self.inputs.dwi_file)
@@ -124,7 +124,7 @@ class QsiReconDWIIngress(SimpleInterface):
         return out_root + "/" + fname + "_desc-%s_dwi.%s" % (desc, suffix)
 
 
-class _UKBioBankDWIIngressInputSpec(QsiReconDWIIngressInputSpec):
+class _UKBioBankDWIIngressInputSpec(QSIPrepDWIIngressInputSpec):
     dwi_file = File(exists=False, help="The name of what a BIDS dwi file may have been")
     data_dir = traits.Directory(
         exists=True, help="The UKB data directory for a subject. Must contain DTI/ and T1/"
@@ -133,7 +133,7 @@ class _UKBioBankDWIIngressInputSpec(QsiReconDWIIngressInputSpec):
 
 class UKBioBankDWIIngress(SimpleInterface):
     input_spec = _UKBioBankDWIIngressInputSpec
-    output_spec = QsiReconDWIIngressOutputSpec
+    output_spec = QSIPrepDWIIngressOutputSpec
 
     def _run_interface(self, runtime):
         runpath = Path(runtime.cwd)
