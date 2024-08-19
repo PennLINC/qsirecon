@@ -556,6 +556,7 @@ class workflow(_Config):
     qsirecon_suffixes = []
     """List of reconstruction workflow names, derived from the recon_spec."""
 
+    @classmethod
     def init(cls):
         from .workflows.base import _load_recon_spec
 
