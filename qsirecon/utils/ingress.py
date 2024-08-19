@@ -211,9 +211,7 @@ def create_hcp_layout(hcp_dir, participant_label=None):
             continue
 
         subject = match.groups()
-        fake_dwi_file = (
-            f"/bids/sub-{subject}/dwi/sub-{subject}_dwi.nii.gz"
-        )
+        fake_dwi_file = f"/bids/sub-{subject}/dwi/sub-{subject}_dwi.nii.gz"
         hcp_layout.append(
             {
                 "subject": subject,
