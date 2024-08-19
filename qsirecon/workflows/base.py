@@ -66,6 +66,11 @@ def init_qsirecon_wf():
         log_dir.mkdir(exist_ok=True, parents=True)
         config.to_filename(log_dir / "qsirecon.toml")
 
+        # Dump a copy of the recon spec into the log directory as well
+        recon_spec = _load_recon_spec(config.workflow.recon_spec)
+        with open(log_dir / "recon_spec.json", "w") as f:
+            json.dump(recon_spec, f, indent=2, sort_keys=True)
+
     return qsirecon_wf
 
 
@@ -342,6 +347,7 @@ def _load_recon_spec(spec_name):
         recon_spec = op.join(prepackaged_dir + "/{}.json".format(spec_name))
     else:
         raise Exception("{} is not a file that exists or in {}".format(spec_name, prepackaged))
+
     with open(recon_spec, "r") as f:
         try:
             spec = json.load(f)
@@ -350,6 +356,7 @@ def _load_recon_spec(spec_name):
     if config.execution.sloppy:
         config.loggers.workflow.warning("Forcing reconstruction to use unrealistic parameters")
         spec = make_sloppy(spec)
+
     return spec
 
 
