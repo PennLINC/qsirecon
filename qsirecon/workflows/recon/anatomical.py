@@ -18,6 +18,7 @@ from ... import config
 from ...interfaces.anatomical import (
     QSIReconAnatomicalIngress,
     UKBAnatomicalIngress,
+    HCPAnatomicalIngress,
     VoxelSizeChooser,
 )
 from ...interfaces.ants import ConvertTransformFile
@@ -47,6 +48,7 @@ HSV_REQUIREMENTS = [
 ]
 
 UKB_REQUIREMENTS = ["T1/T1_brain.nii.gz", "T1/T1_brain_mask.nii.gz"]
+HCP_REQUIREMENTS = ["T1w/T1w_acpc_dc_restore_brain.nii.gz", "T1w/brainmask_fs.nii.gz"]
 
 # Files that must exist if QSIRecon ran the anatomical workflow
 QSIRECON_ANAT_REQUIREMENTS = [
@@ -89,6 +91,8 @@ def init_highres_recon_anatomical_wf(
         anat_ingress_node, status = gather_qsiprep_anatomical_data(subject_id)
     elif pipeline_source == "ukb":
         anat_ingress_node, status = gather_ukb_anatomical_data(subject_id)
+    elif pipeline_source == "hcpya":
+        anat_ingress_node, status = gather_hcp_anatomical_data(subject_id)
     else:
         raise Exception(f"Unknown pipeline source '{pipeline_source}'")
     anat_ingress_node.inputs.infant_mode = config.workflow.infant
@@ -255,6 +259,44 @@ def gather_ukb_anatomical_data(subject_id):
     return anat_ingress, status
 
 
+def gather_hcp_anatomical_data(subject_id):
+    """
+    Check a HCP directory for the necessary files for recon workflows.
+
+    Parameters
+    ----------
+    subject_id : str
+        List of subject labels
+
+    """
+    status = {
+        "has_qsiprep_5tt_hsvs": False,
+        "has_freesurfer_5tt_hsvs": False,
+        "has_freesurfer": False,
+    }
+    recon_input_dir = config.execution.bids_dir
+
+    # Check to see if we have a T1w preprocessed by QSIRecon
+    missing_hcp_anats = check_hcp_anatomical_outputs(recon_input_dir)
+    has_t1w = not missing_hcp_anats
+    status["has_qsiprep_t1w"] = has_t1w
+    if missing_hcp_anats:
+        config.loggers.workflow.info(f"Missing T1w from HCP session: {recon_input_dir}")
+    else:
+        config.loggers.workflow.info("Found usable HCP-preprocessed T1w image and mask.")
+    anat_ingress = pe.Node(
+        HCPAnatomicalIngress(subject_id=subject_id, recon_input_dir=recon_input_dir),
+        name="hcp_anat_ingress",
+    )
+
+    # I couldn't figure out how to convert UKB transforms to ants. So
+    # they're not available for recon workflows for now
+    status["has_qsiprep_t1w_transforms"] = False
+    config.loggers.workflow.info("QSIRecon can't read FNIRT transforms from HCP at this time.")
+
+    return anat_ingress, status
+
+
 def gather_qsiprep_anatomical_data(subject_id):
     """
     Gathers the anatomical data from a QSIPrep input and finds which files are available.
@@ -368,6 +410,22 @@ def check_ukb_anatomical_outputs(recon_input_dir):
     missing = []
     recon_input_path = Path(recon_input_dir)
     for requirement in UKB_REQUIREMENTS:
+        if not (recon_input_path / requirement).exists():
+            missing.append(str(requirement))
+    return missing
+
+
+def check_hcp_anatomical_outputs(recon_input_dir):
+    """Check for required files under a HCP session directory.
+
+    Parameters:
+
+    recon_input_dir: pathlike
+        Path to a HCP subject directory (eg 100307/)
+    """
+    missing = []
+    recon_input_path = Path(recon_input_dir)
+    for requirement in HCP_REQUIREMENTS:
         if not (recon_input_path / requirement).exists():
             missing.append(str(requirement))
     return missing

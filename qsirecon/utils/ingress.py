@@ -11,6 +11,7 @@ import re
 from pathlib import Path
 
 UKB_DIR_PATTERN = re.compile("(\d+)_(\d+)_(\d+)")
+HCP_DIR_PATTERN = re.compile("(\d+)")
 
 
 def missing_from_ukb_directory(ukb_subject_dir):
@@ -147,5 +148,139 @@ def collect_ukb_participants(ukb_layout, participant_label):
         )
     if not found_labels:
         raise Exception("No complete UKB directories were found")
+
+    return sorted(found_labels)
+
+def missing_from_hcp_directory(hcp_subject_dir):
+    """Check for missing files in a HCP subject directory.
+
+    Parameters
+    ----------
+    HCP_subject_dir : :obj:`pathlib.Path`
+        The path to the HCP subject directory.
+
+    Returns
+    -------
+    missing_files : :obj:`list` of :obj:`str`
+        A list of missing files.
+    """
+    dmri_dir = hcp_subject_dir / "T1w" / "Diffusion"
+
+    # Files needed to run recon workflows
+    required_files = [
+        dmri_dir / "bvals",
+        dmri_dir / "bvecs",
+        dmri_dir / "data.nii.gz",
+        #dmri_dir / "dti_FA.nii.gz",
+        # The anatomical data is not strictly necessary for recon
+        # anat_dir / "T1_brain.nii.gz",
+        # anat_dir / "T1_brain_mask.nii.gz"
+    ]
+
+    return [str(fpath) for fpath in required_files if not fpath.exists()]
+
+
+def create_hcp_layout(hcp_dir, participant_label=None):
+    """Find all valid HCP directories under hcp_dir.
+
+    Parameters
+    ----------
+    hcp_dir : :obj:`pathlib.Path`
+        The path to the HCP directory.
+    participant_label : :obj:`list` of :obj:`str`
+        A list of participant labels to search for.
+
+    Returns
+    -------
+    hcp_layout : :obj:`list` of :obj:`dict`
+        A list of dictionaries containing the subject ID, session ID, path to the HCP directory,
+        and the path to the fake dwi file.
+    """
+    # find directories starting with a number. These are the candidate directories
+    hcp_layout = []
+    for potential_dir in Path(hcp_dir).iterdir():
+        if participant_label and not potential_dir.name.startswith(participant_label):
+            continue
+
+        match = re.match(HCP_DIR_PATTERN, potential_dir.name)
+        if not match:
+            continue
+
+        if missing_from_hcp_directory(potential_dir):
+            continue
+
+        subject = match.groups()
+        fake_dwi_file = (
+            f"/bids/sub-{subject}/dwi/sub-{subject}_dwi.nii.gz"
+        )
+        hcp_layout.append(
+            {
+                "subject": subject,
+                "path": potential_dir,
+                "bids_dwi_file": fake_dwi_file,
+            }
+        )
+
+    return hcp_layout
+
+
+def hcp_dirname_to_bids(hcp_dir):
+    """Convert a HCP directory name to a BIDS subject ID.
+
+    Parameters
+    ----------
+    hcp_dir : :obj:`pathlib.Path`
+        The path to the HCP directory.
+
+    Returns
+    -------
+    bids_subject_id : :obj:`str`
+        The BIDS subject ID and session ID, combined in a string.
+    """
+    hcp_path = Path(hcp_dir)
+    match = re.match(HCP_DIR_PATTERN, hcp_path.name)
+    subject = match.groups()
+    return f"sub-{subject}"
+
+
+def collect_hcp_participants(hcp_layout, participant_label):
+    """Collect all valid HCP participants.
+
+    Parameters
+    ----------
+    hcp_layout : :obj:`list` of :obj:`dict`
+        A list of dictionaries containing the subject ID and path to the HCP directory,
+        and the path to the fake dwi file.
+    participant_label : :obj:`list` of :obj:`str`
+        A list of participant labels to search for.
+
+    Returns
+    -------
+    participants : :obj:`list` of :obj:`str`
+        A list of participant labels.
+    """
+    all_participants = set([spec["subject"] for spec in hcp_layout])
+
+    # No --participant-label was set, return all
+    if not participant_label:
+        return sorted(all_participants)
+
+    if isinstance(participant_label, str):
+        participant_label = [participant_label]
+
+    participant_label = set(participant_label)
+
+    # Remove labels not found
+    found_labels = sorted(participant_label & all_participants)
+    requested_but_missing = sorted(participant_label - all_participants)
+
+    if requested_but_missing:
+        raise Exception(
+            "Requested subjects [{}] do not have complete HCP directories under".format(
+                ", ".join(requested_but_missing)
+            )
+        )
+    if not found_labels:
+        raise Exception("No complete HCP directories were found")
 
     return sorted(found_labels)

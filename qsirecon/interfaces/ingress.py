@@ -195,12 +195,12 @@ class HCPDWIIngress(SimpleInterface):
 
         # The HCP input files
         in_dir = Path(self.inputs.data_dir)
-        dwi_dir = op.join(in_dir, "T1w", "Diffusion")
-        hcp_bval_file = op.join(dwi_dir, "bvals")
-        hcp_bvec_file = op.join(dwi_dir, "bvecs")  # These are the same as eddy rotated
-        hcp_dwi_file = op.join(dwi_dir, "data.nii.gz")
-        # hcp_dwiref_file = op.join(dwi_dir, "dti_FA.nii.gz")
-
+        dwi_dir = in_dir / "T1w" / "Diffusion"
+        hcp_bval_file = dwi_dir / "bvals"
+        hcp_bvec_file = dwi_dir / "bvecs"  # These are the same as eddy rotated
+        hcp_dwi_file = dwi_dir / "data.nii.gz"
+        #hcp_dwiref_file = dwi_dir / "dti_FA.nii.gz"
+        
         # The bids_name is what the images will be renamed to
         bids_name = Path(self.inputs.dwi_file).name.replace(".nii.gz", "")
         dwi_file = str(runpath / (bids_name + ".nii.gz"))

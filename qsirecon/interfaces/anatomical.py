@@ -206,8 +206,8 @@ class HCPAnatomicalIngress(QSIReconAnatomicalIngress):
         input_path = Path(self.inputs.recon_input_dir)
         bids_name = hcp_dirname_to_bids(self.inputs.recon_input_dir)
 
-        hcp_brain = op.join(input_path, "T1w", "T1w_acpc_dc_restore.nii.gz")
-        hcp_brain_mask = op.join(input_path, "T1w", "brainmask_fs.nii.gz")
+        hcp_brain = input_path / "T1w" / "T1w_acpc_dc_restore_brain.nii.gz"
+        hcp_brain_mask = input_path / "T1w" / "brainmask_fs.nii.gz"
 
         conformed_t1w_file = str(Path(runtime.cwd) / (bids_name + "_desc-preproc_T1w.nii.gz"))
         conformed_mask_file = str(Path(runtime.cwd) / (bids_name + "_desc-brain_mask.nii.gz"))
