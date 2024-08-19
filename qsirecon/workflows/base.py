@@ -203,6 +203,12 @@ to workflows in *qsirecon*'s documentation]\
             name=f"{wf_name}_recon_wf",
         )
 
+        file_anat_ingress_node = (
+            anat_ingress_node
+            if config.workflow.recon_input_pipeline == "qsiprep"
+            else anat_ingress_nodes[dwi_file]
+        )
+
         # Connect the collected diffusion data (gradients, etc) to the inputnode
         workflow.connect([
             # The dwi data
@@ -226,15 +232,10 @@ to workflows in *qsirecon*'s documentation]\
                 (trait, f"inputnode.{trait}") for trait in recon_workflow_input_fields
             ]),
 
-            (
-                anat_ingress_node if config.workflow.recon_input_pipeline == "qsiprep"
-                else anat_ingress_nodes[dwi_file],
-                dwi_individual_anatomical_wfs[dwi_file],
-                [
-                    (f"outputnode.{trait}", f"inputnode.{trait}")
-                    for trait in anatomical_workflow_outputs
-                ]
-            ),
+            (file_anat_ingress_node, dwi_individual_anatomical_wfs[dwi_file], [
+                (f"outputnode.{trait}", f"inputnode.{trait}")
+                for trait in anatomical_workflow_outputs
+            ]),
         ])  # fmt:skip
 
     # Preprocessing of anatomical data (includes possible registration template)
@@ -253,7 +254,7 @@ to workflows in *qsirecon*'s documentation]\
         run_without_submitting=True,
     )
     workflow.connect([
-        (anat_ingress_nodes[dwi_file], ds_report_about, [
+        (file_anat_ingress_node, ds_report_about, [
             (('t1w_preproc', fix_multi_T1w_source_name), 'source_file'),
         ]),
         (about, ds_report_about, [('out_report', 'in_file')]),
