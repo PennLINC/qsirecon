@@ -23,6 +23,9 @@ import os.path as op
 import shutil
 from glob import glob
 from pathlib import Path
+import numpy as np
+from nilearn import image as nim
+#from qsiprep.interfaces.gradients import ExtractB0s, ExtractB0sOutputSpec, ExtractB0sInputSpec
 
 import nibabel as nb
 from nipype import logging
@@ -199,8 +202,7 @@ class HCPDWIIngress(SimpleInterface):
         hcp_bval_file = dwi_dir / "bvals"
         hcp_bvec_file = dwi_dir / "bvecs"  # These are the same as eddy rotated
         hcp_dwi_file = dwi_dir / "data.nii.gz"
-        #hcp_dwiref_file = dwi_dir / "dti_FA.nii.gz"
-        
+
         # The bids_name is what the images will be renamed to
         bids_name = Path(self.inputs.dwi_file).name.replace(".nii.gz", "")
         dwi_file = str(runpath / (bids_name + ".nii.gz"))
@@ -208,7 +210,7 @@ class HCPDWIIngress(SimpleInterface):
         bvec_file = str(runpath / (bids_name + ".bvec"))
         b_file = str(runpath / (bids_name + ".b"))
         btable_file = str(runpath / (bids_name + "btable.txt"))
-        # dwiref_file = str(runpath / (bids_name.replace("_dwi", "_dwiref") + ".nii.gz"))
+        dwiref_file = str(runpath / (bids_name.replace("_dwi", "_dwiref") + ".nii.gz"))
 
         dwi_conform = ConformDwi(
             dwi_file=str(hcp_dwi_file), bval_file=str(hcp_bval_file), bvec_file=str(hcp_bvec_file)
@@ -231,7 +233,13 @@ class HCPDWIIngress(SimpleInterface):
         _convert_fsl_to_mrtrix(bval_file, bvec_file, b_file)
         self._results["b_file"] = b_file
 
-        # Create a dwi ref file
+        # Create a dwi ref file (REPLACE WITH QSIPREP FUNCTION WHEN INTEGRATED)
         # to_lps(nb.load(hcp_dwiref_file)).to_filename(dwiref_file)
-        # self._results["dwi_ref"] = dwiref_file
+        bvals = np.loadtxt(hcp_bval_file)
+        b0_threshold = 50
+        indices = np.flatnonzero(bvals < b0_threshold)
+        new_data = nim.index_img(hcp_dwi_file, indices)
+        mean_image = to_lps(nim.math_img("img.mean(3)", img=new_data))
+        mean_image.to_filename(dwiref_file)
+        self._results["dwi_ref"] = dwiref_file
         return runtime
