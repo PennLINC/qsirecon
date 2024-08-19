@@ -286,7 +286,7 @@ to workflows in *qsirecon*'s documentation]\
         name="summary",
         run_without_submitting=True,
     )
-    workflow.connect([(reduce_t1_preproc, summary, [("out", "t1w")])])
+    workflow.connect([(reduce_t1_preproc, summary, [("outlist", "t1w")])])
     ds_report_summary = pe.Node(
         DerivativesDataSink(
             source_file=dwi_basename,
