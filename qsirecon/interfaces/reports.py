@@ -122,7 +122,11 @@ class SummaryInterface(SimpleInterface):
 class SubjectSummaryInputSpec(BaseInterfaceInputSpec):
     t1w = InputMultiPath(File(exists=True), desc="T1w structural images")
     t2w = InputMultiPath(File(exists=True), desc="T2w structural images")
-    subjects_dir = Directory(desc="FreeSurfer subjects directory")
+    subjects_dir = traits.Either(
+        Directory,
+        None,
+        desc="FreeSurfer subjects directory",
+    )
     subject_id = Str(desc="Subject ID")
     dwi = InputMultiObject(
         traits.Either(File(exists=True), traits.List(File(exists=True))),
