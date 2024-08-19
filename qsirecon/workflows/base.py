@@ -80,7 +80,7 @@ def init_single_subject_recon_wf(subject_id):
         Single subject label
     """
     from ..interfaces.bids import DerivativesDataSink
-    from ..interfaces.ingress import QsiReconDWIIngress, UKBioBankDWIIngress
+    from ..interfaces.ingress import QSIPrepDWIIngress, UKBioBankDWIIngress
     from ..interfaces.interchange import (
         ReconWorkflowInputs,
         anatomical_workflow_outputs,
@@ -164,7 +164,7 @@ to workflows in *qsirecon*'s documentation]\
         # Get the preprocessed DWI and all the related preprocessed images
         if config.workflow.recon_input_pipeline == "qsiprep":
             dwi_ingress_nodes[dwi_file] = pe.Node(
-                QsiReconDWIIngress(dwi_file=dwi_file),
+                QSIPrepDWIIngress(dwi_file=dwi_file),
                 name=f"{wf_name}_ingressed_dwi_data",
             )
             anat_ingress_nodes[dwi_file] = anat_ingress_node
