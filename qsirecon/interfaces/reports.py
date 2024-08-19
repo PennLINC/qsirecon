@@ -23,6 +23,7 @@ from nipype.interfaces.base import (
     CommandLineInputSpec,
     Directory,
     File,
+    InputMultiObject,
     InputMultiPath,
     SimpleInterface,
     Str,
@@ -35,12 +36,14 @@ from scipy.io.matlab import loadmat
 
 from .qc import createB0_ColorFA_Mask_Sprites, createSprite4D
 
-SUBJECT_TEMPLATE = """\t<ul class="elem-desc">
+SUBJECT_TEMPLATE = """\
+\t<ul class="elem-desc">
 \t\t<li>Subject ID: {subject_id}</li>
-\t\t<li>Structural images: {n_t1s:d} T1-weighted {t2w}</li>
-\t\t<li>Diffusion-weighted series: inputs {n_dwis:d}, outputs {n_outputs:d}</li>
-\t\t<li>FreeSurfer input: {freesurfer}</li>
-\t\t<li>Resampling targets: {output_spaces}</li>
+\t\t<li>Structural images: {n_t1w:d} T1-weighted {t2w}</li>
+\t\t<li>Diffusion-weighted series: {n_dwi:d}</li>
+\t\t<li>Standard output spaces: {std_spaces}</li>
+\t\t<li>Non-standard output spaces: {nstd_spaces}</li>
+\t\t<li>FreeSurfer reconstruction: {freesurfer_status}</li>
 \t</ul>
 """
 
@@ -121,9 +124,12 @@ class SubjectSummaryInputSpec(BaseInterfaceInputSpec):
     t2w = InputMultiPath(File(exists=True), desc="T2w structural images")
     subjects_dir = Directory(desc="FreeSurfer subjects directory")
     subject_id = Str(desc="Subject ID")
-    dwi_groupings = traits.Dict(desc="groupings of DWI files and their output names")
-    output_spaces = traits.List(desc="Target spaces")
-    template = traits.Enum("MNI152NLin2009cAsym", desc="Template space")
+    dwi = InputMultiObject(
+        traits.Either(File(exists=True), traits.List(File(exists=True))),
+        desc="Preprocessed DWI series",
+    )
+    std_spaces = traits.List(Str, desc="list of standard spaces")
+    nstd_spaces = traits.List(Str, desc="list of non-standard spaces")
 
 
 class SubjectSummaryOutputSpec(SummaryOutputSpec):
@@ -139,49 +145,30 @@ class SubjectSummary(SummaryInterface):
     def _run_interface(self, runtime):
         if isdefined(self.inputs.subject_id):
             self._results["subject_id"] = self.inputs.subject_id
-        return super(SubjectSummary, self)._run_interface(runtime)
+        return super()._run_interface(runtime)
 
     def _generate_segment(self):
+        if not isdefined(self.inputs.subjects_dir):
+            freesurfer_status = "Not run"
+        else:
+            freesurfer_status = "Pre-existing directory"
+
         t2w_seg = ""
         if self.inputs.t2w:
-            t2w_seg = "(+ {:d} T2-weighted)".format(len(self.inputs.t2w))
+            t2w_seg = f"(+ {len(self.inputs.t2w):d} T2-weighted)"
 
-        # Add text for how the dwis are grouped
-        n_dwis = 0
-        n_outputs = 0
-        groupings = ""
-        if isdefined(self.inputs.dwi_groupings):
-            for output_fname, group_info in self.inputs.dwi_groupings.items():
-                n_outputs += 1
-                files_desc = []
-                files_desc.append(
-                    "\t\t\t<li>Scan group: %s (PE Dir %s)</li><ul>"
-                    % (output_fname, group_info["dwi_series_pedir"])
-                )
-                files_desc.append("\t\t\t\t<li>DWI Files: </li>")
-                for dwi_file in group_info["dwi_series"]:
-                    files_desc.append("\t\t\t\t\t<li> %s </li>" % dwi_file)
-                    n_dwis += 1
-                fieldmap_type = group_info["fieldmap_info"]["suffix"]
-                if fieldmap_type is not None:
-                    files_desc.append("\t\t\t\t<li>Fieldmap type: %s </li>" % fieldmap_type)
-
-                    for key, value in group_info["fieldmap_info"].items():
-                        files_desc.append("\t\t\t\t\t<li> %s: %s </li>" % (key, str(value)))
-                        n_dwis += 1
-                files_desc.append("</ul>")
-                groupings += GROUPING_TEMPLATE.format(
-                    output_name=output_fname, input_files="\n".join(files_desc)
-                )
+        # Add list of tasks with number of runs
+        dwi_series = self.inputs.dwi if isdefined(self.inputs.dwi) else []
+        dwi_series = [s[0] if isinstance(s, list) else s for s in dwi_series]
 
         return SUBJECT_TEMPLATE.format(
             subject_id=self.inputs.subject_id,
-            n_t1s=len(self.inputs.t1w),
+            n_t1w=len(self.inputs.t1w),
             t2w=t2w_seg,
-            n_dwis=n_dwis,
-            n_outputs=n_outputs,
-            groupings=groupings,
-            output_spaces="T1wACPC",
+            n_dwi=len(dwi_series),
+            std_spaces=", ".join(self.inputs.std_spaces),
+            nstd_spaces=", ".join(self.inputs.nstd_spaces),
+            freesurfer_status=freesurfer_status,
         )
 
 

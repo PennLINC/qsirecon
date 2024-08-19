@@ -239,13 +239,18 @@ to workflows in *qsirecon*'s documentation]\
         ])  # fmt:skip
 
     # Preprocessing of anatomical data (includes possible registration template)
+    dwi_basename = fix_multi_T1w_source_name(dwi_recon_inputs)
     about = pe.Node(
-        AboutSummary(version=config.environment.version, command=" ".join(sys.argv)),
+        AboutSummary(
+            version=config.environment.version,
+            command=" ".join(sys.argv),
+        ),
         name="about",
         run_without_submitting=True,
     )
     ds_report_about = pe.Node(
         DerivativesDataSink(
+            source_file=dwi_basename,
             base_directory=config.execution.output_dir,
             datatype="figures",
             suffix="about",
@@ -254,9 +259,6 @@ to workflows in *qsirecon*'s documentation]\
         run_without_submitting=True,
     )
     workflow.connect([
-        (file_anat_ingress_node, ds_report_about, [
-            (('outputnode.t1w_preproc', fix_multi_T1w_source_name), 'source_file'),
-        ]),
         (about, ds_report_about, [('out_report', 'in_file')]),
     ])  # fmt:skip
 
