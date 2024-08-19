@@ -47,25 +47,12 @@ SUBJECT_TEMPLATE = """\
 \t</ul>
 """
 
-DIFFUSION_TEMPLATE = """\t\t<h3 class="elem-title">Summary</h3>
-\t\t<ul class="elem-desc">
-\t\t\t<li>Phase-encoding (PE) direction: {pedir}</li>
-\t\t</ul>
-{validation_reports}
-"""
-
 ABOUT_TEMPLATE = """\t<ul>
 \t\t<li>QSIRecon version: {version}</li>
 \t\t<li>QSIRecon command: <code>{command}</code></li>
-\t\t<li>Date preprocessed: {date}</li>
+\t\t<li>Date postprocessed: {date}</li>
 \t</ul>
 </div>
-"""
-
-GROUPING_TEMPLATE = """\t<ul>
-\t\t<li>Output Name: {output_name}</li>
-{input_files}
-</ul>
 """
 
 INTERACTIVE_TEMPLATE = """
