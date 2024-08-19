@@ -47,7 +47,7 @@ def init_qsirecon_wf():
         )
     elif config.workflow.recon_input_pipeline == "hcpya":
         from ..utils.ingress import collect_hcp_participants, create_hcp_layout
- 
+
         # The hcp input will always be specified as the bids input - we can't preproc it first
         hcp_layout = create_hcp_layout(config.execution.bids_dir)
         to_recon_list = collect_hcp_participants(
@@ -160,7 +160,7 @@ to workflows in *qsirecon*'s documentation]\
         # Get the preprocessed DWI and all the related preprocessed images
         if config.workflow.recon_input_pipeline == "qsiprep":
             dwi_ingress_nodes[dwi_file] = pe.Node(
-                QSIPrepDWIIngress(dwi_file=dwi_file), name=wf_name + "_ingressed_dwi_data"
+                QsiReconDWIIngress(dwi_file=dwi_file), name=wf_name + "_ingressed_dwi_data"
             )
 
         elif config.workflow.recon_input_pipeline == "ukb":
