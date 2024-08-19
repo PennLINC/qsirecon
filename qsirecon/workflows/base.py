@@ -255,7 +255,7 @@ to workflows in *qsirecon*'s documentation]\
     )
     workflow.connect([
         (file_anat_ingress_node, ds_report_about, [
-            (('t1w_preproc', fix_multi_T1w_source_name), 'source_file'),
+            (('outputnode.t1w_preproc', fix_multi_T1w_source_name), 'source_file'),
         ]),
         (about, ds_report_about, [('out_report', 'in_file')]),
     ])  # fmt:skip
