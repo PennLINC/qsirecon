@@ -96,7 +96,7 @@ def init_single_subject_recon_wf(subject_id):
     )
     from .recon.build_workflow import init_dwi_recon_workflow
 
-    spec = _load_recon_spec()
+    spec = _load_recon_spec(config.workflow.recon_spec)
     dwi_recon_inputs = _get_iterable_dwi_inputs(subject_id)
 
     workflow = Workflow(name=f"sub-{subject_id}_{spec['name']}")
@@ -250,6 +250,13 @@ to workflows in *qsirecon*'s documentation]\
 
     # Preprocessing of anatomical data (includes possible registration template)
     dwi_basename = fix_multi_T1w_source_name(dwi_files)
+
+    reduce_t1_preproc = pe.Node(
+        GetUnique(),
+        name="reduce_t1_preproc",
+    )
+    workflow.connect([(aggregate_anatomical_nodes, reduce_t1_preproc, [("out", "inlist")])])
+
     about = pe.Node(
         AboutSummary(
             version=config.environment.version,
@@ -258,24 +265,6 @@ to workflows in *qsirecon*'s documentation]\
         name="about",
         run_without_submitting=True,
     )
-    ds_report_about = pe.Node(
-        DerivativesDataSink(
-            source_file=dwi_basename,
-            base_directory=config.execution.output_dir,
-            datatype="figures",
-            desc="about",
-            suffix="T1w",
-        ),
-        name="ds_report_about",
-        run_without_submitting=True,
-    )
-    workflow.connect([(about, ds_report_about, [("out_report", "in_file")])])
-
-    reduce_t1_preproc = pe.Node(
-        GetUnique(),
-        name="reduce_t1_preproc",
-    )
-    workflow.connect([(aggregate_anatomical_nodes, reduce_t1_preproc, [("out", "inlist")])])
     summary = pe.Node(
         SubjectSummary(
             subject_id=subject_id,
@@ -288,17 +277,38 @@ to workflows in *qsirecon*'s documentation]\
         run_without_submitting=True,
     )
     workflow.connect([(reduce_t1_preproc, summary, [("outlist", "t1w")])])
-    ds_report_summary = pe.Node(
+
+    suffix_dirs = []
+    for qsirecon_suffix in config.workflow.qsirecon_suffixes:
+        suffix_dir = str(config.execution.output_dir / f"qsirecon-{qsirecon_suffix}")
+        suffix_dirs.append(suffix_dir)
+
+    ds_report_about = pe.MapNode(
         DerivativesDataSink(
             source_file=dwi_basename,
-            base_directory=config.execution.output_dir,
+            datatype="figures",
+            desc="about",
+            suffix="T1w",
+        ),
+        name="ds_report_about",
+        run_without_submitting=True,
+        iterfield=["base_directory"],
+    )
+    ds_report_about.inputs.base_directory = suffix_dirs
+    workflow.connect([(about, ds_report_about, [("out_report", "in_file")])])
+
+    ds_report_summary = pe.MapNode(
+        DerivativesDataSink(
+            source_file=dwi_basename,
             datatype="figures",
             desc="summary",
             suffix="T1w",
         ),
         name="ds_report_summary",
         run_without_submitting=True,
+        iterfield=["base_directory"],
     )
+    ds_report_summary.inputs.base_directory = suffix_dirs
     workflow.connect([(summary, ds_report_summary, [("out_report", "in_file")])])
 
     # Fill-in datasinks of reportlets seen so far
@@ -321,10 +331,9 @@ def _get_wf_name(dwi_file):
     return "_".join(tokens[:-1]).replace("-", "_")
 
 
-def _load_recon_spec():
+def _load_recon_spec(spec_name):
     from ..utils.sloppy_recon import make_sloppy
 
-    spec_name = config.workflow.recon_spec
     prepackaged_dir = pkgrf("qsirecon", "data/pipelines")
     prepackaged = [op.split(fname)[1][:-5] for fname in glob(prepackaged_dir + "/*.json")]
     if op.exists(spec_name):

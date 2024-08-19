@@ -239,33 +239,3 @@ def copy_boilerplate(in_dir, out_dir):
     for ext, citation_file in citation_files.items():
         if citation_file.exists():
             shutil.copy(citation_file, out_logs_path / f"CITATION.{ext}")
-
-
-def copy_reportlets(in_dir, out_dir, participant_labels):
-    import shutil
-
-    in_path = Path(in_dir)
-    out_path = Path(out_dir)
-
-    if not participant_labels:
-        from bids.layout import BIDSLayout
-
-        layout = BIDSLayout(out_dir, config="figures", validate=False)
-        participant_labels = layout.get_subjects()
-
-    for subject_id in participant_labels:
-        if not subject_id.startswith("sub-"):
-            subject_id = f"sub-{subject_id}"
-
-        subject_htmls = (in_path / subject_id).glob("figures/*.html")
-        for subject_html in subject_htmls:
-            out_html = out_path / subject_html.relative_to(in_path)
-            out_html.parent.mkdir(exist_ok=True, parents=True)
-            shutil.copy(subject_html, out_html)
-
-        # Session-wise reportlets
-        session_htmls = (in_path / subject_id).glob("ses-*/figures/*.html")
-        for session_html in session_htmls:
-            out_html = out_path / session_html.relative_to(in_path)
-            out_html.parent.mkdir(exist_ok=True, parents=True)
-            shutil.copy(session_html, out_html)

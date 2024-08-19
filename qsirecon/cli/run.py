@@ -171,8 +171,7 @@ def main():
     finally:
 
         from ..reports.core import generate_reports
-        from ..workflows.base import _load_recon_spec
-        from .workflow import copy_boilerplate, copy_reportlets
+        from .workflow import copy_boilerplate
 
         # Generate reports phase
         session_list = config.execution.get().get("bids_filters", {}).get("dwi", {}).get("session")
@@ -184,15 +183,8 @@ def main():
         )
         write_bidsignore(config.execution.output_dir)
 
-        workflow_spec = _load_recon_spec()
         # Compile list of output folders
-        # TODO: Retain QSIRecon pipeline names in the config object
-        qsirecon_suffixes = []
-        for node_spec in workflow_spec["nodes"]:
-            qsirecon_suffix = node_spec.get("qsirecon_suffix", None)
-            qsirecon_suffixes += [qsirecon_suffix] if qsirecon_suffix else []
-
-        qsirecon_suffixes = sorted(list(set(qsirecon_suffixes)))
+        qsirecon_suffixes = config.workflow.qsirecon_suffixes
         config.loggers.cli.info(f"QSIRecon pipeline suffixes: {qsirecon_suffixes}")
         failed_reports = []
         for qsirecon_suffix in qsirecon_suffixes:
@@ -200,13 +192,6 @@ def main():
 
             # Copy the boilerplate files
             copy_boilerplate(config.execution.output_dir, suffix_dir)
-
-            # Copy general reportlets
-            copy_reportlets(
-                config.execution.output_dir,
-                suffix_dir,
-                config.execution.participant_label,
-            )
 
             suffix_failed_reports = generate_reports(
                 config.execution.participant_label,
