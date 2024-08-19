@@ -6,6 +6,7 @@
 
 import json
 import os.path as op
+import sys
 from copy import deepcopy
 from glob import glob
 
@@ -16,6 +17,7 @@ from nilearn import __version__ as nilearn_ver
 from nipype import __version__ as nipype_ver
 from nipype.utils.filemanip import split_filename
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
+from niworkflows.utils.misc import fix_multi_T1w_source_name
 from packaging.version import Version
 from pkg_resources import resource_filename as pkgrf
 
@@ -76,6 +78,7 @@ def init_single_subject_recon_wf(subject_id):
     subject_id : str
         Single subject label
     """
+    from ..interfaces.bids import DerivativesDataSink
     from ..interfaces.ingress import QsiReconDWIIngress, UKBioBankDWIIngress
     from ..interfaces.interchange import (
         ReconWorkflowInputs,
@@ -84,6 +87,7 @@ def init_single_subject_recon_wf(subject_id):
         recon_workflow_anatomical_input_fields,
         recon_workflow_input_fields,
     )
+    from ..interfaces.reports import AboutSummary
     from .recon.anatomical import (
         init_dwi_recon_anatomical_workflow,
         init_highres_recon_anatomical_wf,
@@ -152,13 +156,14 @@ to workflows in *qsirecon*'s documentation]\
         # Get the preprocessed DWI and all the related preprocessed images
         if config.workflow.recon_input_pipeline == "qsiprep":
             dwi_ingress_nodes[dwi_file] = pe.Node(
-                QsiReconDWIIngress(dwi_file=dwi_file), name=wf_name + "_ingressed_dwi_data"
+                QsiReconDWIIngress(dwi_file=dwi_file),
+                name=f"{wf_name}_ingressed_dwi_data",
             )
 
         elif config.workflow.recon_input_pipeline == "ukb":
             dwi_ingress_nodes[dwi_file] = pe.Node(
                 UKBioBankDWIIngress(dwi_file=dwi_file, data_dir=str(dwi_input["path"].absolute())),
-                name=wf_name + "_ingressed_ukb_dwi_data",
+                name=f"{wf_name}_ingressed_ukb_dwi_data",
             )
             anat_ingress_nodes[dwi_file], available_anatomical_data = (
                 init_highres_recon_anatomical_wf(
@@ -167,7 +172,7 @@ to workflows in *qsirecon*'s documentation]\
                     extras_to_make=spec.get("anatomical", []),
                     pipeline_source="ukb",
                     needs_t1w_transform=needs_t1w_transform,
-                    name=wf_name + "_ingressed_ukb_anat_data",
+                    name=f"{wf_name}_ingressed_ukb_anat_data",
                 )
             )
 
@@ -179,7 +184,7 @@ to workflows in *qsirecon*'s documentation]\
                 prefer_dwi_mask=False,
                 needs_t1w_transform=needs_t1w_transform,
                 extras_to_make=spec.get("anatomical", []),
-                name=wf_name + "_dwi_specific_anat_wf",
+                name=f"{wf_name}_dwi_specific_anat_wf",
                 **available_anatomical_data,
             )
         )
@@ -187,41 +192,72 @@ to workflows in *qsirecon*'s documentation]\
         # This node holds all the inputs that will go to the recon workflow.
         # It is the definitive place to check what the input files are
         recon_full_inputs[dwi_file] = pe.Node(
-            ReconWorkflowInputs(), name=wf_name + "_recon_inputs"
+            ReconWorkflowInputs(),
+            name=f"{wf_name}_recon_inputs",
         )
 
         # This is the actual recon workflow for this dwi file
         dwi_recon_wfs[dwi_file] = init_dwi_recon_workflow(
             available_anatomical_data=dwi_available_anatomical_data,
             workflow_spec=spec,
-            name=wf_name + "_recon_wf",
+            name=f"{wf_name}_recon_wf",
         )
 
         # Connect the collected diffusion data (gradients, etc) to the inputnode
         workflow.connect([
             # The dwi data
             (dwi_ingress_nodes[dwi_file], recon_full_inputs[dwi_file], [
-                (trait, trait) for trait in qsiprep_output_names]),
+                (trait, trait) for trait in qsiprep_output_names
+            ]),
 
             # Session-specific anatomical data
-            (dwi_ingress_nodes[dwi_file], dwi_individual_anatomical_wfs[dwi_file],
-             [(trait, "inputnode." + trait) for trait in qsiprep_output_names]),
+            (dwi_ingress_nodes[dwi_file], dwi_individual_anatomical_wfs[dwi_file], [
+                (trait, f"inputnode.{trait}") for trait in qsiprep_output_names
+            ]),
 
             # subject dwi-specific anatomical to a special node in recon_full_inputs so
             # we have a record of what went in. Otherwise it would be lost in an IdentityInterface
-            (dwi_individual_anatomical_wfs[dwi_file], recon_full_inputs[dwi_file],
-             [("outputnode." + trait, trait) for trait in recon_workflow_anatomical_input_fields]),
+            (dwi_individual_anatomical_wfs[dwi_file], recon_full_inputs[dwi_file], [
+                (f"outputnode.{trait}", trait) for trait in recon_workflow_anatomical_input_fields
+            ]),
 
             # send the recon_full_inputs to the dwi recon workflow
-            (recon_full_inputs[dwi_file], dwi_recon_wfs[dwi_file],
-             [(trait, "inputnode." + trait) for trait in recon_workflow_input_fields]),
+            (recon_full_inputs[dwi_file], dwi_recon_wfs[dwi_file], [
+                (trait, f"inputnode.{trait}") for trait in recon_workflow_input_fields
+            ]),
 
-            (anat_ingress_node if config.workflow.recon_input_pipeline == "qsiprep"
-             else anat_ingress_nodes[dwi_file],
-             dwi_individual_anatomical_wfs[dwi_file],
-             [(f"outputnode.{trait}", f"inputnode.{trait}")
-              for trait in anatomical_workflow_outputs])
+            (
+                anat_ingress_node if config.workflow.recon_input_pipeline == "qsiprep"
+                else anat_ingress_nodes[dwi_file],
+                dwi_individual_anatomical_wfs[dwi_file],
+                [
+                    (f"outputnode.{trait}", f"inputnode.{trait}")
+                    for trait in anatomical_workflow_outputs
+                ]
+            ),
         ])  # fmt:skip
+
+    # Preprocessing of anatomical data (includes possible registration template)
+    about = pe.Node(
+        AboutSummary(version=config.environment.version, command=" ".join(sys.argv)),
+        name="about",
+        run_without_submitting=True,
+    )
+    ds_report_about = pe.Node(
+        DerivativesDataSink(
+            base_directory=config.execution.output_dir,
+            datatype="figures",
+            suffix="about",
+        ),
+        name="ds_report_about",
+        run_without_submitting=True,
+    )
+    workflow.connect([
+        (anat_ingress_nodes[dwi_file], ds_report_about, [
+            (('t1w_preproc', fix_multi_T1w_source_name), 'source_file'),
+        ]),
+        (about, ds_report_about, [('out_report', 'in_file')]),
+    ])  # fmt:skip
 
     # Fill-in datasinks of reportlets seen so far
     for node in workflow.list_node_names():

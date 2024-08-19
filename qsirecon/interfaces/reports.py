@@ -39,23 +39,14 @@ SUBJECT_TEMPLATE = """\t<ul class="elem-desc">
 \t\t<li>Subject ID: {subject_id}</li>
 \t\t<li>Structural images: {n_t1s:d} T1-weighted {t2w}</li>
 \t\t<li>Diffusion-weighted series: inputs {n_dwis:d}, outputs {n_outputs:d}</li>
-{groupings}
-\t\t<li>Resampling targets: T1wACPC
+\t\t<li>FreeSurfer input: {freesurfer}</li>
+\t\t<li>Resampling targets: {output_spaces}</li>
 \t</ul>
 """
 
 DIFFUSION_TEMPLATE = """\t\t<h3 class="elem-title">Summary</h3>
 \t\t<ul class="elem-desc">
 \t\t\t<li>Phase-encoding (PE) direction: {pedir}</li>
-\t\t\t<li>Susceptibility distortion correction: {sdc}</li>
-\t\t\t<li>Coregistration Transform: {coregistration}</li>
-\t\t\t<li>Denoising Method: {denoise_method}</li>
-\t\t\t<li>Denoising Window: {denoise_window}</li>
-\t\t\t<li>HMC Transform: {hmc_transform}</li>
-\t\t\t<li>HMC Model: {hmc_model}</li>
-\t\t\t<li>DWI series resampled to spaces: T1wACPC</li>
-\t\t\t<li>Confounds collected: {confounds}</li>
-\t\t\t<li>Impute slice threshold: {impute_slice_threshold}</li>
 \t\t</ul>
 {validation_reports}
 """
