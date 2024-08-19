@@ -151,6 +151,7 @@ def collect_ukb_participants(ukb_layout, participant_label):
 
     return sorted(found_labels)
 
+
 def missing_from_hcp_directory(hcp_subject_dir):
     """Check for missing files in a HCP subject directory.
 
@@ -171,7 +172,7 @@ def missing_from_hcp_directory(hcp_subject_dir):
         dmri_dir / "bvals",
         dmri_dir / "bvecs",
         dmri_dir / "data.nii.gz",
-        #dmri_dir / "dti_FA.nii.gz",
+        # dmri_dir / "dti_FA.nii.gz",
         # The anatomical data is not strictly necessary for recon
         # anat_dir / "T1_brain.nii.gz",
         # anat_dir / "T1_brain_mask.nii.gz"
