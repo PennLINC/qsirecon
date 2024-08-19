@@ -5,8 +5,8 @@ from nipype.interfaces.base import (
     traits,
 )
 
-from qsirecon.interfaces.anatomical import QSIReconAnatomicalIngress
-from qsirecon.interfaces.ingress import QsiReconDWIIngress
+from qsirecon.interfaces.anatomical import QSIPrepAnatomicalIngress
+from qsirecon.interfaces.ingress import QSIPrepDWIIngress
 
 # Anatomical (t1w/t2w) slots
 FS_FILES_TO_REGISTER = [
@@ -23,9 +23,9 @@ CREATEABLE_ANATOMICAL_OUTPUTS = [
     "fs_to_qsiprep_transform_mrtrix",
 ]
 
-# These come directly from QSIRecon outputs. They're aligned to the DWIs in AC-PC
+# These come directly from QSIPrep outputs. They're aligned to the DWIs in AC-PC
 qsiprep_highres_anatomical_ingressed_fields = (
-    QSIReconAnatomicalIngress.output_spec.class_editable_traits()
+    QSIPrepAnatomicalIngress.output_spec.class_editable_traits()
 )
 
 # The init_recon_anatomical anatomical workflow can create additional
@@ -38,7 +38,7 @@ anatomical_workflow_outputs = (
 )
 
 # These are read directly from QSIRecon's dwi results.
-qsiprep_output_names = QsiReconDWIIngress().output_spec.class_editable_traits()
+qsiprep_output_names = QSIPrepDWIIngress().output_spec.class_editable_traits()
 
 # dMRI + registered anatomical fields
 recon_workflow_anatomical_input_fields = anatomical_workflow_outputs + [
