@@ -82,7 +82,7 @@ def init_highres_recon_anatomical_wf(
     # are present. The anat_ingress_node is a nipype node that ensures that qsiprep-style
     # anatomical data is available. In the case where ``pipeline_source`` is not "qsiprep",
     # the data is converted in this node to be qsiprep-like.
-    pipeline_source = config.workflow.recon_input_pipeline
+    pipeline_source = config.workflow.input_type
     freesurfer_dir = config.execution.freesurfer_input
     qsirecon_suffix = "anat"
     if pipeline_source == "qsiprep":

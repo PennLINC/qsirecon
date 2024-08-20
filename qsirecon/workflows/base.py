@@ -31,16 +31,16 @@ def init_qsirecon_wf():
     qsirecon_wf = Workflow(name=f"qsirecon_{ver.major}_{ver.minor}_wf")
     qsirecon_wf.base_dir = config.execution.work_dir
 
-    if config.workflow.recon_input_pipeline not in ("qsiprep", "ukb"):
+    if config.workflow.input_type not in ("qsiprep", "ukb"):
         raise NotImplementedError(
-            f"{config.workflow.recon_input_pipeline} is not supported as recon-input yet."
+            f"{config.workflow.input_type} is not supported as recon-input yet."
         )
 
-    if config.workflow.recon_input_pipeline == "qsiprep":
+    if config.workflow.input_type == "qsiprep":
         # This should work for --recon-input as long as the same dataset is in bids_dir
         # or if the call is doing preproc+recon
         to_recon_list = config.execution.participant_label
-    elif config.workflow.recon_input_pipeline == "ukb":
+    elif config.workflow.input_type == "ukb":
         from ..utils.ingress import collect_ukb_participants, create_ukb_layout
 
         # The ukb input will always be specified as the bids input - we can't preproc it first
@@ -137,7 +137,7 @@ to workflows in *qsirecon*'s documentation]\
 
     # This is here because qsiprep currently only makes one anatomical result per subject
     # regardless of sessions. So process it on its
-    if config.workflow.recon_input_pipeline == "qsiprep":
+    if config.workflow.input_type == "qsiprep":
         anat_ingress_node, available_anatomical_data = init_highres_recon_anatomical_wf(
             subject_id=subject_id,
             extras_to_make=spec.get("anatomical", []),
@@ -167,14 +167,14 @@ to workflows in *qsirecon*'s documentation]\
         wf_name = _get_wf_name(dwi_file)
 
         # Get the preprocessed DWI and all the related preprocessed images
-        if config.workflow.recon_input_pipeline == "qsiprep":
+        if config.workflow.input_type == "qsiprep":
             dwi_ingress_nodes[dwi_file] = pe.Node(
                 QSIPrepDWIIngress(dwi_file=dwi_file),
                 name=f"{wf_name}_ingressed_dwi_data",
             )
             anat_ingress_nodes[dwi_file] = anat_ingress_node
 
-        elif config.workflow.recon_input_pipeline == "ukb":
+        elif config.workflow.input_type == "ukb":
             dwi_ingress_nodes[dwi_file] = pe.Node(
                 UKBioBankDWIIngress(dwi_file=dwi_file, data_dir=str(dwi_input["path"].absolute())),
                 name=f"{wf_name}_ingressed_ukb_dwi_data",
@@ -374,7 +374,7 @@ def _get_iterable_dwi_inputs(subject_id):
     from ..utils.ingress import create_ukb_layout
 
     dwi_dir = config.execution.bids_dir
-    if config.workflow.recon_input_pipeline == "qsiprep":
+    if config.workflow.input_type == "qsiprep":
         if not (dwi_dir / f"sub-{subject_id}").exists():
             raise Exception(f"Unable to find subject directory in {config.execution.bids_dir}")
 
@@ -390,7 +390,7 @@ def _get_iterable_dwi_inputs(subject_id):
         config.loggers.workflow.info("found %s in %s", dwi_files, dwi_dir)
         return [{"bids_dwi_file": dwi_file} for dwi_file in dwi_files]
 
-    if config.workflow.recon_input_pipeline == "ukb":
+    if config.workflow.input_type == "ukb":
         return create_ukb_layout(ukb_dir=config.execution.bids_dir, participant_label=subject_id)
 
-    raise Exception("Unknown pipeline " + config.workflow.recon_input_pipeline)
+    raise Exception("Unknown pipeline " + config.workflow.input_type)
