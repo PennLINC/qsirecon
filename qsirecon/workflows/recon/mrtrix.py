@@ -280,7 +280,7 @@ def init_mrtrix_csd_recon_wf(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
                 model=fod_algorithm,
-                mfp="FOD",
+                param="FOD",
                 label="WM",
                 suffix="dwimap",
                 extension=".mif.gz",
@@ -295,7 +295,7 @@ def init_mrtrix_csd_recon_wf(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
                 model=fod_algorithm,
-                mfp="FOD",
+                param="FOD",
                 label="WM",
                 suffix="dwimap",
                 extension=".txt",
@@ -311,7 +311,7 @@ def init_mrtrix_csd_recon_wf(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
                     model=fod_algorithm,
-                    mfp="FOD",
+                    param="FOD",
                     label="GM",
                     suffix="dwimap",
                     extension=".mif.gz",
@@ -326,7 +326,7 @@ def init_mrtrix_csd_recon_wf(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
                     model=fod_algorithm,
-                    mfp="FOD",
+                    param="FOD",
                     label="GM",
                     suffix="dwimap",
                     extension=".txt",
@@ -341,7 +341,7 @@ def init_mrtrix_csd_recon_wf(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
                     model=fod_algorithm,
-                    mfp="FOD",
+                    param="FOD",
                     label="CSF",
                     suffix="dwimap",
                     extension=".mif.gz",
@@ -356,7 +356,7 @@ def init_mrtrix_csd_recon_wf(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
                     model=fod_algorithm,
-                    mfp="FOD",
+                    param="FOD",
                     label="CSF",
                     suffix="dwimap",
                     extension=".txt",
@@ -372,7 +372,7 @@ def init_mrtrix_csd_recon_wf(
                     DerivativesDataSink(
                         dismiss_entities=("desc",),
                         model="mtnorm",
-                        mfp="norm",
+                        param="norm",
                         suffix="dwimap",
                         compress=True,
                     ),
@@ -385,7 +385,7 @@ def init_mrtrix_csd_recon_wf(
                     DerivativesDataSink(
                         dismiss_entities=("desc",),
                         model="mtnorm",
-                        mfp="inliermask",
+                        param="inliermask",
                         suffix="dwimap",
                         compress=True,
                     ),
