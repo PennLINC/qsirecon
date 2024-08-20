@@ -19,6 +19,7 @@ from nipype.interfaces.base import (
     InputMultiObject,
     SimpleInterface,
     TraitedSpec,
+    Undefined,
     isdefined,
     traits,
 )
@@ -109,7 +110,14 @@ class ReconScalars(SimpleInterface):
 class _ReconScalarsDataSinkInputSpec(BaseInterfaceInputSpec):
     source_file = File()
     base_directory = File()
-    resampled_files = InputMultiObject(File(exists=True))
+    resampled_files = InputMultiObject(
+        File(exists=True),
+        desc=(
+            "Resampled scalar files. "
+            "This field is not used, but we keep it so that the files won't be "
+            "automatically deleted by Nipype."
+        ),
+    )
     recon_scalars = InputMultiObject(traits.Any())
     compress = traits.Bool(True, usedefault=True)
     dismiss_entities = traits.List([], usedefault=True)
@@ -289,3 +297,34 @@ for input_name in brainsuite_3dshore_scalars:
 class BrainSuite3dSHOREReconScalars(ReconScalars):
     input_spec = _BrainSuite3dSHOREReconScalarInputSpec
     scalar_metadata = brainsuite_3dshore_scalars
+
+
+class _OrganizeScalarDataInputSpec(BaseInterfaceInputSpec):
+    scalar_config = traits.Dict()
+
+
+class _OrganizeScalarDataOutputSpec(TraitedSpec):
+    scalar_file = File(exists=True)
+    metadata = traits.Dict()
+    model = traits.Either(
+        traits.Str(),
+        Undefined,
+    )
+    param = traits.Either(
+        traits.Str(),
+        Undefined,
+    )
+
+
+class OrganizeScalarData(SimpleInterface):
+    input_spec = _OrganizeScalarDataInputSpec
+    output_spec = _OrganizeScalarDataOutputSpec
+
+    def _run_interface(self, runtime):
+        scalar_config = self.inputs.scalar_config
+        self._results["scalar_file"] = scalar_config["path"]
+        self._results["metadata"] = scalar_config.get("metadata", {})
+        self._results["model"] = scalar_config.get("bids", {}).get("model", Undefined)
+        self._results["param"] = scalar_config.get("bids", {}).get("param", Undefined)
+
+        return runtime

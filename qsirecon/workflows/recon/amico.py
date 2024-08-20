@@ -10,12 +10,13 @@ import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
+from .utils import init_scalar_output_wf
 from ... import config
 from ...interfaces.amico import NODDI
 from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.converters import NODDItoFIBGZ
 from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.recon_scalars import AMICOReconScalars, ReconScalarsDataSink
+from ...interfaces.recon_scalars import AMICOReconScalars
 from ...interfaces.reports import CLIReconPeaksReport
 from ...utils.bids import clean_datasinks
 
@@ -152,12 +153,11 @@ diffusivity.""" % (
         )
         workflow.connect([(outputnode, ds_fibgz, [("fibgz", "in_file")])])
 
-        ds_recon_scalars = pe.Node(
-            ReconScalarsDataSink(dismiss_entities=["desc"]),
-            name="ds_recon_scalars",
-            run_without_submitting=True,
-        )
-        workflow.connect([(recon_scalars, ds_recon_scalars, [("scalar_info", "recon_scalars")])])
+        scalar_output_wf = init_scalar_output_wf()
+        workflow.connect([
+            (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
+            (recon_scalars, scalar_output_wf, [("scalar_info", "inputnode.scalar_configs")]),
+        ])  # fmt:skip
 
         ds_config = pe.Node(
             DerivativesDataSink(
