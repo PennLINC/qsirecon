@@ -163,7 +163,7 @@ diffusivity.""" % (
             DerivativesDataSink(
                 dismiss_entities=("desc",),
                 param="AMICOconfig",
-                model="NODDI",
+                model="noddi",
                 suffix="dwimap",
                 compress=True,
             ),
