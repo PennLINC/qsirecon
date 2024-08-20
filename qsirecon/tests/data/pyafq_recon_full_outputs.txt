@@ -36,7 +36,6 @@ derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/R
 derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/ROIs/sub-ABCD_acq-10per000_space-subject_desc-RightCorticospinalstart0_mask.nii.gz
 derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/bundles
 derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/bundles/sub-ABCD_acq-10per000_coordsys-RASMM_trkmethod-probCSD_recogmethod-AFQ_desc-LeftSuperiorLongitudinal_tractography.json
-derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/bundles/sub-ABCD_acq-10per000_coordsys-RASMM_trkmethod-probCSD_recogmethod-AFQ_desc-LeftSuperiorLongitudinal_tractography.trk
 derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/bundles/sub-ABCD_acq-10per000_coordsys-RASMM_trkmethod-probCSD_recogmethod-AFQ_desc-RightCorticospinal_tractography.json
 derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/bundles/sub-ABCD_acq-10per000_coordsys-RASMM_trkmethod-probCSD_recogmethod-AFQ_desc-RightCorticospinal_tractography.trk
 derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/sub-ABCD_acq-10per000_coordsys-RASMM_trkmethod-probCSD_desc-seed_mask.json
@@ -82,7 +81,6 @@ derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/v
 derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/viz_bundles/sub-ABCD_acq-10per000_coordsys-RASMM_trkmethod-probCSD_recogmethod-AFQ_desc-LeftSuperiorLongitudinalviz_dwi.html
 derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/viz_bundles/sub-ABCD_acq-10per000_coordsys-RASMM_trkmethod-probCSD_recogmethod-AFQ_desc-RightCorticospinalviz_dwi.html
 derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/viz_core_bundles
-derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/viz_core_bundles/sub-ABCD_acq-10per000_coordsys-RASMM_trkmethod-probCSD_recogmethod-AFQ_desc-LeftSuperiorLongitudinalviz_dwi.html
 derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/viz_core_bundles/sub-ABCD_acq-10per000_coordsys-RASMM_trkmethod-probCSD_recogmethod-AFQ_desc-RightCorticospinalviz_dwi.html
 logs
 logs/CITATION.bib
