@@ -435,6 +435,8 @@ class execution(_Config):
     """A dictionary of dataset links to be used to track Sources in sidecars."""
     aggr_ses_reports = 4  # TODO: Change to None when implemented on command line
     """Maximum number of sessions aggregated in one subject's visual report."""
+    dataset_links = {}
+    """A dictionary of dataset links to be used to track Sources in sidecars."""
 
     _layout = None
 
@@ -451,6 +453,7 @@ class execution(_Config):
         "output_dir",
         "templateflow_home",
         "work_dir",
+        "dataset_links",
     )
 
     @classmethod
