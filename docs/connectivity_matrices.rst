@@ -22,7 +22,7 @@ The following atlases are included in ``qsirecon`` and are used by default in th
 :ref:`preconfigured_workflows`. If you use one of them please be sure to cite
 the relevant publication.
 
- * ``schaefer100``, ``schaefer200``, ``schaefer400``: :footcite:t:`schaefer2018local;yeo2011organization`
+ * ``schaefer100``, ``schaefer200``, ``schaefer400``: :footcite:t:`schaefer2018local,yeo2011organization`
  * ``brainnetome246``: :footcite:t:`fan2016human`
  * ``aicha384``: :footcite:t:`joliot2015aicha`
  * ``gordon333``: :footcite:t:`gordon2016generation`

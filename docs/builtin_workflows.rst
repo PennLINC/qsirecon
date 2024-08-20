@@ -164,7 +164,7 @@ Additionally, a number of anisotropy scalar images are produced such as QA, GFA 
 ========================
 
 This workflow implements DSI Studio's q-space diffeomorphic reconstruction (QSDR), the MNI space
-(ICBM-152) version of GQI, followed by automatic fiber tracking (autotrack) :footcite:p:`autotrack;yeh2022population`
+(ICBM-152) version of GQI, followed by automatic fiber tracking (autotrack) :footcite:p:`autotrack,yeh2022population`
 of 56 white matter pathways. Autotrack uses a population-averaged tractography atlas
 (based on HCP-Young Adult data) to identify tracts of interest in individual subject's data.
 The autotrack procedure seeds deterministic fiber tracking with randomized parameter saturation
