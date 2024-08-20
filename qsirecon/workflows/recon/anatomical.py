@@ -84,7 +84,7 @@ def init_highres_recon_anatomical_wf(
     # the data is converted in this node to be qsiprep-like.
     pipeline_source = config.workflow.input_type
     freesurfer_dir = config.execution.freesurfer_input
-    qsirecon_suffix = "anat"
+    qsirecon_suffix = ""
     if pipeline_source == "qsiprep":
         anat_ingress_node, status = gather_qsiprep_anatomical_data(subject_id)
     elif pipeline_source == "ukb":
@@ -492,7 +492,7 @@ def init_dwi_recon_anatomical_workflow(
     )
     connect_from_buffernode = set()
     b0_threshold = config.workflow.b0_threshold
-    qsirecon_suffix = "anat"
+    qsirecon_suffix = ""
 
     def _get_source_node(fieldname):
         if fieldname in connect_from_inputnode:

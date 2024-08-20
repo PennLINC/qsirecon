@@ -188,7 +188,9 @@ def main():
         config.loggers.cli.info(f"QSIRecon pipeline suffixes: {qsirecon_suffixes}")
         failed_reports = []
         for qsirecon_suffix in qsirecon_suffixes:
-            suffix_dir = str(config.execution.output_dir / f"qsirecon-{qsirecon_suffix}")
+            suffix_dir = str(
+                config.execution.output_dir / "derivatives" / f"qsirecon-{qsirecon_suffix}"
+            )
 
             # Copy the boilerplate files
             copy_boilerplate(config.execution.output_dir, suffix_dir)
