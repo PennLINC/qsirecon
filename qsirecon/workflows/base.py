@@ -92,7 +92,7 @@ def init_single_subject_recon_wf(subject_id):
     subject_id : str
         Single subject label
     """
-    from ..interfaces.ingress import QsiReconDWIIngress, UKBioBankDWIIngress, HCPDWIIngress
+    from ..interfaces.ingress import QSIPrepDWIIngress, UKBioBankDWIIngress, HCPDWIIngress
     from ..interfaces.bids import DerivativesDataSink
     from ..interfaces.interchange import (
         ReconWorkflowInputs,
