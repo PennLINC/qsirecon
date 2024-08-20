@@ -22,9 +22,9 @@ The following atlases are included in ``qsirecon`` and are used by default in th
 :ref:`preconfigured_workflows`. If you use one of them please be sure to cite
 the relevant publication.
 
- * ``schaefer100``, ``schaefer200``, ``schaefer400``: [Schaefer2017]_, [Yeo2011]_
- * ``brainnetome246``: [Fan2016]_
- * ``aicha384``: [Joliot2015]_
+ * ``schaefer100``, ``schaefer200``, ``schaefer400``: :footcite:t:`schaefer2018local;yeo2011organization`
+ * ``brainnetome246``: :footcite:t:`fan2016human`
+ * ``aicha384``: :footcite:t:`joliot2015aicha`
  * ``gordon333``: [Gordon2014]_
  * ``aal116``: [TzourioMazoyer2002]_
 
@@ -65,3 +65,10 @@ The nifti images should be registered to the
 included in ``qsirecon``.
 It is essential that your images are in the LPS+ orientation and have the sform zeroed-out
 in the header. **Be sure to check for alignment and orientation** in your outputs.
+
+
+**********
+References
+**********
+
+.. footbibliography::
