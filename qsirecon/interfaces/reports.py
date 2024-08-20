@@ -116,7 +116,7 @@ class SubjectSummaryInputSpec(BaseInterfaceInputSpec):
     )
     subject_id = Str(desc="Subject ID")
     dwi = InputMultiObject(
-        traits.Either(File(exists=True), traits.List(File(exists=True))),
+        traits.Either(File(exists=False), traits.List(File(exists=True))),
         desc="Preprocessed DWI series",
     )
     std_spaces = traits.List(Str, desc="list of standard spaces")
