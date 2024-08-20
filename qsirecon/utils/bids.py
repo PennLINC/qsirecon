@@ -181,15 +181,6 @@ def write_derivative_description(bids_dir, deriv_dir, dataset_links=None):
     dset_desc["GeneratedBy"] = generated_by
     dset_desc["HowToAcknowledge"] = "Include the generated boilerplate in the methods section."
 
-    # Add DatasetLinks
-    if "DatasetLinks" not in dset_desc.keys():
-        dset_desc["DatasetLinks"] = {}
-
-    if "preprocessed" in dset_desc["DatasetLinks"].keys():
-        config.loggers.utils.warning("'preprocessed' is already a dataset link. Overwriting.")
-
-    dset_desc["DatasetLinks"]["preprocessed"] = str(bids_dir)
-
     # Keys that can only be set by environment
     if "FMRIPREP_DOCKER_TAG" in os.environ:
         dset_desc["GeneratedBy"][0]["Container"] = {
@@ -206,12 +197,22 @@ def write_derivative_description(bids_dir, deriv_dir, dataset_links=None):
         dset_desc["SourceDatasetsURLs"] = [f"https://doi.org/{dset_desc['DatasetDOI']}"]
 
     # Add DatasetLinks
+    if "DatasetLinks" not in dset_desc.keys():
+        dset_desc["DatasetLinks"] = {}
+
+    if "preprocessed" in dset_desc["DatasetLinks"].keys():
+        config.loggers.utils.warning("'preprocessed' is already a dataset link. Overwriting.")
+
+    dset_desc["DatasetLinks"]["preprocessed"] = str(bids_dir)
     if dataset_links:
-        dset_desc["DatasetLinks"] = {k: str(v) for k, v in dataset_links.items()}
-        if "templateflow" in dataset_links:
-            dset_desc["DatasetLinks"][
-                "templateflow"
-            ] = "https://github.com/templateflow/templateflow"
+        for key, value in dataset_links.items():
+            if key in dset_desc["DatasetLinks"]:
+                config.loggers.utils.warning(f"'{key}' is already a dataset link. Overwriting.")
+
+            if key == "templateflow":
+                value = "https://github.com/templateflow/templateflow"
+
+            dset_desc["DatasetLinks"][key] = str(value)
 
     out_dset_description = os.path.join(deriv_dir, "dataset_description.json")
     if os.path.isfile(out_dset_description):

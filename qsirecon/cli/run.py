@@ -195,6 +195,7 @@ def main():
             # Add other pipeline-specific suffixes to the dataset links
             other_suffixes = [s for s in qsirecon_suffixes if s != qsirecon_suffix]
             dataset_links = config.execution.dataset_links.copy()
+            dataset_links["qsirecon"] = str(config.execution.output_dir)
             dataset_links.update(
                 {
                     f"qsirecon-{s}": str(
