@@ -180,13 +180,13 @@ class UKBAnatomicalIngress(QSIPrepAnatomicalIngress):
         return runtime
 
 
-class HCPAnatomicalIngressInputSpec(QSIReconAnatomicalIngressInputSpec):
+class HCPAnatomicalIngressInputSpec(QSIPrepAnatomicalIngressInputSpec):
     recon_input_dir = traits.Directory(
         exists=True, mandatory=True, help="directory containing a single subject's results"
     )
 
 
-class HCPAnatomicalIngress(QSIReconAnatomicalIngress):
+class HCPAnatomicalIngress(QSIPrepAnatomicalIngress):
     input_spec = HCPAnatomicalIngressInputSpec
 
     def _run_interface(self, runtime):

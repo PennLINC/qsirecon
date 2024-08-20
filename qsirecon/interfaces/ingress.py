@@ -182,7 +182,7 @@ class UKBioBankDWIIngress(SimpleInterface):
         return runtime
 
 
-class _HCPDWIIngressInputSpec(QsiReconDWIIngressInputSpec):
+class _HCPDWIIngressInputSpec(QSIPrepDWIIngressInputSpec):
     dwi_file = File(exists=False, help="The name of what a BIDS dwi file may have been")
     data_dir = traits.Directory(
         exists=True, help="The HCP data directory for a subject. Must contain T1w/"
@@ -191,7 +191,7 @@ class _HCPDWIIngressInputSpec(QsiReconDWIIngressInputSpec):
 
 class HCPDWIIngress(SimpleInterface):
     input_spec = _HCPDWIIngressInputSpec
-    output_spec = QsiReconDWIIngressOutputSpec
+    output_spec = QSIPrepDWIIngressOutputSpec
 
     def _run_interface(self, runtime):
         runpath = Path(runtime.cwd)
