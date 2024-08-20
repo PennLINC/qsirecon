@@ -26,8 +26,8 @@ from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.freesurfer import find_fs_path
 from ...interfaces.gradients import ExtractB0s
 from ...interfaces.interchange import (
-    anatomical_workflow_outputs,
     FS_FILES_TO_REGISTER,
+    anatomical_workflow_outputs,
     qsiprep_highres_anatomical_ingressed_fields,
     recon_workflow_input_fields,
 )

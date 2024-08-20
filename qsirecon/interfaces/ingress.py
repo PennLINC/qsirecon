@@ -25,6 +25,7 @@ from glob import glob
 from pathlib import Path
 
 import nibabel as nb
+import numpy as np
 from nilearn import image as nim
 from nipype import logging
 from nipype.interfaces.base import (
@@ -35,7 +36,6 @@ from nipype.interfaces.base import (
     traits,
 )
 from nipype.utils.filemanip import split_filename
-import numpy as np
 
 from .bids import get_bids_params
 from .dsi_studio import btable_from_bvals_bvecs

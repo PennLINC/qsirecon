@@ -93,13 +93,17 @@ def init_single_subject_recon_wf(subject_id):
         Single subject label
     """
     from ..interfaces.bids import DerivativesDataSink
-    from ..interfaces.ingress import HCPDWIIngress, QSIPrepDWIIngress, UKBioBankDWIIngress
+    from ..interfaces.ingress import (
+        HCPDWIIngress,
+        QSIPrepDWIIngress,
+        UKBioBankDWIIngress,
+    )
     from ..interfaces.interchange import (
+        ReconWorkflowInputs,
         anatomical_workflow_outputs,
         qsiprep_output_names,
         recon_workflow_anatomical_input_fields,
         recon_workflow_input_fields,
-        ReconWorkflowInputs,
     )
     from ..interfaces.reports import AboutSummary, SubjectSummary
     from ..interfaces.utils import GetUnique

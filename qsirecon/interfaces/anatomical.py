@@ -26,7 +26,7 @@ from nipype.interfaces.base import (
 )
 from nipype.utils.filemanip import fname_presuffix
 
-from ..utils.ingress import ukb_dirname_to_bids, hcp_dirname_to_bids
+from ..utils.ingress import hcp_dirname_to_bids, ukb_dirname_to_bids
 from .images import to_lps
 
 LOGGER = logging.getLogger("nipype.interface")
