@@ -97,6 +97,25 @@ class GetConnectivityAtlases(SimpleInterface):
         return runtime
 
 
+class _GetUniqueInputSpec(BaseInterfaceInputSpec):
+    inlist = traits.List(mandatory=True, desc="list of things")
+
+
+class _GetUniqueOutputSpec(TraitedSpec):
+    outlist = traits.List()
+
+
+class GetUnique(SimpleInterface):
+    input_spec = _GetUniqueInputSpec
+    output_spec = _GetUniqueOutputSpec
+
+    def _run_interface(self, runtime):
+        in_list = self.inputs.inlist
+        in_list = [x for x in in_list if isdefined(x)]
+        self._results["outlist"] = sorted(list(set(in_list)))
+        return runtime
+
+
 def _resample_atlas(input_atlas, output_atlas, transform, ref_image):
     xform = ants.ApplyTransforms(
         transforms=[transform],
