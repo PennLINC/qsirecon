@@ -117,7 +117,7 @@ def get_recon_output_name(
 
     out_path = base_dir
     if qsirecon_suffix:
-        out_path = op.join(out_path, f"qsirecon-{qsirecon_suffix}")
+        out_path = op.join(out_path, "derivatives", f"qsirecon-{qsirecon_suffix}")
 
     # Infer the appropriate extension
     if "extension" not in output_bids_entities:

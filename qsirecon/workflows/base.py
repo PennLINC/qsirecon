@@ -312,7 +312,9 @@ to workflows in *qsirecon*'s documentation]\
 
     suffix_dirs = []
     for qsirecon_suffix in config.workflow.qsirecon_suffixes:
-        suffix_dir = str(config.execution.output_dir / f"qsirecon-{qsirecon_suffix}")
+        suffix_dir = str(
+            config.execution.output_dir / "derivatives" / f"qsirecon-{qsirecon_suffix}"
+        )
         suffix_dirs.append(suffix_dir)
 
     ds_report_about = pe.MapNode(
