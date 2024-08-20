@@ -16,9 +16,9 @@ from pkg_resources import resource_filename as pkgrf
 from ... import config
 from ...interfaces.anatomical import (
     GetTemplate,
+    HCPAnatomicalIngress,
     QSIPrepAnatomicalIngress,
     UKBAnatomicalIngress,
-    HCPAnatomicalIngress,
     VoxelSizeChooser,
 )
 from ...interfaces.ants import ConvertTransformFile

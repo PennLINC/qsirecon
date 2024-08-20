@@ -92,8 +92,8 @@ def init_single_subject_recon_wf(subject_id):
     subject_id : str
         Single subject label
     """
-    from ..interfaces.ingress import QSIPrepDWIIngress, UKBioBankDWIIngress, HCPDWIIngress
     from ..interfaces.bids import DerivativesDataSink
+    from ..interfaces.ingress import HCPDWIIngress, QSIPrepDWIIngress, UKBioBankDWIIngress
     from ..interfaces.interchange import (
         ReconWorkflowInputs,
         anatomical_workflow_outputs,
@@ -394,7 +394,7 @@ def _get_iterable_dwi_inputs(subject_id):
     the other files needed.
 
     """
-    from ..utils.ingress import create_ukb_layout, create_hcp_layout
+    from ..utils.ingress import create_hcp_layout, create_ukb_layout
 
     dwi_dir = config.execution.bids_dir
     if config.workflow.recon_input_pipeline == "qsiprep":

@@ -23,11 +23,10 @@ import os.path as op
 import shutil
 from glob import glob
 from pathlib import Path
-import numpy as np
-from nilearn import image as nim
 
-# from qsiprep.interfaces.gradients import ExtractB0s, ExtractB0sOutputSpec, ExtractB0sInputSpec
+import numpy as np
 import nibabel as nb
+from nilearn import image as nim
 from nipype import logging
 from nipype.interfaces.base import (
     BaseInterfaceInputSpec,
