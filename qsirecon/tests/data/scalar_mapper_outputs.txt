@@ -39,8 +39,8 @@ derivatives/qsirecon-DSIStudio/logs/CITATION.tex
 derivatives/qsirecon-DSIStudio/sub-ABCD
 derivatives/qsirecon-DSIStudio/sub-ABCD.html
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi
-derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_fit-GQI_param-gfa_dwimap.nii.gz
-derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_fit-GQI_param-iso_dwimap.nii.gz
+derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-GQI_param-gfa_dwimap.nii.gz
+derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-GQI_param-iso_dwimap.nii.gz
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-GQI_param-qa_dwimap.nii.gz
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-RDI_param-rd1_dwimap.nii.gz
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-RDI_param-rd2_dwimap.nii.gz
@@ -61,8 +61,8 @@ derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_bund
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_bundles-DSIStudio_tdistats.tsv
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_bundlestats.csv
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap.fib.gz
-derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_fit-GQI_param-gfa_dwimap.nii.gz
-derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_fit-GQI_param-iso_dwimap.nii.gz
+derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-GQI_param-gfa_dwimap.nii.gz
+derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-GQI_param-iso_dwimap.nii.gz
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_mapping.map.gz
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-GQI_param-qa_dwimap.nii.gz
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-RDI_param-rd1_dwimap.nii.gz

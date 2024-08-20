@@ -299,9 +299,9 @@ dsistudio_scalars = {
     "rd_file": {"desc": "Radial Diffusivity", "bids": {"param": "rd", "model": "tensor"}},
     "gfa_file": {
         "desc": "Generalized Fractional Anisotropy",
-        "bids": {"param": "gfa", "fit": "GQI"},
+        "bids": {"model": "GQI", "param": "gfa"},
     },
-    "iso_file": {"desc": "Isotropic Diffusion", "bids": {"param": "iso", "fit": "GQI"}},
+    "iso_file": {"desc": "Isotropic Diffusion", "bids": {"model": "GQI", "param": "iso"}},
 }
 
 
