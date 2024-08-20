@@ -1,0 +1,96 @@
+ad_file:
+    bids:
+        model: tensor
+        param: ad
+    metadata:
+        Description: AD
+dti_fa_file:
+    bids:
+        model: tensor
+        param: fa
+    metadata:
+        Description: Radial Diffusivity from a tensor fit
+gfa_file:
+    bids:
+        model: GQI
+        param: gfa
+    metadata:
+        Description: Generalized Fractional Anisotropy
+ha_file:
+    bids:
+        model: tensor
+        param: ha
+    metadata:
+        Description: HA
+iso_file:
+    bids:
+        model: GQI
+        param: iso
+    metadata:
+        Description: Isotropic Diffusion
+md_file:
+    bids:
+        model: tensor
+        param: md
+    metadata:
+        Description: Mean Diffusivity
+qa_file:
+    bids:
+        model: GQI
+        param: qa
+    metadata:
+        Description: Fractional Anisotropy from a tensor fit
+rd1_file:
+    bids:
+        model: RDI
+        param: rd1
+    metadata:
+        Description: RD1
+rd2_file:
+    bids:
+        model: RDI
+        param: rd2
+    metadata:
+        Description: RD2
+rd_file:
+    bids:
+        model: tensor
+        param: rd
+    metadata:
+        Description: Radial Diffusivity
+txx_file:
+    bids:
+        model: tensor
+        param: txx
+    metadata:
+        Description: Tensor fit txx
+txy_file:
+    bids:
+        model: tensor
+        param: txy
+    metadata:
+        Description: Tensor fit txy
+txz_file:
+    bids:
+        model: tensor
+        param: txz
+    metadata:
+        Description: Tensor fit txz
+tyy_file:
+    bids:
+        model: tensor
+        param: tyy
+    metadata:
+        Description: Tensor fit tyy
+tyz_file:
+    bids:
+        model: tensor
+        param: tyz
+    metadata:
+        Description: Tensor fit tyz
+tzz_file:
+    bids:
+        model: tensor
+        param: tzz
+    metadata:
+        Description: Tensor fit tzz
