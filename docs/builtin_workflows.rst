@@ -55,7 +55,7 @@ Workflows
 This workflow uses the ``msmt_csd`` algorithm :footcite:p:`msmt5tt` to estimate FODs for white matter,
 gray matter and cerebrospinal fluid using *multi-shell acquisitions*. The white matter FODs are
 used for tractography and the T1w segmentation is used for anatomical constraints :footcite:p:`smith2012anatomically`.
-The T1w segmentation uses the hybrid surface volume segmentation (hsvs) [Smith2020]_ and
+The T1w segmentation uses the hybrid surface volume segmentation (hsvs) :footcite:p:`smith2020hybrid` and
 requires ``--freesurfer-input``.
 
 
@@ -89,7 +89,7 @@ This workflow uses the ``ss3t_csd_beta1`` algorithm :footcite:p:`dhollander2016n
 to estimate FODs for white matter,
 and cerebrospinal fluid using *single shell (DTI) acquisitions*. The white matter FODs are
 used for tractography and the T1w segmentation is used for anatomical constraints :footcite:p:`smith2012anatomically`.
-The T1w segmentation uses the hybrid surface volume segmentation (hsvs) [Smith2020]_ and
+The T1w segmentation uses the hybrid surface volume segmentation (hsvs) :footcite:p:`smith2020hybrid` and
 requires ``--freesurfer-input``.
 
 .. _mrtrix_singleshell_ss3t_ACT-fast:
@@ -115,7 +115,7 @@ used for tractography with no T1w-based anatomical constraints.
 ``pyafq_tractometry``
 =====================
 
-This workflow uses the AFQ [Yeatman2012]_ implemented in Python [Kruper2021]_ to recognize
+This workflow uses the AFQ :footcite:p:`pyafq2` implemented in Python :footcite:p:`pyafq` to recognize
 major white matter pathways within the tractography, and then extract tissue properties along
 those pathways. See the `pyAFQ documentation <https://yeatmanlab.github.io/pyAFQ/>`_ .
 
@@ -135,8 +135,8 @@ reconstruciton pipelines to pyAFQ.
 ``amico_noddi``
 ===============
 
-This workflow estimates the NODDI [Zhang2012]_ model using the implementation from
-AMICO [Daducci2015]_. Images with intra-cellular volume fraction (ICVF), isotropic volume
+This workflow estimates the NODDI :footcite:p:`noddi` model using the implementation from
+AMICO :footcite:p:`amico`. Images with intra-cellular volume fraction (ICVF), isotropic volume
 fraction (ISOVF), orientation dispersion (OD) are written to outputs. Additionally, a DSI
 Studio fib file is created using the peak directions and ICVF as a stand-in for QA to be
 used for tractography.

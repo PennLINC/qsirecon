@@ -25,8 +25,8 @@ the relevant publication.
  * ``schaefer100``, ``schaefer200``, ``schaefer400``: :footcite:t:`schaefer2018local;yeo2011organization`
  * ``brainnetome246``: :footcite:t:`fan2016human`
  * ``aicha384``: :footcite:t:`joliot2015aicha`
- * ``gordon333``: [Gordon2014]_
- * ``aal116``: [TzourioMazoyer2002]_
+ * ``gordon333``: :footcite:t:`gordon2016generation`
+ * ``aal116``: :footcite:t:`tzourio2002automated`
 
 .. _custom_atlases:
 
