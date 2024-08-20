@@ -24,9 +24,9 @@ from nipype.interfaces.base import (
     traits,
 )
 
+from ..utils.misc import load_yaml
 from .bids import _copy_any, get_recon_output_name
 from qsirecon.data import load as load_data
-from ..utils.misc import load_yaml
 
 
 class ReconScalarsInputSpec(BaseInterfaceInputSpec):
