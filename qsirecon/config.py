@@ -522,6 +522,9 @@ class execution(_Config):
             "preprocessed": cls.bids_dir,
             "templateflow": Path(TF_LAYOUT.root),
         }
+        if cls.fs_subjects_dir:
+            dataset_links["freesurfer"] = cls.fs_subjects_dir
+
         for deriv_name, deriv_path in cls.derivatives.items():
             dataset_links[deriv_name] = deriv_path
         cls.dataset_links = dataset_links
