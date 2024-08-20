@@ -50,7 +50,7 @@ used for preprocessing.
 UK BioBank Preprocessed Data
 ============================
 
-To use the UK BioBank preprocessed dMRI data, specify ``--recon-input-pipeline ukb``.
+To use the UK BioBank preprocessed dMRI data, specify ``--input-type ukb``.
 Note that the transforms to/from MNI space are not able to be used at this time.
 This means that a new spatial normalization will have to be estimated in order to
 use any of the workflows that require one.
@@ -58,7 +58,7 @@ use any of the workflows that require one.
 HCP Young Adult Preprocessed Data
 =================================
 
-To use minimally preprocessed dMRI data from HCP-YA specify ``--recon-input-pipeline hcpya``.
+To use minimally preprocessed dMRI data from HCP-YA specify ``--input-type hcpya``.
 The included FNIRT transforms are usable directly. NOTE: this does not work yet.
 
 .. _anat_reqs:

@@ -35,7 +35,7 @@ qsirecon-docker -i pennlinc/qsirecon:unstable \
 	 ${BIDS_INPUT_DIR} ${OUTPUT_DIR} \
 	 participant \
 	 --recon-input ${BIDS_INPUT_DIR} \
-	 --recon-input-pipeline ukb \
+	 --input-type ukb \
 	 --participant-label 1234567 \
 	 --sloppy \
      --stop-on-first-crash \
