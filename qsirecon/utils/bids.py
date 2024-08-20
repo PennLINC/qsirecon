@@ -307,7 +307,7 @@ def clean_datasinks(workflow: pe.Workflow, qsirecon_suffix: Union[str, None]) ->
     """Overwrite the base_directory of Datasinks."""
     out_dir = Path(config.execution.output_dir)
     if qsirecon_suffix:
-        out_dir = out_dir / f"qsirecon-{qsirecon_suffix}"
+        out_dir = out_dir / "derivatives" / f"qsirecon-{qsirecon_suffix}"
 
     for node in workflow.list_node_names():
         if node.split(".")[-1].startswith("ds_"):
