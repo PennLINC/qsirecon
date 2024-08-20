@@ -14,7 +14,6 @@ Contents
    builtin_workflows
    building_workflows
    connectivity_matrices
-   citing
    comparisons
    help
    license
