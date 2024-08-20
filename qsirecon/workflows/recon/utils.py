@@ -110,7 +110,7 @@ def init_scalar_output_wf(
         iterfield=["scalar_config"],
         name="organize_scalar_data",
     )
-    workflow.connect([(inputnode, organize_scalar_data, [("scalar_files", "scalar_config")])])
+    workflow.connect([(inputnode, organize_scalar_data, [("scalar_configs", "scalar_config")])])
 
     ds_scalar = pe.MapNode(
         DerivativesDataSink(
