@@ -478,18 +478,19 @@ def parse_args(args=None, namespace=None):
     config.execution.log_dir.mkdir(exist_ok=True, parents=True)
     work_dir.mkdir(exist_ok=True, parents=True)
 
-    # Force initialization of the BIDSLayout
-    config.execution.init()
-    all_subjects = config.execution.layout.get_subjects()
-    if config.execution.participant_label is None:
-        config.execution.participant_label = all_subjects
-
     participant_label = set(config.execution.participant_label)
-    missing_subjects = participant_label - set(all_subjects)
-    if missing_subjects:
-        parser.error(
-            "One or more participant labels were not found in the BIDS directory: "
-            "%s." % ", ".join(missing_subjects)
-        )
+    if opts.recon_input_pipeline == "qsiprep":
+        # Force initialization of the BIDSLayout
+        config.execution.init()
+        all_subjects = config.execution.layout.get_subjects()
+        if config.execution.participant_label is None:
+            config.execution.participant_label = all_subjects
+
+        missing_subjects = participant_label - set(all_subjects)
+        if missing_subjects:
+            parser.error(
+                "One or more participant labels were not found in the BIDS directory: "
+                "%s." % ", ".join(missing_subjects)
+            )
 
     config.execution.participant_label = sorted(participant_label)

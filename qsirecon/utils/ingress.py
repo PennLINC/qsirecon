@@ -210,7 +210,7 @@ def create_hcp_layout(hcp_dir, participant_label=None):
         if missing_from_hcp_directory(potential_dir):
             continue
 
-        subject = match.groups()
+        subject = match.groups()[0]
         fake_dwi_file = f"/bids/sub-{subject}/dwi/sub-{subject}_dwi.nii.gz"
         hcp_layout.append(
             {
@@ -259,7 +259,6 @@ def collect_hcp_participants(hcp_layout, participant_label):
         A list of participant labels.
     """
     all_participants = set([spec["subject"] for spec in hcp_layout])
-
     # No --participant-label was set, return all
     if not participant_label:
         return sorted(all_participants)

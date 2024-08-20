@@ -194,11 +194,8 @@ to workflows in *qsirecon*'s documentation]\
             anat_ingress_nodes[dwi_file], available_anatomical_data = (
                 init_highres_recon_anatomical_wf(
                     subject_id=subject_id,
-                    recon_input_dir=dwi_input["path"],
                     extras_to_make=spec.get("anatomical", []),
-                    pipeline_source="ukb",
                     needs_t1w_transform=needs_t1w_transform,
-                    name=f"{wf_name}_ingressed_ukb_anat_data",
                 )
             )
         elif config.workflow.recon_input_pipeline == "hcpya":
@@ -209,11 +206,8 @@ to workflows in *qsirecon*'s documentation]\
             anat_ingress_nodes[dwi_file], available_anatomical_data = (
                 init_highres_recon_anatomical_wf(
                     subject_id=subject_id,
-                    recon_input_dir=dwi_input["path"],
                     extras_to_make=spec.get("anatomical", []),
-                    pipeline_source="hcpya",
                     needs_t1w_transform=needs_t1w_transform,
-                    name=wf_name + "_ingressed_hcp_anat_data",
                 )
             )
 

@@ -493,6 +493,7 @@ class execution(_Config):
                 database_path=_db_path,
                 reset_database=cls.bids_database_dir is None,
                 indexer=_indexer,
+                validate=False,
             )
             cls.bids_database_dir = _db_path
         cls.layout = cls._layout
