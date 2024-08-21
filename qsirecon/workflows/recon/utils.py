@@ -114,6 +114,7 @@ def init_scalar_output_wf(
 
     ds_scalar = pe.MapNode(
         DerivativesDataSink(
+            dismiss_entities=["desc"],
             datatype="dwi",
             suffix="dwimap",
             extension="nii.gz",
