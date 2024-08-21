@@ -16,6 +16,10 @@ derivatives/qsirecon-NODDI/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-nod
 derivatives/qsirecon-NODDI/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-noddi_param-icvf_dwimap.nii.gz
 derivatives/qsirecon-NODDI/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-noddi_param-isovf_dwimap.nii.gz
 derivatives/qsirecon-NODDI/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-noddi_param-od_dwimap.nii.gz
+derivatives/qsirecon-NODDI/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-noddi_param-direction_dwimap.json
+derivatives/qsirecon-NODDI/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-noddi_param-icvf_dwimap.json
+derivatives/qsirecon-NODDI/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-noddi_param-isovf_dwimap.json
+derivatives/qsirecon-NODDI/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-noddi_param-od_dwimap.json
 logs
 logs/CITATION.bib
 logs/CITATION.html
