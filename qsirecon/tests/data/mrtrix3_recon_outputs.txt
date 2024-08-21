@@ -19,9 +19,7 @@ derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-msmt_csd_param-FOD_label-GM_dwimap.txt
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-msmt_csd_param-FOD_label-WM_dwimap.mif.gz
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-msmt_csd_param-FOD_label-WM_dwimap.txt
-derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-mtnorm_param-inliermask_dwimap.json
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-mtnorm_param-inliermask_dwimap.nii.gz
-derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-mtnorm_param-norm_dwimap.json
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-mtnorm_param-norm_dwimap.nii.gz
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-sift2_mu.txt
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-sift2_streamlineweights.csv
