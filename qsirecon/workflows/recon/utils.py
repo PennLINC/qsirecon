@@ -118,7 +118,7 @@ def init_scalar_output_wf(
             suffix="dwimap",
             extension="nii.gz",
         ),
-        iterfield=["in_file", "metadata"],
+        iterfield=["in_file", "metadata", "model", "param"],
         name="ds_scalar",
         run_without_submitting=True,
     )
