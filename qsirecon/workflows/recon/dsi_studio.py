@@ -34,9 +34,10 @@ from ...interfaces.dsi_studio import (
     _get_dsi_studio_bundles,
 )
 from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.recon_scalars import DSIStudioReconScalars, ReconScalarsDataSink
+from ...interfaces.recon_scalars import DSIStudioReconScalars
 from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport
 from ...utils.bids import clean_datasinks
+from .utils import init_scalar_output_wf
 
 LOGGER = logging.getLogger("nipype.interface")
 
@@ -605,16 +606,11 @@ def init_dsi_studio_export_wf(
         workflow.connect(connections)  # fmt:skip
 
     if qsirecon_suffix:
-        ds_recon_scalars = pe.Node(
-            ReconScalarsDataSink(dismiss_entities=["desc"]),
-            name="ds_recon_scalars",
-            run_without_submitting=True,
-        )
-        workflow.connect(
-            recon_scalars,
-            "scalar_info",
-            ds_recon_scalars,
-            "recon_scalars")  # fmt:skip
+        scalar_output_wf = init_scalar_output_wf()
+        workflow.connect([
+            (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
+            (recon_scalars, scalar_output_wf, [("scalar_info", "inputnode.scalar_configs")]),
+        ])  # fmt:skip
 
     workflow.connect([
         (inputnode, export, [('fibgz', 'input_file')]),

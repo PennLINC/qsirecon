@@ -25,7 +25,7 @@ from nipype.interfaces.base import (
 )
 
 from ..utils.misc import load_yaml
-from .bids import _copy_any, get_recon_output_name
+from .bids import get_recon_output_name
 from qsirecon.data import load as load_data
 
 
@@ -107,7 +107,7 @@ class ReconScalars(SimpleInterface):
         return runtime
 
 
-class _ReconScalarsDataSinkInputSpec(BaseInterfaceInputSpec):
+class _ReconScalarsTableSplitterDataSinkInputSpec(BaseInterfaceInputSpec):
     source_file = File()
     base_directory = File()
     resampled_files = InputMultiObject(
@@ -122,57 +122,13 @@ class _ReconScalarsDataSinkInputSpec(BaseInterfaceInputSpec):
     compress = traits.Bool(True, usedefault=True)
     dismiss_entities = traits.List([], usedefault=True)
     infer_suffix = traits.Bool(False, usedefault=True)
-
-
-class ReconScalarsDataSink(SimpleInterface):
-    input_spec = _ReconScalarsDataSinkInputSpec
-    _always_run = True
-
-    def _run_interface(self, runtime):
-
-        force_compress = False
-        force_decompress = False
-        if isdefined(self.inputs.compress):
-            if self.inputs.compress:
-                force_compress = True
-            else:
-                force_decompress = True
-
-        for recon_scalar in self.inputs.recon_scalars:
-            qsirecon_suffix = None
-            if self.inputs.infer_suffix:
-                qsirecon_suffix = recon_scalar["qsirecon_suffix"]
-
-            output_filename = get_recon_output_name(
-                base_dir=self.inputs.base_directory,
-                source_file=self.inputs.source_file,
-                derivative_file=recon_scalar["path"],
-                output_bids_entities=recon_scalar["bids"],
-                use_ext=True,
-                dismiss_entities=self.inputs.dismiss_entities,
-                qsirecon_suffix=qsirecon_suffix,
-            )
-
-            if force_decompress and output_filename.endswith(".gz"):
-                output_filename = output_filename.rstrip(".gz")
-
-            if force_compress and not output_filename.endswith(".gz"):
-                output_filename += ".gz"
-
-            output_dir = op.dirname(output_filename)
-            os.makedirs(output_dir, exist_ok=True)
-            _copy_any(recon_scalar["path"], output_filename)
-
-        return runtime
-
-
-class _ReconScalarsTableSplitterDataSinkInputSpec(_ReconScalarsDataSinkInputSpec):
     summary_tsv = File(exists=True, mandatory=True, desc="tsv of combined scalar summaries")
     suffix = traits.Str(mandatory=True)
 
 
-class ReconScalarsTableSplitterDataSink(ReconScalarsDataSink):
+class ReconScalarsTableSplitterDataSink(SimpleInterface):
     input_spec = _ReconScalarsTableSplitterDataSinkInputSpec
+    _always_run = True
 
     def _run_interface(self, runtime):
         summary_df = pd.read_table(self.inputs.summary_tsv)

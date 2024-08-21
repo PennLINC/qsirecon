@@ -18,12 +18,10 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.recon_scalars import (
-    ReconScalarsDataSink,
-    ReconScalarsTableSplitterDataSink,
-)
+from ...interfaces.recon_scalars import ReconScalarsTableSplitterDataSink
 from ...interfaces.scalar_mapping import BundleMapper, TemplateMapper
 from ...utils.bids import clean_datasinks
+from .utils import init_scalar_output_wf
 
 LOGGER = logging.getLogger("nipype.workflow")
 
@@ -170,24 +168,22 @@ def init_scalar_to_template_wf(
     )
     workflow = Workflow(name=name)
     template_mapper = pe.Node(TemplateMapper(**params), name="template_mapper")
-    # Datasink will always be used, and the qsirecon-suffix is determined when
-    # the scalars are originally calculated
-    ds_template_scalars = pe.Node(
-        ReconScalarsDataSink(dismiss_entities=["desc"], infer_suffix=True),
-        name="ds_template_scalars",
-        run_without_submitting=True,
-    )
+
+    scalar_output_wf = init_scalar_output_wf()
+    workflow.connect([
+        (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
+        (template_mapper, scalar_output_wf, [
+            ("template_space_scalar_info", "inputnode.scalar_configs"),
+        ]),
+    ])  # fmt:skip
+
     workflow.connect([
         (inputnode, template_mapper, [
             ("collected_scalars", "recon_scalars"),
             ("t1_2_mni_forward_transform", "to_template_transform"),
-            ("resampling_template", "template_reference_image")]),
-        (template_mapper, outputnode, [
-            ("template_space_scalars", "template_scalars")]),
-        (template_mapper, ds_template_scalars, [
-            # Send the resampled files (without metadata) so they don't get cleaned up
-            ("template_space_scalars", "resampled_files"),
-            ("template_space_scalar_info", "recon_scalars")])
+            ("resampling_template", "template_reference_image"),
+        ]),
+        (template_mapper, outputnode, [("template_space_scalars", "template_scalars")]),
     ])  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)
