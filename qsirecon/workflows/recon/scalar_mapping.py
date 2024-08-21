@@ -174,6 +174,7 @@ def init_scalar_to_template_wf(
         (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
         (template_mapper, scalar_output_wf, [
             ("template_space_scalar_info", "inputnode.scalar_configs"),
+            ("template_space", "inputnode.space"),
         ]),
     ])  # fmt:skip
 

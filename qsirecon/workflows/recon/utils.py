@@ -95,6 +95,8 @@ def init_scalar_output_wf(
             fields=[
                 "source_file",
                 "scalar_configs",
+                # Entities
+                "space",
             ],
         ),
         name="inputnode",
@@ -124,7 +126,10 @@ def init_scalar_output_wf(
         run_without_submitting=True,
     )
     workflow.connect([
-        (inputnode, ds_scalar, [("source_file", "source_file")]),
+        (inputnode, ds_scalar, [
+            ("source_file", "source_file"),
+            ("space", "space"),
+        ]),
         (organize_scalar_data, ds_scalar, [
             ("scalar_file", "in_file"),
             ("metadata", "meta_dict"),
