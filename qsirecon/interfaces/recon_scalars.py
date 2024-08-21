@@ -403,12 +403,14 @@ class DIPYMAPMRIReconScalars(ReconScalars):
 brainsuite_3dshore_scalars = dipy_mapmri_scalars.copy()
 brainsuite_3dshore_scalars.update(
     {
-        "cnr_image": {"desc": "Contrast to noise ratio for 3dSHORE fit"},
-        "alpha_image": {"desc": "alpha used when fitting in each voxel"},
-        "r2_image": {"desc": "r^2 of the 3dSHORE fit"},
-        "regularization_image": {"desc": "regularization of the 3dSHORE fit"},
+        "cnr_image": {"desc": "Contrast to noise ratio for 3dSHORE fit", "bids": {"param": "CNR", "model": "3dSHORE"}},
+        "alpha_image": {"desc": "alpha used when fitting in each voxel", "bids": {"param": "alpha", "model": "3dSHORE"}},
+        "r2_image": {"desc": "r^2 of the 3dSHORE fit", "bids": {"param": "rsquared", "model": "3dSHORE"}},
+        "regularization_image": {"desc": "regularization of the 3dSHORE fit", "bids": {"param": "regularization", "model": "3dSHORE"}},
     }
 )
+for key in brainsuite_3dshore_scalars:
+    brainsuite_3dshore_scalars[key]["bids"]["model"] = "3dSHORE"
 
 
 class _BrainSuite3dSHOREReconScalarInputSpec(ReconScalarsInputSpec):
