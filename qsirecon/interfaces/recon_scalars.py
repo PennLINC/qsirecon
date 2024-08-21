@@ -216,7 +216,7 @@ class TORTOISEReconScalars(ReconScalars):
 
 
 # Scalars produced in the AMICO recon workflow
-amico_scalars = load_yaml(load_data("scalars/amico.yaml"))
+amico_scalars = load_yaml(load_data("scalars/amico_noddi.yaml"))
 
 
 class _AMICOReconScalarInputSpec(ReconScalarsInputSpec):
@@ -233,7 +233,7 @@ class AMICOReconScalars(ReconScalars):
 
 
 # Scalars produced by DSI Studio
-dsistudio_scalars = load_yaml(load_data("scalars/dsistudio.yaml"))
+dsistudio_scalars = load_yaml(load_data("scalars/dsistudio_gqi.yaml"))
 
 
 class _DSIStudioReconScalarInputSpec(ReconScalarsInputSpec):
