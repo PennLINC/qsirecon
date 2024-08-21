@@ -17,6 +17,7 @@ from ... import config
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import TORTOISEReconScalars
 from ...utils.bids import clean_datasinks
+from .utils import init_scalar_output_wf
 from qsirecon.interfaces.tortoise import (
     ComputeADMap,
     ComputeFAMap,
@@ -29,7 +30,6 @@ from qsirecon.interfaces.tortoise import (
     EstimateTensor,
     TORTOISEConvert,
 )
-from .utils import init_scalar_output_wf
 
 LOGGER = logging.getLogger("nipype.interface")
 
