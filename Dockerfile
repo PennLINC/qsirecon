@@ -20,7 +20,7 @@ RUN find $HOME -type d -exec chmod go=u {} + && \
 
 RUN ldconfig
 WORKDIR /tmp/
-ENTRYPOINT ["/opt/conda/envs/qsirecon/bin/qsirecon"]
+ENTRYPOINT ["/opt/conda/envs/qsiprep/bin/qsirecon"]
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION

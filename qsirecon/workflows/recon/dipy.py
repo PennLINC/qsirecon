@@ -26,10 +26,10 @@ from ...interfaces.recon_scalars import (
     BrainSuite3dSHOREReconScalars,
     DIPYDKIReconScalars,
     DIPYMAPMRIReconScalars,
-    ReconScalarsDataSink,
 )
 from ...interfaces.reports import CLIReconPeaksReport
 from ...utils.bids import clean_datasinks
+from .utils import init_scalar_output_wf
 
 LOGGER = logging.getLogger("nipype.interface")
 
@@ -531,16 +531,12 @@ def init_dipy_mapmri_recon_wf(
 
     if qsirecon_suffix:
         external_format_datasinks(qsirecon_suffix, params, workflow)
-        ds_recon_scalars = pe.Node(
-            ReconScalarsDataSink(dismiss_entities=["desc"]),
-            name="ds_recon_scalars",
-            run_without_submitting=True,
-        )
-        workflow.connect(
-            recon_scalars,
-            "scalar_info",
-            ds_recon_scalars,
-            "recon_scalars")  # fmt:skip
+
+        scalar_output_wf = init_scalar_output_wf()
+        workflow.connect([
+            (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
+            (recon_scalars, scalar_output_wf, [("scalar_info", "inputnode.scalar_configs")]),
+        ])  # fmt:skip
 
     workflow.__desc__ = desc
 
@@ -675,16 +671,12 @@ def init_dipy_dki_recon_wf(
 
     if qsirecon_suffix:
         external_format_datasinks(qsirecon_suffix, params, workflow)
-        ds_recon_scalars = pe.Node(
-            ReconScalarsDataSink(dismiss_entities=["desc"]),
-            name="ds_recon_scalars",
-            run_without_submitting=True,
-        )
-        workflow.connect(
-            recon_scalars,
-            "scalar_info",
-            ds_recon_scalars,
-            "recon_scalars")  # fmt:skip
+
+        scalar_output_wf = init_scalar_output_wf()
+        workflow.connect([
+            (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
+            (recon_scalars, scalar_output_wf, [("scalar_info", "inputnode.scalar_configs")]),
+        ])  # fmt:skip
 
     workflow.__desc__ = desc
 

@@ -13,3 +13,10 @@ def check_deps(workflow):
         for node in workflow._get_all_nodes()
         if (hasattr(node.interface, "_cmd") and which(node.interface._cmd.split()[0]) is None)
     )
+
+
+def load_yaml(fname):
+    import yaml
+
+    with open(fname) as f:
+        return yaml.safe_load(f)

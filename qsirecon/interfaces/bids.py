@@ -155,12 +155,10 @@ class _ReconDerivativesDataSinkInputSpec(_DerivativesDataSinkInputSpec):
         mandatory=True,
         desc="the object to be saved",
     )
-    mdp = traits.Str("", usedefault=True, desc="Label for model derived parameter field")
-    mfp = traits.Str("", usedefault=True, desc="Label for model fit parameter field")
+    param = traits.Str("", usedefault=True, desc="Label for parameter field")
     model = traits.Str("", usedefault=True, desc="Label for model field")
     bundle = traits.Str("", usedefault=True, desc="Label for bundle field")
     bundles = traits.Str("", usedefault=True, desc="Label for bundles field")
-    fit = traits.Str("", usedefault=True, desc="Label for fit field")
     label = traits.Str("", usedefault=True, desc="Label for label field")
     atlas = traits.Str("", usedefault=True, desc="Label for label field")
     extension = traits.Str("", usedefault=True, desc="Extension (will be ignored)")
@@ -211,12 +209,8 @@ class ReconDerivativesDataSink(DerivativesDataSink):
             output_bids["space"] = self.inputs.space
         if self.inputs.model:
             output_bids["model"] = self.inputs.model
-        if self.inputs.mdp:
-            output_bids["mdp"] = self.inputs.mdp
-        if self.inputs.mfp:
-            output_bids["mfp"] = self.inputs.mfp
-        if self.inputs.fit:
-            output_bids["fit"] = self.inputs.fit
+        if self.inputs.param:
+            output_bids["param"] = self.inputs.param
         if self.inputs.suffix:
             output_bids["suffix"] = self.inputs.suffix
         if self.inputs.label:
