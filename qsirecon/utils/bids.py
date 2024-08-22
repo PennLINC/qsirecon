@@ -310,7 +310,8 @@ def clean_datasinks(workflow: pe.Workflow, qsirecon_suffix: Union[str, None]) ->
         out_dir = out_dir / "derivatives" / f"qsirecon-{qsirecon_suffix}"
 
     for node in workflow.list_node_names():
-        if node.split(".")[-1].startswith("ds_"):
+        node_name = node.split(".")[-1]
+        if node_name.startswith("ds_") or node_name.startswith("_ds_"):
             workflow.get_node(node).inputs.base_directory = str(out_dir)
 
     return workflow

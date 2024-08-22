@@ -1,0 +1,25 @@
+directions_image:
+    bids:
+        model: noddi
+        param: direction
+    metadata:
+        Description: Peak directions from NODDI
+    reorient_on_resample: true
+icvf_image:
+    bids:
+        model: noddi
+        param: icvf
+    metadata:
+        Description: Intracellular volume fraction from NODDI
+isovf_image:
+    bids:
+        model: noddi
+        param: isovf
+    metadata:
+        Description: Isotropic volume fraction from NODDI
+od_image:
+    bids:
+        model: noddi
+        param: od
+    metadata:
+        Description: Orientation dispersion index from NODDI
