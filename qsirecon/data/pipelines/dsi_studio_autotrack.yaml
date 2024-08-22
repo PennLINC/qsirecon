@@ -1,0 +1,21 @@
+atlases: []
+name: dsistudio_pipeline
+nodes:
+-   action: reconstruction
+    input: qsirecon
+    name: dsistudio_gqi
+    parameters:
+        method: gqi
+    qsirecon_suffix: DSIStudio
+    software: DSI Studio
+-   action: autotrack
+    input: dsistudio_gqi
+    name: autotrackgqi
+    parameters:
+        tolerance: 22,26,30
+        track_id: Association,Projection,Commissure,Cerebellum,CranialNerve
+        track_voxel_ratio: 2.0
+        yield_rate: 1.0e-06
+    qsirecon_suffix: DSIStudio
+    software: DSI Studio
+space: T1w

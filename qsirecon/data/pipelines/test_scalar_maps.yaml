@@ -1,0 +1,51 @@
+anatomical: []
+atlases: []
+name: bundle_scalar_map
+nodes:
+-   action: DKI_reconstruction
+    input: qsirecon
+    name: dipy_dki
+    parameters:
+        write_fibgz: false
+        write_mif: false
+    qsirecon_suffix: DIPYDKI
+    software: Dipy
+-   action: reconstruction
+    input: qsirecon
+    name: dsistudio_gqi
+    parameters:
+        method: gqi
+    qsirecon_suffix: DSIStudio
+    software: DSI Studio
+-   action: autotrack
+    input: dsistudio_gqi
+    name: autotrackgqi
+    parameters:
+        tolerance: 22,26,30
+        track_id: Fasciculus,Cingulum,Aslant,Corticos,Thalamic_R,Reticular,Optic,Fornix,Corpus
+        track_voxel_ratio: 2.0
+        yield_rate: 1.0e-06
+    qsirecon_suffix: DSIStudio
+    software: DSI Studio
+-   action: export
+    input: dsistudio_gqi
+    name: gqi_scalars
+    qsirecon_suffix: DSIStudio
+    software: DSI Studio
+-   action: bundle_map
+    input: autotrackgqi
+    name: bundle_means
+    scalars_from:
+    - gqi_scalars
+    - dipy_dki
+    software: qsirecon
+-   action: template_map
+    input: qsirecon
+    name: template_map
+    parameters:
+        interpolation: NearestNeighbor
+    scalars_from:
+    - dipy_dki
+    - gqi_scalars
+    software: qsirecon
+space: T1w

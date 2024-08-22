@@ -1,0 +1,48 @@
+atlases:
+- schaefer100
+- schaefer200
+- schaefer400
+- brainnetome246
+- aicha384
+- gordon333
+- aal116
+description: Reconstruct dwis using Dipy, then convert to mrtrix and dsi studio formats
+name: convert_shore_recons
+nodes:
+-   action: 3dSHORE_reconstruction
+    input: qsirecon
+    name: recon_3dshore
+    parameters:
+        lambdaL: 1.0e-08
+        lambdaN: 1.0e-08
+        radial_order: 6
+        regularization: L2
+        tau: 0.025330295910584444
+        write_fibgz: true
+        write_mif: true
+        zeta: 700
+    qsirecon_suffix: 3dSHORE
+    software: Dipy
+-   action: tractography
+    input: recon_3dshore
+    name: tractography
+    parameters:
+        fiber_count: 5000000
+        initial_dir: 2
+        interpolation: 0
+        max_length: 250
+        min_length: 30
+        seed_plan: 0
+        smoothing: 0.0
+        step_size: 1.0
+        turning_angle: 35
+    software: DSI Studio
+-   action: connectivity
+    input: tractography
+    name: streamline_connectivity
+    parameters:
+        connectivity_type: pass,end
+        connectivity_value: count,ncount,mean_length,gfa
+    qsirecon_suffix: 3dshorenetwork
+    software: DSI Studio
+space: T1w

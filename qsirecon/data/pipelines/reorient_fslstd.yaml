@@ -1,0 +1,9 @@
+atlases: []
+description: Reorients DWI, bvecs and mask into fsl standard orientation
+name: reorient2fslstd
+nodes:
+-   action: reorient_fslstd
+    input: qsirecon
+    name: to_fslstd
+    qsirecon_suffix: FSL
+space: T1w
