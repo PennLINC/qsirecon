@@ -15,8 +15,9 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ... import config
 from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.recon_scalars import ReconScalarsDataSink, TORTOISEReconScalars
+from ...interfaces.recon_scalars import TORTOISEReconScalars
 from ...utils.bids import clean_datasinks
+from .utils import init_scalar_output_wf
 from qsirecon.interfaces.tortoise import (
     ComputeADMap,
     ComputeFAMap,
@@ -229,17 +230,14 @@ def init_tortoise_estimator_wf(
             ("ngpar_file", "ngpar_file"),
             ("ngperp_file", "ngperp_file")]),
     ])  # fmt:skip
+
     if qsirecon_suffix:
-        ds_recon_scalars = pe.Node(
-            ReconScalarsDataSink(dismiss_entities=["desc"]),
-            name="ds_recon_scalars",
-            run_without_submitting=True,
-        )
-        workflow.connect(
-            recon_scalars,
-            "scalar_info",
-            ds_recon_scalars,
-            "recon_scalars")  # fmt:skip
+        scalar_output_wf = init_scalar_output_wf()
+        workflow.connect([
+            (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
+            (recon_scalars, scalar_output_wf, [("scalar_info", "inputnode.scalar_configs")]),
+        ])  # fmt:skip
+
     workflow.__desc__ = desc
 
     return clean_datasinks(workflow, qsirecon_suffix)

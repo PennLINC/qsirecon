@@ -220,6 +220,7 @@ class _TemplateMapperInputSpec(ScalarMapperInputSpec):
 
 
 class _TemplateMapperOutputSpec(ScalarMapperOutputSpec):
+    template_space = traits.Str(desc="Output space")
     template_space_scalars = OutputMultiObject(traits.Any())
     template_space_scalar_info = OutputMultiObject(traits.Any())
 
@@ -262,3 +263,4 @@ class TemplateMapper(ScalarMapper):
 
         self._results["template_space_scalars"] = resampled_images
         self._results["template_space_scalar_info"] = resampled_image_metadata
+        self._results["template_space"] = "MNI152NLin2009cAsym"

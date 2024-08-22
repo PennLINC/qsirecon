@@ -33,7 +33,8 @@ The ``"name"`` element defines the name of the pipeline. There will be a directo
 directory with this name. The ``"anatomical"`` field lists additional things to compute
 based on the T1w or T2w images in the input data. Currently accepted values are
 
-  * ``"mrtrix_5tt_hsvs"``: A MRtrix_ 5tt segmentation based on [Smith2020]_. This requires :ref:`include_freesurfer`
+  * ``"mrtrix_5tt_hsvs"``: A MRtrix_ 5tt segmentation based on :footcite:t:`smith2020hybrid`.
+    This requires :ref:`include_freesurfer`.
 
 The ``"atlases"`` field is a list of segmentations (:ref:`connectivity_atlases`) that will be used to create
 :ref:``
@@ -217,3 +218,10 @@ Here is a small example where we use autotrack bundles:
 
 This will produce a tsv with the NODDI and DKI scalars summarized for
 each bundle produced by autotrack.
+
+
+**********
+References
+**********
+
+.. footbibliography::

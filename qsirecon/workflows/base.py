@@ -339,6 +339,8 @@ def _get_wf_name(dwi_file):
 
 
 def _load_recon_spec(spec_name):
+    from copy import deepcopy
+
     from ..utils.sloppy_recon import make_sloppy
 
     prepackaged_dir = pkgrf("qsirecon", "data/pipelines")
@@ -355,9 +357,30 @@ def _load_recon_spec(spec_name):
             spec = json.load(f)
         except Exception:
             raise Exception("Unable to read JSON spec. Check the syntax.")
+
     if config.execution.sloppy:
         config.loggers.workflow.warning("Forcing reconstruction to use unrealistic parameters")
         spec = make_sloppy(spec)
+
+    # Expand any "scalars_from" lists into separate nodes
+    orig_spec = deepcopy(spec)
+    spec["nodes"] = []
+    for node in orig_spec["nodes"]:
+        if "scalars_from" in node.keys() and isinstance(node["scalars_from"], list):
+            for scalar_source in node["scalars_from"]:
+                new_node = node.copy()
+                new_node["name"] = f"{node['name']}_{scalar_source}"
+                new_node["scalars_from"] = scalar_source
+                if "qsirecon_suffix" not in new_node.keys():
+                    # Infer the suffix from the source node
+                    for temp_node in spec["nodes"]:
+                        if temp_node["name"] == scalar_source:
+                            new_node["qsirecon_suffix"] = temp_node["qsirecon_suffix"]
+                            continue
+
+                spec["nodes"].append(new_node)
+        else:
+            spec["nodes"].append(node)
 
     return spec
 

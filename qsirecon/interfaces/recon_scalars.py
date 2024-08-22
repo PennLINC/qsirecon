@@ -19,11 +19,14 @@ from nipype.interfaces.base import (
     InputMultiObject,
     SimpleInterface,
     TraitedSpec,
+    Undefined,
     isdefined,
     traits,
 )
 
-from .bids import _copy_any, get_recon_output_name
+from ..utils.misc import load_yaml
+from .bids import get_recon_output_name
+from qsirecon.data import load as load_data
 
 
 class ReconScalarsInputSpec(BaseInterfaceInputSpec):
@@ -104,65 +107,28 @@ class ReconScalars(SimpleInterface):
         return runtime
 
 
-class _ReconScalarsDataSinkInputSpec(BaseInterfaceInputSpec):
+class _ReconScalarsTableSplitterDataSinkInputSpec(BaseInterfaceInputSpec):
     source_file = File()
     base_directory = File()
-    resampled_files = InputMultiObject(File(exists=True))
+    resampled_files = InputMultiObject(
+        File(exists=True),
+        desc=(
+            "Resampled scalar files. "
+            "This field is not used, but we keep it so that the files won't be "
+            "automatically deleted by Nipype."
+        ),
+    )
     recon_scalars = InputMultiObject(traits.Any())
     compress = traits.Bool(True, usedefault=True)
     dismiss_entities = traits.List([], usedefault=True)
     infer_suffix = traits.Bool(False, usedefault=True)
-
-
-class ReconScalarsDataSink(SimpleInterface):
-    input_spec = _ReconScalarsDataSinkInputSpec
-    _always_run = True
-
-    def _run_interface(self, runtime):
-
-        force_compress = False
-        force_decompress = False
-        if isdefined(self.inputs.compress):
-            if self.inputs.compress:
-                force_compress = True
-            else:
-                force_decompress = True
-
-        for recon_scalar in self.inputs.recon_scalars:
-            qsirecon_suffix = None
-            if self.inputs.infer_suffix:
-                qsirecon_suffix = recon_scalar["qsirecon_suffix"]
-
-            output_filename = get_recon_output_name(
-                base_dir=self.inputs.base_directory,
-                source_file=self.inputs.source_file,
-                derivative_file=recon_scalar["path"],
-                output_bids_entities=recon_scalar["bids"],
-                use_ext=True,
-                dismiss_entities=self.inputs.dismiss_entities,
-                qsirecon_suffix=qsirecon_suffix,
-            )
-
-            if force_decompress and output_filename.endswith(".gz"):
-                output_filename = output_filename.rstrip(".gz")
-
-            if force_compress and not output_filename.endswith(".gz"):
-                output_filename += ".gz"
-
-            output_dir = op.dirname(output_filename)
-            os.makedirs(output_dir, exist_ok=True)
-            _copy_any(recon_scalar["path"], output_filename)
-
-        return runtime
-
-
-class _ReconScalarsTableSplitterDataSinkInputSpec(_ReconScalarsDataSinkInputSpec):
     summary_tsv = File(exists=True, mandatory=True, desc="tsv of combined scalar summaries")
     suffix = traits.Str(mandatory=True)
 
 
-class ReconScalarsTableSplitterDataSink(ReconScalarsDataSink):
+class ReconScalarsTableSplitterDataSink(SimpleInterface):
     input_spec = _ReconScalarsTableSplitterDataSinkInputSpec
+    _always_run = True
 
     def _run_interface(self, runtime):
         summary_df = pd.read_table(self.inputs.summary_tsv)
@@ -189,45 +155,7 @@ class ReconScalarsTableSplitterDataSink(ReconScalarsDataSink):
 
 
 # Scalars produced in the TORTOISE recon workflow
-tortoise_scalars = {
-    "fa_file": {
-        "desc": "Fractional Anisotropy from a tensor fit",
-        "bids": {"mdp": "fa", "model": "tensor"},
-    },
-    "rd_file": {
-        "desc": "Radial Diffusivity from a tensor fit",
-        "bids": {"mdp": "rd", "model": "tensor"},
-    },
-    "ad_file": {
-        "desc": "Apparent Diffusivity from a tensor fit",
-        "bids": {"mdp": "ad", "model": "tensor"},
-    },
-    "li_file": {"desc": "LI from a tensor fit", "bids": {"mdp": "li", "model": "tensor"}},
-    "am_file": {"desc": "A0 from a tensor fit", "bids": {"mfp": "AM", "model": "tensor"}},
-    "pa_file": {"desc": "PA from MAPMRI", "bids": {"mdp": "PA", "model": "mapmri"}},
-    "path_file": {"desc": "PAth from MAPMRI", "bids": {"mdp": "PAth", "model": "mapmri"}},
-    "rtop_file": {
-        "desc": "Return to origin probability from MAPMRI",
-        "bids": {"mdp": "RTOP", "model": "mapmri"},
-    },
-    "rtap_file": {
-        "desc": "Return to axis probability from MAPMRI",
-        "bids": {"mdp": "RTAP", "model": "mapmri"},
-    },
-    "rtpp_file": {
-        "desc": "Return to plane probability from MAPMRI",
-        "bids": {"mdp": "RTPP", "model": "mapmri"},
-    },
-    "ng_file": {"desc": "Non-Gaussianity from MAPMRI", "bids": {"mdp": "NG", "model": "mapmri"}},
-    "ngpar_file": {
-        "desc": "Non-Gaussianity parallel from MAPMRI",
-        "bids": {"mdp": "NGpar", "model": "mapmri"},
-    },
-    "ngperp_file": {
-        "desc": "Non-Gaussianity perpendicular from MAPMRI",
-        "bids": {"mdp": "NGperp", "model": "mapmri"},
-    },
-}
+tortoise_scalars = load_yaml(load_data("scalars/tortoise.yaml"))
 
 
 class _TORTOISEReconScalarInputSpec(ReconScalarsInputSpec):
@@ -244,22 +172,7 @@ class TORTOISEReconScalars(ReconScalars):
 
 
 # Scalars produced in the AMICO recon workflow
-amico_scalars = {
-    "icvf_image": {
-        "desc": "Intracellular volume fraction from NODDI",
-        "bids": {"mdp": "icvf", "model": "noddi"},
-    },
-    "isovf_image": {
-        "desc": "Isotropic volume fraction from NODDI",
-        "bids": {"mdp": "isovf", "model": "noddi"},
-    },
-    "od_image": {"desc": "OD from NODDI", "bids": {"mdp": "od", "model": "noddi"}},
-    "directions_image": {
-        "desc": "Peak directions from NODDI",
-        "reorient_on_resample": True,
-        "bids": {"mfp": "direction", "model": "noddi"},
-    },
-}
+amico_scalars = load_yaml(load_data("scalars/amico_noddi.yaml"))
 
 
 class _AMICOReconScalarInputSpec(ReconScalarsInputSpec):
@@ -276,33 +189,7 @@ class AMICOReconScalars(ReconScalars):
 
 
 # Scalars produced by DSI Studio
-dsistudio_scalars = {
-    "qa_file": {
-        "desc": "Fractional Anisotropy from a tensor fit",
-        "bids": {"mdp": "qa", "model": "GQI"},
-    },
-    "dti_fa_file": {
-        "desc": "Radial Diffusivity from a tensor fit",
-        "bids": {"mdp": "fa", "model": "tensor"},
-    },
-    "txx_file": {"desc": "Tensor fit txx", "bids": {"mfp": "txx", "model": "tensor"}},
-    "txy_file": {"desc": "Tensor fit txy", "bids": {"mfp": "txy", "model": "tensor"}},
-    "txz_file": {"desc": "Tensor fit txz", "bids": {"mfp": "txz", "model": "tensor"}},
-    "tyy_file": {"desc": "Tensor fit tyy", "bids": {"mfp": "tyy", "model": "tensor"}},
-    "tyz_file": {"desc": "Tensor fit tyz", "bids": {"mfp": "tyz", "model": "tensor"}},
-    "tzz_file": {"desc": "Tensor fit tzz", "bids": {"mfp": "tzz", "model": "tensor"}},
-    "rd1_file": {"desc": "RD1", "bids": {"mdp": "rd1", "model": "RDI"}},
-    "rd2_file": {"desc": "RD2", "bids": {"mdp": "rd2", "model": "RDI"}},
-    "ha_file": {"desc": "HA", "bids": {"mdp": "ha", "model": "tensor"}},
-    "md_file": {"desc": "Mean Diffusivity", "bids": {"mdp": "md", "model": "tensor"}},
-    "ad_file": {"desc": "AD", "bids": {"mdp": "ad", "model": "tensor"}},
-    "rd_file": {"desc": "Radial Diffusivity", "bids": {"mdp": "rd", "model": "tensor"}},
-    "gfa_file": {
-        "desc": "Generalized Fractional Anisotropy",
-        "bids": {"mdp": "gfa", "fit": "GQI"},
-    },
-    "iso_file": {"desc": "Isotropic Diffusion", "bids": {"mdp": "iso", "fit": "GQI"}},
-}
+dsistudio_scalars = load_yaml(load_data("scalars/dsistudio_gqi.yaml"))
 
 
 class _DSIStudioReconScalarInputSpec(ReconScalarsInputSpec):
@@ -318,17 +205,7 @@ class DSIStudioReconScalars(ReconScalars):
     scalar_metadata = dsistudio_scalars
 
 
-dipy_dki_scalars = {
-    "dki_fa": {"desc": "DKI FA", "bids": {"mdp": "FA", "model": "tensor"}},
-    "dki_md": {"desc": "DKI MD", "bids": {"mdp": "MD", "model": "dki"}},
-    "dki_rd": {"desc": "DKI RD", "bids": {"mdp": "RD", "model": "dki"}},
-    "dki_ad": {"desc": "DKI AD", "bids": {"mdp": "AD", "model": "dki"}},
-    "dki_kfa": {"desc": "DKI KFA", "bids": {"mdp": "KFA", "model": "dki"}},
-    "dki_mk": {"desc": "DKI MK", "bids": {"mdp": "MK", "model": "dki"}},
-    "dki_ak": {"desc": "DKI AK", "bids": {"mdp": "AK", "model": "dki"}},
-    "dki_rk": {"desc": "DKI RK", "bids": {"mdp": "RK", "model": "dki"}},
-    "dki_mkt": {"desc": "DKI MKT", "bids": {"mdp": "MKT", "model": "dki"}},
-}
+dipy_dki_scalars = load_yaml(load_data("scalars/dipy_dki.yaml"))
 
 
 class _DIPYDKIReconScalarInputSpec(ReconScalarsInputSpec):
@@ -345,45 +222,7 @@ class DIPYDKIReconScalars(ReconScalars):
 
 
 # DIPY implementation of MAPMRI
-dipy_mapmri_scalars = {
-    "qiv_file": {
-        "desc": "q-space inverse variance from MAPMRI",
-        "bids": {"mdp": "QIV", "model": "mapmri"},
-    },
-    "msd_file": {
-        "desc": "mean square displacement from MAPMRI",
-        "bids": {"mdp": "MSD", "model": "mapmri"},
-    },
-    "lapnorm_file": {
-        "desc": "Laplacian norm from regularized MAPMRI (MAPL)",
-        "bids": {"mfp": "lapnorm", "model": "mapmri"},
-    },
-    "rtop_file": {
-        "desc": "Return to origin probability from MAPMRI",
-        "bids": {"mdp": "RTOP", "model": "mapmri"},
-    },
-    "rtap_file": {
-        "desc": "Return to axis probability from MAPMRI",
-        "bids": {"mdp": "RTAP", "model": "mapmri"},
-    },
-    "rtpp_file": {
-        "desc": "Return to plane probability from MAPMRI",
-        "bids": {"mdp": "RTPP", "model": "mapmri"},
-    },
-    "ng_file": {"desc": "Non-Gaussianity from MAPMRI", "bids": {"mdp": "NG", "model": "mapmri"}},
-    "ngpar_file": {
-        "desc": "Non-Gaussianity parallel from MAPMRI",
-        "bids": {"mdp": "NGpar", "model": "mapmri"},
-    },
-    "ngperp_file": {
-        "desc": "Non-Gaussianity perpendicular from MAPMRI",
-        "bids": {"mdp": "NGperp", "model": "mapmri"},
-    },
-    "mapcoeffs_file": {
-        "desc": "MAPMRI coefficients",
-        "bids": {"mdp": "mapcoeffs", "model": "mapmri"},
-    },
-}
+dipy_mapmri_scalars = load_yaml(load_data("scalars/dipy_mapmri.yaml"))
 
 
 class _DIPYMAPMRIReconScalarInputSpec(ReconScalarsInputSpec):
@@ -400,15 +239,7 @@ class DIPYMAPMRIReconScalars(ReconScalars):
 
 
 # Same as DIPY implementation of 3dSHORE, but with brainsuite bases
-brainsuite_3dshore_scalars = dipy_mapmri_scalars.copy()
-brainsuite_3dshore_scalars.update(
-    {
-        "cnr_image": {"desc": "Contrast to noise ratio for 3dSHORE fit"},
-        "alpha_image": {"desc": "alpha used when fitting in each voxel"},
-        "r2_image": {"desc": "r^2 of the 3dSHORE fit"},
-        "regularization_image": {"desc": "regularization of the 3dSHORE fit"},
-    }
-)
+brainsuite_3dshore_scalars = load_yaml(load_data("scalars/brainsuite_3dshore.yaml"))
 
 
 class _BrainSuite3dSHOREReconScalarInputSpec(ReconScalarsInputSpec):
@@ -422,3 +253,34 @@ for input_name in brainsuite_3dshore_scalars:
 class BrainSuite3dSHOREReconScalars(ReconScalars):
     input_spec = _BrainSuite3dSHOREReconScalarInputSpec
     scalar_metadata = brainsuite_3dshore_scalars
+
+
+class _OrganizeScalarDataInputSpec(BaseInterfaceInputSpec):
+    scalar_config = traits.Dict()
+
+
+class _OrganizeScalarDataOutputSpec(TraitedSpec):
+    scalar_file = File(exists=True)
+    metadata = traits.Dict()
+    model = traits.Either(
+        traits.Str(),
+        Undefined,
+    )
+    param = traits.Either(
+        traits.Str(),
+        Undefined,
+    )
+
+
+class OrganizeScalarData(SimpleInterface):
+    input_spec = _OrganizeScalarDataInputSpec
+    output_spec = _OrganizeScalarDataOutputSpec
+
+    def _run_interface(self, runtime):
+        scalar_config = self.inputs.scalar_config
+        self._results["scalar_file"] = scalar_config["path"]
+        self._results["metadata"] = scalar_config.get("metadata", {})
+        self._results["model"] = scalar_config.get("bids", {}).get("model", Undefined)
+        self._results["param"] = scalar_config.get("bids", {}).get("param", Undefined)
+
+        return runtime

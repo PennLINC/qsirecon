@@ -1,0 +1,60 @@
+lapnorm_file:
+    bids:
+        model: mapmri
+        param: lapnorm
+    metadata:
+        Description: Laplacian norm from regularized MAPMRI (MAPL)
+mapcoeffs_file:
+    bids:
+        model: mapmri
+        param: mapcoeffs
+    metadata:
+        Description: MAPMRI coefficients
+msd_file:
+    bids:
+        model: mapmri
+        param: MSD
+    metadata:
+        Description: mean square displacement from MAPMRI
+ng_file:
+    bids:
+        model: mapmri
+        param: NG
+    metadata:
+        Description: Non-Gaussianity from MAPMRI
+ngpar_file:
+    bids:
+        model: mapmri
+        param: NGpar
+    metadata:
+        Description: Non-Gaussianity parallel from MAPMRI
+ngperp_file:
+    bids:
+        model: mapmri
+        param: NGperp
+    metadata:
+        Description: Non-Gaussianity perpendicular from MAPMRI
+qiv_file:
+    bids:
+        model: mapmri
+        param: QIV
+    metadata:
+        Description: q-space inverse variance from MAPMRI
+rtap_file:
+    bids:
+        model: mapmri
+        param: RTAP
+    metadata:
+        Description: Return to axis probability from MAPMRI
+rtop_file:
+    bids:
+        model: mapmri
+        param: RTOP
+    metadata:
+        Description: Return to origin probability from MAPMRI
+rtpp_file:
+    bids:
+        model: mapmri
+        param: RTPP
+    metadata:
+        Description: Return to plane probability from MAPMRI
