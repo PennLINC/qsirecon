@@ -435,6 +435,8 @@ class execution(_Config):
     """A dictionary of dataset links to be used to track Sources in sidecars."""
     aggr_ses_reports = 4  # TODO: Change to None when implemented on command line
     """Maximum number of sessions aggregated in one subject's visual report."""
+    dataset_links = {}
+    """A dictionary of dataset links to be used to track Sources in sidecars."""
 
     _layout = None
 
@@ -451,6 +453,7 @@ class execution(_Config):
         "output_dir",
         "templateflow_home",
         "work_dir",
+        "dataset_links",
     )
 
     @classmethod
@@ -516,9 +519,12 @@ class execution(_Config):
                     cls.bids_filters[acq][k] = _process_value(v)
 
         dataset_links = {
-            "raw": cls.bids_dir,
+            "preprocessed": cls.bids_dir,
             "templateflow": Path(TF_LAYOUT.root),
         }
+        if cls.fs_subjects_dir:
+            dataset_links["freesurfer"] = cls.fs_subjects_dir
+
         for deriv_name, deriv_path in cls.derivatives.items():
             dataset_links[deriv_name] = deriv_path
         cls.dataset_links = dataset_links

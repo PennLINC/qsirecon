@@ -179,7 +179,7 @@ def main():
         write_derivative_description(
             config.execution.bids_dir,
             config.execution.output_dir,
-            # dataset_links=config.execution.dataset_links,
+            dataset_links=config.execution.dataset_links,
         )
         write_bidsignore(config.execution.output_dir)
 
@@ -190,6 +190,19 @@ def main():
         for qsirecon_suffix in qsirecon_suffixes:
             suffix_dir = str(
                 config.execution.output_dir / "derivatives" / f"qsirecon-{qsirecon_suffix}"
+            )
+
+            # Add other pipeline-specific suffixes to the dataset links
+            other_suffixes = [s for s in qsirecon_suffixes if s != qsirecon_suffix]
+            dataset_links = config.execution.dataset_links.copy()
+            dataset_links["qsirecon"] = str(config.execution.output_dir)
+            dataset_links.update(
+                {
+                    f"qsirecon-{s}": str(
+                        config.execution.output_dir / "derivatives" / f"qsirecon-{s}"
+                    )
+                    for s in other_suffixes
+                }
             )
 
             # Copy the boilerplate files
@@ -206,7 +219,7 @@ def main():
             write_derivative_description(
                 config.execution.bids_dir,
                 suffix_dir,
-                # dataset_links=config.execution.dataset_links,
+                dataset_links=dataset_links,
             )
             write_bidsignore(suffix_dir)
 
