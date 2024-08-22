@@ -553,7 +553,7 @@ class workflow(_Config):
     """Configure pipelines specifically for infant brains"""
     longitudinal = False
     """Run FreeSurfer ``recon-all`` with the ``-logitudinal`` flag."""
-    recon_input_pipeline = None
+    input_type = None
     """Specifies which pipeline was used to preprocess data in ``bids_dir``."""
     recon_spec = None
     """Recon workflow specification."""
