@@ -10,6 +10,7 @@ Classes that collect scalar images and metadata from Recon Workflows
 """
 import os
 import os.path as op
+from copy import deepcopy
 
 import pandas as pd
 from bids.layout import parse_file_entities
