@@ -182,15 +182,15 @@ def write_derivative_description(bids_dir, deriv_dir, dataset_links=None):
     dset_desc["HowToAcknowledge"] = "Include the generated boilerplate in the methods section."
 
     # Keys that can only be set by environment
-    if "FMRIPREP_DOCKER_TAG" in os.environ:
+    if "QSIRECON_DOCKER_TAG" in os.environ:
         dset_desc["GeneratedBy"][0]["Container"] = {
             "Type": "docker",
-            "Tag": f"nipreps/fmriprep:{os.environ['FMRIPREP_DOCKER_TAG']}",
+            "Tag": f"nipreps/fmriprep:{os.environ['QSIRECON_DOCKER_TAG']}",
         }
-    elif "FMRIPREP_SINGULARITY_URL" in os.environ:
+    elif "QSIRECON_SINGULARITY_URL" in os.environ:
         dset_desc["GeneratedBy"][0]["Container"] = {
             "Type": "singularity",
-            "URI": os.getenv("FMRIPREP_SINGULARITY_URL"),
+            "URI": os.getenv("QSIRECON_SINGULARITY_URL"),
         }
 
     if "DatasetDOI" in dset_desc:
