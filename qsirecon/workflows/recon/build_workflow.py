@@ -91,7 +91,7 @@ def init_dwi_recon_workflow(
                     in_node = workflow.get_node(in_node_spec["name"])
                     workflow.connect([
                         (in_node, node, [
-                            ("outputnode.recon_scalars", "inputnode.recon_scalars"),
+                            ("outputnode.recon_scalars", "inputnode.collected_scalars"),
                         ]),
                     ])  # fmt:skip
                     found = True

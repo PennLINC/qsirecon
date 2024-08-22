@@ -47,7 +47,8 @@ def init_scalar_to_bundle_wf(
     """
     inputnode = pe.Node(
         niu.IdentityInterface(
-            fields=recon_workflow_input_fields + ["tck_files", "bundle_names", "recon_scalars"],
+            fields=recon_workflow_input_fields
+            + ["tck_files", "bundle_names", "recon_scalars", "collected_scalars"],
         ),
         name="inputnode",
     )
@@ -66,7 +67,7 @@ def init_scalar_to_bundle_wf(
     )
     workflow.connect([
         (inputnode, bundle_mapper, [
-            ("recon_scalars", "recon_scalars"),
+            ("collected_scalars", "recon_scalars"),
             ("tck_files", "tck_files"),
             ("dwi_ref", "dwiref_image"),
             ("mapping_metadata", "mapping_metadata"),
@@ -106,7 +107,9 @@ def init_scalar_to_atlas_wf(
 
     """
     inputnode = pe.Node(
-        niu.IdentityInterface(fields=recon_workflow_input_fields + ["recon_scalars"]),
+        niu.IdentityInterface(
+            fields=recon_workflow_input_fields + ["recon_scalars", "collected_scalars"]
+        ),
         name="inputnode",
     )
     # outputnode = pe.Node(niu.IdentityInterface(fields=["atlas_summaries"]), name="outputnode")
@@ -114,7 +117,7 @@ def init_scalar_to_atlas_wf(
     bundle_mapper = pe.Node(BundleMapper(**params), name="bundle_mapper")
     workflow.connect([
         (inputnode, bundle_mapper, [
-            ("recon_scalars", "recon_scalars"),
+            ("collected_scalars", "recon_scalars"),
             ("tck_files", "tck_files"),
             ("dwi_ref", "dwiref_image")])
     ])  # fmt:skip
@@ -154,7 +157,9 @@ def init_scalar_to_template_wf(
 
     """
     inputnode = pe.Node(
-        niu.IdentityInterface(fields=recon_workflow_input_fields + ["recon_scalars"]),
+        niu.IdentityInterface(
+            fields=recon_workflow_input_fields + ["recon_scalars", "collected_scalars"],
+        ),
         name="inputnode",
     )
     outputnode = pe.Node(
@@ -175,7 +180,7 @@ def init_scalar_to_template_wf(
 
     workflow.connect([
         (inputnode, template_mapper, [
-            ("recon_scalars", "recon_scalars"),
+            ("collected_scalars", "recon_scalars"),
             ("t1_2_mni_forward_transform", "to_template_transform"),
             ("resampling_template", "template_reference_image"),
         ]),
