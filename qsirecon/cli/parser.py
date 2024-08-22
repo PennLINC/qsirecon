@@ -293,16 +293,18 @@ def _build_parser(**kwargs):
         help="json file specifying a reconstruction pipeline to be run after preprocessing",
     )
     g_recon.add_argument(
-        "--recon-input-pipeline",
-        "--recon_input_pipeline",
+        "--input-type",
+        "--input_type",
         action="store",
         default="qsiprep",
         choices=["qsiprep", "ukb", "hcpya"],
-        help="specify which pipeline was used to create the data specified "
-        "as the --recon-input. Not necessary to specify if the data was "
-        'processed by qsirecon. Other options include "ukb" for data processed '
-        'with the UK BioBank minimal preprocessing pipeline and "hcpya" for '
-        "the HCP young adult minimal preprocessing pipeline.",
+        help=(
+            "Specify which pipeline was used to create the data specified as the bids_dir."
+            "Not necessary to specify if the data was processed by QSIPrep. "
+            "Other options include "
+            '"ukb" for data processed with the UK BioBank minimal preprocessing pipeline and '
+            '"hcpya" for the HCP young adult minimal preprocessing pipeline.'
+        ),
     )
     g_recon.add_argument(
         "--freesurfer-input",
