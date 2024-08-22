@@ -10,6 +10,7 @@ Classes that collect scalar images and metadata from Recon Workflows
 """
 import os
 import os.path as op
+from copy import deepcopy
 
 import pandas as pd
 from bids.layout import parse_file_entities
@@ -400,7 +401,7 @@ class DIPYMAPMRIReconScalars(ReconScalars):
 
 
 # Same as DIPY implementation of 3dSHORE, but with brainsuite bases
-brainsuite_3dshore_scalars = dipy_mapmri_scalars.copy()
+brainsuite_3dshore_scalars = deepcopy(dipy_mapmri_scalars)
 brainsuite_3dshore_scalars.update(
     {
         "cnr_image": {
