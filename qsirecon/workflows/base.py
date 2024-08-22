@@ -339,6 +339,8 @@ def _get_wf_name(dwi_file):
 
 
 def _load_recon_spec(spec_name):
+    from copy import deepcopy
+
     from ..utils.sloppy_recon import make_sloppy
 
     prepackaged_dir = pkgrf("qsirecon", "data/pipelines")
@@ -361,7 +363,7 @@ def _load_recon_spec(spec_name):
         spec = make_sloppy(spec)
 
     # Expand any "scalars_from" lists into separate nodes
-    orig_spec = spec.copy()
+    orig_spec = deepcopy(spec)
     spec["nodes"] = []
     for node in orig_spec["nodes"]:
         if "scalars_from" in node.keys() and isinstance(node["scalars_from"], list):
