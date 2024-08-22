@@ -26,6 +26,9 @@ derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin
 derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-dki_param-RD_dwimap.nii.gz
 derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-dki_param-RK_dwimap.json
 derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-dki_param-RK_dwimap.nii.gz
+derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-tensor_param-FA_dwimap.json
+derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-tensor_param-FA_dwimap.nii.gz
+derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_bundles-DSIStudio_scalarstats.tsv
 derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-AD_dwimap.json
 derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-AD_dwimap.nii.gz
 derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-AK_dwimap.json
@@ -42,6 +45,8 @@ derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-
 derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-RD_dwimap.nii.gz
 derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-RK_dwimap.json
 derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-RK_dwimap.nii.gz
+derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-tensor_param-FA_dwimap.json
+derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-tensor_param-FA_dwimap.nii.gz
 derivatives/qsirecon-DSIStudio
 derivatives/qsirecon-DSIStudio/dataset_description.json
 derivatives/qsirecon-DSIStudio/logs
@@ -62,8 +67,6 @@ derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NL
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-RDI_param-rd1_dwimap.nii.gz
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-RDI_param-rd2_dwimap.json
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-RDI_param-rd2_dwimap.nii.gz
-derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-tensor_param-FA_dwimap.json
-derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-tensor_param-FA_dwimap.nii.gz
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-tensor_param-ad_dwimap.json
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-tensor_param-ad_dwimap.nii.gz
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-tensor_param-fa_dwimap.json
