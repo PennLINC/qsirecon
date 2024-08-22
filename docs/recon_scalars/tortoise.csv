@@ -1,0 +1,13 @@
+mapmri,NG,Non-Gaussianity from MAPMRI
+mapmri,NGpar,Non-Gaussianity parallel from MAPMRI
+mapmri,NGperp,Non-Gaussianity perpendicular from MAPMRI
+mapmri,PA,PA from MAPMRI
+mapmri,PAth,PAth from MAPMRI
+mapmri,RTAP,Return to axis probability from MAPMRI
+mapmri,RTOP,Return to origin probability from MAPMRI
+mapmri,RTPP,Return to plane probability from MAPMRI
+tensor,AM,A0 from a tensor fit
+tensor,ad,Apparent Diffusivity from a tensor fit
+tensor,fa,Fractional Anisotropy from a tensor fit
+tensor,li,LI from a tensor fit
+tensor,rd,Radial Diffusivity from a tensor fit

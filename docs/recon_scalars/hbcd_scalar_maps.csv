@@ -1,0 +1,40 @@
+GQI,gfa,Generalized Fractional Anisotropy
+GQI,iso,Isotropic Diffusion
+GQI,qa,Fractional Anisotropy from a tensor fit
+RDI,rd1,RD1
+RDI,rd2,RD2
+dki,AD,DKI AD
+dki,AK,DKI AK
+dki,KFA,DKI KFA
+dki,MD,DKI MD
+dki,MK,DKI MK
+dki,MKT,DKI MKT
+dki,RD,DKI RD
+dki,RK,DKI RK
+mapmri,NG,Non-Gaussianity from MAPMRI
+mapmri,NGpar,Non-Gaussianity parallel from MAPMRI
+mapmri,NGperp,Non-Gaussianity perpendicular from MAPMRI
+mapmri,PA,PA from MAPMRI
+mapmri,PAth,PAth from MAPMRI
+mapmri,RTAP,Return to axis probability from MAPMRI
+mapmri,RTOP,Return to origin probability from MAPMRI
+mapmri,RTPP,Return to plane probability from MAPMRI
+noddi,direction,Peak directions from NODDI
+noddi,icvf,Intracellular volume fraction from NODDI
+noddi,isovf,Isotropic volume fraction from NODDI
+noddi,od,OD from NODDI
+tensor,AM,A0 from a tensor fit
+tensor,FA,DKI FA
+tensor,ad,AD
+tensor,fa,Fractional Anisotropy from a tensor fit
+tensor,fa,Radial Diffusivity from a tensor fit
+tensor,ha,HA
+tensor,li,LI from a tensor fit
+tensor,md,Mean Diffusivity
+tensor,rd,Radial Diffusivity
+tensor,txx,Tensor fit txx
+tensor,txy,Tensor fit txy
+tensor,txz,Tensor fit txz
+tensor,tyy,Tensor fit tyy
+tensor,tyz,Tensor fit tyz
+tensor,tzz,Tensor fit tzz
