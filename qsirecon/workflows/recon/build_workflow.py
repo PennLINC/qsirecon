@@ -53,18 +53,21 @@ def init_dwi_recon_workflow(
     workflow_metadata_nodes = {}
     for node_spec in workflow_spec["nodes"]:
         if not node_spec["name"]:
-            raise Exception("Node has no name [{}]".format(node_spec))
+            raise Exception(f"Node has no name [{node_spec}]")
+
         new_node = workflow_from_spec(
             available_anatomical_data=available_anatomical_data,
             node_spec=node_spec,
         )
         if new_node is None:
-            raise Exception("Unable to create a node for %s" % node_spec)
+            raise Exception(f"Unable to create a node for {node_spec}")
+
         nodes_to_add.append(new_node)
 
         # Make an identity interface that just has the info of this node
         workflow_metadata_nodes[node_spec["name"]] = pe.Node(
-            niu.IdentityInterface(fields=["input_metadata"]), name=node_spec["name"] + "_spec"
+            niu.IdentityInterface(fields=["input_metadata"]),
+            name=f"{node_spec['name']}_spec",
         )
         workflow_metadata_nodes[node_spec["name"]].inputs.input_metadata = node_spec
         nodes_to_add.append(workflow_metadata_nodes[node_spec["name"]])
@@ -72,33 +75,39 @@ def init_dwi_recon_workflow(
     workflow.add_nodes(nodes_to_add)
     _check_repeats(workflow.list_node_names())
 
-    # Create a node that gathers scalar outputs from those that produce them
-    scalar_gatherer = pe.Node(niu.Merge(len(nodes_to_add)), name="scalar_gatherer")
-
     # Now that all nodes are in the workflow, connect them
-    for node_num, node_spec in enumerate(workflow_spec["nodes"], start=1):
-
+    for node_spec in workflow_spec["nodes"]:
         # get the nipype node object
         node_name = node_spec["name"]
         node = workflow.get_node(node_name)
 
         # If this node is consuming scalar images from other nodes, add them to the input.
         # We can't collect scalars from this node or it would create a cycle in the graph.
-        consuming_scalars = node_spec.get("scalars_from", [])
-        if consuming_scalars:
-            workflow.connect(scalar_gatherer, "out",
-                             node, "inputnode.collected_scalars")  # fmt:skip
-        # if not consuming, then gather the scalars it might produce.
-        else:
-            workflow.connect(node, "outputnode.recon_scalars",
-                             scalar_gatherer, f"in{node_num}")  # fmt:skip
+        scalar_source = node_spec.get("scalars_from", None)
+        if scalar_source:
+            found = False
+            for in_node_spec in workflow_spec["nodes"]:
+                if in_node_spec["name"] == scalar_source:
+                    in_node = workflow.get_node(in_node_spec["name"])
+                    workflow.connect([
+                        (in_node, node, [
+                            ("outputnode.recon_scalars", "inputnode.recon_scalars"),
+                        ]),
+                    ])  # fmt:skip
+                    found = True
+
+            if not found:
+                raise ValueError(
+                    f"Node {node_name} requires scalars from {scalar_source}, "
+                    f"but {scalar_source} is not in the workflow"
+                )
 
         # If there is no input specified OR if "qsirecon", there are no upstream nodes
         if node_spec.get("input", "qsirecon") == "qsirecon":
             # directly connect all the qsirecon outputs to every node
             workflow.connect([
                 (inputnode, node,
-                 _as_connections(recon_workflow_input_fields, dest_prefix='inputnode.'))
+                    _as_connections(recon_workflow_input_fields, dest_prefix='inputnode.'))
             ])  # fmt:skip
 
         # connect the outputs from the upstream node to this node
