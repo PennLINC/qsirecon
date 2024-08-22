@@ -346,13 +346,13 @@ def _load_recon_spec(spec_name):
     from ..utils.sloppy_recon import make_sloppy
 
     prepackaged_dir = pkgrf("qsirecon", "data/pipelines")
-    prepackaged = [op.split(fname)[1][:-5] for fname in glob(prepackaged_dir + "/*.json")]
+    prepackaged = [op.split(fname)[1][:-5] for fname in glob(op.join(prepackaged_dir, "*.yaml"))]
     if op.exists(spec_name):
         recon_spec = spec_name
     elif spec_name in prepackaged:
-        recon_spec = op.join(prepackaged_dir + "/{}.json".format(spec_name))
+        recon_spec = op.join(prepackaged_dir, f"{spec_name}.yaml")
     else:
-        raise Exception("{} is not a file that exists or in {}".format(spec_name, prepackaged))
+        raise Exception(f"{spec_name} is not a file that exists or in {prepackaged}")
 
     if recon_spec.endswith(".json"):
         with open(recon_spec, "r") as f:
