@@ -37,6 +37,7 @@ from ...interfaces.mrtrix import (
 )
 from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport
 from ...utils.bids import clean_datasinks
+from ...utils.misc import remove_non_alphanumeric
 
 LOGGER = logging.getLogger("nipype.interface")
 MULTI_RESPONSE_ALGORITHMS = ("dhollander", "msmt_5tt")
@@ -276,11 +277,12 @@ def init_mrtrix_csd_recon_wf(
                          plot_peaks, "mif_file")  # fmt:skip
 
     if qsirecon_suffix:
+        model_name = remove_non_alphanumeric(fod_algorithm)
         ds_wm_odf = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
-                model=fod_algorithm,
-                param="FOD",
+                model=model_name,
+                param="fod",
                 label="WM",
                 suffix="dwimap",
                 extension=".mif.gz",
@@ -294,8 +296,8 @@ def init_mrtrix_csd_recon_wf(
         ds_wm_txt = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
-                model=fod_algorithm,
-                param="FOD",
+                model=model_name,
+                param="fod",
                 label="WM",
                 suffix="dwimap",
                 extension=".txt",
@@ -310,8 +312,8 @@ def init_mrtrix_csd_recon_wf(
             ds_gm_odf = pe.Node(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
-                    model=fod_algorithm,
-                    param="FOD",
+                    model=model_name,
+                    param="fod",
                     label="GM",
                     suffix="dwimap",
                     extension=".mif.gz",
@@ -325,8 +327,8 @@ def init_mrtrix_csd_recon_wf(
             ds_gm_txt = pe.Node(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
-                    model=fod_algorithm,
-                    param="FOD",
+                    model=model_name,
+                    param="fod",
                     label="GM",
                     suffix="dwimap",
                     extension=".txt",
@@ -340,8 +342,8 @@ def init_mrtrix_csd_recon_wf(
             ds_csf_odf = pe.Node(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
-                    model=fod_algorithm,
-                    param="FOD",
+                    model=model_name,
+                    param="fod",
                     label="CSF",
                     suffix="dwimap",
                     extension=".mif.gz",
@@ -355,8 +357,8 @@ def init_mrtrix_csd_recon_wf(
             ds_csf_txt = pe.Node(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
-                    model=fod_algorithm,
-                    param="FOD",
+                    model=model_name,
+                    param="fod",
                     label="CSF",
                     suffix="dwimap",
                     extension=".txt",
@@ -626,7 +628,7 @@ def init_mrtrix_tractography_wf(
         ds_tck_file = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
-                model=tracking_params["algorithm"],
+                model=remove_non_alphanumeric(tracking_params["algorithm"]),
                 suffix="streamlines",
                 extension=".tck",
             ),

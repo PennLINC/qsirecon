@@ -250,7 +250,7 @@ def init_dsi_studio_tractography_wf(
         ds_tracking = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
-                model="QAthresh",
+                model="qathresh",
                 suffix="streamlines",
             ),
             name="ds_" + name,
