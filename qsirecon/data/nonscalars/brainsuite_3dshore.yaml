@@ -1,84 +1,72 @@
 alpha_image:
-    bids:
-        model: 3dSHORE
-        param: alpha
     metadata:
         Description: alpha used when fitting in each voxel
 cnr_image:
-    bids:
-        model: 3dSHORE
-        param: CNR
     metadata:
         Description: Contrast to noise ratio for 3dSHORE fit
 lapnorm_file:
     bids:
-        model: 3dshore
+        model: 3dSHORE
         param: lapnorm
     metadata:
         Description: Laplacian norm from regularized MAPMRI (MAPL)
 mapcoeffs_file:
     bids:
-        model: 3dshore
+        model: 3dSHORE
         param: mapcoeffs
     metadata:
         Description: MAPMRI coefficients
 msd_file:
     bids:
-        model: 3dshore
-        param: msd
+        model: 3dSHORE
+        param: MSD
     metadata:
         Description: mean square displacement from MAPMRI
 ng_file:
     bids:
-        model: 3dshore
-        param: ng
+        model: 3dSHORE
+        param: NG
     metadata:
         Description: Non-Gaussianity from MAPMRI
 ngpar_file:
     bids:
-        model: 3dshore
-        param: ngpar
+        model: 3dSHORE
+        param: NGpar
     metadata:
         Description: Non-Gaussianity parallel from MAPMRI
 ngperp_file:
     bids:
-        model: 3dshore
-        param: ngperp
+        model: 3dSHORE
+        param: NGperp
     metadata:
         Description: Non-Gaussianity perpendicular from MAPMRI
 qiv_file:
     bids:
-        model: 3dshore
-        param: qiv
+        model: 3dSHORE
+        param: QIV
     metadata:
         Description: q-space inverse variance from MAPMRI
 r2_image:
-    bids:
-        model: 3dSHORE
-        param: r2
     metadata:
         Description: r^2 of the 3dSHORE fit
 regularization_image:
-    bids:
-        model: 3dSHORE
-        param: regularization
     metadata:
         Description: regularization of the 3dSHORE fit
 rtap_file:
     bids:
-        model: 3dshore
-        param: rtap
+        model: 3dSHORE
+        param: RTAP
     metadata:
         Description: Return to axis probability from MAPMRI
 rtop_file:
     bids:
-        model: 3dshore
-        param: rtop
+        model: 3dSHORE
+        param: RTOP
     metadata:
         Description: Return to origin probability from MAPMRI
 rtpp_file:
     bids:
-        model: 3dshore
-        param: rtpp
+        model: 3dSHORE
+        param: RTPP
     metadata:
         Description: Return to plane probability from MAPMRI
