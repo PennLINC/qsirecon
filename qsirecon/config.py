@@ -551,8 +551,6 @@ class workflow(_Config):
     """Any value in the .bval file less than this will be considered a b=0 image."""
     infant = False
     """Configure pipelines specifically for infant brains"""
-    longitudinal = False
-    """Run FreeSurfer ``recon-all`` with the ``-logitudinal`` flag."""
     input_type = None
     """Specifies which pipeline was used to preprocess data in ``bids_dir``."""
     recon_spec = None
