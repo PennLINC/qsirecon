@@ -1,54 +1,54 @@
 dki_ad:
     bids:
         model: dki
-        param: AD
+        param: ad
     metadata:
         Description: DKI AD
 dki_ak:
     bids:
         model: dki
-        param: AK
+        param: ak
     metadata:
         Description: DKI AK
 dki_fa:
     bids:
         model: tensor
-        param: FA
+        param: fa
     metadata:
         Description: DKI FA
 dki_kfa:
     bids:
         model: dki
-        param: KFA
+        param: kfa
     metadata:
         Description: DKI KFA
 dki_md:
     bids:
         model: dki
-        param: MD
+        param: md
     metadata:
         Description: DKI MD
 dki_mk:
     bids:
         model: dki
-        param: MK
+        param: mk
     metadata:
         Description: DKI MK
 dki_mkt:
     bids:
         model: dki
-        param: MKT
+        param: mkt
     metadata:
         Description: DKI MKT
 dki_rd:
     bids:
         model: dki
-        param: RD
+        param: rd
     metadata:
         Description: DKI RD
 dki_rk:
     bids:
         model: dki
-        param: RK
+        param: rk
     metadata:
         Description: DKI RK

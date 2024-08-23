@@ -162,7 +162,7 @@ diffusivity.""" % (
         ds_config = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
-                param="AMICOconfig",
+                param="amicoconfig",
                 model="noddi",
                 suffix="dwimap",
                 compress=True,
