@@ -186,7 +186,7 @@ def write_derivative_description(bids_dir, deriv_dir, dataset_links=None):
     if "QSIRECON_DOCKER_TAG" in os.environ:
         dset_desc["GeneratedBy"][0]["Container"] = {
             "Type": "docker",
-            "Tag": f"pennbbl/qsirecon:{os.environ['QSIRECON_DOCKER_TAG']}",
+            "Tag": f"pennlinc/qsirecon:{os.environ['QSIRECON_DOCKER_TAG']}",
         }
     elif "QSIRECON_SINGULARITY_URL" in os.environ:
         dset_desc["GeneratedBy"][0]["Container"] = {
