@@ -37,6 +37,7 @@ from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import DSIStudioReconScalars
 from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport
 from ...utils.bids import clean_datasinks
+from ...utils.misc import remove_non_alphanumeric
 from .utils import init_scalar_output_wf
 
 LOGGER = logging.getLogger("nipype.interface")
@@ -350,6 +351,16 @@ def init_dsi_studio_autotrack_wf(
 
     convert_to_tck = pe.MapNode(DSIStudioTrkToTck(), name="convert_to_tck", iterfield="trk_file")
 
+    clean_bundle_names = pe.MapNode(
+        niu.Function(
+            input_names=["input_string"],
+            output_names=["bundle"],
+            function=remove_non_alphanumeric,
+        ),
+        name="clean_bundle_names",
+        iterfield=["input_string"],
+    )
+
     # Save tck files of the bundles into the outputs
     ds_tckfiles = pe.MapNode(
         DerivativesDataSink(
@@ -392,13 +403,12 @@ def init_dsi_studio_autotrack_wf(
         (actual_trk, ds_mapping, [('map_file', 'in_file')]),
         (actual_trk, aggregate_atk_results, [
             ("native_trk_files", "trk_files"),
-            ("stat_files", "stat_files")]),
-        (aggregate_atk_results, convert_to_tck, [
-            ("found_bundle_files", "trk_file")]),
-        (aggregate_atk_results, ds_tckfiles, [
-            ("found_bundle_names", "bundle")]),
-        (convert_to_tck, ds_tckfiles, [
-            ("tck_file", "in_file")]),
+            ("stat_files", "stat_files"),
+        ]),
+        (aggregate_atk_results, convert_to_tck, [("found_bundle_files", "trk_file")]),
+        (aggregate_atk_results, clean_bundle_names, [("found_bundle_names", "input_string")]),
+        (clean_bundle_names, ds_tckfiles, [("bundle", "bundle")]),
+        (convert_to_tck, ds_tckfiles, [("tck_file", "in_file")]),
         (aggregate_atk_results, ds_bundle_csv, [("bundle_csv", "in_file")]),
         (convert_to_tck, outputnode, [("tck_file", "tck_files")]),
         (aggregate_atk_results, outputnode, [("found_bundle_names", "bundle_names")])

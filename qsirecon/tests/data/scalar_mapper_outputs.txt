@@ -89,8 +89,8 @@ derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NL
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-tensor_param-tyz_dwimap.nii.gz
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-tensor_param-tzz_dwimap.json
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-tensor_param-tzz_dwimap.nii.gz
-derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_bundle-Association_ArcuateFasciculusL_streamlines.tck.gz
-derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_bundle-Association_ArcuateFasciculusR_streamlines.tck.gz
+derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_bundle-AssociationArcuateFasciculusL_streamlines.tck.gz
+derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_bundle-AssociationArcuateFasciculusR_streamlines.tck.gz
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_bundles-DSIStudio_scalarstats.tsv
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_bundles-DSIStudio_tdistats.tsv
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_bundlestats.csv
