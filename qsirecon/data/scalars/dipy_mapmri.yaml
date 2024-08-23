@@ -13,48 +13,48 @@ mapcoeffs_file:
 msd_file:
     bids:
         model: mapmri
-        param: MSD
+        param: msd
     metadata:
         Description: mean square displacement from MAPMRI
 ng_file:
     bids:
         model: mapmri
-        param: NG
+        param: ng
     metadata:
         Description: Non-Gaussianity from MAPMRI
 ngpar_file:
     bids:
         model: mapmri
-        param: NGpar
+        param: ngpar
     metadata:
         Description: Non-Gaussianity parallel from MAPMRI
 ngperp_file:
     bids:
         model: mapmri
-        param: NGperp
+        param: ngperp
     metadata:
         Description: Non-Gaussianity perpendicular from MAPMRI
 qiv_file:
     bids:
         model: mapmri
-        param: QIV
+        param: qiv
     metadata:
         Description: q-space inverse variance from MAPMRI
 rtap_file:
     bids:
         model: mapmri
-        param: RTAP
+        param: rtap
     metadata:
         Description: Return to axis probability from MAPMRI
 rtop_file:
     bids:
         model: mapmri
-        param: RTOP
+        param: rtop
     metadata:
         Description: Return to origin probability from MAPMRI
 rtpp_file:
     bids:
         model: mapmri
-        param: RTPP
+        param: rtpp
     metadata:
         Description: Return to plane probability from MAPMRI

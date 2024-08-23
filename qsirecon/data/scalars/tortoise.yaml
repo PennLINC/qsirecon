@@ -7,7 +7,7 @@ ad_file:
 am_file:
     bids:
         model: tensor
-        param: AM
+        param: am
     metadata:
         Description: A0 from a tensor fit
 fa_file:
@@ -25,31 +25,31 @@ li_file:
 ng_file:
     bids:
         model: mapmri
-        param: NG
+        param: ng
     metadata:
         Description: Non-Gaussianity from MAPMRI
 ngpar_file:
     bids:
         model: mapmri
-        param: NGpar
+        param: ngpar
     metadata:
         Description: Non-Gaussianity parallel from MAPMRI
 ngperp_file:
     bids:
         model: mapmri
-        param: NGperp
+        param: ngperp
     metadata:
         Description: Non-Gaussianity perpendicular from MAPMRI
 pa_file:
     bids:
         model: mapmri
-        param: PA
+        param: pa
     metadata:
         Description: PA from MAPMRI
 path_file:
     bids:
         model: mapmri
-        param: PAth
+        param: path
     metadata:
         Description: PAth from MAPMRI
 rd_file:
@@ -61,18 +61,18 @@ rd_file:
 rtap_file:
     bids:
         model: mapmri
-        param: RTAP
+        param: rtap
     metadata:
         Description: Return to axis probability from MAPMRI
 rtop_file:
     bids:
         model: mapmri
-        param: RTOP
+        param: rtop
     metadata:
         Description: Return to origin probability from MAPMRI
 rtpp_file:
     bids:
         model: mapmri
-        param: RTPP
+        param: rtpp
     metadata:
         Description: Return to plane probability from MAPMRI
