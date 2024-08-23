@@ -57,7 +57,6 @@ def get_default_cli_args():
         debug=True,
         low_mem=False,
         anat_only=False,
-        longitudinal=False,
         combine_all_dwis=True,
         dwi_denoise_window=0,
         denoise_before_combining=True,
