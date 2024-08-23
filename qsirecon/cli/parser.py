@@ -246,11 +246,6 @@ def _build_parser(**kwargs):
         "--infant", action="store_true", help="configure pipelines to process infant brains"
     )
     g_conf.add_argument(
-        "--longitudinal",
-        action="store_true",
-        help="Treat dataset as longitudinal - may increase runtime",
-    )
-    g_conf.add_argument(
         "--b0-threshold",
         "--b0_threshold",
         action="store",
