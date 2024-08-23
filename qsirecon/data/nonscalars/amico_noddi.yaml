@@ -1,0 +1,14 @@
+fibgz:
+    bids:
+        model: noddi
+        param: direction
+    metadata:
+        Description: |
+            DSI Studio fib format file where the peak directions come from
+            the NODDI fit. The "qa" variable is actually ICVF.
+config_file:
+    bids:
+        model: noddi
+        suffix: config
+    metadata:
+        Description: A config file internally used by AMICO.

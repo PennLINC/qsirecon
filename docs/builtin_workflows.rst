@@ -147,6 +147,13 @@ Scalar Maps
    :file: recon_scalars/amico_noddi.csv
    :widths: 15, 10, 30
 
+Other Outputs
+-------------
+.. csv-table::
+   :header: "File Name", "Description"
+   :file: nonscalars/amico_noddi.csv
+   :widths: 15, 30
+
 .. _dsi_studio_gqi:
 
 ``dsi_studio_gqi``

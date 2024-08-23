@@ -1,0 +1,2 @@
+model-noddi\*_config.\*,A config file internally used by AMICO.
+model-noddi\*param-direction\*_dwimap.\*,"DSI Studio fib format file where the peak directions come from the NODDI fit. The ""qa"" variable is actually ICVF. "
