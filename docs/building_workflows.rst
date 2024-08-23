@@ -62,7 +62,6 @@ The entry for this in the ``"nodes"`` list could look like:
 
   nodes:
   -   action: csd
-      input: qsirecon
       name: msmt_csd
       parameters:
           fod:
@@ -107,37 +106,13 @@ to MRtrix3 tractography.
 
   nodes:
   -   action: csd
-      input: qsirecon
       name: msmt_csd
-      parameters:
-          fod:
-              algorithm: msmt_csd
-              max_sh:
-              - 8
-              - 8
-              - 8
-          mtnormalize: true
-          response:
-              algorithm: dhollander
       qsirecon_suffix: MRtrix3_act-FAST
       software: MRTrix3
+
   -   action: tractography
       input: msmt_csd
       name: track_ifod2
-      parameters:
-          method_5tt: fast
-          sift2: {}
-          tckgen:
-              algorithm: iFOD2
-              backtrack: true
-              crop_at_gmwmi: true
-              max_length: 250
-              min_length: 30
-              power: 0.33
-              quiet: true
-              select: 10000000
-          use_5tt: true
-          use_sift2: true
       qsirecon_suffix: MRtrix3_act-FAST
       software: MRTrix3
 
@@ -162,25 +137,13 @@ the template space used in QSIPrep. My ``"nodes"`` might look like:
 
   nodes:
   -   action: DKI_reconstruction
-      input: qsirecon
       name: dipy_dki
-      parameters:
-          write_fibgz: false
-          write_mif: false
       qsirecon_suffix: DIPYDKI
       software: Dipy
-  -   action: reconstruction
-      input: qsirecon
-      name: dsistudio_gqi
-      parameters:
-          method: gqi
-      qsirecon_suffix: DSIStudio
-      software: DSI Studio
-  -   action: export
-      input: dsistudio_gqi
-      name: gqi_scalars
-      qsirecon_suffix: DSIStudio
-      software: DSI Studio
+  -   action: fit_noddi
+      name: fit_noddi
+      qsirecon_suffix: NODDI
+      software: AMICO
   -   action: template_map
       input: qsirecon
       name: template_map
@@ -215,41 +178,24 @@ Here is a small example where we use autotrack bundles:
 
   nodes:
   -   action: DKI_reconstruction
-      input: qsirecon
       name: dipy_dki
-      parameters:
-          write_fibgz: false
-          write_mif: false
       qsirecon_suffix: DIPYDKI
       software: Dipy
-  -   action: reconstruction
-      input: qsirecon
-      name: dsistudio_gqi
-      parameters:
-          method: gqi
-      qsirecon_suffix: DSIStudio
-      software: DSI Studio
+  -   action: fit_noddi
+      name: fit_noddi
+      qsirecon_suffix: NODDI
+      software: AMICO
   -   action: autotrack
       input: dsistudio_gqi
       name: autotrackgqi
-      parameters:
-          tolerance: 22,26,30
-          track_id: Fasciculus,Cingulum,Aslant,Corticos,Thalamic_R,Reticular,Optic,Fornix,Corpus
-          track_voxel_ratio: 2.0
-          yield_rate: 1.0e-06
-      qsirecon_suffix: DSIStudio
-      software: DSI Studio
-  -   action: export
-      input: dsistudio_gqi
-      name: gqi_scalars
       qsirecon_suffix: DSIStudio
       software: DSI Studio
   -   action: bundle_map
       input: autotrackgqi
       name: bundle_means
       scalars_from:
-      - gqi_scalars
       - dipy_dki
+      - fit_noddi
       software: qsirecon
 
 This will produce a tsv with the NODDI and DKI scalars summarized for
