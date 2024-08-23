@@ -19,7 +19,9 @@ from ...interfaces.recon_scalars import AMICOReconScalars
 from ...interfaces.reports import CLIReconPeaksReport
 from ...utils.bids import clean_datasinks
 from ...utils.misc import load_yaml
+from ...utils.misc import load_yaml
 from .utils import init_scalar_output_wf
+from qsirecon.data import load as load_data
 from qsirecon.data import load as load_data
 
 
@@ -146,7 +148,9 @@ diffusivity.""" % (
         derivatives_config = load_yaml(load_data("nonscalars/amico_noddi.yaml"))
         ds_fibgz = pe.Node(
             DerivativesDataSink(
-                dismiss_entities=("desc",), compress=True, **derivatives_config["fibgz"]["bids"]
+                dismiss_entities=("desc",),
+                compress=True,
+                **derivatives_config["fibgz"]["bids"]
             ),
             name=f"ds_{qsirecon_suffix}_fibgz",
             run_without_submitting=True,
@@ -163,7 +167,7 @@ diffusivity.""" % (
             DerivativesDataSink(
                 dismiss_entities=("desc",),
                 compress=True,
-                **derivatives_config["config_file"]["bids"],
+                **derivatives_config["config_file"]["bids"]
             ),
             name="ds_noddi_config",
             run_without_submitting=True,
