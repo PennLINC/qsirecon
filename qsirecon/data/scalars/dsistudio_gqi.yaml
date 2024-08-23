@@ -12,7 +12,7 @@ dti_fa_file:
         Description: Radial Diffusivity from a tensor fit
 gfa_file:
     bids:
-        model: GQI
+        model: gqi
         param: gfa
     metadata:
         Description: Generalized Fractional Anisotropy
@@ -24,7 +24,7 @@ ha_file:
         Description: HA
 iso_file:
     bids:
-        model: GQI
+        model: gqi
         param: iso
     metadata:
         Description: Isotropic Diffusion
@@ -36,19 +36,19 @@ md_file:
         Description: Mean Diffusivity
 qa_file:
     bids:
-        model: GQI
+        model: gqi
         param: qa
     metadata:
         Description: Fractional Anisotropy from a tensor fit
 rd1_file:
     bids:
-        model: RDI
+        model: rdi
         param: rd1
     metadata:
         Description: RD1
 rd2_file:
     bids:
-        model: RDI
+        model: rdi
         param: rd2
     metadata:
         Description: RD2
