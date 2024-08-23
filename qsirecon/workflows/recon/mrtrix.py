@@ -277,7 +277,7 @@ def init_mrtrix_csd_recon_wf(
                          plot_peaks, "mif_file")  # fmt:skip
 
     if qsirecon_suffix:
-        model_name = remove_non_alphanumeric(fod_algorithm)
+        model_name = remove_non_alphanumeric(fod_algorithm).lower()
         ds_wm_odf = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
@@ -628,7 +628,7 @@ def init_mrtrix_tractography_wf(
         ds_tck_file = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
-                model=remove_non_alphanumeric(tracking_params["algorithm"]),
+                model=remove_non_alphanumeric(tracking_params["algorithm"]).lower(),
                 suffix="streamlines",
                 extension=".tck",
             ),

@@ -27,4 +27,4 @@ def remove_non_alphanumeric(input_string: str) -> str:
     import re
 
     cleaned_string = re.sub(r"[^a-zA-Z0-9]", "", input_string)
-    return cleaned_string.lower()
+    return cleaned_string
