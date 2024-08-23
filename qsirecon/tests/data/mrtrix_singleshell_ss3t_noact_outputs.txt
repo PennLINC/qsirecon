@@ -12,7 +12,7 @@ derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC.html
 derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi
 derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_connectivity.mat
 derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_exemplarbundles.zip
-derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-sdstream_streamlines.tck
+derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-sdstream_streamlines.tck.gz
 derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-mtnorm_param-inliermask_dwimap.nii.gz
 derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-mtnorm_param-norm_dwimap.nii.gz
 derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-sift2_mu.txt
