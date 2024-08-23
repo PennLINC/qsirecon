@@ -1,4 +1,4 @@
 noddi,direction,Peak directions from NODDI
 noddi,icvf,Intracellular volume fraction from NODDI
 noddi,isovf,Isotropic volume fraction from NODDI
-noddi,od,OD from NODDI
+noddi,od,Orientation dispersion index from NODDI
