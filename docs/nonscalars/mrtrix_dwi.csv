@@ -1,0 +1,13 @@
+\*_connectivity.mat,MATLAB format mat file containing connectivity matrices for all the selected atlases. This is an hdf5-format file and can be read using ``scipy.io.matlab.loadmat`` in Python. 
+\*_exemplarbundles.zip,A zip archive containing the output directory from ``connectome2tck``. Unzip this directory and view the exemplar connections using ``mrview`` to ensure that you're seeing the expected shapes of connections. 
+\*_streamlines.tck.gz,Streamlines produced by ``tckgen``. NOTE: these are not saved to the output directory by default. 
+\*model-mtnorm\*param-inliermask\*_dwimap.nii.gz,Inlier mask created by ``mtnormalize``
+\*model-mtnorm\*param-norm\*_dwimap.nii.gz,Inlier mask created by ``mtnormalize``
+\*model-sift2\*_mu.txt,The $\mu$ value that should be used to adjust SIFT2 weights to account for different response functions. 
+\*model-sift2\*_streamlineweights.csv,Per-streamline SIFT2 weight for each streamline in ``streamlines.tck.gz``. 
+\*param-fod\*label-CSF\*_dwimap.mif.gz,FOD for cerebrospinal fluid.
+\*param-fod\*label-CSF\*_dwimap.txt,SH response function for cerebrospinal fluid.
+\*param-fod\*label-GM\*_dwimap.mif.gz,FOD for gray matter.
+\*param-fod\*label-GM\*_dwimap.txt,SH response function for gray matter.
+\*param-fod\*label-WM\*_dwimap.mif.gz,FOD for white matter. These FODs are used as inputs to ``tckgen`` for tractograpy. 
+\*param-fod\*label-WM\*_dwimap.txt,SH response function for white matter. 

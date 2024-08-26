@@ -18,7 +18,9 @@ from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import AMICOReconScalars
 from ...interfaces.reports import CLIReconPeaksReport
 from ...utils.bids import clean_datasinks
+from ...utils.misc import load_yaml
 from .utils import init_scalar_output_wf
+from qsirecon.data import load as load_data
 
 
 def init_amico_noddi_fit_wf(
@@ -141,12 +143,10 @@ diffusivity.""" % (
         ])  # fmt:skip
 
     if qsirecon_suffix:
+        derivatives_config = load_yaml(load_data("nonscalars/amico_noddi.yaml"))
         ds_fibgz = pe.Node(
             DerivativesDataSink(
-                dismiss_entities=("desc",),
-                suffix="dwimap",
-                extension="fib.gz",
-                compress=True,
+                dismiss_entities=("desc",), compress=True, **derivatives_config["fibgz"]["bids"]
             ),
             name=f"ds_{qsirecon_suffix}_fibgz",
             run_without_submitting=True,
@@ -162,10 +162,8 @@ diffusivity.""" % (
         ds_config = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
-                param="amicoconfig",
-                model="noddi",
-                suffix="dwimap",
                 compress=True,
+                **derivatives_config["config_file"]["bids"],
             ),
             name="ds_noddi_config",
             run_without_submitting=True,

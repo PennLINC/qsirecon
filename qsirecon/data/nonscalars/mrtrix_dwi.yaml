@@ -1,0 +1,126 @@
+
+conmat:
+    bids:
+        suffix: connectivity
+        extension: mat
+    metadata:
+        Description: |
+            MATLAB format mat file containing connectivity matrices for
+            all the selected atlases. This is an hdf5-format file and
+            can be read using ``scipy.io.matlab.loadmat`` in Python.
+
+exemplar_bundles:
+    bids:
+        suffix: exemplarbundles
+        extension: zip
+    metadata:
+        Description: |
+            A zip archive containing the output directory from
+            ``connectome2tck``. Unzip this directory and view
+            the exemplar connections using ``mrview`` to ensure
+            that you're seeing the expected shapes of connections.
+
+streamlines:
+    bids:
+        suffix: streamlines
+        extension: tck.gz
+    metadata:
+        Description: |
+            Streamlines produced by ``tckgen``. NOTE: these are not
+            saved to the output directory by default.
+
+siftweights:
+    bids:
+        model: sift2
+        suffix: streamlineweights
+        extension: csv
+    metadata:
+        Description: |
+            Per-streamline SIFT2 weight for each streamline in
+            ``streamlines.tck.gz``.
+
+sift_mu:
+    bids:
+        model: sift2
+        suffix: mu
+        extension: txt
+    metadata:
+        Description: |
+            The $\mu$ value that should be used to adjust SIFT2
+            weights to account for different response functions.
+
+
+wm_fod:
+    bids:
+        param: fod
+        label: WM
+        suffix: dwimap
+        extension: mif.gz
+    metadata:
+        Description: |
+            FOD for white matter. These FODs are used as inputs to
+            ``tckgen`` for tractograpy.
+wm_fod_txt:
+    bids:
+        param: fod
+        label: WM
+        suffix: dwimap
+        extension: txt
+    metadata:
+        Description: |
+            SH response function for white matter.
+
+csf_fod:
+    bids:
+        param: fod
+        label: CSF
+        suffix: dwimap
+        extension: mif.gz
+    metadata:
+        Description: FOD for cerebrospinal fluid.
+
+csf_fod_txt:
+    bids:
+        param: fod
+        label: CSF
+        suffix: dwimap
+        extension: txt
+    metadata:
+        Description: SH response function for cerebrospinal fluid.
+
+gm_fod:
+    bids:
+        param: fod
+        label: GM
+        suffix: dwimap
+        extension: mif.gz
+    metadata:
+        Description: FOD for gray matter.
+
+gm_fod_txt:
+    bids:
+        param: fod
+        label: GM
+        suffix: dwimap
+        extension: txt
+    metadata:
+        Description: SH response function for gray matter.
+
+mtnorm_inliermask:
+    bids:
+        model: mtnorm
+        param: inliermask
+        suffix: dwimap
+        extension: nii.gz
+    metadata:
+        Description: Inlier mask created by ``mtnormalize``
+
+mtnorm_norm:
+    bids:
+        model: mtnorm
+        param: norm
+        suffix: dwimap
+        extension: nii.gz
+    metadata:
+        Description: Inlier mask created by ``mtnormalize``
+

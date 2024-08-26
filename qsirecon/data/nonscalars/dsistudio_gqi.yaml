@@ -1,0 +1,27 @@
+conmat:
+    bids:
+        suffix: connectivity
+        extension: mat
+    metadata:
+        Description: |
+            MATLAB format mat file containing connectivity matrices for
+            all the selected atlases. This is an hdf5-format file and
+            can be read using ``scipy.io.matlab.loadmat`` in Python.
+
+fibgz:
+    bids:
+        space: T1w
+        suffix: dwimap
+        extension: fib.gz
+    metadata:
+        Description: |
+            DSI Studio fib format containing the GQI ODFs used for
+            AutoTrack.
+
+mapping:
+    bids:
+        space: T1w
+        suffix: mapping
+        extension: map.gz
+    metadata:
+        Description: Mapping file produced by DSI Studio.

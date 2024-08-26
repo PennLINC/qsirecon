@@ -1,0 +1,8 @@
+scalarstats:
+    bids:
+        suffix: scalarstats
+        extension: tsv
+    metadata:
+        Description: |
+            DKI scalars summarized within WM bundles. The name of the method
+            used to create the bundles is specified after ``bundles-``.

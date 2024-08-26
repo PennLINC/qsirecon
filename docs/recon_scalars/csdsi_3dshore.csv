@@ -1,14 +1,14 @@
-3dSHORE,CNR,Contrast to noise ratio for 3dSHORE fit
-3dSHORE,MSD,mean square displacement from MAPMRI
-3dSHORE,NG,Non-Gaussianity from MAPMRI
-3dSHORE,NGpar,Non-Gaussianity parallel from MAPMRI
-3dSHORE,NGperp,Non-Gaussianity perpendicular from MAPMRI
-3dSHORE,QIV,q-space inverse variance from MAPMRI
-3dSHORE,RTAP,Return to axis probability from MAPMRI
-3dSHORE,RTOP,Return to origin probability from MAPMRI
-3dSHORE,RTPP,Return to plane probability from MAPMRI
-3dSHORE,alpha,alpha used when fitting in each voxel
-3dSHORE,lapnorm,Laplacian norm from regularized MAPMRI (MAPL)
-3dSHORE,mapcoeffs,MAPMRI coefficients
-3dSHORE,regularization,regularization of the 3dSHORE fit
-3dSHORE,rsquared,r^2 of the 3dSHORE fit
+3dshore,CNR,Contrast to noise ratio for 3dshore fit
+3dshore,alpha,alpha used when fitting in each voxel
+3dshore,lapnorm,Laplacian norm from regularized MAPMRI (MAPL)
+3dshore,mapcoeffs,MAPMRI coefficients
+3dshore,msd,mean square displacement from MAPMRI
+3dshore,ng,Non-Gaussianity from MAPMRI
+3dshore,ngpar,Non-Gaussianity parallel from MAPMRI
+3dshore,ngperp,Non-Gaussianity perpendicular from MAPMRI
+3dshore,qiv,q-space inverse variance from MAPMRI
+3dshore,r2,r^2 of the 3dshore fit
+3dshore,regularization,regularization of the 3dshore fit
+3dshore,rtap,Return to axis probability from MAPMRI
+3dshore,rtop,Return to origin probability from MAPMRI
+3dshore,rtpp,Return to plane probability from MAPMRI

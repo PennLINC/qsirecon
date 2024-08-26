@@ -1,10 +1,10 @@
-3dSHORE,MSD,mean square displacement from MAPMRI
-3dSHORE,NG,Non-Gaussianity from MAPMRI
-3dSHORE,NGpar,Non-Gaussianity parallel from MAPMRI
-3dSHORE,NGperp,Non-Gaussianity perpendicular from MAPMRI
-3dSHORE,QIV,q-space inverse variance from MAPMRI
-3dSHORE,RTAP,Return to axis probability from MAPMRI
-3dSHORE,RTOP,Return to origin probability from MAPMRI
-3dSHORE,RTPP,Return to plane probability from MAPMRI
-3dSHORE,lapnorm,Laplacian norm from regularized MAPMRI (MAPL)
-3dSHORE,mapcoeffs,MAPMRI coefficients
+mapmri,lapnorm,Laplacian norm from regularized MAPMRI (MAPL)
+mapmri,mapcoeffs,MAPMRI coefficients
+mapmri,msd,mean square displacement from MAPMRI
+mapmri,ng,Non-Gaussianity from MAPMRI
+mapmri,ngpar,Non-Gaussianity parallel from MAPMRI
+mapmri,ngperp,Non-Gaussianity perpendicular from MAPMRI
+mapmri,qiv,q-space inverse variance from MAPMRI
+mapmri,rtap,Return to axis probability from MAPMRI
+mapmri,rtop,Return to origin probability from MAPMRI
+mapmri,rtpp,Return to plane probability from MAPMRI
