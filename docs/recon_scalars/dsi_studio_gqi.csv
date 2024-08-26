@@ -1,8 +1,8 @@
-GQI,gfa,Generalized Fractional Anisotropy
-GQI,iso,Isotropic Diffusion
-GQI,qa,Fractional Anisotropy from a tensor fit
-RDI,rd1,RD1
-RDI,rd2,RD2
+gqi,gfa,Generalized Fractional Anisotropy
+gqi,iso,Isotropic Diffusion
+gqi,qa,Fractional Anisotropy from a tensor fit
+rdi,rd1,RD1
+rdi,rd2,RD2
 tensor,ad,AD
 tensor,fa,Radial Diffusivity from a tensor fit
 tensor,ha,HA

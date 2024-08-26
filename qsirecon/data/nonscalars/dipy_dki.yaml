@@ -1,54 +1,8 @@
-dki_ad:
+scalarstats:
     bids:
-        model: dki
-        param: AD
+        suffix: scalarstats
+        extension: tsv
     metadata:
-        Description: DKI AD
-dki_ak:
-    bids:
-        model: dki
-        param: AK
-    metadata:
-        Description: DKI AK
-dki_fa:
-    bids:
-        model: tensor
-        param: FA
-    metadata:
-        Description: DKI FA
-dki_kfa:
-    bids:
-        model: dki
-        param: KFA
-    metadata:
-        Description: DKI KFA
-dki_md:
-    bids:
-        model: dki
-        param: MD
-    metadata:
-        Description: DKI MD
-dki_mk:
-    bids:
-        model: dki
-        param: MK
-    metadata:
-        Description: DKI MK
-dki_mkt:
-    bids:
-        model: dki
-        param: MKT
-    metadata:
-        Description: DKI MKT
-dki_rd:
-    bids:
-        model: dki
-        param: RD
-    metadata:
-        Description: DKI RD
-dki_rk:
-    bids:
-        model: dki
-        param: RK
-    metadata:
-        Description: DKI RK
+        Description: |
+            DKI scalars summarized within WM bundles. The name of the method
+            used to create the bundles is specified after ``bundles-``.

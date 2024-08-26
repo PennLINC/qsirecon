@@ -17,24 +17,31 @@ for the various steps in that workflow. Workflows can be customized
 (see :ref:`building_workflows`).
 
 
-.. note::
-  The MRtrix workflows are identical up to the FOD estimation. In each case the fiber response
-  function is estimated using ``dwi2response dhollander`` :footcite:p:`dhollander2019response`
-  with a mask based on the T1w.
-  The main differences are in
 
-    * the CSD algorithm used in dwi2fod (msmt_csd or ss3t_csd)
-    * whether a T1w-based tissue segmentation is used during tractography
 
-  In the ``*_noACT`` versions of the pipelines, no T1w-based segmentation is used during
-  tractography. Otherwise, cropping is performed at the GM/WM interface, along with backtracking.
+*********
+Workflows
+*********
 
-  In all pipelines, tractography is performed using
-  tckgen_, which uses the iFOD2 probabilistic tracking method to generate 1e7 streamlines with a
-  maximum length of 250mm, minimum length of 30mm, FOD power of 0.33. Weights for each streamline
-  were calculated using SIFT2_ :footcite:p:`smith2015sift2` and were included for while estimating the
-  structural connectivity matrix.
+MRtrix3-based Workflows
+=======================
 
+The MRtrix workflows are identical up to the FOD estimation. In each case the fiber response
+function is estimated using ``dwi2response dhollander`` :footcite:p:`dhollander2019response`
+with a mask based on the T1w.
+The main differences are in
+
+   * the CSD algorithm used in dwi2fod (msmt_csd or ss3t_csd)
+   * whether a T1w-based tissue segmentation is used during tractography
+
+In the ``*_noACT`` versions of the pipelines, no T1w-based segmentation is used during
+tractography. Otherwise, cropping is performed at the GM/WM interface, along with backtracking.
+
+In all pipelines, tractography is performed using
+tckgen_, which uses the iFOD2 probabilistic tracking method to generate 1e7 streamlines with a
+maximum length of 250mm, minimum length of 30mm, FOD power of 0.33. Weights for each streamline
+were calculated using SIFT2_ :footcite:p:`smith2015sift2` and were included for while estimating the
+structural connectivity matrix.
 
 .. warning::
   We don't recommend using ACT with FAST segmentations. The full benefits of ACT
@@ -42,9 +49,27 @@ for the various steps in that workflow. Workflows can be customized
   enough. We strongly recommend the ``hsvs`` segmentation if you're going to
   use ACT. Note that this requires ``--freesurfer-input``
 
-*********
-Workflows
-*********
+.. _mrtrix_dwi_outputs:
+
+MRtrix3 DWI Outputs
+-------------------
+These files are located in the ``dwi/`` directories.
+
+.. csv-table::
+   :header: "File Name", "Description"
+   :file: nonscalars/mrtrix_dwi.csv
+   :widths: 15, 30
+
+.. _mrtrix_anatomical_outputs:
+
+MRtrix3 Anatomical Outputs
+--------------------------
+These files are located ``anat/`` directories.
+
+.. csv-table::
+   :header: "File Name", "Description"
+   :file: nonscalars/mrtrix_anat.csv
+   :widths: 15, 30
 
 .. _mrtrix_multishell_msmt_ACT-hsvs:
 
@@ -57,6 +82,7 @@ gray matter and cerebrospinal fluid using *multi-shell acquisitions*. The white 
 used for tractography and the T1w segmentation is used for anatomical constraints :footcite:p:`smith2012anatomically`.
 The T1w segmentation uses the hybrid surface volume segmentation (hsvs) :footcite:p:`smith2020hybrid` and
 requires ``--freesurfer-input``.
+This workflow produces :ref:`mrtrix_dwi_outputs` and :ref:`mrtrix_anatomical_outputs`.
 
 .. _mrtrix_multishell_msmt_ACT-fast:
 
@@ -65,6 +91,7 @@ requires ``--freesurfer-input``.
 
 Identical to :ref:`mrtrix_multishell_msmt_ACT-hsvs` except FSL's FAST is used for
 tissue segmentation. This workflow is not recommended.
+This workflow produces :ref:`mrtrix_dwi_outputs`.
 
 
 .. _mrtrix_multishell_msmt_noACT:
@@ -76,6 +103,7 @@ tissue segmentation. This workflow is not recommended.
 This workflow uses the ``msmt_csd`` algorithm :footcite:p:`msmt5tt` to estimate FODs for white matter,
 gray matter and cerebrospinal fluid using *multi-shell acquisitions*. The white matter FODs are
 used for tractography with no T1w-based anatomical constraints.
+This workflow produces :ref:`mrtrix_dwi_outputs`.
 
 
 .. _mrtrix_singleshell_ss3t_ACT-hsvs:
@@ -90,6 +118,7 @@ and cerebrospinal fluid using *single shell (DTI) acquisitions*. The white matte
 used for tractography and the T1w segmentation is used for anatomical constraints :footcite:p:`smith2012anatomically`.
 The T1w segmentation uses the hybrid surface volume segmentation (hsvs) :footcite:p:`smith2020hybrid` and
 requires ``--freesurfer-input``.
+This workflow produces :ref:`mrtrix_dwi_outputs` and :ref:`mrtrix_anatomical_outputs`.
 
 .. _mrtrix_singleshell_ss3t_ACT-fast:
 
@@ -98,6 +127,7 @@ requires ``--freesurfer-input``.
 
 Identical to :ref:`mrtrix_singleshell_ss3t_ACT-hsvs` except FSL's FAST is used for
 tissue segmentation. This workflow is not recommended.
+This workflow produces :ref:`mrtrix_dwi_outputs`.
 
 .. _mrtrix_singleshell_ss3t_noACT:
 
@@ -108,6 +138,7 @@ This workflow uses the ``ss3t_csd_beta1`` algorithm :footcite:p:`dhollander2016n
 to estimate FODs for white matter,
 and cerebrospinal fluid using *single shell (DTI) acquisitions*. The white matter FODs are
 used for tractography with no T1w-based anatomical constraints.
+This workflow produces :ref:`mrtrix_dwi_outputs`.
 
 .. _pyafq_tractometry:
 
@@ -118,6 +149,16 @@ This workflow uses the AFQ :footcite:p:`pyafq2` implemented in Python :footcite:
 major white matter pathways within the tractography, and then extract tissue properties along
 those pathways. See the `pyAFQ documentation <https://yeatmanlab.github.io/pyAFQ/>`_ .
 
+PyAFQ Outputs
+-------------
+
++------------------------+-------------------------------------------+
+| File Name              | Description                               |
++========================+===========================================+
+| sub-* (directory)      | PyAFQ results direcrory for each subject  |
++------------------------+-------------------------------------------+
+
+
 .. _pyafq_input_trk:
 
 ``mrtrix_multishell_msmt_pyafq_tractometry``
@@ -127,7 +168,16 @@ Identical to :ref:`pyafq_tractometry` except that tractography generated using I
 instead of using pyAFQ's default DIPY tractography.
 This can also be used as an example for how to import tractographies from other
 reconstruciton pipelines to pyAFQ.
+This workflow produces :ref:`mrtrix_dwi_outputs`.
 
+PyAFQ Outputs
+-------------
+
++------------------------+-------------------------------------------+
+| File Name              | Description                               |
++========================+===========================================+
+| sub-* (directory)      | PyAFQ results direcrory for each subject  |
++------------------------+-------------------------------------------+
 
 .. _amico_noddi:
 
@@ -178,6 +228,12 @@ Scalar Maps
    :file: recon_scalars/dsi_studio_gqi.csv
    :widths: 15, 10, 30
 
+Other Outputs
+-------------
+.. csv-table::
+   :header: "File Name", "Description"
+   :file: nonscalars/dsistudio_gqi.csv
+   :widths: 15, 30
 
 .. _dsi_studio_autotrack:
 
@@ -202,6 +258,21 @@ Diffusion metrics (e.g., dti_fa, gfa, iso,rdi, nrdi02) and shape statistics (e.g
 span, curl, volume, endpoint_radius) are calculated for subject-specific tracts and written out in
 an AutoTrackGQI.csv file.
 
+Scalar Maps
+-----------
+.. csv-table::
+   :header: "Model", "Parameter", "Description"
+   :file: recon_scalars/dsi_studio_gqi.csv
+   :widths: 15, 10, 30
+
+Other Outputs
+-------------
+.. csv-table::
+   :header: "File Name", "Description"
+   :file: nonscalars/dsistudio_autotrack.csv
+   :widths: 15, 30
+
+
 .. _ss3t_autotrack:
 
 ``ss3t_autotrack``
@@ -213,13 +284,27 @@ to estimate FODs for white matter.
 
 This is a good workflow for doing tractometry on low-quality single shell data.
 
+Scalar Maps
+-----------
+.. csv-table::
+   :header: "Model", "Parameter", "Description"
+   :file: recon_scalars/dsi_studio_gqi.csv
+   :widths: 15, 10, 30
+
+Other Outputs
+-------------
+.. csv-table::
+   :header: "File Name", "Description"
+   :file: nonscalars/ss3t_autotrack.csv
+   :widths: 15, 30
+
 .. _tortoise:
 
 ``TORTOISE``
 ============
 
 The TORTOISE :footcite:p:`tortoisev3` software can calculate Tensor and MAPMRI fits,
-along with their many associated scalar maps.
+along with their many associated scalar maps. This workflow only produces scalar maps.
 
 Scalar Maps
 -----------
@@ -228,6 +313,12 @@ Scalar Maps
    :file: recon_scalars/tortoise.csv
    :widths: 15, 10, 30
 
+Other Outputs
+-------------
+.. csv-table::
+   :header: "File Name", "Description"
+   :file: nonscalars/tortoise.csv
+   :widths: 15, 30
 
 .. _dipy_mapmri:
 
@@ -247,6 +338,14 @@ Scalar Maps
    :file: recon_scalars/dipy_mapmri.csv
    :widths: 15, 10, 30
 
+Other Outputs
+-------------
+.. csv-table::
+   :header: "File Name", "Description"
+   :file: nonscalars/dipy_mapmri.csv
+   :widths: 15, 30
+
+
 .. _dipy_dki:
 
 ``dipy_dki``
@@ -260,6 +359,13 @@ Scalar Maps
    :header: "Model", "Parameter", "Description"
    :file: recon_scalars/dipy_dki.csv
    :widths: 15, 10, 30
+
+Other Outputs
+-------------
+.. csv-table::
+   :header: "File Name", "Description"
+   :file: nonscalars/dipy_dki.csv
+   :widths: 15, 30
 
 .. _dipy_3dshore:
 
@@ -309,6 +415,13 @@ Scalar Maps
    :file: recon_scalars/csdsi_3dshore.csv
    :widths: 15, 10, 30
 
+Other Outputs
+-------------
+.. csv-table::
+   :header: "File Name", "Description"
+   :file: nonscalars/csdsi_3dshore.csv
+   :widths: 15, 30
+
 
 .. _hbcd_scalar_maps:
 
@@ -339,6 +452,12 @@ Scalar Maps
    :file: recon_scalars/hbcd_scalar_maps.csv
    :widths: 15, 10, 30
 
+Other Outputs
+-------------
+.. csv-table::
+   :header: "File Name", "Description"
+   :file: nonscalars/dsistudio_gqi.csv
+   :widths: 15, 30
 
 .. _appropriate_schemes:
 

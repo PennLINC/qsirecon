@@ -1,0 +1,22 @@
+
+qsiprep_5tt_hsvs:
+    bids:
+        atlas: hsvs
+        space: T1w
+        suffix: dseg
+        extension: nii.gz
+    metadata:
+        Description: |
+            Hybrid Surface/Voume Segmentation in MRtrix3 5tt format.
+            Aligned in coordinate space to ``space-T1w``.
+
+fs_5tt_hsvs:
+    bids:
+        atlas: hsvs
+        space: fsnative
+        suffix: dseg
+        extension: nii.gz
+    metadata:
+        Description: |
+            Hybrid Surface/Voume Segmentation in MRtrix3 5tt format.
+            Aligned to the FreeSurfer ``orig.mgz`` image.

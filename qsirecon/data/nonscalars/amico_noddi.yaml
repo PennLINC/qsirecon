@@ -2,6 +2,7 @@ fibgz:
     bids:
         model: noddi
         param: direction
+        extension: fib.gz
     metadata:
         Description: |
             DSI Studio fib format file where the peak directions come from
@@ -10,5 +11,6 @@ config_file:
     bids:
         model: noddi
         suffix: config
+        extension: pickle.gz
     metadata:
         Description: A config file internally used by AMICO.

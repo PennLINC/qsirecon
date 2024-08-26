@@ -1,5 +1,6 @@
 scalarstats:
     bids:
+        bundles: "*"
         suffix: scalarstats
         extension: tsv
     metadata:

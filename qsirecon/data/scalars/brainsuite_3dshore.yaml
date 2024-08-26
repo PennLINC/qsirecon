@@ -1,15 +1,15 @@
 alpha_image:
     bids:
-        model: 3dSHORE
+        model: 3dshore
         param: alpha
     metadata:
         Description: alpha used when fitting in each voxel
 cnr_image:
     bids:
-        model: 3dSHORE
+        model: 3dshore
         param: CNR
     metadata:
-        Description: Contrast to noise ratio for 3dSHORE fit
+        Description: Contrast to noise ratio for 3dshore fit
 lapnorm_file:
     bids:
         model: 3dshore
@@ -54,16 +54,16 @@ qiv_file:
         Description: q-space inverse variance from MAPMRI
 r2_image:
     bids:
-        model: 3dSHORE
+        model: 3dshore
         param: r2
     metadata:
-        Description: r^2 of the 3dSHORE fit
+        Description: r^2 of the 3dshore fit
 regularization_image:
     bids:
-        model: 3dSHORE
+        model: 3dshore
         param: regularization
     metadata:
-        Description: regularization of the 3dSHORE fit
+        Description: regularization of the 3dshore fit
 rtap_file:
     bids:
         model: 3dshore

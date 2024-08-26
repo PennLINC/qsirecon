@@ -1,0 +1,43 @@
+bundles:
+    bids:
+        suffix: streamlines
+        extension: tck.gz
+    metadata:
+        Description: |
+            One tck.gz per bundle. The bundle represented by this file is
+            specified in the ``bundle-`` tag.
+
+tdistats:
+    bids:
+        bundles: DSIStudio
+        suffix: tdistats
+        extension: tsv
+    metadata:
+        Description: Statistics on streamline density in voxels
+
+scalarstats:
+    bids:
+        bundles: DSIStudio
+        suffix: scalarstats
+        extension: csv
+    metadata:
+        Description: |
+            Statistics on scalars produced by this workflow
+
+fibgz:
+    bids:
+        space: T1w
+        suffix: dwimap
+        extension: fib.gz
+    metadata:
+        Description: |
+            DSI Studio fib format containing the SS3T FODs used for
+            AutoTrack.
+
+mapping:
+    bids:
+        space: T1w
+        suffix: mapping
+        extension: map.gz
+    metadata:
+        Description: Mapping file produced by DSI Studio.
