@@ -17,7 +17,8 @@ exemplar_bundles:
         Description: |
             A zip archive containing the output directory from
             ``connectome2tck``. Unzip this directory and view
-            the exemplar connections using ``mrview`` to ensure
+            the exemplar connections (one is created for each nonzero edge
+            in the connectivity matrix) using ``mrview`` to ensure
             that you're seeing the expected shapes of connections.
 
 streamlines:
