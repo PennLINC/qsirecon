@@ -1,0 +1,14 @@
+atlases: []
+description: Runs the AMICO implementation of NODDI
+name: amico_noddi
+nodes:
+-   action: fit_noddi
+    input: qsirecon
+    name: fit_noddi
+    parameters:
+        dIso: 0.003
+        dPar: 0.0017
+        isExvivo: false
+    qsirecon_suffix: NODDI
+    software: AMICO
+space: T1w

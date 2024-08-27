@@ -1,0 +1,13 @@
+atlases: []
+description: Reconstruct dwis using Dipy, then convert to mrtrix and dsi studio formats
+name: dipy_dki_recon
+nodes:
+-   action: DKI_reconstruction
+    input: qsirecon
+    name: dki_recon
+    parameters:
+        write_fibgz: false
+        write_mif: false
+    qsirecon_suffix: DKI
+    software: Dipy
+space: T1w

@@ -1,0 +1,92 @@
+anatomical: []
+atlases: []
+name: hbcd_postproc_beta
+nodes:
+-   action: DKI_reconstruction
+    input: qsirecon
+    name: dipy_dki
+    parameters:
+        write_fibgz: false
+        write_mif: false
+    qsirecon_suffix: DIPYDKI
+    software: Dipy
+-   action: estimate
+    input: qsirecon
+    name: tortoise_dtmapmri
+    parameters:
+        big_delta: null
+        estimate_mapmri:
+            map_order: 4
+        estimate_tensor:
+            bval_cutoff: 1200
+            write_cs: true
+        estimate_tensor_separately: true
+        small_delta: null
+    qsirecon_suffix: TORTOISE_model-MAPMRI
+    software: TORTOISE
+-   action: estimate
+    input: qsirecon
+    name: tortoise_fullshell_tensor
+    parameters:
+        big_delta: null
+        estimate_tensor:
+            bval_cutoff: 4000
+            write_cs: true
+        estimate_tensor_separately: true
+        small_delta: null
+    qsirecon_suffix: TORTOISE_model-tensor
+    software: TORTOISE
+-   action: fit_noddi
+    input: qsirecon
+    name: fit_noddi
+    parameters:
+        dIso: 0.003
+        dPar: 0.0017
+        isExvivo: false
+    qsirecon_suffix: NODDI
+    software: AMICO
+-   action: reconstruction
+    input: qsirecon
+    name: dsistudio_gqi
+    parameters:
+        method: gqi
+    qsirecon_suffix: DSIStudio
+    software: DSI Studio
+-   action: autotrack
+    input: dsistudio_gqi
+    name: autotrackgqi
+    parameters:
+        tolerance: 22,26,30
+        track_id: Association,Projection,Commissure,Cerebellum,CranialNerve
+        track_voxel_ratio: 2.0
+        yield_rate: 1.0e-06
+    qsirecon_suffix: DSIStudio
+    software: DSI Studio
+-   action: export
+    input: dsistudio_gqi
+    name: gqi_scalars
+    qsirecon_suffix: DSIStudio
+    software: DSI Studio
+-   action: bundle_map
+    input: autotrackgqi
+    name: bundle_means
+    scalars_from:
+    - gqi_scalars
+    - dipy_dki
+    - fit_noddi
+    - tortoise_fullshell_tensor
+    - tortoise_dtmapmri
+    software: qsirecon
+-   action: template_map
+    input: qsirecon
+    name: template_map
+    parameters:
+        interpolation: NearestNeighbor
+    scalars_from:
+    - gqi_scalars
+    - dipy_dki
+    - fit_noddi
+    - tortoise_fullshell_tensor
+    - tortoise_dtmapmri
+    software: qsirecon
+space: T1w

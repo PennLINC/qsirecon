@@ -11,6 +11,7 @@ from copy import deepcopy
 from glob import glob
 
 import nipype.pipeline.engine as pe
+import yaml
 from bids.layout import BIDSLayout
 from dipy import __version__ as dipy_ver
 from nilearn import __version__ as nilearn_ver
@@ -68,8 +69,8 @@ def init_qsirecon_wf():
 
         # Dump a copy of the recon spec into the log directory as well
         recon_spec = _load_recon_spec(config.workflow.recon_spec)
-        with open(log_dir / "recon_spec.json", "w") as f:
-            json.dump(recon_spec, f, indent=2, sort_keys=True)
+        with open(log_dir / "recon_spec.yaml", "w") as f:
+            yaml.dump(recon_spec, f, default_flow_style=False, sort_keys=False, indent=4)
 
     return qsirecon_wf
 
@@ -341,22 +342,29 @@ def _get_wf_name(dwi_file):
 def _load_recon_spec(spec_name):
     from copy import deepcopy
 
+    from ..utils.misc import load_yaml
     from ..utils.sloppy_recon import make_sloppy
 
     prepackaged_dir = pkgrf("qsirecon", "data/pipelines")
-    prepackaged = [op.split(fname)[1][:-5] for fname in glob(prepackaged_dir + "/*.json")]
+    prepackaged = [op.split(fname)[1][:-5] for fname in glob(op.join(prepackaged_dir, "*.yaml"))]
     if op.exists(spec_name):
         recon_spec = spec_name
     elif spec_name in prepackaged:
-        recon_spec = op.join(prepackaged_dir + "/{}.json".format(spec_name))
+        recon_spec = op.join(prepackaged_dir, f"{spec_name}.yaml")
     else:
-        raise Exception("{} is not a file that exists or in {}".format(spec_name, prepackaged))
+        raise Exception(f"{spec_name} is not a file that exists or in {prepackaged}")
 
-    with open(recon_spec, "r") as f:
+    if recon_spec.endswith(".json"):
+        with open(recon_spec, "r") as f:
+            try:
+                spec = json.load(f)
+            except Exception:
+                raise Exception("Unable to read JSON spec. Check the syntax.")
+    else:
         try:
-            spec = json.load(f)
+            spec = load_yaml(recon_spec)
         except Exception:
-            raise Exception("Unable to read JSON spec. Check the syntax.")
+            raise Exception("Unable to read YAML spec. Check the syntax.")
 
     if config.execution.sloppy:
         config.loggers.workflow.warning("Forcing reconstruction to use unrealistic parameters")

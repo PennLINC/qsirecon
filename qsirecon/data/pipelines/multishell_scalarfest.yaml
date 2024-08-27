@@ -1,0 +1,106 @@
+anatomical: []
+atlases: []
+name: multishell_scalarfest
+nodes:
+-   action: csd
+    input: qsirecon
+    name: msmt_csd
+    parameters:
+        fod:
+            algorithm: msmt_csd
+            max_sh:
+            - 8
+            - 8
+            - 8
+        mtnormalize: true
+        response:
+            algorithm: dhollander
+    qsirecon_suffix: msmtcsd
+    software: MRTrix3
+-   action: fit_noddi
+    input: qsirecon
+    name: fit_noddi
+    parameters:
+        dIso: 0.003
+        dPar: 0.0017
+        isExvivo: false
+    qsirecon_suffix: wmNODDI
+    software: AMICO
+-   action: fit_noddi
+    input: qsirecon
+    name: fit_noddi_gm
+    parameters:
+        dIso: 0.003
+        dPar: 0.0011
+        isExvivo: false
+    qsirecon_suffix: gmNODDI
+    software: AMICO
+-   action: steinhardt_order_parameters
+    input: msmt_csd
+    name: calc_sops
+    parameters:
+        order: 8
+    qsirecon_suffix: SOP
+-   action: MAPMRI_reconstruction
+    input: qsirecon
+    name: mapmri_recon
+    parameters:
+        anisotropic_scaling: false
+        bval_threshold: 2000
+        dti_scale_estimation: false
+        laplacian_regularization: true
+        laplacian_weighting: 0.2
+        radial_order: 6
+        write_fibgz: false
+        write_mif: false
+    qsirecon_suffix: MAPMRI
+    software: Dipy
+-   action: DKI_reconstruction
+    input: qsirecon
+    name: dki_recon
+    parameters:
+        write_fibgz: false
+        write_mif: false
+    qsirecon_suffix: DKI
+    software: Dipy
+-   action: 3dSHORE_reconstruction
+    input: qsirecon
+    name: csdsi_3dshore
+    parameters:
+        extrapolate_scheme: HCP
+        lambdaL: 1.0e-08
+        lambdaN: 1.0e-08
+        radial_order: 8
+        regularization: L2
+        write_fibgz: false
+        write_mif: false
+    qsirecon_suffix: DIPY3dSHORE
+    software: Dipy
+-   action: csd
+    input: csdsi_3dshore
+    name: msmt_csd_fromcs
+    parameters:
+        fod:
+            algorithm: msmt_csd
+            max_sh:
+            - 8
+            - 8
+            - 8
+        mtnormalize: true
+        response:
+            algorithm: dhollander
+    qsirecon_suffix: csmsmtcsd
+    software: MRTrix3
+-   action: reconstruction
+    input: qsirecon
+    name: dsistudio_gqi
+    parameters:
+        method: gqi
+    qsirecon_suffix: DSIStudio
+    software: DSI Studio
+-   action: export
+    input: dsistudio_gqi
+    name: scalar_export
+    qsirecon_suffix: DSIStudio
+    software: DSI Studio
+space: T1w

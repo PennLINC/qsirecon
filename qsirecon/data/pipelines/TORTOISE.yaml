@@ -1,0 +1,19 @@
+anatomical: []
+atlases: []
+name: tortoise_recon
+nodes:
+-   action: estimate
+    input: qsirecon
+    name: tortoise_dtmapmri
+    parameters:
+        big_delta: null
+        estimate_mapmri:
+            map_order: 4
+        estimate_tensor:
+            bval_cutoff: 2400
+            write_cs: true
+        estimate_tensor_separately: true
+        small_delta: null
+    qsirecon_suffix: TORTOISE
+    software: TORTOISE
+space: T1w

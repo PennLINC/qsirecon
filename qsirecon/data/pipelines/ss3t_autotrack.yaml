@@ -1,0 +1,41 @@
+anatomical: []
+atlases: []
+name: mrtrix_singleshell_ss3t_noACT
+nodes:
+-   action: csd
+    input: qsirecon
+    name: ss3t_csd
+    parameters:
+        fod:
+            algorithm: ss3t
+        mtnormalize: true
+        response:
+            algorithm: dhollander
+    qsirecon_suffix: MRtrix3_fork-SS3T
+    software: MRTrix3
+-   action: reconstruction
+    input: qsirecon
+    name: dsistudio_gqi
+    parameters:
+        method: gqi
+    qsirecon_suffix: DSIStudio
+    software: DSI Studio
+-   action: mif_to_fib
+    input: ss3t_csd
+    name: convert_mif_to_fib
+    parameters:
+        secondary_fib:
+            method: gqi
+    qsirecon_suffix: ss3tautotrack
+-   action: autotrack
+    input: convert_mif_to_fib
+    name: ss3tautotrack
+    parameters:
+        threshold_index: fod
+        tolerance: 22,26,30
+        track_id: Fasciculus,Cingulum,Aslant,Corticos,Thalamic_R,Reticular,Optic,Fornix,Corpus
+        track_voxel_ratio: 2.0
+        yield_rate: 1.0e-06
+    qsirecon_suffix: SS3TAutotrack
+    software: DSI Studio
+space: T1w

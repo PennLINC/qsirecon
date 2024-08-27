@@ -6,8 +6,8 @@
 Custom Reconstruction Workflows
 ###############################
 
-QSIRecon workflows are defined in ``json`` files. The :ref:`builtin_workflows`
-can be found in the QSIRecon ``json`` format on
+QSIRecon workflows are defined in ``YAML`` files. The :ref:`builtin_workflows`
+can be found in the QSIRecon ``YAML`` format on
 `github <https://github.com/PennLINC/qsirecon/tree/main/qsirecon/data/pipelines>`_,
 and are a great place to get started with customizing parts of these workflows.
 
@@ -19,15 +19,19 @@ Pipeline-level metadata
 
 At the root level of the Recon Spec there are
 
-.. code-block:: json
-
-  {
-    "name": "dsistudio_pipeline",
-    "anatomical": ["mrtrix_5tt_hsvs"],
-    "atlases": ["schaefer100" "schaefer200", "schaefer400", "brainnetome246",
-                "aicha384", "gordon333", "aal116"],
-    "nodes": []
-  }
+.. code-block:: yaml
+  name: dsistudio_pipeline
+  anatomical:
+  - mrtrix_5tt_hsvs
+  atlases:
+  - schaefer100
+  - schaefer200
+  - schaefer400
+  - brainnetome246
+  - aicha384
+  - gordon333
+  - aal116
+  nodes: []
 
 The ``"name"`` element defines the name of the pipeline. There will be a directory in your working
 directory with this name. The ``"anatomical"`` field lists additional things to compute
@@ -54,24 +58,23 @@ For example, if you want to perform CSD there are other steps that should
 happen before actually fitting spherical harmonics to the data.
 The entry for this in the ``"nodes"`` list could look like:
 
-.. code-block:: json
+.. code-block:: yaml
 
-  {
-    "name": "msmt_csd",
-    "software": "MRTrix3",
-    "action": "csd",
-    "qsirecon_suffix": "MRtrix3_act-FAST",
-    "parameters": {
-      "mtnormalize": true,
-      "response": {
-        "algorithm": "dhollander"
-      },
-      "fod": {
-        "algorithm": "msmt_csd",
-        "max_sh": [8, 8, 8]
-      }
-    }
-  },
+  nodes:
+  -   action: csd
+      name: msmt_csd
+      parameters:
+          fod:
+              algorithm: msmt_csd
+              max_sh:
+              - 8
+              - 8
+              - 8
+          mtnormalize: true
+          response:
+              algorithm: dhollander
+      qsirecon_suffix: MRtrix3_act-FAST
+      software: MRTrix3
 
 QSIRecon figures out which software to use based on the values specified
 for ``"software"`` and ``"action"``. The full list of recognized actions
@@ -99,21 +102,19 @@ another node, you can pass them by matching the ``"input"`` field to the
 name of the upstream node. Here is an example connecting a CSD calculation
 to MRtrix3 tractography.
 
-.. code-block:: json
+.. code-block:: yaml
 
-  {
-    "name": "msmt_csd",
-    "software": "MRTrix3",
-    "action": "csd",
-    "qsirecon_suffix": "MRtrix3_act-FAST"
-  },
-    {
-      "name": "track_ifod2",
-      "software": "MRTrix3",
-      "action": "tractography",
-      "qsirecon_suffix": "MRtrix3_act-FAST",
-      "input": "msmt_csd"
-    },
+  nodes:
+  -   action: csd
+      name: msmt_csd
+      qsirecon_suffix: MRtrix3_act-FAST
+      software: MRTrix3
+
+  -   action: tractography
+      input: msmt_csd
+      name: track_ifod2
+      qsirecon_suffix: MRtrix3_act-FAST
+      software: MRTrix3
 
 .. note::
     There can only be zero (inputs come from the input data) or one
@@ -132,35 +133,26 @@ spaces with a "template mapper". Suppose I wanted to fit a NODDI model and
 a DKI model. Then I wanted to transform their model-derived parameters to
 the template space used in QSIPrep. My ``"nodes"`` might look like:
 
-.. code-block:: json
+.. code-block:: yaml
 
-  "nodes": [
-    {
-      "name": "dipy_dki",
-      "software": "Dipy",
-      "action": "DKI_reconstruction",
-      "qsirecon_suffix": "DIPYDKI"
-    },
-    {
-      "name": "fit_noddi",
-      "action": "fit_noddi",
-      "software": "AMICO",
-      "qsirecon_suffix": "NODDI"
-    },
-    {
-      "name": "template_map",
-      "software": "qsirecon",
-      "action": "template_map",
-      "input": "qsirecon",
-      "scalars_from": [
-        "dipy_dki",
-        "fit_noddi"
-      ],
-      "parameters": {
-        "interpolation": "NearestNeighbor"
-      }
-    }
-  ]
+  nodes:
+  -   action: DKI_reconstruction
+      name: dipy_dki
+      qsirecon_suffix: DIPYDKI
+      software: Dipy
+  -   action: fit_noddi
+      name: fit_noddi
+      qsirecon_suffix: NODDI
+      software: AMICO
+  -   action: template_map
+      input: qsirecon
+      name: template_map
+      parameters:
+          interpolation: NearestNeighbor
+      scalars_from:
+      - dipy_dki
+      - gqi_scalars
+      software: qsirecon
 
 By listing the names of the scalar-producing nodes in the ``"scalars_from"`` field
 you will end up with the scalars in both subject native and template space in the
@@ -182,39 +174,29 @@ for bundle mapping are
 
 Here is a small example where we use autotrack bundles:
 
-.. code-block:: json
+.. code-block:: yaml
 
-  "nodes": [
-    {
-      "name": "dipy_dki",
-      "software": "Dipy",
-      "action": "DKI_reconstruction",
-      "qsirecon_suffix": "DIPYDKI"
-    },
-    {
-      "name": "fit_noddi",
-      "action": "fit_noddi",
-      "software": "AMICO",
-      "qsirecon_suffix": "NODDI"
-    },
-    {
-      "name": "autotrackgqi",
-      "software": "DSI Studio",
-      "action": "autotrack",
-      "input": "dsistudio_gqi",
-      "qsirecon_suffix": "DSIStudio"
-    },
-    {
-      "name": "bundle_means",
-      "software": "qsirecon",
-      "action": "bundle_map",
-      "input": "autotrackgqi",
-      "scalars_from": [
-        "dipy_dki",
-        "fit_noddi"
-      ]
-    }
-  ]
+  nodes:
+  -   action: DKI_reconstruction
+      name: dipy_dki
+      qsirecon_suffix: DIPYDKI
+      software: Dipy
+  -   action: fit_noddi
+      name: fit_noddi
+      qsirecon_suffix: NODDI
+      software: AMICO
+  -   action: autotrack
+      input: dsistudio_gqi
+      name: autotrackgqi
+      qsirecon_suffix: DSIStudio
+      software: DSI Studio
+  -   action: bundle_map
+      input: autotrackgqi
+      name: bundle_means
+      scalars_from:
+      - dipy_dki
+      - fit_noddi
+      software: qsirecon
 
 This will produce a tsv with the NODDI and DKI scalars summarized for
 each bundle produced by autotrack.
