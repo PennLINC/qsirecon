@@ -3,7 +3,7 @@ ad_file:
         model: tensor
         param: ad
     metadata:
-        Description: AD
+        Description: Apparent Diffusivity from a tensor fit
 dti_fa_file:
     bids:
         model: tensor
@@ -21,25 +21,25 @@ ha_file:
         model: tensor
         param: ha
     metadata:
-        Description: HA
+        Description: Helix Angle from tensor fit
 iso_file:
     bids:
         model: gqi
         param: iso
     metadata:
-        Description: Isotropic Diffusion
+        Description: Isotropic Diffusion from GQI
 md_file:
     bids:
         model: tensor
         param: md
     metadata:
-        Description: Mean Diffusivity
+        Description: Mean Diffusivity from a tensor fit
 qa_file:
     bids:
         model: gqi
         param: qa
     metadata:
-        Description: Fractional Anisotropy from a tensor fit
+        Description: Quantitative Anisotropy from a GQI fit
 rd1_file:
     bids:
         model: rdi
