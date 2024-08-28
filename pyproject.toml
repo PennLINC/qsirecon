@@ -27,7 +27,7 @@ dependencies = [
     "matplotlib",
     "networkx ~= 2.8.8",
     "nibabel <= 5.2.0",
-    "nilearn == 0.10.1",
+    "nilearn == 0.10.4",
     "nipype == 1.8.6",
     "nireports ~= 24.0.2",
     "niworkflows >=1.9,<= 1.10",
