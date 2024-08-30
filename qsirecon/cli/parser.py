@@ -481,7 +481,7 @@ def parse_args(args=None, namespace=None):
     work_dir.mkdir(exist_ok=True, parents=True)
 
     # Run ingression if necessary
-    if config.execution.input_type in ('ukbb', 'hcpya'):
+    if config.execution.input_type in ("ukbb", "hcpya"):
         from ingress2qsirecon.utils.workflows import ingress2qsirecon
 
         config.execution.bids_dir = "blah"
