@@ -456,7 +456,7 @@ def parse_args(args=None, namespace=None):
     # sections (we used `init=False` above).
     # This must be done after cleaning the work directory, or we could delete an
     # open SQLite database
-    config.from_dict({})
+    config.from_dict({}, ignore=["layout"])
 
     # Ensure input and output folders are not the same
     if output_dir == input_dir:
