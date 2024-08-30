@@ -116,10 +116,10 @@ def _build_parser(**kwargs):
     # required, positional arguments
     # IMPORTANT: they must go directly with the parser object
     parser.add_argument(
-        "bids_dir",
+        "input_dir",
         action="store",
+        metavar="bids_dir",
         type=PathExists,
-        dest="input_dir",
         help=(
             "The root folder of a BIDS valid dataset "
             "(sub-XXXXX folders should be found at the top level in this folder). "
