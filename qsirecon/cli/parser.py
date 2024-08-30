@@ -442,7 +442,7 @@ def parse_args(args=None, namespace=None):
             f"total threads (--nthreads/--n_cpus={config.nipype.nprocs})"
         )
 
-    bids_dir = config.execution.bids_dir
+    input_dir = config.execution.input_dir
     output_dir = config.execution.output_dir
     work_dir = config.execution.work_dir
     version = config.environment.version
@@ -454,16 +454,16 @@ def parse_args(args=None, namespace=None):
     config.from_dict({})
 
     # Ensure input and output folders are not the same
-    if output_dir == bids_dir:
+    if output_dir == input_dir:
         parser.error(
             "The selected output folder is the same as the input BIDS folder. "
             "Please modify the output path (suggestion: %s)."
-            % bids_dir
+            % input_dir
             / "derivatives"
             / ("qsirecon-%s" % version.split("+")[0])
         )
 
-    if bids_dir in work_dir.parents:
+    if input_dir in work_dir.parents:
         parser.error(
             "The selected working directory is a subdirectory of the input BIDS folder. "
             "Please modify the output path."
@@ -474,6 +474,23 @@ def parse_args(args=None, namespace=None):
     # Check and create output and working directories
     config.execution.log_dir.mkdir(exist_ok=True, parents=True)
     work_dir.mkdir(exist_ok=True, parents=True)
+
+    # Run ingression if necessary
+    if config.execution.input_type in ('ukbb', 'hcpya'):
+        from ingress2qsirecon.utils.workflows import ingress2qsirecon
+
+        config.execution.bids_dir = "blah"
+
+        wf = ingress2qsirecon(
+            config.execution.input_dir,
+            config.execution.bids_dir,
+            config.execution.input_type,
+        )
+        # Configure the nipype workflow
+        wf.config["execution"]["crashdump_dir"] = str(config.execution.log_dir)
+        wf.run()
+    else:
+        config.execution.bids_dir = config.execution.input_dir
 
     # Force initialization of the BIDSLayout
     config.execution.init()
