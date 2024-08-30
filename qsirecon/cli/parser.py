@@ -475,7 +475,7 @@ def parse_args(args=None, namespace=None):
     work_dir.mkdir(exist_ok=True, parents=True)
 
     # Run ingression if necessary
-    if config.execution.input_type in ("ukbb", "hcpya"):
+    if config.workflow.input_type in ("ukbb", "hcpya"):
         from ingress2qsirecon.utils.workflows import ingress2qsirecon
 
         config.execution.bids_dir = work_dir / "bids"
@@ -483,7 +483,7 @@ def parse_args(args=None, namespace=None):
         wf = ingress2qsirecon(
             config.execution.input_dir,
             config.execution.bids_dir,
-            config.execution.input_type,
+            config.workflow.input_type,
         )
         # Configure the nipype workflow
         wf.config["execution"]["crashdump_dir"] = str(log_dir)
