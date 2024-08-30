@@ -452,12 +452,6 @@ def parse_args(args=None, namespace=None):
     work_dir = config.execution.work_dir
     version = config.environment.version
 
-    # Update the config with an empty dict to trigger initialization of all config
-    # sections (we used `init=False` above).
-    # This must be done after cleaning the work directory, or we could delete an
-    # open SQLite database
-    config.from_dict({}, ignore=["layout"])
-
     # Ensure input and output folders are not the same
     if output_dir == input_dir:
         parser.error(
@@ -475,16 +469,16 @@ def parse_args(args=None, namespace=None):
         )
 
     # Setup directories
-    config.execution.log_dir = config.execution.output_dir / "logs"
+    log_dir = output_dir / "logs"
     # Check and create output and working directories
-    config.execution.log_dir.mkdir(exist_ok=True, parents=True)
+    log_dir.mkdir(exist_ok=True, parents=True)
     work_dir.mkdir(exist_ok=True, parents=True)
 
     # Run ingression if necessary
     if config.execution.input_type in ("ukbb", "hcpya"):
         from ingress2qsirecon.utils.workflows import ingress2qsirecon
 
-        config.execution.bids_dir = "blah"
+        config.execution.bids_dir = work_dir / "bids"
 
         wf = ingress2qsirecon(
             config.execution.input_dir,
@@ -492,10 +486,17 @@ def parse_args(args=None, namespace=None):
             config.execution.input_type,
         )
         # Configure the nipype workflow
-        wf.config["execution"]["crashdump_dir"] = str(config.execution.log_dir)
+        wf.config["execution"]["crashdump_dir"] = str(log_dir)
         wf.run()
     else:
         config.execution.bids_dir = config.execution.input_dir
+
+    # Update the config with an empty dict to trigger initialization of all config
+    # sections (we used `init=False` above).
+    # This must be done after cleaning the work directory, or we could delete an
+    # open SQLite database
+    config.from_dict({})
+    config.execution.log_dir = log_dir
 
     # Force initialization of the BIDSLayout
     config.execution.init()
