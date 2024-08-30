@@ -119,8 +119,13 @@ def _build_parser(**kwargs):
         "bids_dir",
         action="store",
         type=PathExists,
-        help="The root folder of a BIDS valid dataset (sub-XXXXX folders should "
-        "be found at the top level in this folder).",
+        dest="input_dir",
+        help=(
+            "The root folder of a BIDS valid dataset "
+            "(sub-XXXXX folders should be found at the top level in this folder). "
+            "If the dataset is not BIDS-valid, "
+            "then a BIDS-compliant version will be created based on the --input-type value."
+        ),
     )
     parser.add_argument(
         "output_dir",
