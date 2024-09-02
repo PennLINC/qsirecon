@@ -39,7 +39,7 @@ dependencies = [
     "pybids",
     "pyyaml",
     "scikit-image",
-    "scikit-learn <= 1.4.0",
+    "scikit-learn <= 1.5.1",
     "seaborn",
     "sentry_sdk",
     "SimpleITK",
