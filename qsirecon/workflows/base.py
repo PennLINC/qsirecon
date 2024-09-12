@@ -32,23 +32,12 @@ def init_qsirecon_wf():
     qsirecon_wf = Workflow(name=f"qsirecon_{ver.major}_{ver.minor}_wf")
     qsirecon_wf.base_dir = config.execution.work_dir
 
-    if config.workflow.input_type not in ("qsiprep", "ukb"):
+    if config.workflow.input_type not in ("qsiprep", "hcpya", "ukb"):
         raise NotImplementedError(
             f"{config.workflow.input_type} is not supported as recon-input yet."
         )
 
-    if config.workflow.input_type == "qsiprep":
-        # This should work for --recon-input as long as the same dataset is in bids_dir
-        # or if the call is doing preproc+recon
-        to_recon_list = config.execution.participant_label
-    elif config.workflow.input_type == "ukb":
-        from ..utils.ingress import collect_ukb_participants, create_ukb_layout
-
-        # The ukb input will always be specified as the bids input - we can't preproc it first
-        ukb_layout = create_ukb_layout(config.execution.bids_dir)
-        to_recon_list = collect_ukb_participants(
-            ukb_layout, participant_label=config.execution.participant_label
-        )
+    to_recon_list = config.execution.participant_label
 
     for subject_id in to_recon_list:
         single_subject_wf = init_single_subject_recon_wf(subject_id=subject_id)
@@ -86,7 +75,7 @@ def init_single_subject_recon_wf(subject_id):
         Single subject label
     """
     from ..interfaces.bids import DerivativesDataSink
-    from ..interfaces.ingress import QSIPrepDWIIngress, UKBioBankDWIIngress
+    from ..interfaces.ingress import QSIPrepDWIIngress
     from ..interfaces.interchange import (
         ReconWorkflowInputs,
         anatomical_workflow_outputs,
@@ -138,17 +127,16 @@ to workflows in *qsirecon*'s documentation]\
 
     # This is here because qsiprep currently only makes one anatomical result per subject
     # regardless of sessions. So process it on its
-    if config.workflow.input_type == "qsiprep":
-        anat_ingress_node, available_anatomical_data = init_highres_recon_anatomical_wf(
-            subject_id=subject_id,
-            extras_to_make=spec.get("anatomical", []),
-            needs_t1w_transform=needs_t1w_transform,
-        )
+    anat_ingress_node, available_anatomical_data = init_highres_recon_anatomical_wf(
+        subject_id=subject_id,
+        extras_to_make=spec.get("anatomical", []),
+        needs_t1w_transform=needs_t1w_transform,
+    )
 
-        # Connect the anatomical-only inputs. NOTE this is not to the inputnode!
-        config.loggers.workflow.info(
-            "Anatomical (T1w) available for recon: %s", available_anatomical_data
-        )
+    # Connect the anatomical-only inputs. NOTE this is not to the inputnode!
+    config.loggers.workflow.info(
+        "Anatomical (T1w) available for recon: %s", available_anatomical_data
+    )
 
     aggregate_anatomical_nodes = pe.Node(
         niu.Merge(len(dwi_recon_inputs)),
@@ -168,28 +156,11 @@ to workflows in *qsirecon*'s documentation]\
         wf_name = _get_wf_name(dwi_file)
 
         # Get the preprocessed DWI and all the related preprocessed images
-        if config.workflow.input_type == "qsiprep":
-            dwi_ingress_nodes[dwi_file] = pe.Node(
-                QSIPrepDWIIngress(dwi_file=dwi_file),
-                name=f"{wf_name}_ingressed_dwi_data",
-            )
-            anat_ingress_nodes[dwi_file] = anat_ingress_node
-
-        elif config.workflow.input_type == "ukb":
-            dwi_ingress_nodes[dwi_file] = pe.Node(
-                UKBioBankDWIIngress(dwi_file=dwi_file, data_dir=str(dwi_input["path"].absolute())),
-                name=f"{wf_name}_ingressed_ukb_dwi_data",
-            )
-            anat_ingress_nodes[dwi_file], available_anatomical_data = (
-                init_highres_recon_anatomical_wf(
-                    subject_id=subject_id,
-                    recon_input_dir=dwi_input["path"],
-                    extras_to_make=spec.get("anatomical", []),
-                    pipeline_source="ukb",
-                    needs_t1w_transform=needs_t1w_transform,
-                    name=f"{wf_name}_ingressed_ukb_anat_data",
-                )
-            )
+        dwi_ingress_nodes[dwi_file] = pe.Node(
+            QSIPrepDWIIngress(dwi_file=dwi_file),
+            name=f"{wf_name}_ingressed_dwi_data",
+        )
+        anat_ingress_nodes[dwi_file] = anat_ingress_node
 
         # Aggregate the anatomical data from all the dwi files
         workflow.connect([
@@ -404,26 +375,19 @@ def _get_iterable_dwi_inputs(subject_id):
     the other files needed.
 
     """
-    from ..utils.ingress import create_ukb_layout
 
     dwi_dir = config.execution.bids_dir
-    if config.workflow.input_type == "qsiprep":
-        if not (dwi_dir / f"sub-{subject_id}").exists():
-            raise Exception(f"Unable to find subject directory in {config.execution.bids_dir}")
+    if not (dwi_dir / f"sub-{subject_id}").exists():
+        raise Exception(f"Unable to find subject directory in {config.execution.bids_dir}")
 
-        layout = BIDSLayout(dwi_dir, validate=False, absolute_paths=True)
-        # Get all the output files that are in this space
-        dwi_files = [
-            f.path
-            for f in layout.get(
-                suffix="dwi", subject=subject_id, absolute_paths=True, extension=["nii", "nii.gz"]
-            )
-            if "space-T1w" in f.filename
-        ]
-        config.loggers.workflow.info("found %s in %s", dwi_files, dwi_dir)
-        return [{"bids_dwi_file": dwi_file} for dwi_file in dwi_files]
-
-    if config.workflow.input_type == "ukb":
-        return create_ukb_layout(ukb_dir=config.execution.bids_dir, participant_label=subject_id)
-
-    raise Exception("Unknown pipeline " + config.workflow.input_type)
+    layout = BIDSLayout(dwi_dir, validate=False, absolute_paths=True)
+    # Get all the output files that are in this space
+    dwi_files = [
+        f.path
+        for f in layout.get(
+            suffix="dwi", subject=subject_id, absolute_paths=True, extension=["nii", "nii.gz"]
+        )
+        if "space-T1w" in f.filename
+    ]
+    config.loggers.workflow.info("found %s in %s", dwi_files, dwi_dir)
+    return [{"bids_dwi_file": dwi_file} for dwi_file in dwi_files]

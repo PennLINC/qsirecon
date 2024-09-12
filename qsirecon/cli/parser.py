@@ -475,16 +475,36 @@ def parse_args(args=None, namespace=None):
     work_dir.mkdir(exist_ok=True, parents=True)
 
     # Run ingression if necessary
-    if config.workflow.input_type in ("ukbb", "hcpya"):
-        from ingress2qsirecon.utils.workflows import ingress2qsirecon
+    if config.workflow.input_type in ("hcpya", "ukb"):
+        import os.path as op
+        import shutil
 
+        import ingress2qsirecon
+        from ingress2qsirecon.utils.functions import create_layout
+        from ingress2qsirecon.utils.workflows import create_ingress2qsirecon_wf
+
+        # Fake BIDS directory to be created
         config.execution.bids_dir = work_dir / "bids"
 
-        wf = ingress2qsirecon(
-            config.execution.input_dir,
-            config.execution.bids_dir,
-            config.workflow.input_type,
+        # Make fake BIDS files
+        ingress2recon_dir = op.dirname(ingress2qsirecon.__file__)
+        if not op.exists(op.join(config.execution.bids_dir, "dataset_description.json")):
+            shutil.copytree(op.join(ingress2recon_dir, "data", "bids_scaffold"),
+                            config.execution.bids_dir, dirs_exist_ok=True)
+
+        if config.execution.participant_label is None:
+            participants_ingression = []
+        else:
+            participants_ingression = list(config.execution.participant_label)
+        layouts = create_layout(config.execution.input_dir, config.execution.bids_dir,
+                                config.workflow.input_type, participants_ingression)
+
+        # Create the ingression workflow
+        wf = create_ingress2qsirecon_wf(
+            layouts,
+            base_dir=work_dir,
         )
+
         # Configure the nipype workflow
         wf.config["execution"]["crashdump_dir"] = str(log_dir)
         wf.run()

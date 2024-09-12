@@ -17,7 +17,6 @@ from ... import config
 from ...interfaces.anatomical import (
     GetTemplate,
     QSIPrepAnatomicalIngress,
-    UKBAnatomicalIngress,
     VoxelSizeChooser,
 )
 from ...interfaces.ants import ConvertTransformFile
@@ -45,8 +44,6 @@ HSV_REQUIREMENTS = [
     "surf/rh.white",
     "surf/rh.pial",
 ]
-
-UKB_REQUIREMENTS = ["T1/T1_brain.nii.gz", "T1/T1_brain_mask.nii.gz"]
 
 # Files that must exist if QSIRecon ran the anatomical workflow
 QSIRECON_ANAT_REQUIREMENTS = [
@@ -82,15 +79,9 @@ def init_highres_recon_anatomical_wf(
     # are present. The anat_ingress_node is a nipype node that ensures that qsiprep-style
     # anatomical data is available. In the case where ``pipeline_source`` is not "qsiprep",
     # the data is converted in this node to be qsiprep-like.
-    pipeline_source = config.workflow.input_type
     freesurfer_dir = config.execution.freesurfer_input
     qsirecon_suffix = ""
-    if pipeline_source == "qsiprep":
-        anat_ingress_node, status = gather_qsiprep_anatomical_data(subject_id)
-    elif pipeline_source == "ukb":
-        anat_ingress_node, status = gather_ukb_anatomical_data(subject_id)
-    else:
-        raise Exception(f"Unknown pipeline source '{pipeline_source}'")
+    anat_ingress_node, status = gather_qsiprep_anatomical_data(subject_id)
     anat_ingress_node.inputs.infant_mode = config.workflow.infant
     if needs_t1w_transform and not status["has_qsiprep_t1w_transforms"]:
         raise Exception("Cannot compute to-template")
@@ -217,44 +208,6 @@ def init_highres_recon_anatomical_wf(
     return workflow, status
 
 
-def gather_ukb_anatomical_data(subject_id):
-    """
-    Check a UKB directory for the necessary files for recon workflows.
-
-    Parameters
-    ----------
-    subject_id : str
-        List of subject labels
-
-    """
-    status = {
-        "has_qsiprep_5tt_hsvs": False,
-        "has_freesurfer_5tt_hsvs": False,
-        "has_freesurfer": False,
-    }
-    recon_input_dir = config.execution.bids_dir
-
-    # Check to see if we have a T1w preprocessed by QSIRecon
-    missing_ukb_anats = check_ukb_anatomical_outputs(recon_input_dir)
-    has_t1w = not missing_ukb_anats
-    status["has_qsiprep_t1w"] = has_t1w
-    if missing_ukb_anats:
-        config.loggers.workflow.info(f"Missing T1w from UKB session: {recon_input_dir}")
-    else:
-        config.loggers.workflow.info("Found usable UKB-preprocessed T1w image and mask.")
-    anat_ingress = pe.Node(
-        UKBAnatomicalIngress(subject_id=subject_id, recon_input_dir=recon_input_dir),
-        name="ukb_anat_ingress",
-    )
-
-    # I couldn't figure out how to convert UKB transforms to ants. So
-    # they're not available for recon workflows for now
-    status["has_qsiprep_t1w_transforms"] = False
-    config.loggers.workflow.info("QSIRecon can't read FNIRT transforms from UKB at this time.")
-
-    return anat_ingress, status
-
-
 def gather_qsiprep_anatomical_data(subject_id):
     """
     Gathers the anatomical data from a QSIPrep input and finds which files are available.
@@ -354,22 +307,6 @@ def check_qsiprep_anatomical_outputs(recon_input_dir, subject_id, anat_type):
             continue
         missing.append(str(t1_version))
 
-    return missing
-
-
-def check_ukb_anatomical_outputs(recon_input_dir):
-    """Check for required files under a UKB session directory.
-
-    Parameters:
-
-    recon_input_dir: pathlike
-        Path to a UKB subject directory (eg 1234567_2_0)
-    """
-    missing = []
-    recon_input_path = Path(recon_input_dir)
-    for requirement in UKB_REQUIREMENTS:
-        if not (recon_input_path / requirement).exists():
-            missing.append(str(requirement))
     return missing
 
 
