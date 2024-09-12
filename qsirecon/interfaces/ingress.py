@@ -20,11 +20,8 @@ Disable warnings:
 """
 
 import os.path as op
-import shutil
 from glob import glob
-from pathlib import Path
 
-import nibabel as nb
 from nipype import logging
 from nipype.interfaces.base import (
     BaseInterfaceInputSpec,
@@ -36,9 +33,6 @@ from nipype.interfaces.base import (
 from nipype.utils.filemanip import split_filename
 
 from .bids import get_bids_params
-from .dsi_studio import btable_from_bvals_bvecs
-from .images import ConformDwi, to_lps
-from .mrtrix import _convert_fsl_to_mrtrix
 
 LOGGER = logging.getLogger("nipype.interface")
 
@@ -119,4 +113,3 @@ class QSIPrepDWIIngress(SimpleInterface):
         used_keys = ["subject_id", "session_id", "acq_id", "dir_id", "run_id"]
         fname = "_".join([params[key] for key in used_keys if params[key]])
         return out_root + "/" + fname + "_desc-%s_dwi.%s" % (desc, suffix)
-    
