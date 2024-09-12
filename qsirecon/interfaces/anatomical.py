@@ -11,7 +11,6 @@ Image tools interfaces
 
 import os.path as op
 from glob import glob
-from pathlib import Path
 
 import nibabel as nb
 import numpy as np
