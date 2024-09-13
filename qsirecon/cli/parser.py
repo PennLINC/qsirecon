@@ -479,7 +479,7 @@ def parse_args(args=None, namespace=None):
         import os.path as op
         import shutil
 
-        import ingress2qsirecon
+        from ingress2qsirecon.data import load_resource
         from ingress2qsirecon.utils.functions import create_layout
         from ingress2qsirecon.utils.workflows import create_ingress2qsirecon_wf
 
@@ -487,10 +487,10 @@ def parse_args(args=None, namespace=None):
         config.execution.bids_dir = work_dir / "bids"
 
         # Make fake BIDS files
-        ingress2recon_dir = op.dirname(ingress2qsirecon.__file__)
+        bids_scaffold = str(load_resource("bids_scaffold/"))
         if not op.exists(op.join(config.execution.bids_dir, "dataset_description.json")):
             shutil.copytree(
-                op.join(ingress2recon_dir, "data", "bids_scaffold"),
+                bids_scaffold,
                 config.execution.bids_dir,
                 dirs_exist_ok=True,
             )
