@@ -59,7 +59,7 @@ HCP Young Adult Preprocessed Data
 =================================
 
 To use minimally preprocessed dMRI data from HCP-YA specify ``--input-type hcpya``.
-The included FNIRT transforms are usable directly. Please note that if you have the
+Note that the transforms to/from MNI space are not able to be used at this time. Please note that if you have the
 HCPYA dataset from datalad (https://github.com/datalad-datasets/human-connectome-project-openaccess)
 then you should ``datalad get`` relevant subject data before running QSIRecon,
 and be mindful about how you mount the directory in Docker/Apptainer.
