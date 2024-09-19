@@ -118,11 +118,11 @@ def _build_parser(**kwargs):
     parser.add_argument(
         "input_dir",
         action="store",
-        metavar="bids_dir",
+        metavar="input_dir",
         type=PathExists,
         help=(
-            "The root folder of a BIDS valid dataset "
-            "(sub-XXXXX folders should be found at the top level in this folder). "
+            "The root folder of the input dataset  "
+            "(subject-level folders should be found at the top level in this folder). "
             "If the dataset is not BIDS-valid, "
             "then a BIDS-compliant version will be created based on the --input-type value."
         ),
@@ -299,7 +299,7 @@ def _build_parser(**kwargs):
         default="qsiprep",
         choices=["qsiprep", "ukb", "hcpya"],
         help=(
-            "Specify which pipeline was used to create the data specified as the bids_dir."
+            "Specify which pipeline was used to create the data specified as the input_dir."
             "Not necessary to specify if the data was processed by QSIPrep. "
             "Other options include "
             '"ukb" for data processed with the UK BioBank minimal preprocessing pipeline and '
@@ -487,7 +487,7 @@ def parse_args(args=None, namespace=None):
         config.execution.bids_dir = work_dir / "bids"
 
         # Make fake BIDS files
-        bids_scaffold = str(load_resource("bids_scaffold/"))
+        bids_scaffold = str(load_resource("bids_scaffold"))
         if not op.exists(op.join(config.execution.bids_dir, "dataset_description.json")):
             shutil.copytree(
                 bids_scaffold,
