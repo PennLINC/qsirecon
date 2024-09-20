@@ -42,6 +42,7 @@ dependencies = [
     "scikit-learn <= 1.4.0",
     "seaborn",
     "sentry_sdk",
+    "setuptools < 74.0.0",
     "SimpleITK",
     "svgutils <= 0.3.4",
     "transforms3d",
