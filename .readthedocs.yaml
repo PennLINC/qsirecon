@@ -8,10 +8,13 @@ build:
     - libblas-dev
     - liblapack-dev
   tools:
-    python: "3.10"
+    python: "miniconda3-4.7"
 
 sphinx:
   configuration: docs/conf.py
+
+conda:
+  environment: docs/environment.yaml
 
 python:
   install:
