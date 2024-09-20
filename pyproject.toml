@@ -44,6 +44,7 @@ dependencies = [
     "sentry_sdk",
     "setuptools < 60.0.0",
     "SimpleITK",
+    "spams==2.6.5.4",
     "svgutils <= 0.3.4",
     "transforms3d",
     "vtk",
