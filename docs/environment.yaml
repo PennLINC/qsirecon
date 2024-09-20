@@ -3,4 +3,5 @@ channels:
   - defaults
 dependencies:
   - python=3.10
+  - pip>=20.1
   - setuptools<54.0.0
