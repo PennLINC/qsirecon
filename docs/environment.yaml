@@ -1,7 +1,11 @@
 channels:
   - conda-forge
-  - defaults
 dependencies:
+  - numpy=1.23.5
+  - scipy=1.11
+  - fury
+  - pip
   - python=3.10
-  - pip>=20.1
-  - setuptools<54.0.0
+  - pip:
+    - setuptools<54.0.0
+    - spams==2.6.5.4
