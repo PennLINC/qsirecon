@@ -11,7 +11,6 @@ Image tools interfaces
 
 import os.path as op
 from glob import glob
-from pathlib import Path
 
 import nibabel as nb
 import numpy as np
@@ -25,9 +24,6 @@ from nipype.interfaces.base import (
     traits,
 )
 from nipype.utils.filemanip import fname_presuffix
-
-from ..utils.ingress import ukb_dirname_to_bids
-from .images import to_lps
 
 LOGGER = logging.getLogger("nipype.interface")
 
@@ -149,35 +145,6 @@ class QSIPrepAnatomicalIngress(SimpleInterface):
 
         if len(files) == 1:
             self._results[name] = files[0]
-
-
-class UKBAnatomicalIngressInputSpec(QSIPrepAnatomicalIngressInputSpec):
-    recon_input_dir = traits.Directory(
-        exists=True, mandatory=True, help="directory containing a single subject's results"
-    )
-
-
-class UKBAnatomicalIngress(QSIPrepAnatomicalIngress):
-    input_spec = UKBAnatomicalIngressInputSpec
-
-    def _run_interface(self, runtime):
-        # Load the Bias-corrected brain and brain mask
-        input_path = Path(self.inputs.recon_input_dir)
-        bids_name = ukb_dirname_to_bids(self.inputs.recon_input_dir)
-
-        ukb_brain = input_path / "T1" / "T1_unbiased_brain.nii.gz"
-        ukb_brain_mask = input_path / "T1" / "T1_brain_mask.nii.gz"
-
-        conformed_t1w_file = str(Path(runtime.cwd) / (bids_name + "_desc-preproc_T1w.nii.gz"))
-        conformed_mask_file = str(Path(runtime.cwd) / (bids_name + "_desc-brain_mask.nii.gz"))
-
-        to_lps(nb.load(ukb_brain)).to_filename(conformed_t1w_file)
-        to_lps(nb.load(ukb_brain_mask)).to_filename(conformed_mask_file)
-
-        self._results["t1_preproc"] = conformed_t1w_file
-        self._results["t1_brain_mask"] = conformed_mask_file
-
-        return runtime
 
 
 """

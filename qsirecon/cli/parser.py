@@ -116,11 +116,16 @@ def _build_parser(**kwargs):
     # required, positional arguments
     # IMPORTANT: they must go directly with the parser object
     parser.add_argument(
-        "bids_dir",
+        "input_dir",
         action="store",
+        metavar="input_dir",
         type=PathExists,
-        help="The root folder of a BIDS valid dataset (sub-XXXXX folders should "
-        "be found at the top level in this folder).",
+        help=(
+            "The root folder of the input dataset  "
+            "(subject-level folders should be found at the top level in this folder). "
+            "If the dataset is not BIDS-valid, "
+            "then a BIDS-compliant version will be created based on the --input-type value."
+        ),
     )
     parser.add_argument(
         "output_dir",
@@ -294,7 +299,7 @@ def _build_parser(**kwargs):
         default="qsiprep",
         choices=["qsiprep", "ukb", "hcpya"],
         help=(
-            "Specify which pipeline was used to create the data specified as the bids_dir."
+            "Specify which pipeline was used to create the data specified as the input_dir."
             "Not necessary to specify if the data was processed by QSIPrep. "
             "Other options include "
             '"ukb" for data processed with the UK BioBank minimal preprocessing pipeline and '
@@ -442,38 +447,82 @@ def parse_args(args=None, namespace=None):
             f"total threads (--nthreads/--n_cpus={config.nipype.nprocs})"
         )
 
-    bids_dir = config.execution.bids_dir
+    input_dir = config.execution.input_dir
     output_dir = config.execution.output_dir
     work_dir = config.execution.work_dir
     version = config.environment.version
 
-    # Update the config with an empty dict to trigger initialization of all config
-    # sections (we used `init=False` above).
-    # This must be done after cleaning the work directory, or we could delete an
-    # open SQLite database
-    config.from_dict({})
-
     # Ensure input and output folders are not the same
-    if output_dir == bids_dir:
+    if output_dir == input_dir:
         parser.error(
             "The selected output folder is the same as the input BIDS folder. "
             "Please modify the output path (suggestion: %s)."
-            % bids_dir
+            % input_dir
             / "derivatives"
             / ("qsirecon-%s" % version.split("+")[0])
         )
 
-    if bids_dir in work_dir.parents:
+    if input_dir in work_dir.parents:
         parser.error(
             "The selected working directory is a subdirectory of the input BIDS folder. "
             "Please modify the output path."
         )
 
     # Setup directories
-    config.execution.log_dir = config.execution.output_dir / "logs"
+    log_dir = output_dir / "logs"
     # Check and create output and working directories
-    config.execution.log_dir.mkdir(exist_ok=True, parents=True)
+    log_dir.mkdir(exist_ok=True, parents=True)
     work_dir.mkdir(exist_ok=True, parents=True)
+
+    # Run ingression if necessary
+    if config.workflow.input_type in ("hcpya", "ukb"):
+        import shutil
+
+        from ingress2qsirecon.data import load_resource
+        from ingress2qsirecon.utils.functions import create_layout
+        from ingress2qsirecon.utils.workflows import create_ingress2qsirecon_wf
+
+        # Fake BIDS directory to be created
+        config.execution.bids_dir = work_dir / "bids"
+
+        # Make fake BIDS files
+        bids_scaffold = load_resource("bids_scaffold")
+        if not (config.execution.bids_dir / "dataset_description.json").exists():
+            shutil.copytree(
+                bids_scaffold,
+                config.execution.bids_dir,
+                dirs_exist_ok=True,
+            )
+
+        if config.execution.participant_label is None:
+            participants_ingression = []
+        else:
+            participants_ingression = list(config.execution.participant_label)
+        layouts = create_layout(
+            config.execution.input_dir,
+            config.execution.bids_dir,
+            config.workflow.input_type,
+            participants_ingression,
+        )
+
+        # Create the ingression workflow
+        wf = create_ingress2qsirecon_wf(
+            layouts,
+            base_dir=work_dir,
+        )
+
+        # Configure the nipype workflow
+        wf.config["execution"]["crashdump_dir"] = str(log_dir)
+        wf.run()
+    else:
+        config.execution.bids_dir = config.execution.input_dir
+
+    # Update the config with an empty dict to trigger initialization of all config
+    # sections (we used `init=False` above).
+    # This must be done after cleaning the work directory, or we could delete an
+    # open SQLite database
+    config.from_dict({})
+    config.execution.log_dir = log_dir
 
     # Force initialization of the BIDSLayout
     config.execution.init()

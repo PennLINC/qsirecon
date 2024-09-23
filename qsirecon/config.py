@@ -383,6 +383,9 @@ class execution(_Config):
 
     bids_dir = None
     """An existing path to the dataset, which must be BIDS-compliant."""
+    input_dir = None
+    """An existing path to the input data, which may not be BIDS-compliant
+    (in which case a BIDS-compliant version will be created and stored as bids_dir)."""
     derivatives = {}
     """Path(s) to search for pre-computed derivatives"""
     bids_database_dir = None
