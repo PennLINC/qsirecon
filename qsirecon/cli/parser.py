@@ -476,7 +476,6 @@ def parse_args(args=None, namespace=None):
 
     # Run ingression if necessary
     if config.workflow.input_type in ("hcpya", "ukb"):
-        import os.path as op
         import shutil
 
         from ingress2qsirecon.data import load_resource
@@ -487,8 +486,8 @@ def parse_args(args=None, namespace=None):
         config.execution.bids_dir = work_dir / "bids"
 
         # Make fake BIDS files
-        bids_scaffold = str(load_resource("bids_scaffold"))
-        if not op.exists(op.join(config.execution.bids_dir, "dataset_description.json")):
+        bids_scaffold = load_resource("bids_scaffold")
+        if not (config.execution.bids_dir / "dataset_description.json").exists():
             shutil.copytree(
                 bids_scaffold,
                 config.execution.bids_dir,
