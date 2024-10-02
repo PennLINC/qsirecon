@@ -160,8 +160,6 @@ class NODDI(AmicoReconInterface):
 
         # Prevent a ton of deprecation warnings
         os.environ["KMP_WARNINGS"] = "0"
-        os.environ["OMP_NUM_THREADS"] = str(self.inputs.num_threads)
-        os.environ["MKL_NUM_THREADS"] = str(self.inputs.num_threads)
         import amico
 
         if hasattr(amico, "set_verbose"):
@@ -179,8 +177,8 @@ class NODDI(AmicoReconInterface):
         )
         LOGGER.info("Fitting NODDI Model.")
         aeval.set_model("NODDI")
-        aeval.set_config("parallel_jobs", self.inputs.num_threads)
-        aeval.set_config("parallel_backend", "loky")
+        aeval.set_config("BLAS_nthreads", 1)
+        aeval.set_config("nthreads", self.inputs.num_threads)
         # set the parameters
         aeval.model.dPar = self.inputs.dPar
         aeval.model.dIso = self.inputs.dIso
@@ -191,10 +189,10 @@ class NODDI(AmicoReconInterface):
 
         # Write the results
         aeval.save_results()
-        self._results["directions_image"] = shim_dir + "/AMICO/NODDI/FIT_dir.nii.gz"
-        self._results["icvf_image"] = shim_dir + "/AMICO/NODDI/FIT_ICVF.nii.gz"
-        self._results["od_image"] = shim_dir + "/AMICO/NODDI/FIT_OD.nii.gz"
-        self._results["isovf_image"] = shim_dir + "/AMICO/NODDI/FIT_ISOVF.nii.gz"
+        self._results["directions_image"] = shim_dir + "/AMICO/NODDI/fit_dir.nii.gz"
+        self._results["icvf_image"] = shim_dir + "/AMICO/NODDI/fit_NDI.nii.gz"
+        self._results["od_image"] = shim_dir + "/AMICO/NODDI/fit_ODI.nii.gz"
+        self._results["isovf_image"] = shim_dir + "/AMICO/NODDI/fit_FWF.nii.gz"
         self._results["config_file"] = shim_dir + "/AMICO/NODDI/config.pickle"
 
         return runtime
