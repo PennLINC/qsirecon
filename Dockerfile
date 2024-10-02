@@ -5,11 +5,11 @@ RUN pip install build
 RUN apt-get update && \
     apt-get install -y --no-install-recommends git
 
-FROM pennlinc/qsirecon_build:24.9.0
+FROM pennlinc/qsirecon_build:24.10.2
 
 # Install qsirecon
 COPY . /src/qsirecon
-RUN pip install --no-cache-dir "/src/qsirecon[all]"
+RUN pip install --no-cache-dir "/src/qsirecon"
 
 # Precaching fonts, set 'Agg' as default backend for matplotlib
 RUN python -c "from matplotlib import font_manager" && \
