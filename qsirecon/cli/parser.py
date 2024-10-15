@@ -24,7 +24,33 @@
 #
 """Parser."""
 
+from argparse import Action
+from pathlib import Path
+
 from .. import config
+
+
+class ToDict(Action):
+    """A custom argparse "store" action to handle a list of key=value pairs."""
+
+    def __call__(self, parser, namespace, values, option_string=None):  # noqa: U100
+        """Call the argument."""
+        d = {}
+        for spec in values:
+            try:
+                name, loc = spec.split("=")
+                loc = Path(loc)
+            except ValueError:
+                loc = Path(spec)
+                name = loc.name
+
+            if name in d:
+                raise parser.error(f"Received duplicate derivative name: {name}")
+            elif name == "preprocessed":
+                raise parser.error("The 'preprocessed' derivative is reserved for internal use.")
+
+            d[name] = loc
+        setattr(namespace, self.dest, d)
 
 
 def _build_parser(**kwargs):
@@ -156,6 +182,19 @@ def _build_parser(**kwargs):
     # g_bids.add_argument('-r', '--run-id', action='store', default='single_run',
     #                     help='Select a specific run to be processed')
 
+    g_bids.add_argument(
+        "-d",
+        "--datasets",
+        action=ToDict,
+        metavar="PACKAGE=PATH",
+        type=str,
+        nargs="+",
+        help=(
+            "Search PATH(s) for derivatives or atlas datasets. "
+            "These may be provided as named folders "
+            "(e.g., `--datasets smriprep=/path/to/smriprep`)."
+        ),
+    )
     g_bids.add_argument(
         "--bids-filter-file",
         dest="bids_filters",
@@ -320,6 +359,18 @@ def _build_parser(**kwargs):
         action="store_true",
         default=False,
         help="run only reconstruction, assumes preprocessing has already completed.",
+    )
+
+    g_parcellation = parser.add_argument_group("Parcellation options")
+    all_atlases = select_atlases(atlases=None, subset="all")
+    g_parcellation.add_argument(
+        "--atlases",
+        action="store",
+        nargs="+",
+        metavar="ATLAS",
+        default=all_atlases,
+        dest="atlases",
+        help="Selection of atlases to apply to the data.",
     )
 
     g_other = parser.add_argument_group("Other options")
