@@ -35,7 +35,11 @@ def main():
     from os import EX_SOFTWARE
     from pathlib import Path
 
-    from ..utils.bids import write_bidsignore, write_derivative_description
+    from ..utils.bids import (
+        write_bidsignore,
+        write_atlas_dataset_description,
+        write_derivative_description,
+    )
     from .parser import parse_args
     from .workflow import build_workflow
 
@@ -179,8 +183,13 @@ def main():
         write_derivative_description(
             config.execution.bids_dir,
             config.execution.output_dir,
+            atlases=config.execution.atlases,
             dataset_links=config.execution.dataset_links,
         )
+
+        if config.execution.atlases:
+            write_atlas_dataset_description(config.execution.output_dir / "atlases")
+
         write_bidsignore(config.execution.output_dir)
 
         # Compile list of output folders
@@ -219,6 +228,7 @@ def main():
             write_derivative_description(
                 config.execution.bids_dir,
                 suffix_dir,
+                atlases=config.execution.atlases,
                 dataset_links=dataset_links,
             )
             write_bidsignore(suffix_dir)

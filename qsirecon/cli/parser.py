@@ -28,6 +28,7 @@ from argparse import Action
 from pathlib import Path
 
 from .. import config
+from ..utils.atlases import get_atlases
 
 
 class ToDict(Action):
@@ -362,15 +363,18 @@ def _build_parser(**kwargs):
     )
 
     g_parcellation = parser.add_argument_group("Parcellation options")
-    all_atlases = select_atlases(atlases=None, subset="all")
+    builtin_atlases = get_atlases()
     g_parcellation.add_argument(
         "--atlases",
         action="store",
         nargs="+",
         metavar="ATLAS",
-        default=all_atlases,
+        default=None,
         dest="atlases",
-        help="Selection of atlases to apply to the data.",
+        help=(
+            "Selection of atlases to apply to the data. "
+            f"Built-in atlases include: {', '.join(builtin_atlases)}"
+        ),
     )
 
     g_other = parser.add_argument_group("Other options")
@@ -450,6 +454,16 @@ def parse_args(args=None, namespace=None):
         skip = {} if opts.reports_only else {"execution": ("run_uuid",)}
         config.load(opts.config_file, skip=skip, init=False)
         config.loggers.cli.info(f"Loaded previous configuration file {opts.config_file}")
+
+    # Add internal atlas datasets to the list of datasets
+    opts.datasets = opts.datasets or {}
+    if opts.atlases:
+        if "qsireconatlases" not in opts.datasets:
+            opts.datasets["qsireconatlases"] = Path("/qsirecon_atlases")
+
+        if any(atlas.startswith("4S") for atlas in opts.atlases):
+            if "xcpd4s" not in opts.datasets:
+                opts.datasets["xcpd4s"] = Path("/AtlasPack")
 
     config.execution.log_level = int(max(25 - 5 * opts.verbose_count, logging.DEBUG))
     config.from_dict(vars(opts), init=["nipype"])

@@ -90,6 +90,8 @@ def init_single_subject_recon_wf(subject_id):
         init_highres_recon_anatomical_wf,
     )
     from .recon.build_workflow import init_dwi_recon_workflow
+    from ..utils.atlases import collect_atlases
+    from ..utils.bids import get_entity
 
     spec = _load_recon_spec(config.workflow.recon_spec)
     dwi_recon_inputs = _get_iterable_dwi_inputs(subject_id)
@@ -123,20 +125,29 @@ to workflows in *qsirecon*'s documentation]\
 
     # The recon spec may need additional anatomical files to be created.
     atlas_names = spec.get("atlases", [])
-    needs_t1w_transform = spec_needs_to_template_transform(spec)
 
     # This is here because qsiprep currently only makes one anatomical result per subject
     # regardless of sessions. So process it on its
     anat_ingress_node, available_anatomical_data = init_highres_recon_anatomical_wf(
         subject_id=subject_id,
         extras_to_make=spec.get("anatomical", []),
-        needs_t1w_transform=needs_t1w_transform,
+        needs_t1w_transform=bool(config.execution.atlases),
     )
 
     # Connect the anatomical-only inputs. NOTE this is not to the inputnode!
     config.loggers.workflow.info(
         "Anatomical (T1w) available for recon: %s", available_anatomical_data
     )
+    if config.execution.atlases:
+        xfm_to_template = available_anatomical_data["t1_2_mni_forward_transform"]
+        template_space = get_entity(xfm_to_template, "to")
+        bids_filters = config.execution.bids_filters.copy()
+        bids_filters["atlas"]["space"] = template_space
+        atlases = collect_atlases(
+            datasets=config.execution.datasets,
+            atlases=config.execution.atlases,
+            bids_filters=bids_filters,
+        )
 
     aggregate_anatomical_nodes = pe.Node(
         niu.Merge(len(dwi_recon_inputs)),
@@ -175,7 +186,7 @@ to workflows in *qsirecon*'s documentation]\
             init_dwi_recon_anatomical_workflow(
                 atlas_names=atlas_names,
                 prefer_dwi_mask=False,
-                needs_t1w_transform=needs_t1w_transform,
+                needs_t1w_transform=bool(config.execution.atlases),
                 extras_to_make=spec.get("anatomical", []),
                 name=f"{wf_name}_dwi_specific_anat_wf",
                 **available_anatomical_data,
@@ -296,12 +307,6 @@ to workflows in *qsirecon*'s documentation]\
             workflow.get_node(node).inputs.datatype = "figures"
 
     return workflow
-
-
-def spec_needs_to_template_transform(recon_spec):
-    """Determine whether a recon spec needs a transform from T1wACPC to a template."""
-    atlases = recon_spec.get("atlases", [])
-    return bool(atlases)
 
 
 def _get_wf_name(dwi_file):
