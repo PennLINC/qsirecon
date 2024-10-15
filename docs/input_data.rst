@@ -30,8 +30,8 @@ skull-stripped ``brain.mgz`` is rigidly registered to ``dwiref`` of each
 preprocessed DWI. The FreeSurfer brain mask is resampled to the grid of the DWI.
 
 If structural connectivity is calculated during the reconstruction workflow
-(or any atlases are specified in the ``anatomical:`` section of the
-workflow's ``.yaml`` file), the coregistered-to-DWI ``brain.mgz`` image will be
+(or any atlases are specified with the ``--atlases`` parameter),
+the coregistered-to-DWI ``brain.mgz`` image will be
 normalized to the MNI152NLin2009cAsym template using ``antsRegistration``.
 The reverse transform is used to get parcellations aligned to the DWI.
 
