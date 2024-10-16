@@ -838,20 +838,24 @@ def _get_dsi_studio_bundles(desired_bundles=""):
     def get_bundles(search_string):
         # This needs to be a set to avoid adding parent bundles several times
         matching_bundles = set()
-        bundle_candidates = [bundle for bundle in all_bundles if search_string.lower() in bundle.lower()]
+        bundle_candidates = [
+            bundle for bundle in all_bundles if search_string.lower() in bundle.lower()
+        ]
         for bundle in bundle_candidates:
-            num_underscores = bundle.count('_')
-            # All bundle names with one underscore (parent bundles) will be tracked by DSIStudio by default
+            num_underscores = bundle.count("_")
+            # All bundle names with one underscore (parent bundles) will be tracked
+            # by DSIStudio by default
             if num_underscores == 1:
                 matching_bundles.add(bundle)
             elif num_underscores == 2:
                 # All sub bundles will only be tracked if they have been specifically specified
                 if bundle == search_string:
                     matching_bundles.add(bundle)
-                # If sub bundles have not been specifically specified, their parent bundle will be tracked 
+                # If sub bundles have not been specifically specified, their parent bundle
+                # will be tracked
                 else:
-                    parent_bundle = '_'.join(bundle.split('_')[:2])
-                    matching_bundles.add(parent_bundle)      
+                    parent_bundle = "_".join(bundle.split("_")[:2])
+                    matching_bundles.add(parent_bundle)
         return list(matching_bundles)
 
     # Figure out which bundles we'll be tracking
