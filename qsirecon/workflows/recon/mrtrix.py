@@ -119,7 +119,6 @@ def init_mrtrix_csd_recon_wf(
     workflow = Workflow(name=name)
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
-    plot_reports = not config.execution.skip_odf_reports
     desc = """MRtrix3 Reconstruction\n\n: """
 
     # Response estimation
@@ -236,7 +235,7 @@ def init_mrtrix_csd_recon_wf(
         ])  # fmt:skip
         desc += " FODs were intensity-normalized using mtnormalize (@mtnormalize)."
 
-    if plot_reports:
+    if not config.execution.skip_odf_reports:
         # Make a visual report of the model
         plot_peaks = pe.Node(CLIReconPeaksReport(), name="plot_peaks", n_procs=omp_nthreads)
         ds_report_peaks = pe.Node(
@@ -662,6 +661,8 @@ def init_mrtrix_connectivity_wf(
             A MATLAB-format file with numerous connectivity matrices for each
             atlas.
     """
+    workflow = pe.Workflow(name=name)
+
     inputnode = pe.Node(
         niu.IdentityInterface(
             fields=recon_workflow_input_fields + ["tck_file", "sift_weights", "atlas_configs"]
@@ -672,30 +673,30 @@ def init_mrtrix_connectivity_wf(
         niu.IdentityInterface(fields=["matfile", "recon_scalars"]),
         name="outputnode",
     )
-    omp_nthreads = config.nipype.omp_nthreads
     outputnode.inputs.recon_scalars = []
-    plot_reports = not config.execution.skip_odf_reports
-    workflow = pe.Workflow(name=name)
-    conmat_params = params.get("tck2connectome", {})
+
     calc_connectivity = pe.Node(
-        MRTrixAtlasGraph(tracking_params=conmat_params, nthreads=omp_nthreads),
+        MRTrixAtlasGraph(
+            tracking_params=params.get("tck2connectome", {}),
+            nthreads=config.nipype.omp_nthreads,
+        ),
         name="calc_connectivity",
-        n_procs=omp_nthreads,
+        n_procs=config.nipype.omp_nthreads,
     )
     workflow.connect([
         (inputnode, calc_connectivity, [
-            ("atlas_configs", "atlas_configs"),
             ("tck_file", "in_file"),
             ("sift_weights", "in_weights"),
+            ("atlas_configs", "atlas_configs"),
         ]),
         (calc_connectivity, outputnode, [("connectivity_matfile", "matfile")]),
     ])  # fmt:skip
 
-    if plot_reports:
+    if not config.execution.skip_odf_reports:
         plot_connectivity = pe.Node(
             ConnectivityReport(),
             name="plot_connectivity",
-            n_procs=omp_nthreads,
+            n_procs=config.nipype.omp_nthreads,
         )
         ds_report_connectivity = pe.Node(
             DerivativesDataSink(
