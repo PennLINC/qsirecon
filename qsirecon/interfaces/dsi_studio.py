@@ -844,7 +844,7 @@ def _get_dsi_studio_bundles(desired_bundles=""):
         for bundle in bundle_candidates:
             num_underscores = bundle.count("_")
             # All bundle names with one underscore (parent bundles) will be tracked
-            # by DSIStudio by default
+            # by DSIstudio by default
             if num_underscores == 1:
                 matching_bundles.add(bundle)
             elif num_underscores == 2:
