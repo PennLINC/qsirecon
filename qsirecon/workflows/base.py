@@ -143,7 +143,7 @@ to workflows in *qsirecon*'s documentation]\
         template_space = get_entity(xfm_to_template, "to")
         bids_filters = config.execution.bids_filters.copy()
         bids_filters["atlas"]["space"] = template_space
-        atlas_config = collect_atlases(
+        atlas_configs = collect_atlases(
             datasets=config.execution.datasets,
             atlases=config.execution.atlases,
             bids_filters=bids_filters,
@@ -185,7 +185,7 @@ to workflows in *qsirecon*'s documentation]\
         print(available_anatomical_data)
         dwi_individual_anatomical_wfs[dwi_file], dwi_available_anatomical_data = (
             init_dwi_recon_anatomical_workflow(
-                atlas_names=atlas_names,
+                atlas_configs=atlas_configs,
                 prefer_dwi_mask=False,
                 needs_t1w_transform=bool(config.execution.atlases),
                 extras_to_make=spec.get("anatomical", []),

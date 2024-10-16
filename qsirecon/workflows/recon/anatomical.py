@@ -31,7 +31,7 @@ from ...interfaces.interchange import (
 )
 from ...interfaces.mrtrix import GenerateMasked5tt, ITKTransformConvert, TransformHeader
 from ...utils.bids import clean_datasinks
-from qsirecon.interfaces.utils import GetConnectivityAtlases
+from qsirecon.interfaces.utils import WarpConnectivityAtlases
 
 # Required freesurfer files for mrtrix's HSV 5tt generation
 HSV_REQUIREMENTS = [
@@ -394,7 +394,7 @@ def init_register_fs_to_qsiprep_wf(
 
 
 def init_dwi_recon_anatomical_workflow(
-    atlas_names,
+    atlas_configs,
     has_qsiprep_5tt_hsvs,
     needs_t1w_transform,
     has_freesurfer_5tt_hsvs,
@@ -442,7 +442,7 @@ def init_dwi_recon_anatomical_workflow(
             return inputnode
         if fieldname in connect_from_buffernode:
             return buffernode
-        raise Exception("Can't determine location of " + fieldname)
+        raise Exception(f"Can't determine location of {fieldname}")
 
     def _exchange_fields(fields):
         connect_from_inputnode.difference_update(fields)
@@ -673,27 +673,24 @@ def init_dwi_recon_anatomical_workflow(
         ])  # fmt:skip
 
         # Similarly, if we need atlases, transform them into DWI space
-        if atlas_names:
+        if atlas_configs:
             desc += (
                 "Cortical parcellations were mapped from template space to DWIS "
                 "using the T1w-based spatial normalization. "
             )
 
             # Resample all atlases to dwi_file's resolution
-            get_atlases = pe.Node(
-                GetConnectivityAtlases(atlas_names=atlas_names),
-                name="get_atlases",
+            prepare_atlases = pe.Node(
+                WarpConnectivityAtlases(atlas_configs=atlas_configs),
+                name="prepare_atlases",
                 run_without_submitting=True,
             )
             workflow.connect([
-                (inputnode, get_atlases, [("dwi_file", "reference_image")]),
-                (_get_source_node("t1_2_mni_reverse_transform"), get_atlases, [
-                    ("t1_2_mni_reverse_transform", "forward_transform"),
-                ]),
-                (get_atlases, buffernode, [("atlas_configs", "atlas_configs")]),
+                (inputnode, prepare_atlases, [("dwi_file", "reference_image")]),
+                (prepare_atlases, buffernode, [("atlas_configs", "atlas_configs")]),
             ])  # fmt:skip
 
-        for atlas in atlas_names:
+        for atlas in atlas_configs.keys():
             ds_atlas = pe.Node(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
@@ -736,16 +733,16 @@ def init_dwi_recon_anatomical_workflow(
                 run_without_submitting=True,
             )
             workflow.connect([
-                (get_atlases, ds_atlas, [(
+                (prepare_atlases, ds_atlas, [(
                     ("atlas_configs", _get_resampled, atlas, "dwi_resolution_file"), "in_file"),
                 ]),
-                (get_atlases, ds_atlas_mifs, [(
+                (prepare_atlases, ds_atlas_mifs, [(
                     ("atlas_configs", _get_resampled, atlas, "dwi_resolution_mif"), "in_file"),
                 ]),
-                (get_atlases, ds_atlas_mrtrix_lut, [(
+                (prepare_atlases, ds_atlas_mrtrix_lut, [(
                     ("atlas_configs", _get_resampled, atlas, "mrtrix_lut"), "in_file"),
                 ]),
-                (get_atlases, ds_atlas_orig_lut, [(
+                (prepare_atlases, ds_atlas_orig_lut, [(
                     ("atlas_configs", _get_resampled, atlas, "orig_lut"), "in_file"),
                 ]),
             ])  # fmt:skip

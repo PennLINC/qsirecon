@@ -87,6 +87,8 @@ def collect_atlases(datasets, atlases, bids_filters={}):
             Path to the atlas labels file.
         - "metadata" : dict
             Metadata associated with the atlas.
+        - "xfm_to_anat": str
+            Path to the transform to get the atlas into T1w/T2w space.
     """
     import json
 
