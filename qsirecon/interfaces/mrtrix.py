@@ -16,6 +16,7 @@ from copy import deepcopy
 import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
 import numpy as np
+import pandas as pd
 from nipype import logging
 from nipype.interfaces.base import (
     BaseInterfaceInputSpec,
@@ -711,9 +712,8 @@ class BuildConnectomeOutputSpec(TraitedSpec):
 
 
 class BuildConnectome(MRTrix3Base):
-    """
-    Generate a connectome matrix from a streamlines file and a node
-    parcellation image
+    """Generate a connectome matrix from a streamlines file and a node parcellation image.
+
     Example
     -------
     >>> import nipype.interfaces.mrtrix3 as mrt
@@ -732,8 +732,8 @@ class BuildConnectome(MRTrix3Base):
     def _list_outputs(self):
         outputs = self.output_spec().get()
         outputs["out_file"] = op.abspath(self.inputs.out_file)
-        prefix = self.inputs.atlas_name + "_" + self.inputs.measure
-        outputs["connectivity_matfile"] = op.abspath(prefix + "_connectivity.mat")
+        prefix = f"{self.inputs.atlas_name}_{self.inputs.measure}"
+        outputs["connectivity_matfile"] = op.abspath(f"{prefix}_connectivity.mat")
         if isdefined(self.inputs.out_assignments):
             outputs["out_assignments"] = op.abspath(self.inputs.out_assignments)
         return outputs
@@ -742,20 +742,21 @@ class BuildConnectome(MRTrix3Base):
         atlas_config = self.inputs.atlas_config
         atlas_name = self.inputs.atlas_name
 
+        atlas_labels_df = pd.read_table(atlas_config["labels"])
+
         # Aggregate the connectivity/network data from DSI Studio
-        official_labels = np.array(atlas_config["node_ids"]).astype(int)
         connectivity_data = {
-            atlas_name + "_region_ids": official_labels,
-            atlas_name + "_region_labels": np.array(atlas_config["node_names"]),
+            f"{atlas_name}_region_ids": atlas_labels_df["index"].values.astype(int),
+            f"{atlas_name}_region_labels": atlas_labels_df["label"].values,
         }
 
         # get the connectivity matrix
-        prefix = atlas_name + "_" + self.inputs.measure
-        connectivity_data[prefix + "_connectivity"] = np.loadtxt(
+        prefix = f"{atlas_name}_{self.inputs.measure}"
+        connectivity_data[f"{prefix}_connectivity"] = np.loadtxt(
             self.inputs.out_file, delimiter=","
         )
         connectivity_data["command"] = self.cmdline
-        merged_matfile = op.join(runtime.cwd, prefix + "_connectivity.mat")
+        merged_matfile = op.join(runtime.cwd, f"{prefix}_connectivity.mat")
         savemat(merged_matfile, connectivity_data, long_field_names=True)
         return runtime
 
@@ -775,7 +776,8 @@ class BuildConnectome(MRTrix3Base):
 
 class MRTrixAtlasGraphInputSpec(BuildConnectomeInputSpec):
     atlas_configs = traits.Dict(
-        desc="atlas configs for atlases to run connectivity for", mandatory=True
+        desc="atlas configs for atlases to run connectivity for",
+        mandatory=True,
     )
     tracking_params = traits.List(desc="list of sets of parameters for tck2connectome")
 

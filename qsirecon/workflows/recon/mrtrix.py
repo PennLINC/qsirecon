@@ -174,7 +174,7 @@ def init_mrtrix_csd_recon_wf(
         if method_5tt == "hsvs":
             workflow.connect([
                 (inputnode, estimate_response, [
-                    ('qsiprep_5tt_hsvs', 'mtt_file')])
+                    ("qsiprep_5tt_hsvs", "mtt_file")])
             ])  # fmt:skip
         else:
             raise Exception("Unrecognized 5tt method: " + method_5tt)
@@ -192,29 +192,29 @@ def init_mrtrix_csd_recon_wf(
         )
 
     workflow.connect([
-        (estimate_response, estimate_fod, [('wm_file', 'wm_txt'),
-                                           ('gm_file', 'gm_txt'),
-                                           ('csf_file', 'csf_txt')]),
-        (inputnode, create_mif, [('dwi_file', 'dwi_file'),
-                                 ('bval_file', 'bval_file'),
-                                 ('bvec_file', 'bvec_file'),
-                                 ('b_file', 'b_file')]),
-        (create_mif, estimate_fod, [('mif_file', 'in_file')]),
-        (inputnode, estimate_fod, [('dwi_mask', 'mask_file')]),
-        (create_mif, estimate_response, [('mif_file', 'in_file')]),
-        (estimate_response, outputnode, [('wm_file', 'wm_txt'),
-                                         ('gm_file', 'gm_txt'),
-                                         ('csf_file', 'csf_txt')]),
-        (inputnode, estimate_response, [('dwi_mask', 'in_mask')])
+        (estimate_response, estimate_fod, [("wm_file", "wm_txt"),
+                                           ("gm_file", "gm_txt"),
+                                           ("csf_file", "csf_txt")]),
+        (inputnode, create_mif, [("dwi_file", "dwi_file"),
+                                 ("bval_file", "bval_file"),
+                                 ("bvec_file", "bvec_file"),
+                                 ("b_file", "b_file")]),
+        (create_mif, estimate_fod, [("mif_file", "in_file")]),
+        (inputnode, estimate_fod, [("dwi_mask", "mask_file")]),
+        (create_mif, estimate_response, [("mif_file", "in_file")]),
+        (estimate_response, outputnode, [("wm_file", "wm_txt"),
+                                         ("gm_file", "gm_txt"),
+                                         ("csf_file", "csf_txt")]),
+        (inputnode, estimate_response, [("dwi_mask", "in_mask")])
     ])  # fmt:skip
 
     if not run_mtnormalize:
         workflow.connect([
-            # (estimate_fod, plot_peaks, [('wm_odf', 'mif_file')]),
-            (estimate_fod, outputnode, [('wm_odf', 'fod_sh_mif'),
-                                        ('wm_odf', 'wm_odf'),
-                                        ('gm_odf', 'gm_odf'),
-                                        ('csf_odf', 'csf_odf')])
+            # (estimate_fod, plot_peaks, [("wm_odf", "mif_file")]),
+            (estimate_fod, outputnode, [("wm_odf", "fod_sh_mif"),
+                                        ("wm_odf", "wm_odf"),
+                                        ("gm_odf", "gm_odf"),
+                                        ("csf_odf", "csf_odf")])
         ])  # fmt:skip
     else:
         intensity_norm = pe.Node(
@@ -225,14 +225,14 @@ def init_mrtrix_csd_recon_wf(
             n_procs=omp_nthreads,
         )
         workflow.connect([
-            (inputnode, intensity_norm, [('dwi_mask', 'mask_file')]),
-            (estimate_fod, intensity_norm, [('wm_odf', 'wm_odf'),
-                                            ('gm_odf', 'gm_odf'),
-                                            ('csf_odf', 'csf_odf')]),
-            (intensity_norm, outputnode, [('wm_normed_odf', 'fod_sh_mif'),
-                                          ('wm_normed_odf', 'wm_odf'),
-                                          ('gm_normed_odf', 'gm_odf'),
-                                          ('csf_normed_odf', 'csf_odf')])
+            (inputnode, intensity_norm, [("dwi_mask", "mask_file")]),
+            (estimate_fod, intensity_norm, [("wm_odf", "wm_odf"),
+                                            ("gm_odf", "gm_odf"),
+                                            ("csf_odf", "csf_odf")]),
+            (intensity_norm, outputnode, [("wm_normed_odf", "fod_sh_mif"),
+                                          ("wm_normed_odf", "wm_odf"),
+                                          ("gm_normed_odf", "gm_odf"),
+                                          ("csf_normed_odf", "csf_odf")])
         ])  # fmt:skip
         desc += " FODs were intensity-normalized using mtnormalize (@mtnormalize)."
 
@@ -250,11 +250,11 @@ def init_mrtrix_csd_recon_wf(
         )
         workflow.connect([
             (inputnode, plot_peaks, [
-                ('dwi_ref', 'background_image'),
-                ('odf_rois', 'odf_rois'),
-                ('dwi_mask', 'mask_file'),
+                ("dwi_ref", "background_image"),
+                ("odf_rois", "odf_rois"),
+                ("dwi_mask", "mask_file"),
             ]),
-            (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')]),
+            (plot_peaks, ds_report_peaks, [("peak_report", "in_file")]),
         ])  # fmt:skip
 
         # Plot targeted regions
@@ -291,8 +291,8 @@ def init_mrtrix_csd_recon_wf(
             name="ds_wm_odf",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, 'wm_odf',
-                         ds_wm_odf, 'in_file')  # fmt:skip
+        workflow.connect(outputnode, "wm_odf",
+                         ds_wm_odf, "in_file")  # fmt:skip
         ds_wm_txt = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
@@ -322,8 +322,8 @@ def init_mrtrix_csd_recon_wf(
                 name="ds_gm_odf",
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, 'gm_odf',
-                             ds_gm_odf, 'in_file')  # fmt:skip
+            workflow.connect(outputnode, "gm_odf",
+                             ds_gm_odf, "in_file")  # fmt:skip
             ds_gm_txt = pe.Node(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
@@ -336,8 +336,8 @@ def init_mrtrix_csd_recon_wf(
                 name="ds_gm_txt",
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, 'gm_txt',
-                             ds_gm_txt, 'in_file')  # fmt:skip
+            workflow.connect(outputnode, "gm_txt",
+                             ds_gm_txt, "in_file")  # fmt:skip
 
             ds_csf_odf = pe.Node(
                 DerivativesDataSink(
@@ -352,8 +352,8 @@ def init_mrtrix_csd_recon_wf(
                 name="ds_csf_odf",
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, 'csf_odf',
-                             ds_csf_odf, 'in_file')  # fmt:skip
+            workflow.connect(outputnode, "csf_odf",
+                             ds_csf_odf, "in_file")  # fmt:skip
             ds_csf_txt = pe.Node(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
@@ -366,8 +366,8 @@ def init_mrtrix_csd_recon_wf(
                 name="ds_csf_txt",
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, 'csf_txt',
-                             ds_csf_txt, 'in_file')  # fmt:skip
+            workflow.connect(outputnode, "csf_txt",
+                             ds_csf_txt, "in_file")  # fmt:skip
 
             if run_mtnormalize:
                 ds_mt_norm = pe.Node(
@@ -381,8 +381,8 @@ def init_mrtrix_csd_recon_wf(
                     name="ds_mt_norm",
                     run_without_submitting=True,
                 )
-                workflow.connect(intensity_norm, 'norm_image',
-                                 ds_mt_norm, 'in_file')  # fmt:skip
+                workflow.connect(intensity_norm, "norm_image",
+                                 ds_mt_norm, "in_file")  # fmt:skip
                 ds_inlier_mask = pe.Node(
                     DerivativesDataSink(
                         dismiss_entities=("desc",),
@@ -394,8 +394,8 @@ def init_mrtrix_csd_recon_wf(
                     name="ds_inlier_mask",
                     run_without_submitting=True,
                 )
-                workflow.connect(intensity_norm, 'inlier_mask',
-                                 ds_inlier_mask, 'in_file')  # fmt:skip
+                workflow.connect(intensity_norm, "inlier_mask",
+                                 ds_inlier_mask, "in_file")  # fmt:skip
 
     workflow.__desc__ = desc
 
@@ -454,12 +454,12 @@ def init_global_tractography_wf(
     tck_global = pe.Node(GlobalTractography(**params), name="tck_global")
     workflow.connect([
         (inputnode, create_mif, [
-            ('dwi_file', 'dwi_file'),
-            ('bval_file', 'bval_file'),
-            ('bvec_file', 'bvec_file'),
-            ('b_file', 'b_file')]),
-        (create_mif, tck_global, [('mif_file', 'dwi_file')]),
-        (inputnode, tck_global, [('dwi_mask', 'mask')]),
+            ("dwi_file", "dwi_file"),
+            ("bval_file", "bval_file"),
+            ("bvec_file", "bvec_file"),
+            ("b_file", "b_file")]),
+        (create_mif, tck_global, [("mif_file", "dwi_file")]),
+        (inputnode, tck_global, [("dwi_mask", "mask")]),
         (inputnode, tck_global, [
             ("wm_txt", "wm_txt"),
             ("gm_txt", "gm_txt"),
@@ -482,8 +482,8 @@ def init_global_tractography_wf(
             name="ds_globalwm_odf",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, 'wm_odf',
-                         ds_globalwm_odf, 'in_file')  # fmt:skip
+        workflow.connect(outputnode, "wm_odf",
+                         ds_globalwm_odf, "in_file")  # fmt:skip
 
         ds_isotropic_fraction = pe.Node(
             DerivativesDataSink(
@@ -493,8 +493,8 @@ def init_global_tractography_wf(
             name="ds_isotropic_fraction",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, 'isotropic_fraction',
-                         ds_isotropic_fraction, 'in_file')  # fmt:skip
+        workflow.connect(outputnode, "isotropic_fraction",
+                         ds_isotropic_fraction, "in_file")  # fmt:skip
 
         ds_tck_file = pe.Node(
             DerivativesDataSink(
@@ -505,7 +505,7 @@ def init_global_tractography_wf(
             name="ds_tck_file",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, 'tck_file', ds_tck_file, 'in_file')  # fmt:skip
+        workflow.connect(outputnode, "tck_file", ds_tck_file, "in_file")  # fmt:skip
 
         ds_residual_energy = pe.Node(
             DerivativesDataSink(
@@ -516,8 +516,8 @@ def init_global_tractography_wf(
             name="ds_residual_energy",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, 'residual_energy',
-                         ds_residual_energy, 'in_file')  # fmt:skip
+        workflow.connect(outputnode, "residual_energy",
+                         ds_residual_energy, "in_file")  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
@@ -568,10 +568,11 @@ def init_mrtrix_tractography_wf(
     tracking = pe.Node(TckGen(**tracking_params), name="tractography", n_procs=omp_nthreads)
     workflow.connect([
         (inputnode, tracking, [
-            ('fod_sh_mif', 'in_file'),
-            ('fod_sh_mif', 'seed_dynamic')]),
-        (tracking, outputnode, [
-            ("out_file", "tck_file")])])  # fmt:skip
+            ("fod_sh_mif", "in_file"),
+            ("fod_sh_mif", "seed_dynamic"),
+        ]),
+        (tracking, outputnode, [("out_file", "tck_file")]),
+    ])  # fmt:skip
 
     # Which 5tt image should be used?
     method_5tt = params.get("method_5tt", "hsvs")
@@ -582,21 +583,20 @@ def init_mrtrix_tractography_wf(
         if method_5tt == "hsvs":
             connect_5tt = "qsiprep_5tt_hsvs"
         else:
-            raise Exception("Unrecognized 5tt method: " + method_5tt)
-        workflow.connect(inputnode, connect_5tt,
-                         tracking, 'act_file')  # fmt:skip
+            raise Exception(f"Unrecognized 5tt method: {method_5tt}")
+        workflow.connect(inputnode, connect_5tt, tracking, "act_file")
 
     if use_sift2:
         tck_sift2 = pe.Node(SIFT2(**sift_params), name="tck_sift2", n_procs=omp_nthreads)
         workflow.connect([
-            (inputnode, tck_sift2, [
-                ('fod_sh_mif', 'in_fod')]),
-            (tracking, tck_sift2, [
-                ('out_file', 'in_tracks')]),
+            (inputnode, tck_sift2, [("fod_sh_mif", "in_fod")]),
+            (tracking, tck_sift2, [("out_file", "in_tracks")]),
             (tck_sift2, outputnode, [
-                ('out_mu', 'mu'),
-                ('out_weights', 'sift_weights')])
+                ("out_mu", "mu"),
+                ("out_weights", "sift_weights"),
+            ]),
         ])  # fmt:skip
+
         if qsirecon_suffix:
             ds_sift_weights = pe.Node(
                 DerivativesDataSink(
@@ -608,7 +608,8 @@ def init_mrtrix_tractography_wf(
                 name="ds_sift_weights",
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, 'sift_weights', ds_sift_weights, 'in_file')  # fmt:skip
+            workflow.connect(outputnode, "sift_weights", ds_sift_weights, "in_file")
+
         if qsirecon_suffix:
             ds_mu_file = pe.Node(
                 DerivativesDataSink(
@@ -620,9 +621,10 @@ def init_mrtrix_tractography_wf(
                 name="ds_mu_file",
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, 'mu', ds_mu_file, 'in_file')  # fmt:skip
+            workflow.connect(outputnode, "mu", ds_mu_file, "in_file")
+
         if use_5tt:
-            workflow.connect(inputnode, connect_5tt, tck_sift2, "act_file")  # fmt:skip
+            workflow.connect(inputnode, connect_5tt, tck_sift2, "act_file")
 
     if qsirecon_suffix:
         ds_tck_file = pe.Node(
@@ -636,7 +638,7 @@ def init_mrtrix_tractography_wf(
             name="ds_tck_file",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, 'tck_file', ds_tck_file, 'in_file')  # fmt:skip
+        workflow.connect(outputnode, "tck_file", ds_tck_file, "in_file")
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
@@ -667,7 +669,8 @@ def init_mrtrix_connectivity_wf(
         name="inputnode",
     )
     outputnode = pe.Node(
-        niu.IdentityInterface(fields=["matfile", "recon_scalars"]), name="outputnode"
+        niu.IdentityInterface(fields=["matfile", "recon_scalars"]),
+        name="outputnode",
     )
     omp_nthreads = config.nipype.omp_nthreads
     outputnode.inputs.recon_scalars = []
@@ -681,16 +684,18 @@ def init_mrtrix_connectivity_wf(
     )
     workflow.connect([
         (inputnode, calc_connectivity, [
-            ('atlas_configs', 'atlas_configs'),
-            ('tck_file', 'in_file'),
-            ('sift_weights', 'in_weights')]),
-        (calc_connectivity, outputnode, [
-            ('connectivity_matfile', 'matfile')])
+            ("atlas_configs", "atlas_configs"),
+            ("tck_file", "in_file"),
+            ("sift_weights", "in_weights"),
+        ]),
+        (calc_connectivity, outputnode, [("connectivity_matfile", "matfile")]),
     ])  # fmt:skip
 
     if plot_reports:
         plot_connectivity = pe.Node(
-            ConnectivityReport(), name="plot_connectivity", n_procs=omp_nthreads
+            ConnectivityReport(),
+            name="plot_connectivity",
+            n_procs=omp_nthreads,
         )
         ds_report_connectivity = pe.Node(
             DerivativesDataSink(
@@ -703,9 +708,10 @@ def init_mrtrix_connectivity_wf(
         )
         workflow.connect([
             (calc_connectivity, plot_connectivity, [
-                ('connectivity_matfile', 'connectivity_matfile')]),
-            (plot_connectivity, ds_report_connectivity, [
-                ('out_report', 'in_file')])])  # fmt:skip
+                ("connectivity_matfile", "connectivity_matfile"),
+            ]),
+            (plot_connectivity, ds_report_connectivity, [("out_report", "in_file")]),
+        ])  # fmt:skip
 
     if qsirecon_suffix:
         # Save the output in the outputs directory
@@ -714,7 +720,7 @@ def init_mrtrix_connectivity_wf(
                 dismiss_entities=("desc",),
                 suffix="connectivity",
             ),
-            name="ds_" + name,
+            name=f"ds_{name}",
             run_without_submitting=True,
         )
         ds_exemplars = pe.Node(
@@ -726,8 +732,8 @@ def init_mrtrix_connectivity_wf(
             run_without_submitting=True,
         )
         workflow.connect([
-            (calc_connectivity, ds_connectivity, [('connectivity_matfile', 'in_file')]),
-            (calc_connectivity, ds_exemplars, [('exemplar_files', 'in_file')])
+            (calc_connectivity, ds_connectivity, [("connectivity_matfile", "in_file")]),
+            (calc_connectivity, ds_exemplars, [("exemplar_files", "in_file")]),
         ])  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)

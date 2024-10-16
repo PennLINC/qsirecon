@@ -143,11 +143,12 @@ to workflows in *qsirecon*'s documentation]\
         template_space = get_entity(xfm_to_template, "to")
         bids_filters = config.execution.bids_filters.copy()
         bids_filters["atlas"]["space"] = template_space
-        atlases = collect_atlases(
+        atlas_config = collect_atlases(
             datasets=config.execution.datasets,
             atlases=config.execution.atlases,
             bids_filters=bids_filters,
         )
+        # write out atlases
 
     aggregate_anatomical_nodes = pe.Node(
         niu.Merge(len(dwi_recon_inputs)),
@@ -176,7 +177,7 @@ to workflows in *qsirecon*'s documentation]\
         # Aggregate the anatomical data from all the dwi files
         workflow.connect([
             (anat_ingress_nodes[dwi_file], aggregate_anatomical_nodes, [
-                ("outputnode.t1_preproc", f"in{i_run + 1}")
+                ("outputnode.t1_preproc", f"in{i_run + 1}"),
             ]),
         ])  # fmt:skip
 
