@@ -135,6 +135,7 @@ to workflows in *qsirecon*'s documentation]\
         f"{yaml.dump(available_anatomical_data, default_flow_style=False, indent=4)}"
     )
 
+    atlas_configs = {}
     if config.execution.atlases:
         # Limit atlases to ones in the specified space.
         xfm_to_anat = available_anatomical_data["t1_2_mni_forward_transform"]
