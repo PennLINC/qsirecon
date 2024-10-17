@@ -61,9 +61,10 @@ associated reconstruction workflows dataset.
 .. code-block::
 
    qsirecon/
-      qsirecon-<recon>/
-          sub-<label>/
-              dwi/
+      derivatives/
+         qsirecon-<suffix>/
+            sub-<label>/
+               dwi/
                   sub-<label>_space-T1w_seg-<label>_dseg.nii.gz
                   sub-<label>_space-T1w_seg-<label>_dseg.mif.gz
                   sub-<label>_space-T1w_seg-<label>_dseg.json
@@ -81,8 +82,8 @@ Users can control which atlases are used with the ``--atlases`` and ``--datasets
 The nifti images should be registered to the
 `MNI152NLin2009cAsym <https://github.com/PennLINC/qsirecon/blob/main/qsirecon/data/mni_1mm_t1w_lps.nii.gz>`_
 included in ``qsirecon``.
-It is essential that your images are in the LPS+ orientation and have the sform zeroed-out
-in the header. **Be sure to check for alignment and orientation** in your outputs.
+It is essential that your images are in the LPS+ orientation and have the sform zeroed-out in the header.
+**Be sure to check for alignment and orientation** in your outputs.
 
 
 **********

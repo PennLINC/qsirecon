@@ -124,7 +124,8 @@ to workflows in *qsirecon*'s documentation]\
         return workflow
 
     # This is here because qsiprep currently only makes one anatomical result per subject
-    # regardless of sessions. So process it on its
+    # regardless of sessions. So process it on its own.
+    anat_data = collect_anatomical_data(subject_id, bids_filters=config.execution.bids_filters)
     anat_ingress_node, available_anatomical_data = init_highres_recon_anatomical_wf(
         subject_id=subject_id,
         extras_to_make=spec.get("anatomical", []),
@@ -154,7 +155,8 @@ to workflows in *qsirecon*'s documentation]\
         for atlas_name in atlas_configs.keys():
             atlas_configs[atlas_name]["xfm_to_anat"] = xfm_to_anat
 
-        # write out atlases
+        # Prepare the atlases.
+        # Reorient to LPS+ and zero out the sform.
         for atlas_name, atlas_config in atlas_configs.items():
             # Node is named dataset_ instead of ds_ so no clean_datasinks step will affect it.
             # XXX: We should pass the outputs from these datasinks to any steps that use the

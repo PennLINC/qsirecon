@@ -67,12 +67,11 @@ def init_highres_recon_anatomical_wf(
 
     This workflow searches through input data to see what anatomical data is available.
     The anatomical data may be in a freesurfer directory.
-
     """
-
     workflow = Workflow(name="recon_anatomical_wf")
     outputnode = pe.Node(
-        niu.IdentityInterface(fields=anatomical_workflow_outputs), name="outputnode"
+        niu.IdentityInterface(fields=anatomical_workflow_outputs),
+        name="outputnode",
     )
     workflow.__desc__ = ""
     # "Gather" the input data. ``status`` is a dict that reflects which anatomical data
@@ -99,6 +98,7 @@ def init_highres_recon_anatomical_wf(
         # If a 5tt image is needed, this is an error
         if "mrtrix_5tt_hsvs" in extras_to_make:
             raise Exception("FreeSurfer data is required to make HSVS 5tt image.")
+
         workflow.add_nodes([outputnode])
         workflow = clean_datasinks(workflow, qsirecon_suffix)
         return workflow, status
@@ -107,14 +107,16 @@ def init_highres_recon_anatomical_wf(
         f"Found high-res anatomical data in preprocessed inputs for {subject_id}."
     )
     workflow.connect([
-        (anat_ingress_node, outputnode,
-            [(name, name) for name in qsiprep_highres_anatomical_ingressed_fields])])  # fmt:skip
+        (anat_ingress_node, outputnode, [
+            (name, name) for name in qsiprep_highres_anatomical_ingressed_fields
+        ]),
+    ])  # fmt:skip
 
-    # grab un-coregistered freesurfer images later use
+    # grab un-coregistered freesurfer images for later use
     if subject_freesurfer_path is not None:
         status["has_freesurfer"] = True
         config.loggers.workflow.info(
-            "Freesurfer directory %s exists for %s", subject_freesurfer_path, subject_id
+            f"Freesurfer directory {subject_freesurfer_path} exists for {subject_id}"
         )
         fs_source = pe.Node(
             nio.FreeSurferSource(
@@ -127,7 +129,7 @@ def init_highres_recon_anatomical_wf(
         #     (fs_source, outputnode, [
         #         (field, field) for field in FS_FILES_TO_REGISTER])])  # fmt:skip
 
-    # Do we need to calculate anything else on the
+    # Do we need to calculate anything else on the fly
     if "mrtrix_5tt_hsvs" in extras_to_make:
         # Check for specific files needed for HSVs.
         missing_fs_hsvs_files = check_hsv_inputs(Path(subject_freesurfer_path))
@@ -180,28 +182,32 @@ def init_highres_recon_anatomical_wf(
             )
             status["has_qsiprep_5tt_hsvs"] = True
             register_fs_to_qsiprep_wf = init_register_fs_to_qsiprep_wf(
-                use_qsiprep_reference_mask=True
+                use_qsiprep_reference_mask=True,
             )
             apply_header_to_5tt = pe.Node(TransformHeader(), name="apply_header_to_5tt")
             workflow.connect([
                 (anat_ingress_node, register_fs_to_qsiprep_wf, [
                     ("t1_preproc", "inputnode.qsiprep_reference_image"),
-                    ("t1_brain_mask", "inputnode.qsiprep_reference_mask")]),
+                    ("t1_brain_mask", "inputnode.qsiprep_reference_mask"),
+                ]),
                 (fs_source, register_fs_to_qsiprep_wf, [
-                    (field, "inputnode." + field) for field in FS_FILES_TO_REGISTER]),
+                    (field, "inputnode." + field) for field in FS_FILES_TO_REGISTER
+                ]),
                 (register_fs_to_qsiprep_wf, outputnode, [
                     ("outputnode.fs_to_qsiprep_transform_mrtrix",
                         "fs_to_qsiprep_transform_mrtrix"),
-                    ("outputnode.fs_to_qsiprep_transform_itk",
-                        "fs_to_qsiprep_transform_itk")] + [
-                    ("outputnode." + field, field) for field in FS_FILES_TO_REGISTER]),
+                    ("outputnode.fs_to_qsiprep_transform_itk", "fs_to_qsiprep_transform_itk")
+                ] + [
+                    ("outputnode." + field, field) for field in FS_FILES_TO_REGISTER
+                ]),
                 (create_5tt_hsvs, apply_header_to_5tt, [("out_file", "in_image")]),
                 (register_fs_to_qsiprep_wf, apply_header_to_5tt, [
-                    ("outputnode.fs_to_qsiprep_transform_mrtrix", "transform_file")]),
-                (apply_header_to_5tt, outputnode, [
-                    ("out_image", "qsiprep_5tt_hsvs")]),
+                    ("outputnode.fs_to_qsiprep_transform_mrtrix", "transform_file"),
+                ]),
+                (apply_header_to_5tt, outputnode, [("out_image", "qsiprep_5tt_hsvs")]),
                 (apply_header_to_5tt, ds_qsiprep_5tt_hsvs, [("out_image", "in_file")]),
             ])  # fmt:skip
+
             workflow.__desc__ += "A hybrid surface/volume segmentation was created [Smith 2020]."
 
     workflow = clean_datasinks(workflow, qsirecon_suffix)
