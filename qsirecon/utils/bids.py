@@ -143,34 +143,53 @@ def collect_participants(bids_dir, participant_label=None, strict=False, bids_va
     return found_label
 
 
-def write_derivative_description(bids_dir, deriv_dir, dataset_links=None):
+def write_derivative_description(
+    bids_dir,
+    deriv_dir,
+    atlases=None,
+    dataset_links=None,
+):
+    """Write dataset_description.json file for derivatives.
+
+    Parameters
+    ----------
+    bids_dir : :obj:`str`
+        Path to the BIDS derivative dataset being processed.
+    deriv_dir : :obj:`str`
+        Path to the output QSIRecon dataset.
+    atlases : :obj:`list` of :obj:`str`, optional
+        Names of requested atlases.
+    dataset_links : :obj:`dict`, optional
+        Dictionary of dataset links to include in the dataset description.
+    """
     from qsirecon import __version__
 
     # Keys deriving from source dataset
     orig_dset_description = os.path.join(bids_dir, "dataset_description.json")
-    if os.path.exists(orig_dset_description):
+    if os.path.isfile(orig_dset_description):
         with open(orig_dset_description) as fobj:
-            dset_desc = json.load(fobj)
+            desc = json.load(fobj)
     else:
         config.loggers.utils.warning(f"Dataset description DNE: {orig_dset_description}")
-        dset_desc = {}
+        desc = {}
 
     # Check if the dataset type is derivative
-    if "DatasetType" not in dset_desc.keys():
+    if "DatasetType" not in desc.keys():
         config.loggers.utils.warning(
             f"DatasetType key not in {orig_dset_description}. Assuming 'derivative'."
         )
-        dset_desc["DatasetType"] = "derivative"
+        desc["DatasetType"] = "derivative"
 
-    if dset_desc.get("DatasetType", "derivative") != "derivative":
+    if desc.get("DatasetType", "derivative") != "derivative":
         raise ValueError(
             f"DatasetType key in {orig_dset_description} is not 'derivative'. "
             "QSIRecon only works on derivative datasets."
         )
 
-    dset_desc["Name"] = "QSIRecon output"
+    # Update dataset description
+    desc["Name"] = "QSIRecon output"
     DOWNLOAD_URL = f"https://github.com/PennLINC/qsirecon/archive/{__version__}.tar.gz"
-    generated_by = dset_desc.get("GeneratedBy", [])
+    generated_by = desc.get("GeneratedBy", [])
     generated_by.insert(
         0,
         {
@@ -179,41 +198,34 @@ def write_derivative_description(bids_dir, deriv_dir, dataset_links=None):
             "CodeURL": DOWNLOAD_URL,
         },
     )
-    dset_desc["GeneratedBy"] = generated_by
-    dset_desc["HowToAcknowledge"] = "Include the generated boilerplate in the methods section."
+    desc["GeneratedBy"] = generated_by
+    desc["HowToAcknowledge"] = "Include the generated boilerplate in the methods section."
 
     # Keys that can only be set by environment
     if "QSIRECON_DOCKER_TAG" in os.environ:
-        dset_desc["GeneratedBy"][0]["Container"] = {
+        desc["GeneratedBy"][0]["Container"] = {
             "Type": "docker",
             "Tag": f"pennlinc/qsirecon:{os.environ['QSIRECON_DOCKER_TAG']}",
         }
     elif "QSIRECON_SINGULARITY_URL" in os.environ:
-        dset_desc["GeneratedBy"][0]["Container"] = {
+        desc["GeneratedBy"][0]["Container"] = {
             "Type": "singularity",
             "URI": os.getenv("QSIRECON_SINGULARITY_URL"),
         }
 
-    if "DatasetDOI" in dset_desc:
-        dset_desc["SourceDatasetsURLs"] = [f"https://doi.org/{dset_desc['DatasetDOI']}"]
+    if "DatasetDOI" in desc:
+        desc["SourceDatasetsURLs"] = [f"https://doi.org/{desc['DatasetDOI']}"]
 
-    # Add DatasetLinks
-    if "DatasetLinks" not in dset_desc.keys():
-        dset_desc["DatasetLinks"] = {}
+    dataset_links = dataset_links.copy()
 
-    if "preprocessed" in dset_desc["DatasetLinks"].keys():
-        config.loggers.utils.warning("'preprocessed' is already a dataset link. Overwriting.")
+    # Replace local templateflow path with URL
+    dataset_links["templateflow"] = "https://github.com/templateflow/templateflow"
 
-    dset_desc["DatasetLinks"]["preprocessed"] = str(bids_dir)
-    if dataset_links:
-        for key, value in dataset_links.items():
-            if key in dset_desc["DatasetLinks"]:
-                config.loggers.utils.warning(f"'{key}' is already a dataset link. Overwriting.")
+    if atlases:
+        dataset_links["atlases"] = os.path.join(deriv_dir, "atlases")
 
-            if key == "templateflow":
-                value = "https://github.com/templateflow/templateflow"
-
-            dset_desc["DatasetLinks"][key] = str(value)
+    # Don't inherit DatasetLinks from preprocessing derivatives
+    desc["DatasetLinks"] = {k: str(v) for k, v in dataset_links.items()}
 
     out_dset_description = os.path.join(deriv_dir, "dataset_description.json")
     lock_file = os.path.join(deriv_dir, "qsirecon_dataset_description.lock")
@@ -229,7 +241,7 @@ def write_derivative_description(bids_dir, deriv_dir, dataset_links=None):
                 )
         else:
             with open(out_dset_description, "w") as fo:
-                json.dump(dset_desc, fo, indent=4, sort_keys=True)
+                json.dump(desc, fo, indent=4, sort_keys=True)
 
 
 def write_atlas_dataset_description(atlas_dir):
