@@ -85,13 +85,13 @@ def init_single_subject_recon_wf(subject_id):
     )
     from ..interfaces.reports import AboutSummary, SubjectSummary
     from ..interfaces.utils import GetUnique
+    from ..utils.atlases import collect_atlases
+    from ..utils.bids import get_entity
     from .recon.anatomical import (
         init_dwi_recon_anatomical_workflow,
         init_highres_recon_anatomical_wf,
     )
     from .recon.build_workflow import init_dwi_recon_workflow
-    from ..utils.atlases import collect_atlases
-    from ..utils.bids import get_entity
 
     spec = _load_recon_spec(config.workflow.recon_spec)
     dwi_recon_inputs = _get_iterable_dwi_inputs(subject_id)

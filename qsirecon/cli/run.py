@@ -36,8 +36,8 @@ def main():
     from pathlib import Path
 
     from ..utils.bids import (
-        write_bidsignore,
         write_atlas_dataset_description,
+        write_bidsignore,
         write_derivative_description,
     )
     from .parser import parse_args

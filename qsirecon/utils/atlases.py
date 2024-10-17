@@ -7,7 +7,10 @@ Loading atlases
 ^^^^^^^^^^^^^^^
 
 """
+import logging
 import os
+
+LOGGER = logging.getLogger("nipype.interface")
 
 
 def get_atlases():
@@ -94,7 +97,6 @@ def collect_atlases(datasets, atlases, bids_filters={}):
 
     import pandas as pd
     from bids.layout import BIDSLayout
-
     from xcp_d.data import load as load_data
 
     atlas_cfg = load_data("atlas_bids_config.json")
