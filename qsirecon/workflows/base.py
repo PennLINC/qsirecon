@@ -123,9 +123,6 @@ to workflows in *qsirecon*'s documentation]\
         config.loggers.workflow.info("No dwi files found for %s", subject_id)
         return workflow
 
-    # The recon spec may need additional anatomical files to be created.
-    atlas_names = spec.get("atlases", [])
-
     # This is here because qsiprep currently only makes one anatomical result per subject
     # regardless of sessions. So process it on its
     anat_ingress_node, available_anatomical_data = init_highres_recon_anatomical_wf(
@@ -133,23 +130,32 @@ to workflows in *qsirecon*'s documentation]\
         extras_to_make=spec.get("anatomical", []),
         needs_t1w_transform=bool(config.execution.atlases),
     )
-
-    # Connect the anatomical-only inputs. NOTE this is not to the inputnode!
     config.loggers.workflow.info(
-        "Anatomical (T1w) available for recon: %s", available_anatomical_data
+        "Anatomical (T1w) available for recon:\n"
+        f"{yaml.dump(available_anatomical_data, default_flow_style=False, indent=4)}"
     )
+
     if config.execution.atlases:
-        xfm_to_template = available_anatomical_data["t1_2_mni_forward_transform"]
-        template_space = get_entity(xfm_to_template, "to")
+        # Limit atlases to ones in the specified space.
+        xfm_to_anat = available_anatomical_data["t1_2_mni_forward_transform"]
+        template_space = get_entity(xfm_to_anat, "from")
         bids_filters = config.execution.bids_filters.copy()
         bids_filters["atlas"]["space"] = template_space
+
+        # Collect atlases across datasets, including built-in atlases.
         atlas_configs = collect_atlases(
             datasets=config.execution.datasets,
             atlases=config.execution.atlases,
             bids_filters=bids_filters,
         )
+        # Patch the transform into the atlas configs.
+        # This is a placeholder until we can support atlases in various spaces.
+        for atlas_name in atlas_configs.keys():
+            atlas_configs[atlas_name]["xfm_to_anat"] = xfm_to_anat
+
         # write out atlases
 
+    # Connect the anatomical-only inputs. NOTE this is not to the inputnode!
     aggregate_anatomical_nodes = pe.Node(
         niu.Merge(len(dwi_recon_inputs)),
         name="aggregate_anatomical_nodes",
