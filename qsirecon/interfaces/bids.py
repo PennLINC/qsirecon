@@ -94,7 +94,7 @@ def get_bids_params(fullpath):
 class DerivativesDataSink(BaseDerivativesDataSink):
     """Store derivative files.
 
-    A child class of the niworkflows DerivativesDataSink, using xcp_d's configuration files.
+    A child class of the niworkflows DerivativesDataSink, using QSIRecon's configuration files.
     """
 
     out_path_base = ""

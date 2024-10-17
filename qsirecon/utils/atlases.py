@@ -97,7 +97,8 @@ def collect_atlases(datasets, atlases, bids_filters={}):
 
     import pandas as pd
     from bids.layout import BIDSLayout
-    from xcp_d.data import load as load_data
+
+    from qsirecon.data import load as load_data
 
     atlas_cfg = load_data("atlas_bids_config.json")
     bids_filters = bids_filters or {}
