@@ -169,6 +169,9 @@ def collect_anatomical_data(
 
     _spec = yaml.safe_load(load_data.readable("io_spec.yaml").read_text())
     queries = _spec["queries"]["anat"]
+    if infant_mode:
+        queries["anat_to_template_xfm"]["from"] = "MNIInfant"
+        queries["template_to_anat_xfm"]["to"] = "MNIInfant"
 
     # Apply filters. These may override anything.
     bids_filters = bids_filters or {}
@@ -193,7 +196,7 @@ def collect_anatomical_data(
         else:
             anat_files[name] = None
 
-    # Identify the found morphometry files.
+    # Identify the found anatomical files.
     found_files = [k for k, v in anat_files.items() if v is not None]
     config.loggers.utils.info(
         (
