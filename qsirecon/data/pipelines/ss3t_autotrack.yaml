@@ -1,5 +1,4 @@
 anatomical: []
-atlases: []
 name: mrtrix_singleshell_ss3t_noACT
 nodes:
 -   action: csd

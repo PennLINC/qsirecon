@@ -1,4 +1,3 @@
-atlases: []
 description: Reorients DWI, bvecs and mask into fsl standard orientation
 name: reorient2fslstd
 nodes:

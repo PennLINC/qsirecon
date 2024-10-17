@@ -23,14 +23,6 @@ At the root level of the Recon Spec there are
   name: dsistudio_pipeline
   anatomical:
   - mrtrix_5tt_hsvs
-  atlases:
-  - schaefer100
-  - schaefer200
-  - schaefer400
-  - brainnetome246
-  - aicha384
-  - gordon333
-  - aal116
   nodes: []
 
 The ``"name"`` element defines the name of the pipeline. There will be a directory in your working
@@ -40,16 +32,10 @@ based on the T1w or T2w images in the input data. Currently accepted values are
   * ``"mrtrix_5tt_hsvs"``: A MRtrix_ 5tt segmentation based on :footcite:t:`smith2020hybrid`.
     This requires :ref:`include_freesurfer`.
 
-The ``"atlases"`` field is a list of segmentations (:ref:`connectivity_atlases`) that will be used to create
-:ref:``
-
-
 
 **************
 Pipeline nodes
 **************
-
-
 
 A *node* in the QSIRecon ``"nodes"`` list represents a unit of processing.
 Unlike NiPype nodes, which represent a single call to a commandline program

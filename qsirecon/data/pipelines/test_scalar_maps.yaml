@@ -1,5 +1,4 @@
 anatomical: []
-atlases: []
 name: bundle_scalar_map
 nodes:
 -   action: DKI_reconstruction

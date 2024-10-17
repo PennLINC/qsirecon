@@ -386,8 +386,10 @@ class execution(_Config):
     input_dir = None
     """An existing path to the input data, which may not be BIDS-compliant
     (in which case a BIDS-compliant version will be created and stored as bids_dir)."""
-    derivatives = {}
-    """Path(s) to search for pre-computed derivatives"""
+    datasets = {}
+    """Path(s) to search for other datasets (either derivatives or atlases)."""
+    atlases = []
+    """Selection of atlases to apply to the data."""
     bids_database_dir = None
     """Path to the directory containing SQLite database indices for the input BIDS dataset."""
     bids_description_hash = None
@@ -445,6 +447,7 @@ class execution(_Config):
 
     _paths = (
         "bids_dir",
+        "datasets",
         "bids_database_dir",
         "dataset_links",
         "eddy_config",
@@ -456,7 +459,6 @@ class execution(_Config):
         "output_dir",
         "templateflow_home",
         "work_dir",
-        "dataset_links",
     )
 
     @classmethod
@@ -528,8 +530,11 @@ class execution(_Config):
         if cls.fs_subjects_dir:
             dataset_links["freesurfer"] = cls.fs_subjects_dir
 
-        for deriv_name, deriv_path in cls.derivatives.items():
-            dataset_links[deriv_name] = deriv_path
+        if cls.atlases:
+            dataset_links["atlas"] = cls.output_dir / "atlases"
+
+        for dset_name, dset_path in cls.datasets.items():
+            dataset_links[dset_name] = dset_path
         cls.dataset_links = dataset_links
 
         if "all" in cls.debug:
