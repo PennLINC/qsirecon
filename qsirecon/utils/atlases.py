@@ -45,13 +45,8 @@ def get_atlases():
 
     atlas_cfg = load_data("atlas_bids_config.json")
 
-    builtin_atlas_dir = os.getenv("QSIRECON_ATLAS")
-    if builtin_atlas_dir is None:
-        raise Exception("No environment variable found for QSIRECON_ATLAS")
-
-    atlaspack_atlas_dir = os.getenv("QSIRECON_ATLASPACK")
-    if atlaspack_atlas_dir is None:
-        raise Exception("No environment variable found for QSIRECON_ATLASPACK")
+    builtin_atlas_dir = os.getenv("QSIRECON_ATLAS", "/atlas/qsirecon_atlases")
+    atlaspack_atlas_dir = os.getenv("QSIRECON_ATLASPACK", "/atlas/AtlasPack")
 
     builtin_layout = BIDSLayout(builtin_atlas_dir, config=[atlas_cfg], validate=False)
     atlaspack_layout = BIDSLayout(atlaspack_atlas_dir, config=[atlas_cfg], validate=False)
