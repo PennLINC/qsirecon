@@ -8,51 +8,8 @@ Loading atlases
 
 """
 import logging
-import os
 
 LOGGER = logging.getLogger("nipype.interface")
-
-
-def get_atlases():
-    """Build dictionary of atlases to use to parcellate QSIRecon outputs.
-
-    Parameters
-    ----------
-    atlas_names : :obj:`list` of :obj:`str`
-        List of atlas names to load.
-
-    Returns
-    -------
-    outputs : :obj:`dict`
-        Dictionary of atlases to use for parcellation.
-        Keys are atlas names, values are dictionaries with the following keys:
-
-        - ``file`` : :obj:`str`
-            Path to atlas file.
-        - ``node_names`` : :obj:`list` of :obj:`str`
-            List of node names in atlas.
-        - ``node_ids`` : :obj:`list` of :obj:`int`
-            List of node IDs in atlas. Each element corresponds to an entry in ``node_names``.
-
-    Notes
-    -----
-    The location of the atlas_config.json file is determined by the ``QSIRECON_ATLAS`` environment
-    variable.
-    """
-    from bids.layout import BIDSLayout
-
-    from qsirecon.data import load as load_data
-
-    atlas_cfg = load_data("atlas_bids_config.json")
-
-    builtin_atlas_dir = os.getenv("QSIRECON_ATLAS", "/atlas/qsirecon_atlases")
-    atlaspack_atlas_dir = os.getenv("QSIRECON_ATLASPACK", "/atlas/AtlasPack")
-
-    builtin_layout = BIDSLayout(builtin_atlas_dir, config=[atlas_cfg], validate=False)
-    atlaspack_layout = BIDSLayout(atlaspack_atlas_dir, config=[atlas_cfg], validate=False)
-    atlases = builtin_layout.get_atlases() + atlaspack_layout.get_atlases()
-
-    return atlases
 
 
 def collect_atlases(datasets, atlases, bids_filters={}):

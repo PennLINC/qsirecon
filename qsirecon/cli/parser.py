@@ -24,11 +24,11 @@
 #
 """Parser."""
 
+import os
 from argparse import Action
 from pathlib import Path
 
 from .. import config
-from ..utils.atlases import get_atlases
 
 
 class ToDict(Action):
@@ -363,7 +363,6 @@ def _build_parser(**kwargs):
     )
 
     g_parcellation = parser.add_argument_group("Parcellation options")
-    builtin_atlases = get_atlases()
     g_parcellation.add_argument(
         "--atlases",
         action="store",
@@ -373,7 +372,8 @@ def _build_parser(**kwargs):
         dest="atlases",
         help=(
             "Selection of atlases to apply to the data. "
-            f"Built-in atlases include: {', '.join(builtin_atlases)}"
+            "Built-in atlases include: AAL116, AICHA384Ext, Brainnetome246Ext, "
+            "Gordon333Ext, and the 4S atlases."
         ),
     )
 
@@ -459,11 +459,15 @@ def parse_args(args=None, namespace=None):
     opts.datasets = opts.datasets or {}
     if opts.atlases:
         if "qsireconatlases" not in opts.datasets:
-            opts.datasets["qsireconatlases"] = Path("/qsirecon_atlases")
+            opts.datasets["qsireconatlases"] = Path(
+                os.getenv("QSIRECON_ATLAS", "/atlas/qsirecon_atlases")
+            )
 
         if any(atlas.startswith("4S") for atlas in opts.atlases):
-            if "xcpd4s" not in opts.datasets:
-                opts.datasets["xcpd4s"] = Path("/AtlasPack")
+            if "qsirecon4s" not in opts.datasets:
+                opts.datasets["qsirecon4s"] = Path(
+                    os.getenv("QSIRECON_ATLASPACK", "/atlas/AtlasPack")
+                )
 
     config.execution.log_level = int(max(25 - 5 * opts.verbose_count, logging.DEBUG))
     config.from_dict(vars(opts), init=["nipype"])
