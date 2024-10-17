@@ -49,7 +49,7 @@ BIDS_NAME = re.compile(
 
 # NOTE: Modified for QSIRecon's purposes
 qsirecon_spec = loads(load_data("io_spec.json").read_text())
-atlas_spec = loads(load_data("atlas_spec.json").read_text())
+atlas_spec = loads(load_data("atlas_bids_config.json").read_text())
 bids_config = Config.load("bids")
 deriv_config = Config.load("derivatives")
 
