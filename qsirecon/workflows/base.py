@@ -154,6 +154,32 @@ to workflows in *qsirecon*'s documentation]\
             atlas_configs[atlas_name]["xfm_to_anat"] = xfm_to_anat
 
         # write out atlases
+        for atlas_name, atlas_config in atlas_configs.items():
+            # Node is named dataset_ instead of ds_ so no clean_datasinks step will affect it.
+            # XXX: We should pass the outputs from these datasinks to any steps that use the
+            # atlases in order to track Sources.
+            ds_atlas_orig = pe.Node(
+                DerivativesDataSink(
+                    source_file=atlas_config["image"],
+                    out_dir=config.execution.output_dir / "atlases",
+                    datatype="atlas",
+                    atlas=atlas_name,
+                    meta_dict=atlas_config["metadata"],
+                ),
+                name=f"datasink_atlas_orig_{atlas_name}",
+            )
+            workflow.add_nodes([ds_atlas_orig])
+
+            ds_atlas_labels_orig = pe.Node(
+                DerivativesDataSink(
+                    source_file=atlas_config["labels"],
+                    out_dir=config.execution.output_dir / "atlases",
+                    datatype="atlas",
+                    atlas=atlas_name,
+                ),
+                name=f"datasink_atlas_labels_orig_{atlas_name}",
+            )
+            workflow.add_nodes([ds_atlas_labels_orig])
 
     # Connect the anatomical-only inputs. NOTE this is not to the inputnode!
     aggregate_anatomical_nodes = pe.Node(

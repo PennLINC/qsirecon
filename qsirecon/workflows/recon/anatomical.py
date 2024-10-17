@@ -546,7 +546,7 @@ def init_dwi_recon_anatomical_workflow(
         # NOTE: using FreeSurfer "brain" image as t1_preproc and aseg as the brainmask
         has_qsiprep_t1w = True
         register_fs_to_qsiprep_wf = init_register_fs_to_qsiprep_wf(
-            use_qsiprep_reference_mask=False
+            use_qsiprep_reference_mask=False,
         )
         workflow.connect([
             (inputnode, fs_source, [("subject_id", "subject_id")]),

@@ -49,13 +49,15 @@ BIDS_NAME = re.compile(
 
 # NOTE: Modified for QSIRecon's purposes
 qsirecon_spec = loads(load_data("io_spec.json").read_text())
+atlas_spec = loads(load_data("atlas_spec.json").read_text())
 bids_config = Config.load("bids")
 deriv_config = Config.load("derivatives")
 
 qsirecon_entities = {v["name"]: v["pattern"] for v in qsirecon_spec["entities"]}
+atlas_entities = {v["name"]: v["pattern"] for v in atlas_spec["entities"]}
 merged_entities = {**bids_config.entities, **deriv_config.entities}
 merged_entities = {k: v.pattern for k, v in merged_entities.items()}
-merged_entities = {**merged_entities, **qsirecon_entities}
+merged_entities = {**merged_entities, **qsirecon_entities, **atlas_entities}
 merged_entities = [{"name": k, "pattern": v} for k, v in merged_entities.items()]
 config_entities = frozenset({e["name"] for e in merged_entities})
 
