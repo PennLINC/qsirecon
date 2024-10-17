@@ -18,10 +18,19 @@ def list_to_str(lst):
 def describe_atlases(atlases):
     """Build a text description of the atlases that will be used."""
     atlas_descriptions = {
-        "AAL116": "",
-        "AICHA384Ext": "",
-        "Brainnetome246Ext": "the Brainnetome 246-parcel atlas [@Fan_2016] extended with subcortical parcels",
-        "Gordon333Ext": "the Gordon 333-parcel atlas [@Gordon_2014] extended with subcortical parcels",
+        "AAL116": (
+            "the Automated Anatomical Labeling (AAL) 116-parcel atlas [@tzourio2002automated]"
+        ),
+        "AICHA384Ext": (
+            "the AICHA 384-parcel atlas [@joliot2015aicha] extended with subcortical parcels"
+        ),
+        "Brainnetome246Ext": (
+            "the Brainnetome 246-parcel atlas [@fan2016human] extended with subcortical parcels"
+        ),
+        "Gordon333Ext": (
+            "the Gordon 333-parcel atlas [@gordon2016generation] extended with subcortical "
+            "parcels"
+        ),
     }
 
     atlas_strings = []
@@ -32,8 +41,8 @@ def describe_atlases(atlases):
         parcels = [int(str(atlas[2:-7])) for atlas in atlases_4s]
         s = (
             "the Schaefer Supplemented with Subcortical Structures (4S) atlas "
-            "[@Schaefer_2017;@pauli2018high;@king2019functional;@najdenovska2018vivo;"
-            "@glasser2013minimal] "
+            "[@schaefer2018local;@pauli2018high;@king2019functional;@najdenovska2018vivo;"
+            "@hcppipelines] "
             f"at {len(atlases_4s)} different resolutions ({list_to_str(parcels)} parcels)"
         )
         atlas_strings.append(s)
