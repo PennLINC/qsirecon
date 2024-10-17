@@ -205,6 +205,8 @@ def workflow_from_spec(available_anatomical_data, node_spec):
         "qsirecon_suffix": qsirecon_suffix,
         "params": parameters,
     }
+    if node_spec["action"] == "connectivity" and not config.execution.atlases:
+        raise ValueError("Connectivity requires atlases.")
 
     # DSI Studio operations
     if software == "DSI Studio":
