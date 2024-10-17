@@ -169,8 +169,8 @@ def init_highres_recon_anatomical_wf(
             run_without_submitting=True,
         )
         workflow.connect([
-            (anat_ingress_node, ds_fs_5tt_hsvs, [("t1_preproc", "source_file")]),
-            (anat_ingress_node, ds_qsiprep_5tt_hsvs, [("t1_preproc", "source_file")]),
+            (anat_ingress_node, ds_fs_5tt_hsvs, [("anat_preproc", "source_file")]),
+            (anat_ingress_node, ds_qsiprep_5tt_hsvs, [("anat_preproc", "source_file")]),
             (create_5tt_hsvs, outputnode, [("out_file", "fs_5tt_hsvs")]),
             (create_5tt_hsvs, ds_fs_5tt_hsvs, [("out_file", "in_file")]),
         ])  # fmt:skip
@@ -187,8 +187,8 @@ def init_highres_recon_anatomical_wf(
             apply_header_to_5tt = pe.Node(TransformHeader(), name="apply_header_to_5tt")
             workflow.connect([
                 (anat_ingress_node, register_fs_to_qsiprep_wf, [
-                    ("t1_preproc", "inputnode.qsiprep_reference_image"),
-                    ("t1_brain_mask", "inputnode.qsiprep_reference_mask"),
+                    ("anat_preproc", "inputnode.qsiprep_reference_image"),
+                    ("anat_brain_mask", "inputnode.qsiprep_reference_mask"),
                 ]),
                 (fs_source, register_fs_to_qsiprep_wf, [
                     (field, "inputnode." + field) for field in FS_FILES_TO_REGISTER
@@ -541,15 +541,15 @@ def init_dwi_recon_anatomical_workflow(
         _exchange_fields(
             FS_FILES_TO_REGISTER
             + [
-                "t1_brain_mask",
-                "t1_preproc",
+                "anat_brain_mask",
+                "anat_preproc",
                 "fs_to_qsiprep_transform_mrtrix",
                 "fs_to_qsiprep_transform_itk",
             ]
         )
 
         # Perform the registration and connect the outputs to buffernode
-        # NOTE: using FreeSurfer "brain" image as t1_preproc and aseg as the brainmask
+        # NOTE: using FreeSurfer "brain" image as anat_preproc and aseg as the brainmask
         has_qsiprep_t1w = True
         register_fs_to_qsiprep_wf = init_register_fs_to_qsiprep_wf(
             use_qsiprep_reference_mask=False,
@@ -563,8 +563,8 @@ def init_dwi_recon_anatomical_workflow(
                 (field, "inputnode." + field) for field in FS_FILES_TO_REGISTER
             ]),
             (register_fs_to_qsiprep_wf, buffernode, [
-                ("outputnode.brain", "t1_preproc"),
-                ("outputnode.aseg", "t1_brain_mask"),
+                ("outputnode.brain", "anat_preproc"),
+                ("outputnode.aseg", "anat_brain_mask"),
                 ("outputnode.fs_to_qsiprep_transform_mrtrix", "fs_to_qsiprep_transform_mrtrix"),
                 ("outputnode.fs_to_qsiprep_transform_itk", "fs_to_qsiprep_transform_itk"),
             ] + [("outputnode." + field, field) for field in FS_FILES_TO_REGISTER],
@@ -608,16 +608,16 @@ def init_dwi_recon_anatomical_workflow(
     #     has_qsiprep_t1w = has_qsiprep_t1w_transforms = True
     #     # Calculate the transforms here:
     #     has_qsiprep_t1w_transforms = True
-    #     _exchange_fields(["t1_2_mni_forward_transform", "t1_2_mni_reverse_transform"])
+    #     _exchange_fields(["anat_to_template_xfm", "template_to_anat_xfm"])
     #     t1_2_mni = pe.Node(
     #         get_t1w_registration_node(
     #             infant_mode, sloppy or not atlas_names, omp_nthreads),
     #         name="t1_2_mni")
     #     workflow.connect([
-    #         (_get_source_node("t1_preproc"), t1_2_mni, [("t1_preproc", "moving_image")]),
+    #         (_get_source_node("anat_preproc"), t1_2_mni, [("anat_preproc", "moving_image")]),
     #         (t1_2_mni, buffernode, [
-    #             ("composite_transform", "t1_2_mni_forward_transform"),
-    #             ("inverse_composite_transform", "t1_2_mni_reverse_transform")
+    #             ("composite_transform", "anat_to_template_xfm"),
+    #             ("inverse_composite_transform", "template_to_anat_xfm")
     #         ])
     #     ])  # fmt:skip
     #     # TODO: add datasinks here
@@ -656,7 +656,7 @@ def init_dwi_recon_anatomical_workflow(
 
         workflow.connect([
             (inputnode, resample_mask, [
-                ("t1_brain_mask", "input_image"),
+                ("anat_brain_mask", "input_image"),
                 ("dwi_ref", "reference_image"),
             ]),
             (resample_mask, buffernode, [("output_image", "dwi_mask")]),
@@ -671,8 +671,8 @@ def init_dwi_recon_anatomical_workflow(
         )
         odf_rois.inputs.input_image = crossing_rois_file
         workflow.connect([
-            (_get_source_node("t1_2_mni_reverse_transform"), odf_rois, [
-                ("t1_2_mni_reverse_transform", "transforms"),
+            (_get_source_node("template_to_anat_xfm"), odf_rois, [
+                ("template_to_anat_xfm", "transforms"),
             ]),
             (inputnode, odf_rois, [("dwi_file", "reference_image")]),
             (odf_rois, buffernode, [("output_image", "odf_rois")]),

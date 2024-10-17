@@ -143,6 +143,79 @@ def collect_participants(bids_dir, participant_label=None, strict=False, bids_va
     return found_label
 
 
+def collect_anatomical_data(
+    layout,
+    subject_id,
+    extras_to_make,
+    needs_t1w_transform,
+    bids_filters=None,
+):
+    """Gather any high-res anatomical data (images, transforms, segmentations) to use
+    in recon workflows.
+
+    This function searches through input data to see what anatomical data is available.
+    The anatomical data may be in a freesurfer directory.
+    """
+    import yaml
+
+    from qsirecon.data import load as load_data
+
+    anat_data = {}
+    status = {}
+
+    freesurfer_dir = config.execution.freesurfer_input
+    infant_mode = config.workflow.infant
+    recon_input_dir = config.execution.bids_dir
+
+    _spec = yaml.safe_load(load_data.readable("io_spec.yaml").read_text())
+    queries = _spec["queries"]["anat"]
+
+    # Apply filters. These may override anything.
+    bids_filters = bids_filters or {}
+    for acq in queries.keys():
+        if acq in bids_filters:
+            queries[acq].update(bids_filters[acq])
+
+    anat_files = {}
+    for name, query in queries.items():
+        files = layout.get(
+            return_type="file",
+            subject=subject_id,
+            **query,
+        )
+        if len(files) == 1:
+            anat_files[name] = files[0]
+        elif len(files) > 1:
+            files_str = "\n\t".join(files)
+            raise ValueError(
+                f"More than one {name} found.\nFiles found:\n\t{files_str}\nQuery: {query}"
+            )
+        else:
+            anat_files[name] = None
+
+    # Identify the found morphometry files.
+    found_files = [k for k, v in anat_files.items() if v is not None]
+    config.loggers.utils.info(
+        (
+            f"Collected anatomical data:\n"
+            f"{yaml.dump(found_files, default_flow_style=False, indent=4)}"
+        ),
+    )
+
+    # Check to see if we have a T1w preprocessed by QSIPrep
+    missing_qsiprep_anats = check_qsiprep_anatomical_outputs(recon_input_dir, subject_id, "T1w")
+    has_qsiprep_t1w = not missing_qsiprep_anats
+    status["has_qsiprep_t1w"] = has_qsiprep_t1w
+    if missing_qsiprep_anats:
+        config.loggers.workflow.info(
+            "Missing T1w QSIPrep outputs found: %s", " ".join(missing_qsiprep_anats)
+        )
+    else:
+        config.loggers.workflow.info("Found usable QSIPrep-preprocessed T1w image and mask.")
+
+    return anat_data
+
+
 def write_derivative_description(
     bids_dir,
     deriv_dir,
