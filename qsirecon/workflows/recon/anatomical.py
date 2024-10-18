@@ -51,10 +51,17 @@ QSIRECON_ANAT_REQUIREMENTS = [
     "sub-{subject_id}/anat/sub-{subject_id}_desc-preproc_T1w.nii.gz",
 ]
 
-QSIRECON_NORMALIZED_ANAT_REQUIREMENTS = [
-    "sub-{subject_id}/anat/sub-{subject_id}_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5",
-    "sub-{subject_id}/anat/sub-{subject_id}_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5",
-]
+if config.workflow.infant:
+    # XXX: Not robust to different cohorts...
+    QSIRECON_NORMALIZED_ANAT_REQUIREMENTS = [
+        "sub-{subject_id}/anat/sub-{subject_id}_from-T1w_to-MNIInfant_mode-image_xfm.h5",
+        "sub-{subject_id}/anat/sub-{subject_id}_from-MNIInfant_to-T1w_mode-image_xfm.h5",
+    ]
+else:
+    QSIRECON_NORMALIZED_ANAT_REQUIREMENTS = [
+        "sub-{subject_id}/anat/sub-{subject_id}_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5",
+        "sub-{subject_id}/anat/sub-{subject_id}_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5",
+    ]
 
 
 def init_highres_recon_anatomical_wf(
