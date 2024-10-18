@@ -23,8 +23,8 @@ from nipype.interfaces.base import (
 )
 from nipype.utils.filemanip import fname_presuffix
 
-from .bids import get_bids_params
 from .. import config
+from .bids import get_bids_params
 
 LOGGER = logging.getLogger("nipype.interface")
 
