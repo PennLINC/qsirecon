@@ -23,8 +23,10 @@ from nipype.interfaces.base import (
 )
 from nipype.utils.filemanip import fname_presuffix
 
-LOGGER = logging.getLogger("nipype.interface")
 from .bids import get_bids_params
+from .. import config
+
+LOGGER = logging.getLogger("nipype.interface")
 
 
 class ScalarMapperInputSpec(BaseInterfaceInputSpec):
@@ -258,9 +260,13 @@ class TemplateMapper(ScalarMapper):
             new_metadata["path"] = output_fname
             if "bids" not in new_metadata:
                 raise Exception(f"incomplete metadata spec {new_metadata}")
-            new_metadata["bids"]["space"] = "MNI152NLin2009cAsym"
+            new_metadata["bids"]["space"] = (
+                "MNIInfant" if config.workflow.infant else "MNI152NLin2009cAsym"
+            )
             resampled_image_metadata.append(new_metadata)
 
         self._results["template_space_scalars"] = resampled_images
         self._results["template_space_scalar_info"] = resampled_image_metadata
-        self._results["template_space"] = "MNI152NLin2009cAsym"
+        self._results["template_space"] = (
+            "MNIInfant" if config.workflow.infant else "MNI152NLin2009cAsym"
+        )
