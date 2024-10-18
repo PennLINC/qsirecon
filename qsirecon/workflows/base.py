@@ -86,7 +86,7 @@ def init_single_subject_recon_wf(subject_id):
     from ..interfaces.reports import AboutSummary, SubjectSummary
     from ..interfaces.utils import GetUnique
     from ..utils.atlases import collect_atlases
-    from ..utils.bids import get_entity
+    from ..utils.bids import collect_anatomical_data, get_entity
     from .recon.anatomical import (
         init_dwi_recon_anatomical_workflow,
         init_highres_recon_anatomical_wf,
@@ -125,15 +125,30 @@ to workflows in *qsirecon*'s documentation]\
 
     # This is here because qsiprep currently only makes one anatomical result per subject
     # regardless of sessions. So process it on its own.
-    anat_data = collect_anatomical_data(subject_id, bids_filters=config.execution.bids_filters)
+    anat_data, status = collect_anatomical_data(
+        layout=config.execution.layout,
+        subject_id=subject_id,
+        extras_to_make=spec.get("anatomical", []),
+        needs_t1w_transform=bool(config.execution.atlases),
+        bids_filters=config.execution.bids_filters,
+    )
+    config.loggers.workflow.info(
+        "Anatomical (T1w) available for recon:\n"
+        f"{yaml.dump(anat_data, default_flow_style=False, indent=4)}"
+    )
+    anat_ingress_node = pe.Node(
+        niu.IdentityInterface(fields=list(anat_data.keys())),
+        name="anat_ingress_node",
+    )
+    for key, value in anat_data.items():
+        anat_ingress_node.inputs.set(key, value)
+
+    #
+
     anat_ingress_node, available_anatomical_data = init_highres_recon_anatomical_wf(
         subject_id=subject_id,
         extras_to_make=spec.get("anatomical", []),
         needs_t1w_transform=bool(config.execution.atlases),
-    )
-    config.loggers.workflow.info(
-        "Anatomical (T1w) available for recon:\n"
-        f"{yaml.dump(available_anatomical_data, default_flow_style=False, indent=4)}"
     )
 
     atlas_configs = {}

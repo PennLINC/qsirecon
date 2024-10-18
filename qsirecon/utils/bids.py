@@ -155,6 +155,31 @@ def collect_anatomical_data(
 
     This function searches through input data to see what anatomical data is available.
     The anatomical data may be in a freesurfer directory.
+
+    Parameters
+    ----------
+    layout : :obj:`bids.layout.BIDSLayout`
+        BIDSLayout object
+    subject_id : :obj:`str`
+        Single subject label
+    extras_to_make : :obj:`list`
+        List of extra anatomical data to make
+    needs_t1w_transform : :obj:`bool`
+        Whether a T1w transform is needed
+    bids_filters : :obj:`dict`, optional
+        BIDS query filters
+
+    Returns
+    -------
+    anat_data : :obj:`dict`
+        Dictionary of anatomical data
+    status : :obj:`dict`
+        Dictionary of status flags
+
+    Notes
+    -----
+    We'll probably want to allow/collect multiple output space
+    transforms in the future.
     """
     import yaml
 
@@ -216,7 +241,7 @@ def collect_anatomical_data(
     else:
         config.loggers.workflow.info("Found usable QSIPrep-preprocessed T1w image and mask.")
 
-    return anat_data
+    return anat_data, status
 
 
 def write_derivative_description(

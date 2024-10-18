@@ -69,6 +69,12 @@ def init_highres_recon_anatomical_wf(
     The anatomical data may be in a freesurfer directory.
     """
     workflow = Workflow(name="recon_anatomical_wf")
+
+    inputnode = pe.Node(
+        niu.IdentityInterface(fields=recon_workflow_input_fields),
+        name="inputnode",
+    )
+
     outputnode = pe.Node(
         niu.IdentityInterface(fields=anatomical_workflow_outputs),
         name="outputnode",
@@ -91,7 +97,7 @@ def init_highres_recon_anatomical_wf(
     status["has_freesurfer"] = subject_freesurfer_path is not None
 
     # If no high-res are available, we're done here
-    if not status["has_qsiprep_t1w"] and subject_freesurfer_path is None:
+    if not status["has_qsiprep_t1w"] and not status["has_freesurfer"]:
         config.loggers.workflow.warning(
             f"No high-res anatomical data available directly in recon inputs for {subject_id}."
         )
@@ -113,8 +119,7 @@ def init_highres_recon_anatomical_wf(
     ])  # fmt:skip
 
     # grab un-coregistered freesurfer images for later use
-    if subject_freesurfer_path is not None:
-        status["has_freesurfer"] = True
+    if status["has_freesurfer"]:
         config.loggers.workflow.info(
             f"Freesurfer directory {subject_freesurfer_path} exists for {subject_id}"
         )
@@ -125,13 +130,10 @@ def init_highres_recon_anatomical_wf(
             ),
             name="fs_source",
         )
-        # workflow.connect([
-        #     (fs_source, outputnode, [
-        #         (field, field) for field in FS_FILES_TO_REGISTER])])  # fmt:skip
 
     # Do we need to calculate anything else on the fly
     if "mrtrix_5tt_hsvs" in extras_to_make:
-        # Check for specific files needed for HSVs.
+        # Check for specific files needed for Hybrid Surface and Volume Segmentation (HSVS).
         missing_fs_hsvs_files = check_hsv_inputs(Path(subject_freesurfer_path))
         if missing_fs_hsvs_files:
             raise Exception(" ".join(missing_fs_hsvs_files) + "are missing: unable to make a HSV.")
