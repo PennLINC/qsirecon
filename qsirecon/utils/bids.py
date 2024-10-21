@@ -187,8 +187,6 @@ def collect_anatomical_data(
 
     infant_mode = config.workflow.infant
 
-    raise Exception(layout.config)
-
     _spec = yaml.safe_load(load_data.readable("io_spec.yaml").read_text())
     queries = _spec["queries"]["anat"]
     if infant_mode:
