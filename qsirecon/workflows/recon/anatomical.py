@@ -99,7 +99,7 @@ def init_highres_recon_anatomical_wf(
 
         workflow.add_nodes([outputnode])
         workflow = clean_datasinks(workflow, qsirecon_suffix)
-        return workflow, status
+        return workflow
 
     config.loggers.workflow.info(
         f"Found high-res anatomical data in preprocessed inputs for {subject_id}."

@@ -128,7 +128,7 @@ to workflows in *QSIRecon*'s documentation]\
         layout=config.execution.layout,
         subject_id=subject_id,
         needs_t1w_transform=bool(config.execution.atlases),
-        bids_filters=config.execution.bids_filters,
+        bids_filters=config.execution.bids_filters or {},
     )
     config.loggers.workflow.info(
         "Anatomical (T1w) data available for recon:\n"
@@ -155,7 +155,7 @@ to workflows in *QSIRecon*'s documentation]\
         # Limit atlases to ones in the specified space.
         xfm_to_anat = anat_data["template_to_anat_xfm"]
         template_space = get_entity(xfm_to_anat, "from")
-        bids_filters = config.execution.bids_filters.copy()
+        bids_filters = (config.execution.bids_filters or {}).copy()
         bids_filters["atlas"]["space"] = template_space
 
         # Collect atlases across datasets, including built-in atlases.
