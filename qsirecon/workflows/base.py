@@ -144,6 +144,7 @@ to workflows in *QSIRecon*'s documentation]\
         status=status,
     )
     for key, value in anat_data.items():
+        config.loggers.workflow.info(f"{key} ({type(key)}): {value} ({type(value)})")
         anat_ingress_node.set_input(key, value)
         workflow.connect([
             (anat_ingress_node, highres_recon_anatomical_wf, [(key, f"inputnode.{key}")]),
