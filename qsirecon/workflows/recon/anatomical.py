@@ -14,11 +14,7 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from pkg_resources import resource_filename as pkgrf
 
 from ... import config
-from ...interfaces.anatomical import (
-    GetTemplate,
-    QSIPrepAnatomicalIngress,
-    VoxelSizeChooser,
-)
+from ...interfaces.anatomical import GetTemplate, VoxelSizeChooser
 from ...interfaces.ants import ConvertTransformFile
 from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.freesurfer import find_fs_path
@@ -43,17 +39,6 @@ HSV_REQUIREMENTS = [
     "surf/lh.pial",
     "surf/rh.white",
     "surf/rh.pial",
-]
-
-# Files that must exist if QSIRecon ran the anatomical workflow
-QSIRECON_ANAT_REQUIREMENTS = [
-    "sub-{subject_id}/anat/sub-{subject_id}_desc-brain_mask.nii.gz",
-    "sub-{subject_id}/anat/sub-{subject_id}_desc-preproc_T1w.nii.gz",
-]
-
-QSIRECON_NORMALIZED_ANAT_REQUIREMENTS = [
-    "sub-{subject_id}/anat/sub-{subject_id}_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5",
-    "sub-{subject_id}/anat/sub-{subject_id}_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5",
 ]
 
 
@@ -99,7 +84,7 @@ def init_highres_recon_anatomical_wf(
 
         workflow.add_nodes([outputnode])
         workflow = clean_datasinks(workflow, qsirecon_suffix)
-        return workflow
+        return workflow, status
 
     config.loggers.workflow.info(
         f"Found high-res anatomical data in preprocessed inputs for {subject_id}."
@@ -205,56 +190,7 @@ def init_highres_recon_anatomical_wf(
             workflow.__desc__ += "A hybrid surface/volume segmentation was created [Smith 2020]."
 
     workflow = clean_datasinks(workflow, qsirecon_suffix)
-    return workflow
-
-
-def gather_qsiprep_anatomical_data(subject_id):
-    """
-    Gathers the anatomical data from a QSIPrep input and finds which files are available.
-
-
-    Parameters
-    ----------
-    subject_id : str
-        List of subject labels
-
-    """
-    status = {
-        "has_qsiprep_5tt_hsvs": False,
-        "has_freesurfer_5tt_hsvs": False,
-        "has_freesurfer": False,
-    }
-    recon_input_dir = config.execution.bids_dir
-    # Check to see if we have a T1w preprocessed by QSIPrep
-    missing_qsiprep_anats = check_qsiprep_anatomical_outputs(recon_input_dir, subject_id, "T1w")
-    has_qsiprep_t1w = not missing_qsiprep_anats
-    status["has_qsiprep_t1w"] = has_qsiprep_t1w
-    if missing_qsiprep_anats:
-        config.loggers.workflow.info(
-            "Missing T1w QSIPrep outputs found: %s", " ".join(missing_qsiprep_anats)
-        )
-    else:
-        config.loggers.workflow.info("Found usable QSIPrep-preprocessed T1w image and mask.")
-    anat_ingress = pe.Node(
-        QSIPrepAnatomicalIngress(subject_id=subject_id, recon_input_dir=recon_input_dir),
-        name="qsiprep_anat_ingress",
-    )
-
-    # Check if the T1w-to-MNI transforms are in the QSIRecon outputs
-    missing_qsiprep_transforms = check_qsiprep_anatomical_outputs(
-        recon_input_dir,
-        subject_id,
-        "transforms",
-    )
-    has_qsiprep_t1w_transforms = not missing_qsiprep_transforms
-    status["has_qsiprep_t1w_transforms"] = has_qsiprep_t1w_transforms
-
-    if missing_qsiprep_transforms:
-        config.loggers.workflow.info(
-            "Missing T1w QSIPrep outputs: %s", " ".join(missing_qsiprep_transforms)
-        )
-
-    return anat_ingress, status
+    return workflow, status
 
 
 def check_hsv_inputs(subj_fs_path):
@@ -281,35 +217,6 @@ def _check_zipped_unzipped(path_to_check):
             exists = True
     config.loggers.workflow.info(f"CHECKING {path_to_check}: {exists}")
     return exists
-
-
-def check_qsiprep_anatomical_outputs(recon_input_dir, subject_id, anat_type):
-    """Determines whether an aligned T1w exists in a qsiprep derivatives directory.
-
-    It is possible that:
-      - ``--dwi-only`` was used, in which case there is NO T1w available
-      - ``--skip-anat-based-spatial-normalization``, there is a T1w but no transform to a template
-      - Normal mode, there is a T1w and a transform to template space.
-    """
-    missing = []
-    recon_input_path = Path(recon_input_dir)
-    to_check = (
-        QSIRECON_ANAT_REQUIREMENTS if anat_type == "T1w" else QSIRECON_NORMALIZED_ANAT_REQUIREMENTS
-    )
-
-    for requirement in to_check:
-        requirement = requirement.format(subject_id=subject_id)
-        t1_version = recon_input_path / requirement
-        if _check_zipped_unzipped(t1_version):
-            continue
-
-        # Try to see if a T2w version is present
-        t2w_version = recon_input_path / requirement.replace("_T1w", "_T2w")
-        if _check_zipped_unzipped(t2w_version):
-            continue
-        missing.append(str(t1_version))
-
-    return missing
 
 
 def init_register_fs_to_qsiprep_wf(

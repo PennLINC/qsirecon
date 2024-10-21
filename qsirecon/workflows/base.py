@@ -138,7 +138,7 @@ to workflows in *QSIRecon*'s documentation]\
         niu.IdentityInterface(fields=list(anat_data.keys())),
         name="anat_ingress_node",
     )
-    highres_recon_anatomical_wf = init_highres_recon_anatomical_wf(
+    highres_recon_anatomical_wf, status = init_highres_recon_anatomical_wf(
         subject_id=subject_id,
         extras_to_make=spec.get("anatomical", []),
         status=status,
@@ -238,7 +238,7 @@ to workflows in *QSIRecon*'s documentation]\
                 needs_t1w_transform=bool(config.execution.atlases),
                 extras_to_make=spec.get("anatomical", []),
                 name=f"{wf_name}_dwi_specific_anat_wf",
-                **anat_data,
+                **status,
             )
         )
 
