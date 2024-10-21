@@ -217,11 +217,10 @@ def collect_anatomical_data(
             anat_files[name] = None
 
     # Identify the found anatomical files.
-    found_files = [k for k, v in anat_files.items() if v is not None]
     config.loggers.utils.info(
         (
             f"Collected anatomical data:\n"
-            f"{yaml.dump(found_files, default_flow_style=False, indent=4)}"
+            f"{yaml.dump(anat_files, default_flow_style=False, indent=4)}"
         ),
     )
 
