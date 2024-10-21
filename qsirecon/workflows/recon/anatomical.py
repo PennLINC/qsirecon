@@ -60,7 +60,7 @@ QSIRECON_NORMALIZED_ANAT_REQUIREMENTS = [
 def init_highres_recon_anatomical_wf(
     subject_id,
     extras_to_make,
-    needs_t1w_transform,
+    status,
 ):
     """Gather any high-res anatomical data (images, transforms, segmentations) to use
     in recon workflows.
@@ -80,19 +80,11 @@ def init_highres_recon_anatomical_wf(
         name="outputnode",
     )
     workflow.__desc__ = ""
-    # "Gather" the input data. ``status`` is a dict that reflects which anatomical data
-    # are present. The anat_ingress_node is a nipype node that ensures that qsiprep-style
-    # anatomical data is available. In the case where ``pipeline_source`` is not "qsiprep",
-    # the data is converted in this node to be qsiprep-like.
-    freesurfer_dir = config.execution.freesurfer_input
     qsirecon_suffix = ""
-    anat_ingress_node, status = gather_qsiprep_anatomical_data(subject_id)
-    anat_ingress_node.inputs.infant_mode = config.workflow.infant
-    if needs_t1w_transform and not status["has_qsiprep_t1w_transforms"]:
-        raise Exception("Cannot compute to-template")
 
     # If there is no high-res anat data in the inputs there may still be an image available
     # from freesurfer. Check for it:
+    freesurfer_dir = config.execution.freesurfer_input
     subject_freesurfer_path = find_fs_path(freesurfer_dir, subject_id)
     status["has_freesurfer"] = subject_freesurfer_path is not None
 
@@ -113,7 +105,7 @@ def init_highres_recon_anatomical_wf(
         f"Found high-res anatomical data in preprocessed inputs for {subject_id}."
     )
     workflow.connect([
-        (anat_ingress_node, outputnode, [
+        (inputnode, outputnode, [
             (name, name) for name in qsiprep_highres_anatomical_ingressed_fields
         ]),
     ])  # fmt:skip
@@ -171,8 +163,8 @@ def init_highres_recon_anatomical_wf(
             run_without_submitting=True,
         )
         workflow.connect([
-            (anat_ingress_node, ds_fs_5tt_hsvs, [("anat_preproc", "source_file")]),
-            (anat_ingress_node, ds_qsiprep_5tt_hsvs, [("anat_preproc", "source_file")]),
+            (inputnode, ds_fs_5tt_hsvs, [("anat_preproc", "source_file")]),
+            (inputnode, ds_qsiprep_5tt_hsvs, [("anat_preproc", "source_file")]),
             (create_5tt_hsvs, outputnode, [("out_file", "fs_5tt_hsvs")]),
             (create_5tt_hsvs, ds_fs_5tt_hsvs, [("out_file", "in_file")]),
         ])  # fmt:skip
@@ -188,19 +180,19 @@ def init_highres_recon_anatomical_wf(
             )
             apply_header_to_5tt = pe.Node(TransformHeader(), name="apply_header_to_5tt")
             workflow.connect([
-                (anat_ingress_node, register_fs_to_qsiprep_wf, [
+                (inputnode, register_fs_to_qsiprep_wf, [
                     ("anat_preproc", "inputnode.qsiprep_reference_image"),
                     ("anat_brain_mask", "inputnode.qsiprep_reference_mask"),
                 ]),
                 (fs_source, register_fs_to_qsiprep_wf, [
-                    (field, "inputnode." + field) for field in FS_FILES_TO_REGISTER
+                    (field, f"inputnode.{field}") for field in FS_FILES_TO_REGISTER
                 ]),
                 (register_fs_to_qsiprep_wf, outputnode, [
                     ("outputnode.fs_to_qsiprep_transform_mrtrix",
                         "fs_to_qsiprep_transform_mrtrix"),
                     ("outputnode.fs_to_qsiprep_transform_itk", "fs_to_qsiprep_transform_itk")
                 ] + [
-                    ("outputnode." + field, field) for field in FS_FILES_TO_REGISTER
+                    (f"outputnode.{field}", field) for field in FS_FILES_TO_REGISTER
                 ]),
                 (create_5tt_hsvs, apply_header_to_5tt, [("out_file", "in_image")]),
                 (register_fs_to_qsiprep_wf, apply_header_to_5tt, [
@@ -763,7 +755,7 @@ def init_dwi_recon_anatomical_workflow(
                     (inputnode, workflow.get_node(node), [("dwi_file", "source_file")]),
                 ])  # fmt:skip
 
-    if "mrtrix_5tt_hsv" in extras_to_make and not has_qsiprep_5tt_hsvs:
+    if "mrtrix_5tt_hsvs" in extras_to_make and not has_qsiprep_5tt_hsvs:
         raise Exception("Unable to create a 5tt HSV image given input data.")
 
     # Directly connect anything from the inputs that we haven't created here

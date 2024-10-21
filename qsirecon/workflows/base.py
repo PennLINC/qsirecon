@@ -106,13 +106,12 @@ which is based on *Nipype* {nipype_ver}
 """
     workflow.__postdesc__ = f"""
 
-Many internal operations of *qsirecon* use
+Many internal operations of *QSIRecon* use
 *Nilearn* {nilearn_ver} [@nilearn, RRID:SCR_001362] and
 *Dipy* {dipy_ver}[@dipy].
 For more details of the pipeline, see [the section corresponding
-to workflows in *qsirecon*'s documentation]\
-(https://qsirecon.readthedocs.io/en/latest/workflows.html \
-"qsirecon's documentation").
+to workflows in *QSIRecon*'s documentation]\
+(https://qsirecon.readthedocs.io/en/latest/workflows.html).
 
 
 ### References
@@ -128,33 +127,32 @@ to workflows in *qsirecon*'s documentation]\
     anat_data, status = collect_anatomical_data(
         layout=config.execution.layout,
         subject_id=subject_id,
-        extras_to_make=spec.get("anatomical", []),
         needs_t1w_transform=bool(config.execution.atlases),
         bids_filters=config.execution.bids_filters,
     )
     config.loggers.workflow.info(
-        "Anatomical (T1w) available for recon:\n"
+        "Anatomical (T1w) data available for recon:\n"
         f"{yaml.dump(anat_data, default_flow_style=False, indent=4)}"
     )
     anat_ingress_node = pe.Node(
         niu.IdentityInterface(fields=list(anat_data.keys())),
         name="anat_ingress_node",
     )
-    for key, value in anat_data.items():
-        anat_ingress_node.inputs.set(key, value)
-
-    #
-
-    anat_ingress_node, available_anatomical_data = init_highres_recon_anatomical_wf(
+    highres_recon_anatomical_wf = init_highres_recon_anatomical_wf(
         subject_id=subject_id,
         extras_to_make=spec.get("anatomical", []),
-        needs_t1w_transform=bool(config.execution.atlases),
+        status=status,
     )
+    for key, value in anat_data.items():
+        anat_ingress_node.inputs.set(key, value)
+        workflow.connect([
+            (anat_ingress_node, highres_recon_anatomical_wf, [(key, f"inputnode.{key}")]),
+        ])  # fmt:skip
 
     atlas_configs = {}
     if config.execution.atlases:
         # Limit atlases to ones in the specified space.
-        xfm_to_anat = available_anatomical_data["anat_to_template_xfm"]
+        xfm_to_anat = anat_data["template_to_anat_xfm"]
         template_space = get_entity(xfm_to_anat, "from")
         bids_filters = config.execution.bids_filters.copy()
         bids_filters["atlas"]["space"] = template_space
@@ -232,7 +230,6 @@ to workflows in *qsirecon*'s documentation]\
         ])  # fmt:skip
 
         # Create scan-specific anatomical data (mask, atlas configs, odf ROIs for reports)
-        print(available_anatomical_data)
         dwi_individual_anatomical_wfs[dwi_file], dwi_available_anatomical_data = (
             init_dwi_recon_anatomical_workflow(
                 atlas_configs=atlas_configs,
@@ -240,7 +237,7 @@ to workflows in *qsirecon*'s documentation]\
                 needs_t1w_transform=bool(config.execution.atlases),
                 extras_to_make=spec.get("anatomical", []),
                 name=f"{wf_name}_dwi_specific_anat_wf",
-                **available_anatomical_data,
+                **anat_data,
             )
         )
 

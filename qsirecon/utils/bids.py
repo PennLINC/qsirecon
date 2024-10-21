@@ -146,7 +146,6 @@ def collect_participants(bids_dir, participant_label=None, strict=False, bids_va
 def collect_anatomical_data(
     layout,
     subject_id,
-    extras_to_make,
     needs_t1w_transform,
     bids_filters=None,
 ):
@@ -162,8 +161,6 @@ def collect_anatomical_data(
         BIDSLayout object
     subject_id : :obj:`str`
         Single subject label
-    extras_to_make : :obj:`list`
-        List of extra anatomical data to make
     needs_t1w_transform : :obj:`bool`
         Whether a T1w transform is needed
     bids_filters : :obj:`dict`, optional
@@ -188,9 +185,7 @@ def collect_anatomical_data(
     anat_data = {}
     status = {}
 
-    freesurfer_dir = config.execution.freesurfer_input
     infant_mode = config.workflow.infant
-    recon_input_dir = config.execution.bids_dir
 
     _spec = yaml.safe_load(load_data.readable("io_spec.yaml").read_text())
     queries = _spec["queries"]["anat"]
@@ -230,16 +225,21 @@ def collect_anatomical_data(
         ),
     )
 
-    # Check to see if we have a T1w preprocessed by QSIPrep
-    missing_qsiprep_anats = check_qsiprep_anatomical_outputs(recon_input_dir, subject_id, "T1w")
-    has_qsiprep_t1w = not missing_qsiprep_anats
-    status["has_qsiprep_t1w"] = has_qsiprep_t1w
-    if missing_qsiprep_anats:
-        config.loggers.workflow.info(
-            "Missing T1w QSIPrep outputs found: %s", " ".join(missing_qsiprep_anats)
-        )
-    else:
-        config.loggers.workflow.info("Found usable QSIPrep-preprocessed T1w image and mask.")
+    status["has_qsiprep_t1w"] = True
+    if not anat_files["anat_preproc"] or not anat_files["anat_brain_mask"]:
+        config.loggers.utils.warning("No preprocessed anatomical image or brain mask found.")
+        status["has_qsiprep_t1w"] = False
+
+    status["has_qsiprep_t1w_transforms"] = True
+    if not anat_files["anat_to_template_xfm"] or not anat_files["template_to_anat_xfm"]:
+        if needs_t1w_transform:
+            raise ValueError(
+                "Reconstruction workflow requires a T1wACPC-to-template transform. "
+                "None were found."
+            )
+
+        config.loggers.utils.warning("No anat-to-template or template-to-anat transforms found.")
+        status["has_qsiprep_t1w_transforms"] = False
 
     return anat_data, status
 
