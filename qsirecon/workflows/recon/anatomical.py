@@ -205,7 +205,7 @@ def init_highres_recon_anatomical_wf(
             workflow.__desc__ += "A hybrid surface/volume segmentation was created [Smith 2020]."
 
     workflow = clean_datasinks(workflow, qsirecon_suffix)
-    return workflow, status
+    return workflow
 
 
 def gather_qsiprep_anatomical_data(subject_id):
