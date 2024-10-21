@@ -199,7 +199,6 @@ def collect_anatomical_data(
         if acq in bids_filters:
             queries[acq].update(bids_filters[acq])
 
-    anat_files = {}
     for name, query in queries.items():
         files = layout.get(
             return_type="file",
@@ -207,30 +206,30 @@ def collect_anatomical_data(
             **query,
         )
         if len(files) == 1:
-            anat_files[name] = files[0]
+            anat_data[name] = files[0]
         elif len(files) > 1:
             files_str = "\n\t".join(files)
             raise ValueError(
                 f"More than one {name} found.\nFiles found:\n\t{files_str}\nQuery: {query}"
             )
         else:
-            anat_files[name] = None
+            anat_data[name] = None
 
     # Identify the found anatomical files.
     config.loggers.utils.info(
         (
             f"Collected anatomical data:\n"
-            f"{yaml.dump(anat_files, default_flow_style=False, indent=4)}"
+            f"{yaml.dump(anat_data, default_flow_style=False, indent=4)}"
         ),
     )
 
     status["has_qsiprep_t1w"] = True
-    if not anat_files["anat_preproc"] or not anat_files["anat_brain_mask"]:
+    if not anat_data["anat_preproc"] or not anat_data["anat_brain_mask"]:
         config.loggers.utils.warning("No preprocessed anatomical image or brain mask found.")
         status["has_qsiprep_t1w"] = False
 
     status["has_qsiprep_t1w_transforms"] = True
-    if not anat_files["anat_to_template_xfm"] or not anat_files["template_to_anat_xfm"]:
+    if not anat_data["anat_to_template_xfm"] or not anat_data["template_to_anat_xfm"]:
         if needs_t1w_transform:
             raise ValueError(
                 "Reconstruction workflow requires a T1wACPC-to-template transform. "
