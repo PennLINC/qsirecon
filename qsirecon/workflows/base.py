@@ -156,6 +156,7 @@ to workflows in *QSIRecon*'s documentation]\
         xfm_to_anat = anat_data["template_to_anat_xfm"]
         template_space = get_entity(xfm_to_anat, "from")
         bids_filters = (config.execution.bids_filters or {}).copy()
+        bids_filters["atlas"] = bids_filters.get("atlas", {})
         bids_filters["atlas"]["space"] = template_space
 
         # Collect atlases across datasets, including built-in atlases.
