@@ -190,8 +190,8 @@ def collect_anatomical_data(
     _spec = yaml.safe_load(load_data.readable("io_spec.yaml").read_text())
     queries = _spec["queries"]["anat"]
     if infant_mode:
-        queries["anat_to_template_xfm"]["from"] = "MNIInfant"
-        queries["template_to_anat_xfm"]["to"] = "MNIInfant"
+        queries["anat_to_template_xfm"]["to"] = "MNIInfant"
+        queries["template_to_anat_xfm"]["from"] = "MNIInfant"
 
     # Apply filters. These may override anything.
     bids_filters = bids_filters or {}

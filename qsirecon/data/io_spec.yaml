@@ -75,7 +75,7 @@ queries:
             mode: image
             suffix: xfm
             extension: .txt
-        anat_to_template_xfm:
+        template_to_anat_xfm:
             datatype: anat
             from: MNI152NLin2009cAsym
             to:
@@ -84,7 +84,7 @@ queries:
             mode: image
             suffix: xfm
             extension: .h5
-        template_to_anat_xfm:
+        anat_to_template_xfm:
             datatype: anat
             from:
             - T1w
