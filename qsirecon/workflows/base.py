@@ -281,7 +281,7 @@ to workflows in *QSIRecon*'s documentation]\
             ]),
 
             (anat_ingress_nodes[dwi_file], dwi_individual_anatomical_wfs[dwi_file], [
-                (f"outputnode.{trait}", f"inputnode.{trait}")
+                (trait, f"inputnode.{trait}")
                 for trait in anatomical_workflow_outputs
             ]),
         ])  # fmt:skip
