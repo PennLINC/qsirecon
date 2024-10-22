@@ -112,7 +112,7 @@ class WarpConnectivityAtlases(SimpleInterface):
                 output_mif,
                 output_orig_txt,
                 output_mif_txt,
-                atlas_config["label"],
+                atlas_config["labels"],
             )
 
         self._results["atlas_configs"] = atlas_configs
