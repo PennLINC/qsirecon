@@ -207,11 +207,10 @@ to workflows in *QSIRecon*'s documentation]\
 
     # create a processing pipeline for the dwis in each session
     dwi_recon_wfs = {}
-    dwi_individual_anatomical_wfs = {}
+    dwi_anat_wfs = {}
     recon_full_inputs = {}
     dwi_ingress_nodes = {}
     anat_ingress_nodes = {}
-    print(dwi_recon_inputs)
     dwi_files = [dwi_input["bids_dwi_file"] for dwi_input in dwi_recon_inputs]
     for i_run, dwi_input in enumerate(dwi_recon_inputs):
         dwi_file = dwi_input["bids_dwi_file"]
@@ -224,6 +223,8 @@ to workflows in *QSIRecon*'s documentation]\
         )
         anat_ingress_nodes[dwi_file] = anat_ingress_node
 
+        assert "brain" in anat_ingress_node.inputs.editable_traits()
+
         # Aggregate the anatomical data from all the dwi files
         workflow.connect([
             (anat_ingress_nodes[dwi_file], aggregate_anatomical_nodes, [
@@ -232,16 +233,15 @@ to workflows in *QSIRecon*'s documentation]\
         ])  # fmt:skip
 
         # Create scan-specific anatomical data (mask, atlas configs, odf ROIs for reports)
-        dwi_individual_anatomical_wfs[dwi_file], dwi_available_anatomical_data = (
-            init_dwi_recon_anatomical_workflow(
-                atlas_configs=atlas_configs,
-                prefer_dwi_mask=False,
-                needs_t1w_transform=bool(config.execution.atlases),
-                extras_to_make=spec.get("anatomical", []),
-                name=f"{wf_name}_dwi_specific_anat_wf",
-                **status,
-            )
+        dwi_anat_wfs[dwi_file], dwi_available_anatomical_data = init_dwi_recon_anatomical_workflow(
+            atlas_configs=atlas_configs,
+            prefer_dwi_mask=False,
+            needs_t1w_transform=bool(config.execution.atlases),
+            extras_to_make=spec.get("anatomical", []),
+            name=f"{wf_name}_dwi_specific_anat_wf",
+            **status,
         )
+        assert "brain" in dwi_anat_wfs[dwi_file].inputnode.inputs.editable_traits()
 
         # This node holds all the inputs that will go to the recon workflow.
         # It is the definitive place to check what the input files are
@@ -265,13 +265,13 @@ to workflows in *QSIRecon*'s documentation]\
             ]),
 
             # Session-specific anatomical data
-            (dwi_ingress_nodes[dwi_file], dwi_individual_anatomical_wfs[dwi_file], [
+            (dwi_ingress_nodes[dwi_file], dwi_anat_wfs[dwi_file], [
                 (trait, f"inputnode.{trait}") for trait in qsiprep_output_names
             ]),
 
             # subject dwi-specific anatomical to a special node in recon_full_inputs so
             # we have a record of what went in. Otherwise it would be lost in an IdentityInterface
-            (dwi_individual_anatomical_wfs[dwi_file], recon_full_inputs[dwi_file], [
+            (dwi_anat_wfs[dwi_file], recon_full_inputs[dwi_file], [
                 (f"outputnode.{trait}", trait) for trait in recon_workflow_anatomical_input_fields
             ]),
 
@@ -280,7 +280,7 @@ to workflows in *QSIRecon*'s documentation]\
                 (trait, f"inputnode.{trait}") for trait in recon_workflow_input_fields
             ]),
 
-            (anat_ingress_nodes[dwi_file], dwi_individual_anatomical_wfs[dwi_file], [
+            (anat_ingress_nodes[dwi_file], dwi_anat_wfs[dwi_file], [
                 (trait, f"inputnode.{trait}")
                 for trait in anatomical_workflow_outputs
             ]),
