@@ -205,13 +205,15 @@ to workflows in *QSIRecon*'s documentation]\
         name="aggregate_anatomical_nodes",
     )
 
+    assert "brain" in anat_ingress_node.inputs.keys()
+
     # create a processing pipeline for the dwis in each session
     dwi_recon_wfs = {}
-    dwi_individual_anatomical_wfs = {}
+    dwi_anat_wfs = {}
     recon_full_inputs = {}
     dwi_ingress_nodes = {}
     anat_ingress_nodes = {}
-    print(dwi_recon_inputs)
+
     dwi_files = [dwi_input["bids_dwi_file"] for dwi_input in dwi_recon_inputs]
     for i_run, dwi_input in enumerate(dwi_recon_inputs):
         dwi_file = dwi_input["bids_dwi_file"]
@@ -232,7 +234,7 @@ to workflows in *QSIRecon*'s documentation]\
         ])  # fmt:skip
 
         # Create scan-specific anatomical data (mask, atlas configs, odf ROIs for reports)
-        dwi_individual_anatomical_wfs[dwi_file], dwi_available_anatomical_data = (
+        dwi_anat_wfs[dwi_file], dwi_available_anatomical_data = (
             init_dwi_recon_anatomical_workflow(
                 atlas_configs=atlas_configs,
                 prefer_dwi_mask=False,
@@ -258,33 +260,28 @@ to workflows in *QSIRecon*'s documentation]\
         )
 
         # Connect the collected diffusion data (gradients, etc) to the inputnode
-        workflow.connect([
-            # The dwi data
-            (dwi_ingress_nodes[dwi_file], recon_full_inputs[dwi_file], [
-                (trait, trait) for trait in qsiprep_output_names
-            ]),
-
-            # Session-specific anatomical data
-            (dwi_ingress_nodes[dwi_file], dwi_individual_anatomical_wfs[dwi_file], [
-                (trait, f"inputnode.{trait}") for trait in qsiprep_output_names
-            ]),
-
-            # subject dwi-specific anatomical to a special node in recon_full_inputs so
-            # we have a record of what went in. Otherwise it would be lost in an IdentityInterface
-            (dwi_individual_anatomical_wfs[dwi_file], recon_full_inputs[dwi_file], [
-                (f"outputnode.{trait}", trait) for trait in recon_workflow_anatomical_input_fields
-            ]),
-
-            # send the recon_full_inputs to the dwi recon workflow
-            (recon_full_inputs[dwi_file], dwi_recon_wfs[dwi_file], [
-                (trait, f"inputnode.{trait}") for trait in recon_workflow_input_fields
-            ]),
-
-            (anat_ingress_nodes[dwi_file], dwi_individual_anatomical_wfs[dwi_file], [
-                (trait, f"inputnode.{trait}")
-                for trait in anatomical_workflow_outputs
-            ]),
-        ])  # fmt:skip
+        for trait in qsiprep_output_names:
+            workflow.connect([
+                # The dwi data
+                (dwi_ingress_nodes[dwi_file], recon_full_inputs[dwi_file], [(trait, trait)]),
+                # Session-specific anatomical data
+                (dwi_ingress_nodes[dwi_file], dwi_anat_wfs[dwi_file], [
+                    (trait, f"inputnode.{trait}"),
+                ]),
+                # subject dwi-specific anatomical to a special node in recon_full_inputs so
+                # we have a record of what went in.
+                # Otherwise it would be lost in an IdentityInterface
+                (dwi_anat_wfs[dwi_file], recon_full_inputs[dwi_file], [
+                    (f"outputnode.{trait}", trait),
+                ]),
+                # send the recon_full_inputs to the dwi recon workflow
+                (recon_full_inputs[dwi_file], dwi_recon_wfs[dwi_file], [
+                    (trait, f"inputnode.{trait}"),
+                ]),
+                (anat_ingress_nodes[dwi_file], dwi_anat_wfs[dwi_file], [
+                    (trait, f"inputnode.{trait}"),
+                ]),
+            ])  # fmt:skip
 
     # Preprocessing of anatomical data (includes possible registration template)
     dwi_basename = fix_multi_T1w_source_name(dwi_files)
