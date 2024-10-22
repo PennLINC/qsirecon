@@ -72,24 +72,24 @@ class WarpConnectivityAtlases(SimpleInterface):
         resample_commands = []
         for i_atlas, (atlas_name, atlas_config) in enumerate(atlas_configs.items()):
             output_name = fname_presuffix(
-                atlas_config["file"],
+                atlas_config["image"],
                 newpath=runtime.cwd,
                 suffix="_to_dwi",
             )
             output_mif = fname_presuffix(
-                atlas_config["file"],
+                atlas_config["image"],
                 newpath=runtime.cwd,
                 suffix="_to_dwi.mif",
                 use_ext=False,
             )
             output_mif_txt = fname_presuffix(
-                atlas_config["file"],
+                atlas_config["image"],
                 newpath=runtime.cwd,
                 suffix="_mrtrixlabels.txt",
                 use_ext=False,
             )
             output_orig_txt = fname_presuffix(
-                atlas_config["file"],
+                atlas_config["image"],
                 newpath=runtime.cwd,
                 suffix="_origlabels.txt",
                 use_ext=False,
@@ -101,7 +101,7 @@ class WarpConnectivityAtlases(SimpleInterface):
             atlas_configs[atlas_name]["mrtrix_lut"] = output_orig_txt
             resample_commands.append(
                 _resample_atlas(
-                    input_atlas=atlas_config["file"],
+                    input_atlas=atlas_config["image"],
                     output_atlas=output_name,
                     transform=transforms[i_atlas],
                     ref_image=self.inputs.reference_image,
