@@ -109,6 +109,7 @@ def init_highres_recon_anatomical_wf(
         )
 
     # Do we need to calculate anything else on the fly
+    status["has_freesurfer_5tt_hsvs"] = False
     if "mrtrix_5tt_hsvs" in extras_to_make:
         # Check for specific files needed for Hybrid Surface and Volume Segmentation (HSVS).
         missing_fs_hsvs_files = check_hsv_inputs(Path(subject_freesurfer_path))
@@ -155,6 +156,7 @@ def init_highres_recon_anatomical_wf(
         ])  # fmt:skip
 
         # Transform the 5tt image so it's registered to the QSIRecon AC-PC T1w
+        status["has_qsiprep_5tt_hsvs"] = False
         if status["has_qsiprep_t1w"]:
             config.loggers.workflow.info(
                 "HSVS 5tt imaged will be registered to the QSIRecon T1w image."
