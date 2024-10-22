@@ -227,7 +227,7 @@ to workflows in *QSIRecon*'s documentation]\
         # Aggregate the anatomical data from all the dwi files
         workflow.connect([
             (anat_ingress_nodes[dwi_file], aggregate_anatomical_nodes, [
-                ("outputnode.anat_preproc", f"in{i_run + 1}"),
+                ("anat_preproc", f"in{i_run + 1}"),
             ]),
         ])  # fmt:skip
 
