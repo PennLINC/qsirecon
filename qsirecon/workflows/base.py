@@ -239,7 +239,6 @@ to workflows in *QSIRecon*'s documentation]\
             name=f"{wf_name}_dwi_specific_anat_wf",
             **status,
         )
-        assert "brain" in dwi_anat_wfs[dwi_file].inputnode.inputs.editable_traits()
 
         # This node holds all the inputs that will go to the recon workflow.
         # It is the definitive place to check what the input files are
