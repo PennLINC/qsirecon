@@ -60,19 +60,17 @@ class WarpConnectivityAtlases(SimpleInterface):
 
     def _run_interface(self, runtime):
         if self.inputs.space == "T1w":
-            if not all(
-                os.path.isfile(cfg["xfm_to_anat"]) for cfg in self.inputs.atlas_configs.values()
-            ):
-                raise Exception("No standard to T1w transform found in anatomical directory.")
-            else:
-                transform = self.inputs.forward_transform
+            transforms = [cfg["xfm_to_anat"] for cfg in self.inputs.atlas_configs.values()]
+            if not all(os.path.isfile(transform) for transform in transforms):
+                raise ValueError("No standard to T1w transform found in anatomical directory.")
+
         else:
-            transform = "identity"
+            transforms = ["identity"] * len(self.inputs.atlas_configs)
 
         # Transform atlases to match the DWI data
         atlas_configs = self.inputs.atlas_configs.copy()
         resample_commands = []
-        for atlas_name, atlas_config in atlas_configs.items():
+        for i_atlas, (atlas_name, atlas_config) in enumerate(atlas_configs.items()):
             output_name = fname_presuffix(
                 atlas_config["file"],
                 newpath=runtime.cwd,
@@ -105,7 +103,7 @@ class WarpConnectivityAtlases(SimpleInterface):
                 _resample_atlas(
                     input_atlas=atlas_config["file"],
                     output_atlas=output_name,
-                    transform=transform,
+                    transform=transforms[i_atlas],
                     ref_image=self.inputs.reference_image,
                 )
             )
