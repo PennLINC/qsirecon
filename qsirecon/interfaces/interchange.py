@@ -1,3 +1,4 @@
+import yaml
 from nipype.interfaces.base import (
     BaseInterfaceInputSpec,
     SimpleInterface,
@@ -5,7 +6,7 @@ from nipype.interfaces.base import (
     traits,
 )
 
-from qsirecon.interfaces.anatomical import QSIPrepAnatomicalIngress
+from qsirecon.data import load as load_data
 from qsirecon.interfaces.ingress import QSIPrepDWIIngress
 
 # Anatomical (t1w/t2w) slots
@@ -24,9 +25,8 @@ CREATEABLE_ANATOMICAL_OUTPUTS = [
 ]
 
 # These come directly from QSIPrep outputs. They're aligned to the DWIs in AC-PC
-qsiprep_highres_anatomical_ingressed_fields = (
-    QSIPrepAnatomicalIngress.output_spec.class_editable_traits()
-)
+_spec = yaml.safe_load(load_data.readable("io_spec.yaml").read_text())
+qsiprep_highres_anatomical_ingressed_fields = _spec["queries"]["anat"].keys()
 
 # The init_recon_anatomical anatomical workflow can create additional
 # anatomical files (segmentations/masks/etc) that can be used downstream.

@@ -210,7 +210,7 @@ to workflows in *QSIRecon*'s documentation]\
     dwi_anat_wfs = {}
     recon_full_inputs = {}
     dwi_ingress_nodes = {}
-    anat_ingress_nodes = {}
+    anat_ingress_wfs = {}
     dwi_files = [dwi_input["bids_dwi_file"] for dwi_input in dwi_recon_inputs]
     for i_run, dwi_input in enumerate(dwi_recon_inputs):
         dwi_file = dwi_input["bids_dwi_file"]
@@ -221,14 +221,12 @@ to workflows in *QSIRecon*'s documentation]\
             QSIPrepDWIIngress(dwi_file=dwi_file),
             name=f"{wf_name}_ingressed_dwi_data",
         )
-        anat_ingress_nodes[dwi_file] = anat_ingress_node
-
-        assert "brain" in anat_ingress_node.inputs.editable_traits()
+        anat_ingress_wfs[dwi_file] = highres_recon_anatomical_wf
 
         # Aggregate the anatomical data from all the dwi files
         workflow.connect([
-            (anat_ingress_nodes[dwi_file], aggregate_anatomical_nodes, [
-                ("anat_preproc", f"in{i_run + 1}"),
+            (anat_ingress_wfs[dwi_file], aggregate_anatomical_nodes, [
+                ("outputnode.anat_preproc", f"in{i_run + 1}"),
             ]),
         ])  # fmt:skip
 
@@ -280,8 +278,8 @@ to workflows in *QSIRecon*'s documentation]\
                 (trait, f"inputnode.{trait}") for trait in recon_workflow_input_fields
             ]),
 
-            (anat_ingress_nodes[dwi_file], dwi_anat_wfs[dwi_file], [
-                (trait, f"inputnode.{trait}")
+            (anat_ingress_wfs[dwi_file], dwi_anat_wfs[dwi_file], [
+                (f"outputnode.{trait}", f"inputnode.{trait}")
                 for trait in anatomical_workflow_outputs
             ]),
         ])  # fmt:skip
