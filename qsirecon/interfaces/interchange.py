@@ -26,7 +26,7 @@ CREATEABLE_ANATOMICAL_OUTPUTS = [
 
 # These come directly from QSIPrep outputs. They're aligned to the DWIs in AC-PC
 _spec = yaml.safe_load(load_data.readable("io_spec.yaml").read_text())
-qsiprep_highres_anatomical_ingressed_fields = _spec["queries"]["anat"].keys()
+qsiprep_highres_anatomical_ingressed_fields = list(_spec["queries"]["anat"].keys())
 
 # The init_recon_anatomical anatomical workflow can create additional
 # anatomical files (segmentations/masks/etc) that can be used downstream.
