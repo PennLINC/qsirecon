@@ -844,15 +844,12 @@ class MRTrixAtlasGraph(SimpleInterface):
 
                 measure_name = tracking_param_set["measure"]
                 node_args.update(tracking_param_set)
-                raise Exception(node_args)
+                node_args["atlas_name"] = atlas_name
+                node_args["atlas_labels_file"] = atlas_config["labels"]
+                node_args["in_parc"] = atlas_config["dwi_resolution_mif"]
                 nodes.append(
                     pe.Node(
-                        BuildConnectome(
-                            atlas_name=atlas_name,
-                            atlas_labels_file=atlas_config["labels"],
-                            in_parc=atlas_config["dwi_resolution_mif"],
-                            **node_args,
-                        ),
+                        BuildConnectome(**node_args),
                         name=f"{atlas_name}_{measure_name}",
                         n_procs=nthreads,
                     )
