@@ -844,6 +844,7 @@ class MRTrixAtlasGraph(SimpleInterface):
 
                 measure_name = tracking_param_set["measure"]
                 node_args.update(tracking_param_set)
+                raise Exception(node_args)
                 nodes.append(
                     pe.Node(
                         BuildConnectome(
