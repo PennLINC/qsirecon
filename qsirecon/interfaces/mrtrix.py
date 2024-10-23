@@ -840,8 +840,6 @@ class MRTrixAtlasGraph(SimpleInterface):
                 node_args = deepcopy(ifargs)
 
                 # These are overwritten in each node
-                node_args.pop("atlas_config")
-                node_args.pop("atlas_name")
                 node_args.pop("tracking_params")
 
                 measure_name = tracking_param_set["measure"]

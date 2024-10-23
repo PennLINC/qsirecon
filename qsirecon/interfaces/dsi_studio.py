@@ -404,8 +404,6 @@ class DSIStudioAtlasGraph(SimpleInterface):
         for atlasnum, (atlas_name, atlas_config) in enumerate(atlas_configs.items(), start=1):
             node_args = deepcopy(ifargs)
             # Symlink in the fib file
-            node_args.pop("atlas_config")
-            node_args.pop("atlas_name")
             nodes.append(
                 pe.Node(
                     DSIStudioConnectivityMatrix(
