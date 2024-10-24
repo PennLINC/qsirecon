@@ -408,7 +408,7 @@ def init_dwi_recon_anatomical_workflow(
     if not (has_qsiprep_t1w or has_freesurfer) or prefer_dwi_mask:
         desc += (
             "No T1w weighted images were available for masking, so a mask "
-            "was estimated based on the b=0 images in the DWI data itself."
+            "was estimated based on the b=0 images in the DWI data itself. "
         )
         extract_b0s = pe.Node(ExtractB0s(b0_threshold=b0_threshold), name="extract_b0s")
         mask_b0s = pe.Node(afni.Automask(outputtype="NIFTI_GZ"), name="mask_b0s")
@@ -499,7 +499,7 @@ def init_dwi_recon_anatomical_workflow(
             (apply_header_to_5tt_hsvs, buffernode, [("out_image", "qsiprep_5tt_hsvs")]),
             (apply_header_to_5tt_hsvs, ds_qsiprep_5tt_hsvs, [("out_image", "in_file")]),
         ])  # fmt:skip
-        desc += "A hybrid surface/volume segmentation was created [Smith 2020]."
+        desc += "A hybrid surface/volume segmentation was created [Smith 2020]. "
 
     # If we have transforms to the template space, use them to get ROIs/atlases
     # if not has_qsiprep_t1w_transforms and has_qsiprep_t1w:
@@ -532,7 +532,7 @@ def init_dwi_recon_anatomical_workflow(
             desc += (
                 "T1w-based spatial normalization calculated during "
                 "preprocessing was used to map atlases from template space into "
-                "alignment with DWIs."
+                "alignment with DWIs. "
             )
         else:
             raise Exception(
@@ -545,7 +545,7 @@ def init_dwi_recon_anatomical_workflow(
     if has_qsiprep_t1w and not prefer_dwi_mask:
         desc += (
             f"Brainmasks from {skull_strip_method} were used in all subsequent reconstruction "
-            "steps."
+            "steps. "
         )
         # Resample anat mask
         resample_mask = pe.Node(
@@ -666,6 +666,8 @@ def init_dwi_recon_anatomical_workflow(
 
     if "mrtrix_5tt_hsvs" in extras_to_make and not has_qsiprep_5tt_hsvs:
         raise Exception("Unable to create a 5tt HSV image given input data.")
+
+    workflow.__desc__ = desc
 
     # Directly connect anything from the inputs that we haven't created here
     workflow.connect([
