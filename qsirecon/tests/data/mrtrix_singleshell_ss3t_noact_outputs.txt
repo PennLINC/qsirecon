@@ -1,4 +1,8 @@
 atlases
+atlases/atlas-4S156Parcels
+atlases/atlas-4S156Parcels/atlas-4S156Parcels_dseg.tsv
+atlases/atlas-4S156Parcels/atlas-4S156Parcels_space-MNI152NLin2009cAsym_res-01_dseg.json
+atlases/atlas-4S156Parcels/atlas-4S156Parcels_space-MNI152NLin2009cAsym_res-01_dseg.nii.gz
 atlases/atlas-AAL116
 atlases/atlas-AAL116/atlas-AAL116_dseg.tsv
 atlases/atlas-AAL116/atlas-AAL116_space-MNI152NLin2009cAsym_res-01_dseg.json
@@ -48,6 +52,9 @@ logs/CITATION.md
 logs/CITATION.tex
 sub-PNC
 sub-PNC/dwi
+sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-4S156Parcels_dseg.mif.gz
+sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-4S156Parcels_dseg.nii.gz
+sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-4S156Parcels_dseg.txt
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-AAL116_dseg.mif.gz
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-AAL116_dseg.nii.gz
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-AAL116_dseg.txt

@@ -102,6 +102,7 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
         "AICHA384Ext",
         "Brainnetome246Ext",
         "Gordon333Ext",
+        "4S156Parcels",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
