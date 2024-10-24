@@ -10,6 +10,7 @@ Miscellaneous utilities
 
 import os
 
+import nibabel as nb
 from nipype import logging
 from nipype.interfaces import ants
 from nipype.interfaces.base import (
@@ -21,6 +22,7 @@ from nipype.interfaces.base import (
     traits,
 )
 from nipype.utils.filemanip import fname_presuffix
+from niworkflows.interfaces.header import ValidateImage
 
 IFLOGGER = logging.getLogger("nipype.interfaces")
 
@@ -99,9 +101,14 @@ class WarpConnectivityAtlases(SimpleInterface):
             atlas_configs[atlas_name]["dwi_resolution_mif"] = output_mif
             atlas_configs[atlas_name]["orig_lut"] = output_mif_txt
             atlas_configs[atlas_name]["mrtrix_lut"] = output_orig_txt
+
+            conform_atlas = ConformAtlas(in_file=atlas_config["image"], orientation="LPS")
+            result = conform_atlas.run()
+            lps_name = result.outputs.out_file
+
             resample_commands.append(
                 _resample_atlas(
-                    input_atlas=atlas_config["image"],
+                    input_atlas=lps_name,
                     output_atlas=output_name,
                     transform=transforms[i_atlas],
                     ref_image=self.inputs.reference_image,
@@ -176,3 +183,55 @@ def label_convert(original_atlas, output_mif, orig_txt, mrtrix_txt, atlas_labels
 
     cmd = ["labelconvert", original_atlas, orig_txt, mrtrix_txt, output_mif]
     os.system(" ".join(cmd))
+
+
+class _ConformAtlasInputSpec(BaseInterfaceInputSpec):
+    in_file = File(mandatory=True, desc="dwi image")
+    orientation = traits.Enum("LPS", "LAS", default="LPS", usedefault=True)
+
+
+class _ConformAtlasOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc="conformed dwi image")
+
+
+class ConformAtlas(SimpleInterface):
+    """Conform a series of dwi images to enable merging.
+
+    Performs three basic functions:
+    #. Orient image to requested orientation
+    #. Validate the qform and sform, set qform code to 1
+    """
+
+    input_spec = _ConformAtlasInputSpec
+    output_spec = _ConformAtlasOutputSpec
+
+    def _run_interface(self, runtime):
+        fname = self.inputs.in_file
+        orientation = self.inputs.orientation
+        suffix = "_" + orientation
+        out_fname = fname_presuffix(fname, suffix=suffix, newpath=runtime.cwd)
+
+        validator = ValidateImage(in_file=fname)
+        validated = validator.run()
+        self._results["out_report"] = validated.outputs.out_report
+        input_img = nb.load(validated.outputs.out_file)
+
+        input_axcodes = nb.aff2axcodes(input_img.affine)
+        # Is the input image oriented how we want?
+        new_axcodes = tuple(orientation)
+
+        if not input_axcodes == new_axcodes:
+            # Re-orient
+            input_orientation = nb.orientations.axcodes2ornt(input_axcodes)
+            desired_orientation = nb.orientations.axcodes2ornt(new_axcodes)
+            transform_orientation = nb.orientations.ornt_transform(
+                input_orientation, desired_orientation
+            )
+            reoriented_img = input_img.as_reoriented(transform_orientation)
+            reoriented_img.to_filename(out_fname)
+            self._results["out_file"] = out_fname
+
+        else:
+            self._results["out_file"] = fname
+
+        return runtime
