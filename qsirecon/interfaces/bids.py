@@ -23,13 +23,24 @@ import gzip
 import os
 import os.path as op
 import re
-from json import loads
-from shutil import copyfileobj, copytree
+from json import dump, loads
+from shutil import copyfile, copyfileobj, copytree
 
+import nibabel as nb
+import numpy as np
 from bids.layout import Config, parse_file_entities
 from nipype import logging
-from nipype.interfaces.base import File, InputMultiObject, isdefined, traits
-from nipype.utils.filemanip import copyfile, split_filename
+from nipype.interfaces.base import (
+    BaseInterfaceInputSpec,
+    Directory,
+    File,
+    InputMultiObject,
+    SimpleInterface,
+    TraitedSpec,
+    isdefined,
+    traits,
+)
+from nipype.utils.filemanip import split_filename
 from niworkflows.interfaces.bids import DerivativesDataSink as BaseDerivativesDataSink
 from niworkflows.interfaces.bids import (
     _DerivativesDataSinkInputSpec,
@@ -102,6 +113,143 @@ class DerivativesDataSink(BaseDerivativesDataSink):
     _config_entities = config_entities
     _config_entities_dict = merged_entities
     _file_patterns = qsirecon_spec["default_path_patterns"]
+
+
+class _CopyAtlasInputSpec(BaseInterfaceInputSpec):
+    source_file = traits.Str(
+        desc="The source file's name.",
+        mandatory=False,
+    )
+    in_file = File(
+        exists=True,
+        desc="The atlas file to copy.",
+        mandatory=True,
+    )
+    meta_dict = traits.Either(
+        traits.Dict(),
+        None,
+        desc="The atlas metadata dictionary.",
+        mandatory=False,
+    )
+    out_dir = Directory(
+        exists=True,
+        desc="The output directory.",
+        mandatory=True,
+    )
+    atlas = traits.Str(
+        desc="The atlas name.",
+        mandatory=True,
+    )
+    Sources = traits.List(
+        traits.Str,
+        desc="List of sources for the atlas.",
+        mandatory=False,
+    )
+
+
+class _CopyAtlasOutputSpec(TraitedSpec):
+    out_file = File(
+        exists=True,
+        desc="The copied atlas file.",
+    )
+
+
+class CopyAtlas(SimpleInterface):
+    """Copy atlas file to output directory.
+
+    Parameters
+    ----------
+    source_file : :obj:`str`
+        The source name of the atlas file.
+    in_file : :obj:`str`
+        The atlas file to copy.
+    out_dir : :obj:`str`
+        The output directory.
+    atlas : :obj:`str`
+        The name of the atlas.
+
+    Returns
+    -------
+    out_file : :obj:`str`
+        The path to the copied atlas file.
+
+    Notes
+    -----
+    I can't use DerivativesDataSink because it has a problem with dlabel CIFTI files.
+    It gives the following error:
+    "AttributeError: 'Cifti2Header' object has no attribute 'set_data_dtype'"
+
+    I can't override the CIFTI atlas's data dtype ahead of time because setting it to int8 or int16
+    somehow converts all of the values in the data array to weird floats.
+    This could be a version-specific nibabel issue.
+
+    I've also updated this function to handle JSON and TSV files as well.
+    """
+
+    input_spec = _CopyAtlasInputSpec
+    output_spec = _CopyAtlasOutputSpec
+
+    def _run_interface(self, runtime):
+        out_dir = self.inputs.out_dir
+        in_file = self.inputs.in_file
+        meta_dict = self.inputs.meta_dict
+        source_file = self.inputs.source_file
+        atlas = self.inputs.atlas
+        Sources = self.inputs.Sources
+
+        atlas_out_dir = os.path.join(out_dir, f"atlases/atlas-{atlas}")
+
+        if in_file.endswith(".tsv"):
+            out_basename = f"atlas-{atlas}_dseg"
+            extension = ".tsv"
+        else:
+            extension = ".nii.gz" if source_file.endswith(".nii.gz") else ".dlabel.nii"
+            space = get_entity(source_file, "space")
+            res = get_entity(source_file, "res")
+            den = get_entity(source_file, "den")
+            cohort = get_entity(source_file, "cohort")
+
+            cohort_str = f"_cohort-{cohort}" if cohort else ""
+            res_str = f"_res-{res}" if res else ""
+            den_str = f"_den-{den}" if den else ""
+            if extension == ".dlabel.nii":
+                out_basename = f"atlas-{atlas}_space-{space}{den_str}{cohort_str}_dseg"
+            elif extension == ".nii.gz":
+                out_basename = f"atlas-{atlas}_space-{space}{res_str}{cohort_str}_dseg"
+
+        os.makedirs(atlas_out_dir, exist_ok=True)
+        out_file = os.path.join(atlas_out_dir, f"{out_basename}{extension}")
+
+        if out_file.endswith(".nii.gz") and os.path.isfile(out_file):
+            # Check that native-resolution atlas doesn't have a different resolution from the last
+            # run's atlas.
+            old_img = nb.load(out_file)
+            new_img = nb.load(in_file)
+            if not np.allclose(old_img.affine, new_img.affine):
+                raise ValueError(
+                    f"Existing '{atlas}' atlas affine ({out_file}) is different from the input "
+                    f"file affine ({in_file})."
+                )
+
+        # Don't copy the file if it exists, to prevent any race conditions between parallel
+        # processes.
+        if not os.path.isfile(out_file):
+            copyfile(in_file, out_file)
+
+        # Only write out a sidecar if metadata are provided
+        if meta_dict or Sources:
+            meta_file = os.path.join(atlas_out_dir, f"{out_basename}.json")
+            meta_dict = meta_dict or {}
+            meta_dict = meta_dict.copy()
+            if Sources:
+                meta_dict["Sources"] = meta_dict.get("Sources", []) + Sources
+
+            with open(meta_file, "w") as fo:
+                dump(meta_dict, fo, sort_keys=True, indent=4)
+
+        self._results["out_file"] = out_file
+
+        return runtime
 
 
 def get_recon_output_name(
@@ -265,6 +413,8 @@ def _splitext(fname):
 
 
 def _copy_any(src, dst):
+    from nipype.utils.filemanip import copyfile
+
     src_isgz = src.endswith(".gz")
     dst_isgz = dst.endswith(".gz")
     if src_isgz == dst_isgz:
@@ -281,3 +431,39 @@ def _copy_any(src, dst):
         with dst_open(dst, "wb") as f_out:
             copyfileobj(f_in, f_out)
     return True
+
+
+def get_entity(filename, entity):
+    """Extract a given entity from a BIDS filename via string manipulation.
+
+    Parameters
+    ----------
+    filename : :obj:`str`
+        Path to the BIDS file.
+    entity : :obj:`str`
+        The entity to extract from the filename.
+
+    Returns
+    -------
+    entity_value : :obj:`str` or None
+        The BOLD file's entity value associated with the requested entity.
+    """
+    import os
+    import re
+
+    folder, file_base = os.path.split(filename)
+
+    # Allow + sign, which is not allowed in BIDS,
+    # but is used by templateflow for the MNIInfant template.
+    entity_values = re.findall(f"{entity}-([a-zA-Z0-9+]+)", file_base)
+    entity_value = None if len(entity_values) < 1 else entity_values[0]
+    if entity == "space" and entity_value is None:
+        foldername = os.path.basename(folder)
+        if foldername == "anat":
+            entity_value = "T1w"
+        elif foldername == "func":
+            entity_value = "native"
+        else:
+            raise ValueError(f"Unknown space for {filename}")
+
+    return entity_value

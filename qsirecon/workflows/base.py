@@ -24,6 +24,7 @@ from packaging.version import Version
 from pkg_resources import resource_filename as pkgrf
 
 from .. import config
+from ..interfaces.bids import CopyAtlas
 
 
 def init_qsirecon_wf():
@@ -177,10 +178,10 @@ to workflows in *QSIRecon*'s documentation]\
             # XXX: We should pass the outputs from these datasinks to any steps that use the
             # atlases in order to track Sources.
             ds_atlas_orig = pe.Node(
-                DerivativesDataSink(
+                CopyAtlas(
+                    in_file=atlas_config["image"],
                     source_file=atlas_config["image"],
                     out_dir=config.execution.output_dir / "atlases",
-                    datatype="atlas",
                     atlas=atlas_name,
                     meta_dict=atlas_config["metadata"],
                 ),
@@ -189,10 +190,10 @@ to workflows in *QSIRecon*'s documentation]\
             workflow.add_nodes([ds_atlas_orig])
 
             ds_atlas_labels_orig = pe.Node(
-                DerivativesDataSink(
+                CopyAtlas(
+                    in_file=atlas_config["labels"],
                     source_file=atlas_config["labels"],
                     out_dir=config.execution.output_dir / "atlases",
-                    datatype="atlas",
                     atlas=atlas_name,
                 ),
                 name=f"datasink_atlas_labels_orig_{atlas_name}",
