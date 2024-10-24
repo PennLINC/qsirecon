@@ -603,7 +603,7 @@ def init_dwi_recon_anatomical_workflow(
             ds_atlas = pe.Node(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
-                    atlas=atlas,
+                    seg=atlas,
                     suffix="dseg",
                     compress=True,
                 ),
@@ -613,7 +613,7 @@ def init_dwi_recon_anatomical_workflow(
             ds_atlas_mifs = pe.Node(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
-                    atlas=atlas,
+                    seg=atlas,
                     suffix="dseg",
                     extension=".mif.gz",
                     compress=True,
@@ -624,7 +624,7 @@ def init_dwi_recon_anatomical_workflow(
             ds_atlas_mrtrix_lut = pe.Node(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
-                    atlas=atlas,
+                    seg=atlas,
                     suffix="dseg",
                     extension=".txt",
                 ),
@@ -634,7 +634,7 @@ def init_dwi_recon_anatomical_workflow(
             ds_atlas_orig_lut = pe.Node(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
-                    atlas=atlas,
+                    seg=atlas,
                     suffix="dseg",
                     extension=".txt",
                 ),
