@@ -213,7 +213,6 @@ class ConformAtlas(SimpleInterface):
 
         validator = ValidateImage(in_file=fname)
         validated = validator.run()
-        self._results["out_report"] = validated.outputs.out_report
         input_img = nb.load(validated.outputs.out_file)
 
         input_axcodes = nb.aff2axcodes(input_img.affine)
