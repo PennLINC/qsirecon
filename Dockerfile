@@ -9,7 +9,7 @@ FROM pennlinc/qsirecon_build:testwb.0.2
 
 # Install qsirecon
 COPY . /src/qsirecon
-RUN pip install --no-cache-dir "/src/qsirecon[all]"
+RUN pip install --no-cache-dir "/src/qsirecon"
 
 # Precaching fonts, set 'Agg' as default backend for matplotlib
 RUN python -c "from matplotlib import font_manager" && \

@@ -19,7 +19,7 @@ requires-python = ">=3.10"
 dependencies = [
     'importlib_resources; python_version < "3.11"',
     "dipy>=1.8.0,<1.9.0",
-    "dmri-amico == 1.5.4",
+    "dmri-amico == 2.0.3",
     "filelock",
     "fury",
     "indexed_gzip <= 1.8.7",
