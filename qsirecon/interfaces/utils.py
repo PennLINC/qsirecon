@@ -164,9 +164,9 @@ def label_convert(original_atlas, output_mif, orig_txt, mrtrix_txt, atlas_labels
     index_label_pairs = zip(atlas_labels_df["index"], atlas_labels_df["label"])
     orig_str = ""
     mrtrix_str = ""
-    for index, label in index_label_pairs:
+    for i_row, (index, label) in enumerate(index_label_pairs):
         orig_str += f"{index}\t{label}\n"
-        mrtrix_str += f"{index + 1}\t{label}\n"
+        mrtrix_str += f"{i_row + 1}\t{label}\n"
 
     with open(mrtrix_txt, "w") as mrtrix_f:
         mrtrix_f.write(mrtrix_str)

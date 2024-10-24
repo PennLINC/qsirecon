@@ -809,8 +809,8 @@ class MRTrixAtlasGraph(SimpleInterface):
         using_weights = isdefined(ifargs["in_weights"])
         c2t_args = {"input_tck_weights": ifargs["in_weights"]} if using_weights else {}
         c2t_args["nthreads"] = nthreads
-        c2t_args["quiet"] = True
-        ifargs["quiet"] = True
+        c2t_args["quiet"] = False
+        ifargs["quiet"] = False
         ifargs["out_assignments"] = "assignments.txt"
 
         # Make a workflow for each atlas and tracking parameter set
