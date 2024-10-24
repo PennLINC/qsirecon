@@ -408,7 +408,7 @@ def init_dwi_recon_anatomical_workflow(
         (reference_grid_wf, buffernode, [("outputnode.grid_image", "resampling_template")]),
     ])  # fmt:skip
 
-    # Missing Freesurfer AND QSIRecon T1ws, or the user wants a DWI-based mask
+    # Missing Freesurfer AND QSIPrep T1ws, or the user wants a DWI-based mask
     if not (has_qsiprep_t1w or has_freesurfer) or prefer_dwi_mask:
         desc += (
             "No T1w weighted images were available for masking, so a mask "
