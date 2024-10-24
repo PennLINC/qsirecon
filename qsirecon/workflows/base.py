@@ -181,7 +181,7 @@ to workflows in *QSIRecon*'s documentation]\
                 CopyAtlas(
                     in_file=atlas_config["image"],
                     source_file=atlas_config["image"],
-                    out_dir=config.execution.output_dir / "atlases",
+                    out_dir=config.execution.output_dir,
                     atlas=atlas_name,
                     meta_dict=atlas_config["metadata"],
                 ),
@@ -193,7 +193,7 @@ to workflows in *QSIRecon*'s documentation]\
                 CopyAtlas(
                     in_file=atlas_config["labels"],
                     source_file=atlas_config["labels"],
-                    out_dir=config.execution.output_dir / "atlases",
+                    out_dir=config.execution.output_dir,
                     atlas=atlas_name,
                 ),
                 name=f"datasink_atlas_labels_orig_{atlas_name}",
