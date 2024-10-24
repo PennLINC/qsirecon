@@ -366,7 +366,11 @@ def init_dwi_recon_anatomical_workflow(
     )
     workflow = Workflow(name=name)
     skull_strip_method = "antsBrainExtraction"
-    desc = ""
+    desc = """
+
+#### Anatomical data for DWI reconstruction
+
+"""
 
     def _get_status():
         return {
@@ -667,7 +671,7 @@ def init_dwi_recon_anatomical_workflow(
     if "mrtrix_5tt_hsvs" in extras_to_make and not has_qsiprep_5tt_hsvs:
         raise Exception("Unable to create a 5tt HSV image given input data.")
 
-    workflow.__desc__ = desc
+    workflow.__desc__ = desc + "\n"
 
     # Directly connect anything from the inputs that we haven't created here
     workflow.connect([

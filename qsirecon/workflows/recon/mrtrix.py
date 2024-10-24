@@ -119,7 +119,11 @@ def init_mrtrix_csd_recon_wf(
     workflow = Workflow(name=name)
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
-    desc = """MRtrix3 Reconstruction\n\n: """
+    desc = """
+
+#### MRtrix3 Reconstruction
+
+"""
 
     # Response estimation
     response = params.get("response", {})
