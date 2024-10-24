@@ -16,6 +16,7 @@ from copy import deepcopy
 import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
 import numpy as np
+import pandas as pd
 from nipype import logging
 from nipype.interfaces.base import (
     BaseInterfaceInputSpec,
@@ -629,7 +630,7 @@ class GlobalTractography(MRTrix3Base):
 
 class BuildConnectomeInputSpec(CommandLineInputSpec):
     atlas_name = traits.Str(desc="name of atlas (for variables in matfile)")
-    atlas_config = traits.Dict(desc="atlas configs for atlases to run connectivity for")
+    atlas_labels_file = File(exists=True, desc="parcellation labels file")
     measure = traits.Str(desc="Name of the connectivity measure")
     in_file = File(
         exists=True, argstr="%s", mandatory=True, position=-3, desc="input tractography"
@@ -711,17 +712,16 @@ class BuildConnectomeOutputSpec(TraitedSpec):
 
 
 class BuildConnectome(MRTrix3Base):
-    """
-    Generate a connectome matrix from a streamlines file and a node
-    parcellation image
+    """Generate a connectome matrix from a streamlines file and a node parcellation image.
+
     Example
     -------
     >>> import nipype.interfaces.mrtrix3 as mrt
     >>> mat = mrt.BuildConnectome()
-    >>> mat.inputs.in_file = 'tracks.tck'
-    >>> mat.inputs.in_parc = 'aparc+aseg.nii'
+    >>> mat.inputs.in_file = "tracks.tck"
+    >>> mat.inputs.in_parc = "aparc+aseg.nii"
     >>> mat.cmdline                               # doctest: +ELLIPSIS
-    'tck2connectome tracks.tck aparc+aseg.nii connectome.csv'
+    "tck2connectome tracks.tck aparc+aseg.nii connectome.csv"
     >>> mat.run()                                 # doctest: +SKIP
     """
 
@@ -732,30 +732,29 @@ class BuildConnectome(MRTrix3Base):
     def _list_outputs(self):
         outputs = self.output_spec().get()
         outputs["out_file"] = op.abspath(self.inputs.out_file)
-        prefix = self.inputs.atlas_name + "_" + self.inputs.measure
-        outputs["connectivity_matfile"] = op.abspath(prefix + "_connectivity.mat")
+        prefix = f"{self.inputs.atlas_name}_{self.inputs.measure}"
+        outputs["connectivity_matfile"] = op.abspath(f"{prefix}_connectivity.mat")
         if isdefined(self.inputs.out_assignments):
             outputs["out_assignments"] = op.abspath(self.inputs.out_assignments)
         return outputs
 
     def _post_run_hook(self, runtime):
-        atlas_config = self.inputs.atlas_config
         atlas_name = self.inputs.atlas_name
+        atlas_labels_df = pd.read_table(self.inputs.atlas_labels_file)
 
         # Aggregate the connectivity/network data from DSI Studio
-        official_labels = np.array(atlas_config["node_ids"]).astype(int)
         connectivity_data = {
-            atlas_name + "_region_ids": official_labels,
-            atlas_name + "_region_labels": np.array(atlas_config["node_names"]),
+            f"{atlas_name}_region_ids": atlas_labels_df["index"].values.astype(int),
+            f"{atlas_name}_region_labels": atlas_labels_df["label"].values,
         }
 
         # get the connectivity matrix
-        prefix = atlas_name + "_" + self.inputs.measure
-        connectivity_data[prefix + "_connectivity"] = np.loadtxt(
+        prefix = f"{atlas_name}_{self.inputs.measure}"
+        connectivity_data[f"{prefix}_connectivity"] = np.loadtxt(
             self.inputs.out_file, delimiter=","
         )
         connectivity_data["command"] = self.cmdline
-        merged_matfile = op.join(runtime.cwd, prefix + "_connectivity.mat")
+        merged_matfile = op.join(runtime.cwd, f"{prefix}_connectivity.mat")
         savemat(merged_matfile, connectivity_data, long_field_names=True)
         return runtime
 
@@ -775,7 +774,14 @@ class BuildConnectome(MRTrix3Base):
 
 class MRTrixAtlasGraphInputSpec(BuildConnectomeInputSpec):
     atlas_configs = traits.Dict(
-        desc="atlas configs for atlases to run connectivity for", mandatory=True
+        desc=(
+            "Atlas configs for atlases to run connectivity for. "
+            "Keys are atlas names, values are dictionaries with at least the following keys: "
+            "'labels' and 'dwi_resolution_mif'. "
+            "'labels' is the parcellation labels file, and 'dwi_resolution_mif' is the "
+            "parcellation file in the same resolution as the DWI data, in MIF format."
+        ),
+        mandatory=True,
     )
     tracking_params = traits.List(desc="list of sets of parameters for tck2connectome")
 
@@ -803,8 +809,8 @@ class MRTrixAtlasGraph(SimpleInterface):
         using_weights = isdefined(ifargs["in_weights"])
         c2t_args = {"input_tck_weights": ifargs["in_weights"]} if using_weights else {}
         c2t_args["nthreads"] = nthreads
-        c2t_args["quiet"] = True
-        ifargs["quiet"] = True
+        c2t_args["quiet"] = False
+        ifargs["quiet"] = False
         ifargs["out_assignments"] = "assignments.txt"
 
         # Make a workflow for each atlas and tracking parameter set
@@ -819,32 +825,32 @@ class MRTrixAtlasGraph(SimpleInterface):
         merge_exemplars = pe.Node(niu.Merge(3), name="merge_exemplars")
         compress_exemplars = pe.Node(CompressConnectome2Tck(), name="compress_exemplars")
         outputnode = pe.Node(
-            niu.IdentityInterface(fields=["matfiles", "tckfiles", "weights"]), name="outputnode"
+            niu.IdentityInterface(fields=["matfiles", "tckfiles", "weights"]),
+            name="outputnode",
         )
-        workflow.connect(merge_mats, "out", outputnode, "matfiles")
-        workflow.connect(merge_tcks, "out", outputnode, "tckfiles")
-        workflow.connect(merge_weights, "out", outputnode, "weights")
+        workflow.connect([
+            (merge_mats, outputnode, [("out", "matfiles")]),
+            (merge_tcks, outputnode, [("out", "tckfiles")]),
+            (merge_weights, outputnode, [("out", "weights")]),
+        ])  # fmt:skip
+
         in_num = 1
         for atlas_name, atlas_config in atlas_configs.items():
             for tracking_param_set in self.inputs.tracking_params:
                 node_args = deepcopy(ifargs)
 
                 # These are overwritten in each node
-                node_args.pop("atlas_config")
-                node_args.pop("atlas_name")
                 node_args.pop("tracking_params")
 
                 measure_name = tracking_param_set["measure"]
                 node_args.update(tracking_param_set)
+                node_args["atlas_name"] = atlas_name
+                node_args["atlas_labels_file"] = atlas_config["labels"]
+                node_args["in_parc"] = atlas_config["dwi_resolution_mif"]
                 nodes.append(
                     pe.Node(
-                        BuildConnectome(
-                            atlas_config=atlas_config,
-                            atlas_name=atlas_name,
-                            in_parc=atlas_config["dwi_resolution_mif"],
-                            **node_args,
-                        ),
-                        name=atlas_name + "_" + measure_name,
+                        BuildConnectome(**node_args),
+                        name=f"{atlas_name}_{measure_name}",
                         n_procs=nthreads,
                     )
                 )
@@ -856,32 +862,28 @@ class MRTrixAtlasGraph(SimpleInterface):
                             output_files="single",
                             **c2t_args,
                         ),
-                        name=atlas_name + "_" + measure_name + "_c2t",
+                        name=f"{atlas_name}_{measure_name}_c2t",
                         n_procs=nthreads,
                     )
                 )
                 workflow.connect([
-                    (nodes[-1], c2t_nodes[-1], [
-                        ('out_assignments', 'in_assignments')]),
-                    (nodes[-1], merge_mats, [
-                        ('connectivity_matfile', 'in%d' % in_num)]),
-                    (nodes[-1], merge_csvs, [
-                        ('out_file', 'in%d' % in_num)]),
-                    (c2t_nodes[-1], merge_tcks, [
-                        ('exemplar_tck', 'in%d' % in_num)])
+                    (nodes[-1], c2t_nodes[-1], [("out_assignments", "in_assignments")]),
+                    (nodes[-1], merge_mats, [("connectivity_matfile", f"in{in_num}")]),
+                    (nodes[-1], merge_csvs, [("out_file", f"in{in_num}")]),
+                    (c2t_nodes[-1], merge_tcks, [("exemplar_tck", f"in{in_num}")]),
                 ])  # fmt:skip
                 if using_weights:
-                    workflow.connect(
-                        c2t_nodes[-1], "exemplar_weights", merge_weights, "in%d" % in_num
-                    )
+                    workflow.connect([
+                        (c2t_nodes[-1], merge_weights, [("exemplar_weights", f"in{in_num}")]),
+                    ])  # fmt:skip
                 in_num += 1
 
         # Get the exemplar tcks and weights
         workflow.connect([
-            (merge_tcks, merge_exemplars, [('out', "in1")]),
-            (merge_weights, merge_exemplars, [('out', "in2")]),
-            (merge_csvs, merge_exemplars, [('out', "in3")]),
-            (merge_exemplars, compress_exemplars, [('out', 'files')]),
+            (merge_tcks, merge_exemplars, [("out", "in1")]),
+            (merge_weights, merge_exemplars, [("out", "in2")]),
+            (merge_csvs, merge_exemplars, [("out", "in3")]),
+            (merge_exemplars, compress_exemplars, [("out", "files")]),
             (compress_exemplars, outputnode, [("out_zip", "exemplar_files")])
         ])  # fmt:skip
 
@@ -931,7 +933,11 @@ def _merge_conmats(matfile_list, outfile):
 class _Connectome2TckInputSpec(MRTrix3BaseInputSpec):
     in_tck = File(exists=True, argstr="%s", position=0, mandatory=True, desc="input tck file")
     in_assignments = File(
-        exists=True, argstr="%s", position=1, mandatory=True, desc="input tck assignments file"
+        exists=True,
+        argstr="%s",
+        position=1,
+        mandatory=True,
+        desc="input tck assignments file",
     )
     out_prefix = traits.Str(
         name_source="in_parc",
@@ -939,10 +945,14 @@ class _Connectome2TckInputSpec(MRTrix3BaseInputSpec):
         argstr="%s",
         keep_extension=False,
         position=2,
-        desc='this is a .tck file if "-files single"',
+        desc="this is a .tck file if '-files single'",
     )
     output_files = traits.Enum(
-        "single", "per_edge", "per_node", default="single", argstr="-files %s"
+        "single",
+        "per_edge",
+        "per_node",
+        default="single",
+        argstr="-files %s",
     )
     input_tck_weights = File(exists=True, argstr="-tck_weights_in %s")
     output_tck_weights = File(
@@ -1047,7 +1057,7 @@ def _rename_connectome(connectome_csv, suffix="_connectome.csv"):
     ...    "calc_connectivity/mrtrix_atlasgraph/" \
     ...    "schaefer200x17_sift_invnodevol_radius2_count/connectome.csv"
     >>> _rename_connectome(pth)
-    'sub-X_ses-1_space-T1w_desc-preproc_schaefer200x17_sift_invnodevol_radius2_count_connectome.csv'
+    "sub-X_ses-1_space-T1w_desc-preproc_schaefer200x17_sift_invnodevol_radius2_count_connectome.csv"
     """
     parts = connectome_csv.split(os.sep)
     conn_name = parts[-2]

@@ -1,5 +1,4 @@
 anatomical: []
-atlases: []
 name: tortoise_recon
 nodes:
 -   action: estimate

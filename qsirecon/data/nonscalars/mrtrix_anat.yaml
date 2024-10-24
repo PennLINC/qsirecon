@@ -1,7 +1,7 @@
 
 qsiprep_5tt_hsvs:
     bids:
-        atlas: hsvs
+        seg: hsvs
         space: T1w
         suffix: dseg
         extension: nii.gz
@@ -12,7 +12,7 @@ qsiprep_5tt_hsvs:
 
 fs_5tt_hsvs:
     bids:
-        atlas: hsvs
+        seg: hsvs
         space: fsnative
         suffix: dseg
         extension: nii.gz

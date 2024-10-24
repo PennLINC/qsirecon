@@ -1,4 +1,3 @@
-atlases: []
 description: Reconstruct dwis using Dipy, then convert to mrtrix and dsi studio formats
 name: dipy_mapmri
 nodes:

@@ -1,4 +1,3 @@
-atlases: []
 description: Runs the AMICO implementation of NODDI
 name: amico_noddi
 nodes:
