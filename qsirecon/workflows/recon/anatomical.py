@@ -27,6 +27,7 @@ from ...interfaces.interchange import (
 )
 from ...interfaces.mrtrix import GenerateMasked5tt, ITKTransformConvert, TransformHeader
 from ...utils.bids import clean_datasinks
+from ...utils.boilerplate import describe_atlases
 from qsirecon.interfaces.utils import WarpConnectivityAtlases
 
 # Required freesurfer files for mrtrix's HSV 5tt generation
@@ -587,8 +588,9 @@ def init_dwi_recon_anatomical_workflow(
 
         # Similarly, if we need atlases, transform them into DWI space
         if atlas_configs:
+            desc += describe_atlases(sorted(list(atlas_configs.keys())))
             desc += (
-                "Cortical parcellations were mapped from template space to DWIS "
+                " Cortical parcellations were mapped from template space to DWIS "
                 "using the T1w-based spatial normalization. "
             )
 
