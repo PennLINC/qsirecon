@@ -128,7 +128,7 @@ def init_qsirecon_to_fsl_wf(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
                 suffix="dwi",
-                extension=".bvec",
+                extension=".nii.gz",
             ),
             name="ds_dwi_" + name,
             run_without_submitting=True,
@@ -146,6 +146,7 @@ def init_qsirecon_to_fsl_wf(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
                 suffix="dwi",
+                extension=".bvec",
             ),
             name="ds_bvec_" + name,
             run_without_submitting=True,
@@ -154,6 +155,7 @@ def init_qsirecon_to_fsl_wf(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
                 suffix="mask",
+                extension=".nii.gz",
             ),
             name="ds_mask_" + name,
             run_without_submitting=True,
