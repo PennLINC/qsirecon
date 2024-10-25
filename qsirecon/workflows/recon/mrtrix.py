@@ -706,7 +706,7 @@ def init_mrtrix_connectivity_wf(
             DerivativesDataSink(
                 desc="MRtrix3Connectivity",
                 suffix="matrices",
-                extension=".png",
+                extension=".svg",
             ),
             name="ds_report_connectivity",
             run_without_submitting=True,

@@ -514,7 +514,7 @@ def init_dsi_studio_connectivity_wf(
             DerivativesDataSink(
                 desc="DSIStudioConnectivity",
                 suffix="matrices",
-                extension=".png",
+                extension=".svg",
             ),
             name="ds_report_connectivity",
             run_without_submitting=True,

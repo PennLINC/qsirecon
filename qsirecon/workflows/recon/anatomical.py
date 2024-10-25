@@ -588,9 +588,10 @@ def init_dwi_recon_anatomical_workflow(
 
         # Similarly, if we need atlases, transform them into DWI space
         if atlas_configs:
-            desc += describe_atlases(sorted(list(atlas_configs.keys())))
+            atlas_str = describe_atlases(sorted(list(atlas_configs.keys())))
             desc += (
-                " Cortical parcellations were mapped from template space to DWIS "
+                f"The following atlases were used in the workflow: {atlas_str}. "
+                "Cortical parcellations were mapped from template space to DWIS "
                 "using the T1w-based spatial normalization. "
             )
 
