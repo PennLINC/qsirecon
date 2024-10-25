@@ -20,12 +20,12 @@ additional comparisons.
 Atlases
 *******
 
-The following atlases are included in ``qsirecon``. 
+The following atlases are included in ``qsirecon``.
 This means you do not need to add a ``--datasets`` argument to your command line,
-and can instead select them with ``--atlases``.
+and can instead select them just with ``--atlases``.
 
 If you previously were using the default atlases in a "connectivity matrix" workflow,
-you can match the previous behavior by adding 
+you can match the previous behavior by adding
 
 ``--atlases 4S156Parcels 4S256Parcels 4S456Parcels Brainnetome246Ext AICHA384Ext Gordon333Ext AAL116``
 

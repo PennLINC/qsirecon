@@ -154,7 +154,7 @@ to workflows in *QSIRecon*'s documentation]\
     atlas_configs = {}
     if config.execution.atlases:
         # Limit atlases to ones in the specified space.
-        xfm_to_anat = anat_data["template_to_anat_xfm"]
+        xfm_to_anat = anat_data["template_to_acpc_xfm"]
         template_space = get_entity(xfm_to_anat, "from")
         bids_filters = (config.execution.bids_filters or {}).copy()
         bids_filters["atlas"] = bids_filters.get("atlas", {})
@@ -227,7 +227,7 @@ to workflows in *QSIRecon*'s documentation]\
         # Aggregate the anatomical data from all the dwi files
         workflow.connect([
             (anat_ingress_wfs[dwi_file], aggregate_anatomical_nodes, [
-                ("outputnode.anat_preproc", f"in{i_run + 1}"),
+                ("outputnode.acpc_preproc", f"in{i_run + 1}"),
             ]),
         ])  # fmt:skip
 

@@ -181,7 +181,7 @@ def init_scalar_to_template_wf(
     workflow.connect([
         (inputnode, template_mapper, [
             ("collected_scalars", "recon_scalars"),
-            ("anat_to_template_xfm", "to_template_transform"),
+            ("acpc_to_template_xfm", "to_template_transform"),
             ("resampling_template", "template_reference_image"),
         ]),
         (template_mapper, outputnode, [("template_space_scalars", "template_scalars")]),

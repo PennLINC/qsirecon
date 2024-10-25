@@ -39,27 +39,27 @@ class QSIPrepAnatomicalIngressInputSpec(BaseInterfaceInputSpec):
 
 class QSIPrepAnatomicalIngressOutputSpec(TraitedSpec):
     # sub-1_desc-aparcaseg_dseg.nii.gz
-    anat_aparc = File()
+    acpc_aparc = File()
     # sub-1_dseg.nii.gz
-    anat_seg = File()
+    acpc_seg = File()
     # sub-1_desc-aseg_dseg.nii.gz
-    anat_aseg = File()
+    acpc_aseg = File()
     # sub-1_desc-brain_mask.nii.gz
-    anat_brain_mask = File()
+    acpc_brain_mask = File()
     # sub-1_desc-preproc_T1w.nii.gz
-    anat_preproc = File()
+    acpc_preproc = File()
     # sub-1_label-CSF_probseg.nii.gz
-    anat_csf_probseg = File()
+    acpc_csf_probseg = File()
     # sub-1_label-GM_probseg.nii.gz
-    anat_gm_probseg = File()
+    acpc_gm_probseg = File()
     # sub-1_label-WM_probseg.nii.gz
-    anat_wm_probseg = File()
+    acpc_wm_probseg = File()
     # sub-1_from-orig_to-T1w_mode-image_xfm.txt
-    orig_to_anat_xfm = File()
+    orig_to_acpc_xfm = File()
     # sub-1_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5
-    template_to_anat_xfm = File()
+    template_to_acpc_xfm = File()
     # sub-1_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5
-    anat_to_template_xfm = File()
+    acpc_to_template_xfm = File()
 
 
 class QSIPrepAnatomicalIngress(SimpleInterface):
@@ -79,55 +79,55 @@ class QSIPrepAnatomicalIngress(SimpleInterface):
         anat_root = op.join(qp_root, "anat")
         # space-T1w files
         self._get_if_exists(
-            "anat_aparc",
+            "acpc_aparc",
             "%s/sub-%s*desc-aparcaseg_dseg.nii.*" % (anat_root, sub),
             excludes=["space-MNI"],
         )
         self._get_if_exists(
-            "anat_seg", "%s/sub-%s_*dseg.nii*" % (anat_root, sub), excludes=["space-MNI", "aseg"]
+            "acpc_seg", "%s/sub-%s_*dseg.nii*" % (anat_root, sub), excludes=["space-MNI", "aseg"]
         )
         self._get_if_exists(
-            "anat_aseg",
+            "acpc_aseg",
             "%s/sub-%s_*aseg_dseg.nii*" % (anat_root, sub),
             excludes=["space-MNI", "aparc"],
         )
         self._get_if_exists(
-            "anat_brain_mask",
+            "acpc_brain_mask",
             "%s/sub-%s*_desc-brain_mask.nii*" % (anat_root, sub),
             excludes=["space-MNI"],
         )
         self._get_if_exists(
-            "anat_preproc",
+            "acpc_preproc",
             "%s/sub-%s_desc-preproc_T*w.nii*" % (anat_root, sub),
             excludes=["space-MNI"],
         )
-        if "anat_preproc" not in self._results:
+        if "acpc_preproc" not in self._results:
             LOGGER.warning("Unable to find a preprocessed T1w in %s", qp_root)
         self._get_if_exists(
-            "anat_csf_probseg",
+            "acpc_csf_probseg",
             "%s/sub-%s*_label-CSF_probseg.nii*" % (anat_root, sub),
             excludes=["space-MNI"],
         )
         self._get_if_exists(
-            "anat_gm_probseg",
+            "acpc_gm_probseg",
             "%s/sub-%s*_label-GM_probseg.nii*" % (anat_root, sub),
             excludes=["space-MNI"],
         )
         self._get_if_exists(
-            "anat_wm_probseg",
+            "acpc_wm_probseg",
             "%s/sub-%s*_label-WM_probseg.nii*" % (anat_root, sub),
             excludes=["space-MNI"],
         )
         self._get_if_exists(
-            "orig_to_anat_xfm",
+            "orig_to_acpc_xfm",
             "%s/sub-%s*_from-orig_to-T*w_mode-image_xfm.txt" % (anat_root, sub),
         )
         self._get_if_exists(
-            "template_to_anat_xfm",
+            "template_to_acpc_xfm",
             "%s/sub-%s*_from-MNI152NLin2009cAsym_to-T*w*_xfm.h5" % (anat_root, sub),
         )
         self._get_if_exists(
-            "anat_to_template_xfm",
+            "acpc_to_template_xfm",
             "%s/sub-%s*_from-T*w_to-MNI152NLin2009cAsym_mode-image_xfm.h5" % (anat_root, sub),
         )
 

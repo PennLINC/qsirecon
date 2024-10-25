@@ -190,8 +190,8 @@ def collect_anatomical_data(
     _spec = yaml.safe_load(load_data.readable("io_spec.yaml").read_text())
     queries = _spec["queries"]["anat"]
     if infant_mode:
-        queries["anat_to_template_xfm"]["to"] = "MNIInfant"
-        queries["template_to_anat_xfm"]["from"] = "MNIInfant"
+        queries["acpc_to_template_xfm"]["to"] = "MNIInfant"
+        queries["template_to_acpc_xfm"]["from"] = "MNIInfant"
 
     # Apply filters. These may override anything.
     bids_filters = bids_filters or {}
@@ -224,12 +224,12 @@ def collect_anatomical_data(
     )
 
     status["has_qsiprep_t1w"] = True
-    if not anat_data["anat_preproc"] or not anat_data["anat_brain_mask"]:
+    if not anat_data["acpc_preproc"] or not anat_data["acpc_brain_mask"]:
         config.loggers.utils.warning("No preprocessed anatomical image or brain mask found.")
         status["has_qsiprep_t1w"] = False
 
     status["has_qsiprep_t1w_transforms"] = True
-    if not anat_data["anat_to_template_xfm"] or not anat_data["template_to_anat_xfm"]:
+    if not anat_data["acpc_to_template_xfm"] or not anat_data["template_to_acpc_xfm"]:
         if needs_t1w_transform:
             raise ValueError(
                 "Reconstruction workflow requires a T1wACPC-to-template transform. "
