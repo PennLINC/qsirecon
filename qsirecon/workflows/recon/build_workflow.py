@@ -106,8 +106,11 @@ def init_dwi_recon_workflow(
         if node_spec.get("input", "qsirecon") == "qsirecon":
             # directly connect all the qsirecon outputs to every node
             workflow.connect([
-                (inputnode, node,
-                    _as_connections(recon_workflow_input_fields, dest_prefix='inputnode.'))
+                (
+                    inputnode,
+                    node,
+                    _as_connections(recon_workflow_input_fields, dest_prefix='inputnode.'),
+                ),
             ])  # fmt:skip
 
         # connect the outputs from the upstream node to this node
@@ -132,7 +135,9 @@ def init_dwi_recon_workflow(
                     node,
                     _as_connections(
                         connect_from_qsirecon - set(("mapping_metadata",)),
-                        dest_prefix='inputnode.'))
+                        dest_prefix='inputnode.',
+                    ),
+                ),
             ])  # fmt:skip
             _check_repeats(workflow.list_node_names())
 
@@ -149,7 +154,9 @@ def init_dwi_recon_workflow(
                     _as_connections(
                         connect_from_upstream - set(("mapping_metadata",)),
                         src_prefix='outputnode.',
-                        dest_prefix='inputnode.'))
+                        dest_prefix='inputnode.',
+                    ),
+                )
             ])  # fmt:skip
             _check_repeats(workflow.list_node_names())
 
@@ -198,6 +205,8 @@ def workflow_from_spec(available_anatomical_data, node_spec):
         "qsirecon_suffix": qsirecon_suffix,
         "params": parameters,
     }
+    if node_spec["action"] == "connectivity" and not config.execution.atlases:
+        raise ValueError("Connectivity requires atlases.")
 
     # DSI Studio operations
     if software == "DSI Studio":

@@ -1,5 +1,4 @@
 anatomical: []
-atlases: []
 name: hbcd_postproc_beta
 nodes:
 -   action: DKI_reconstruction
