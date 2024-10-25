@@ -1,7 +1,6 @@
 {
   "name": "mrtrix_multishell_msmt_hsvs",
   "space": "T1w",
-  "atlases": ["schaefer100"],
   "anatomical": [
     "mrtrix_5tt_hsvs"
   ],

@@ -278,20 +278,21 @@ class DSIStudioExport(CommandLine):
 
 class DSIStudioConnectivityMatrixInputSpec(DSIStudioCommandLineInputSpec):
     trk_file = File(exists=True, argstr="--tract=%s", copyfile=False)
-    atlas_config = traits.Dict(desc="atlas configs for atlases to run connectivity for")
-    atlas_name = traits.Str()
     input_fib = File(exists=True, argstr="--source=%s", mandatory=True, copyfile=False)
     fiber_count = traits.Int(xor=["seed_count"], argstr="--fiber_count=%d")
     seed_count = traits.Int(xor=["fiber_count"], argstr="--seed_count=%d")
     seed_plan = traits.Enum((0, 1), argstr="--seed_plan=%d")
     initial_dir = traits.Enum((0, 1, 2), argstr="--initial_dir=%d")
     interpolation = traits.Enum((0, 1, 2), argstr="--interpolation=%d")
+
     # ROI related options
     seed_file = File(
         exists=True,
-        desc="specify the seeding file. "
-        "Supported file format includes text, Analyze, and "
-        "nifti files.",
+        desc=(
+            "specify the seeding file. "
+            "Supported file format includes text, Analyze, and "
+            "nifti files."
+        ),
         argstr="--seed=%s",
     )
     to_export = traits.Str(argstr="--export=%s")
@@ -299,6 +300,7 @@ class DSIStudioConnectivityMatrixInputSpec(DSIStudioCommandLineInputSpec):
     connectivity_type = traits.Str(argstr="--connectivity_type=%s")
     connectivity_value = traits.Str(argstr="--connectivity_value=%s")
     random_seed = traits.Bool(argstr="--random_seed=1")
+
     # Tracking options
     fa_threshold = traits.Float(argstr="--fa_threshold=%.2f")
     step_size = traits.CFloat(argstr="--step_size=%.2f")
@@ -308,6 +310,10 @@ class DSIStudioConnectivityMatrixInputSpec(DSIStudioCommandLineInputSpec):
     min_length = traits.CInt(argstr="--min_length=%d")
     max_length = traits.CInt(argstr="--max_length=%d")
     thread_count = traits.Int(1, argstr="--thread_count=%d", usedefault=True, nohash=True)
+
+    # Non-command-line arguments
+    atlas_name = traits.Str()
+    atlas_labels_file = File(exists=True)
 
 
 class DSIStudioConnectivityMatrixOutputSpec(TraitedSpec):
@@ -322,43 +328,52 @@ class DSIStudioConnectivityMatrix(CommandLine):
     _terminal_output = "file"
 
     def _post_run_hook(self, runtime):
-        atlas_config = self.inputs.atlas_config
         atlas_name = self.inputs.atlas_name
+        atlas_labels_df = pd.read_table(self.inputs.atlas_labels_file)
 
         # Aggregate the connectivity/network data from DSI Studio
-        official_labels = np.array(atlas_config["node_ids"]).astype(int)
+        official_labels = atlas_labels_df["index"].values.astype(int)
         connectivity_data = {
-            atlas_name + "_region_ids": official_labels,
-            atlas_name + "_region_labels": np.array(atlas_config["node_names"]),
+            f"{atlas_name}_region_ids": official_labels,
+            f"{atlas_name}_region_labels": atlas_labels_df["label"].values,
         }
 
         # Gather the connectivity matrices
-        matfiles = glob(runtime.cwd + "/*.connectivity.mat")
+        matfiles = glob(op.join(runtime.cwd, "*.connectivity.mat"))
         for matfile in matfiles:
             measure = "_".join(matfile.split(".")[-4:-2])
-            connectivity_data[atlas_name + "_" + measure + "_connectivity"] = (
+            connectivity_data[f"{atlas_name}_{measure}_connectivity"] = (
                 _sanitized_connectivity_matrix(matfile, official_labels)
             )
 
         # Gather the network measure files
-        network_results = glob(runtime.cwd + "/*network*txt")
+        network_results = glob(op.join(runtime.cwd, "*network*txt"))
         for network_result in network_results:
             measure = "_".join(network_result.split(".")[-4:-2])
             connectivity_data.update(
                 _sanitized_network_measures(network_result, official_labels, atlas_name, measure)
             )
-        merged_matfile = op.join(runtime.cwd, atlas_name + "_connectivity.mat")
+        merged_matfile = op.join(runtime.cwd, f"{atlas_name}_connectivity.mat")
         savemat(merged_matfile, connectivity_data, long_field_names=True)
         return runtime
 
     def _list_outputs(self):
         outputs = self.output_spec().get()
-        outputs["connectivity_matfile"] = op.abspath(self.inputs.atlas_name + "_connectivity.mat")
+        outputs["connectivity_matfile"] = op.abspath(f"{self.inputs.atlas_name}_connectivity.mat")
         return outputs
 
 
 class DSIStudioAtlasGraphInputSpec(DSIStudioConnectivityMatrixInputSpec):
-    atlas_configs = traits.Dict(desc="atlas configs for atlases to run connectivity for")
+    atlas_configs = traits.Dict(
+        desc=(
+            "atlas configs for atlases to run connectivity for. "
+            "Keys are atlas names and values are dictionaries with the following keys: "
+            "'dwi_resolution_file' and 'labels'. "
+            "'dwi_resolution_file' is the parcellation file in the same resolution as the DWI "
+            "data. "
+            "'labels' is the parcellation labels file."
+        ),
+    )
 
 
 class DSIStudioAtlasGraphOutputSpec(TraitedSpec):
@@ -389,13 +404,11 @@ class DSIStudioAtlasGraph(SimpleInterface):
         for atlasnum, (atlas_name, atlas_config) in enumerate(atlas_configs.items(), start=1):
             node_args = deepcopy(ifargs)
             # Symlink in the fib file
-            node_args.pop("atlas_config")
-            node_args.pop("atlas_name")
             nodes.append(
                 pe.Node(
                     DSIStudioConnectivityMatrix(
-                        atlas_config=atlas_config,
                         atlas_name=atlas_name,
+                        atlas_labels_file=atlas_config["labels"],
                         connectivity=atlas_config["dwi_resolution_file"],
                         **node_args,
                     ),

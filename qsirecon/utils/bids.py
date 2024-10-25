@@ -143,34 +143,152 @@ def collect_participants(bids_dir, participant_label=None, strict=False, bids_va
     return found_label
 
 
-def write_derivative_description(bids_dir, deriv_dir, dataset_links=None):
+def collect_anatomical_data(
+    layout,
+    subject_id,
+    needs_t1w_transform,
+    bids_filters=None,
+):
+    """Gather any high-res anatomical data (images, transforms, segmentations) to use
+    in recon workflows.
+
+    This function searches through input data to see what anatomical data is available.
+    The anatomical data may be in a freesurfer directory.
+
+    Parameters
+    ----------
+    layout : :obj:`bids.layout.BIDSLayout`
+        BIDSLayout object
+    subject_id : :obj:`str`
+        Single subject label
+    needs_t1w_transform : :obj:`bool`
+        Whether a T1w transform is needed
+    bids_filters : :obj:`dict`, optional
+        BIDS query filters
+
+    Returns
+    -------
+    anat_data : :obj:`dict`
+        Dictionary of anatomical data
+    status : :obj:`dict`
+        Dictionary of status flags
+
+    Notes
+    -----
+    We'll probably want to allow/collect multiple output space
+    transforms in the future.
+    """
+    import yaml
+
+    from qsirecon.data import load as load_data
+
+    anat_data = {}
+    status = {}
+
+    infant_mode = config.workflow.infant
+
+    _spec = yaml.safe_load(load_data.readable("io_spec.yaml").read_text())
+    queries = _spec["queries"]["anat"]
+    if infant_mode:
+        queries["acpc_to_template_xfm"]["to"] = "MNIInfant"
+        queries["template_to_acpc_xfm"]["from"] = "MNIInfant"
+
+    # Apply filters. These may override anything.
+    bids_filters = bids_filters or {}
+    for acq in queries.keys():
+        if acq in bids_filters:
+            queries[acq].update(bids_filters[acq])
+
+    for name, query in queries.items():
+        files = layout.get(
+            return_type="file",
+            subject=subject_id,
+            **query,
+        )
+        if len(files) == 1:
+            anat_data[name] = files[0]
+        elif len(files) > 1:
+            files_str = "\n\t".join(files)
+            raise ValueError(
+                f"More than one {name} found.\nFiles found:\n\t{files_str}\nQuery: {query}"
+            )
+        else:
+            anat_data[name] = None
+
+    # Identify the found anatomical files.
+    config.loggers.utils.info(
+        (
+            f"Collected anatomical data:\n"
+            f"{yaml.dump(anat_data, default_flow_style=False, indent=4)}"
+        ),
+    )
+
+    status["has_qsiprep_t1w"] = True
+    if not anat_data["acpc_preproc"] or not anat_data["acpc_brain_mask"]:
+        config.loggers.utils.warning("No preprocessed anatomical image or brain mask found.")
+        status["has_qsiprep_t1w"] = False
+
+    status["has_qsiprep_t1w_transforms"] = True
+    if not anat_data["acpc_to_template_xfm"] or not anat_data["template_to_acpc_xfm"]:
+        if needs_t1w_transform:
+            raise ValueError(
+                "Reconstruction workflow requires a T1wACPC-to-template transform. "
+                "None were found."
+            )
+
+        config.loggers.utils.warning("No anat-to-template or template-to-anat transforms found.")
+        status["has_qsiprep_t1w_transforms"] = False
+
+    return anat_data, status
+
+
+def write_derivative_description(
+    bids_dir,
+    deriv_dir,
+    atlases=None,
+    dataset_links=None,
+):
+    """Write dataset_description.json file for derivatives.
+
+    Parameters
+    ----------
+    bids_dir : :obj:`str`
+        Path to the BIDS derivative dataset being processed.
+    deriv_dir : :obj:`str`
+        Path to the output QSIRecon dataset.
+    atlases : :obj:`list` of :obj:`str`, optional
+        Names of requested atlases.
+    dataset_links : :obj:`dict`, optional
+        Dictionary of dataset links to include in the dataset description.
+    """
     from qsirecon import __version__
 
     # Keys deriving from source dataset
     orig_dset_description = os.path.join(bids_dir, "dataset_description.json")
-    if os.path.exists(orig_dset_description):
+    if os.path.isfile(orig_dset_description):
         with open(orig_dset_description) as fobj:
-            dset_desc = json.load(fobj)
+            desc = json.load(fobj)
     else:
         config.loggers.utils.warning(f"Dataset description DNE: {orig_dset_description}")
-        dset_desc = {}
+        desc = {}
 
     # Check if the dataset type is derivative
-    if "DatasetType" not in dset_desc.keys():
+    if "DatasetType" not in desc.keys():
         config.loggers.utils.warning(
             f"DatasetType key not in {orig_dset_description}. Assuming 'derivative'."
         )
-        dset_desc["DatasetType"] = "derivative"
+        desc["DatasetType"] = "derivative"
 
-    if dset_desc.get("DatasetType", "derivative") != "derivative":
+    if desc.get("DatasetType", "derivative") != "derivative":
         raise ValueError(
             f"DatasetType key in {orig_dset_description} is not 'derivative'. "
             "QSIRecon only works on derivative datasets."
         )
 
-    dset_desc["Name"] = "QSIRecon output"
+    # Update dataset description
+    desc["Name"] = "QSIRecon output"
     DOWNLOAD_URL = f"https://github.com/PennLINC/qsirecon/archive/{__version__}.tar.gz"
-    generated_by = dset_desc.get("GeneratedBy", [])
+    generated_by = desc.get("GeneratedBy", [])
     generated_by.insert(
         0,
         {
@@ -179,41 +297,34 @@ def write_derivative_description(bids_dir, deriv_dir, dataset_links=None):
             "CodeURL": DOWNLOAD_URL,
         },
     )
-    dset_desc["GeneratedBy"] = generated_by
-    dset_desc["HowToAcknowledge"] = "Include the generated boilerplate in the methods section."
+    desc["GeneratedBy"] = generated_by
+    desc["HowToAcknowledge"] = "Include the generated boilerplate in the methods section."
 
     # Keys that can only be set by environment
     if "QSIRECON_DOCKER_TAG" in os.environ:
-        dset_desc["GeneratedBy"][0]["Container"] = {
+        desc["GeneratedBy"][0]["Container"] = {
             "Type": "docker",
             "Tag": f"pennlinc/qsirecon:{os.environ['QSIRECON_DOCKER_TAG']}",
         }
     elif "QSIRECON_SINGULARITY_URL" in os.environ:
-        dset_desc["GeneratedBy"][0]["Container"] = {
+        desc["GeneratedBy"][0]["Container"] = {
             "Type": "singularity",
             "URI": os.getenv("QSIRECON_SINGULARITY_URL"),
         }
 
-    if "DatasetDOI" in dset_desc:
-        dset_desc["SourceDatasetsURLs"] = [f"https://doi.org/{dset_desc['DatasetDOI']}"]
+    if "DatasetDOI" in desc:
+        desc["SourceDatasetsURLs"] = [f"https://doi.org/{desc['DatasetDOI']}"]
 
-    # Add DatasetLinks
-    if "DatasetLinks" not in dset_desc.keys():
-        dset_desc["DatasetLinks"] = {}
+    dataset_links = dataset_links.copy()
 
-    if "preprocessed" in dset_desc["DatasetLinks"].keys():
-        config.loggers.utils.warning("'preprocessed' is already a dataset link. Overwriting.")
+    # Replace local templateflow path with URL
+    dataset_links["templateflow"] = "https://github.com/templateflow/templateflow"
 
-    dset_desc["DatasetLinks"]["preprocessed"] = str(bids_dir)
-    if dataset_links:
-        for key, value in dataset_links.items():
-            if key in dset_desc["DatasetLinks"]:
-                config.loggers.utils.warning(f"'{key}' is already a dataset link. Overwriting.")
+    if atlases:
+        dataset_links["atlases"] = os.path.join(deriv_dir, "atlases")
 
-            if key == "templateflow":
-                value = "https://github.com/templateflow/templateflow"
-
-            dset_desc["DatasetLinks"][key] = str(value)
+    # Don't inherit DatasetLinks from preprocessing derivatives
+    desc["DatasetLinks"] = {k: str(v) for k, v in dataset_links.items()}
 
     out_dset_description = os.path.join(deriv_dir, "dataset_description.json")
     lock_file = os.path.join(deriv_dir, "qsirecon_dataset_description.lock")
@@ -229,7 +340,52 @@ def write_derivative_description(bids_dir, deriv_dir, dataset_links=None):
                 )
         else:
             with open(out_dset_description, "w") as fo:
-                json.dump(dset_desc, fo, indent=4, sort_keys=True)
+                json.dump(desc, fo, indent=4, sort_keys=True)
+
+
+def write_atlas_dataset_description(atlas_dir):
+    """Write dataset_description.json file for Atlas derivatives.
+
+    Parameters
+    ----------
+    atlas_dir : :obj:`str`
+        Path to the output QSIRecon Atlases dataset.
+    """
+    import json
+    import os
+
+    from qsirecon import __version__
+
+    DOWNLOAD_URL = f"https://github.com/PennLINC/qsirecon/archive/{__version__}.tar.gz"
+
+    desc = {
+        "Name": "QSIRecon Atlases",
+        "DatasetType": "atlas",
+        "GeneratedBy": [
+            {
+                "Name": "qsirecon",
+                "Version": __version__,
+                "CodeURL": DOWNLOAD_URL,
+            },
+        ],
+        "HowToAcknowledge": "Include the generated boilerplate in the methods section.",
+    }
+    os.makedirs(atlas_dir, exist_ok=True)
+
+    atlas_dset_description = os.path.join(atlas_dir, "dataset_description.json")
+    if os.path.isfile(atlas_dset_description):
+        with open(atlas_dset_description, "r") as fo:
+            old_desc = json.load(fo)
+
+        old_version = old_desc["GeneratedBy"][0]["Version"]
+        if Version(__version__).public != Version(old_version).public:
+            config.loggers.utils.warning(
+                f"Previous output generated by version {old_version} found."
+            )
+
+    else:
+        with open(atlas_dset_description, "w") as fo:
+            json.dump(desc, fo, indent=4, sort_keys=True)
 
 
 def write_bidsignore(deriv_dir):
@@ -353,3 +509,39 @@ def clean_datasinks(workflow: pe.Workflow, qsirecon_suffix: Union[str, None]) ->
             workflow.get_node(node).inputs.base_directory = str(out_dir)
 
     return workflow
+
+
+def get_entity(filename, entity):
+    """Extract a given entity from a BIDS filename via string manipulation.
+
+    Parameters
+    ----------
+    filename : :obj:`str`
+        Path to the BIDS file.
+    entity : :obj:`str`
+        The entity to extract from the filename.
+
+    Returns
+    -------
+    entity_value : :obj:`str` or None
+        The BOLD file's entity value associated with the requested entity.
+    """
+    import os
+    import re
+
+    folder, file_base = os.path.split(filename)
+
+    # Allow + sign, which is not allowed in BIDS,
+    # but is used by templateflow for the MNIInfant template.
+    entity_values = re.findall(f"{entity}-([a-zA-Z0-9+]+)", file_base)
+    entity_value = None if len(entity_values) < 1 else entity_values[0]
+    if entity == "space" and entity_value is None:
+        foldername = os.path.basename(folder)
+        if foldername == "anat":
+            entity_value = "T1w"
+        elif foldername == "func":
+            entity_value = "native"
+        else:
+            raise ValueError(f"Unknown space for {filename}")
+
+    return entity_value

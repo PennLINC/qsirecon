@@ -503,8 +503,9 @@ def init_dsi_studio_connectivity_wf(
         (inputnode, calc_connectivity, [
             ('atlas_configs', 'atlas_configs'),
             ('fibgz', 'input_fib'),
-            ('trk_file', 'trk_file')]),
-        (calc_connectivity, outputnode, [('connectivity_matfile', 'matfile')])
+            ('trk_file', 'trk_file'),
+        ]),
+        (calc_connectivity, outputnode, [('connectivity_matfile', 'matfile')]),
     ])  # fmt:skip
 
     if plot_reports:
@@ -513,7 +514,7 @@ def init_dsi_studio_connectivity_wf(
             DerivativesDataSink(
                 desc="DSIStudioConnectivity",
                 suffix="matrices",
-                extension=".png",
+                extension=".svg",
             ),
             name="ds_report_connectivity",
             run_without_submitting=True,
@@ -535,8 +536,9 @@ def init_dsi_studio_connectivity_wf(
             name=f"ds_{name}",
             run_without_submitting=True,
         )
-        workflow.connect(calc_connectivity, 'connectivity_matfile',
-                         ds_connectivity, 'in_file')  # fmt:skip
+        workflow.connect([
+            (calc_connectivity, ds_connectivity, ('connectivity_matfile', 'in_file')),
+        ])  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)
 

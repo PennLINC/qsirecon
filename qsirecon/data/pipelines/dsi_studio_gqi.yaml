@@ -1,11 +1,3 @@
-atlases:
-- schaefer100
-- schaefer200
-- schaefer400
-- brainnetome246
-- aicha384
-- gordon333
-- aal116
 name: dsistudio_pipeline
 nodes:
 -   action: reconstruction

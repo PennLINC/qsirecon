@@ -1,5 +1,4 @@
 anatomical: []
-atlases: []
 name: multishell_scalarfest
 nodes:
 -   action: csd
