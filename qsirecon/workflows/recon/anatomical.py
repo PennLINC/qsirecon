@@ -132,7 +132,7 @@ def init_highres_recon_anatomical_wf(
         ds_qsiprep_5tt_hsvs = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
-                atlas="hsvs",
+                seg="hsvs",
                 space="T1w",
                 suffix="probseg",
                 compress=True,
@@ -143,7 +143,7 @@ def init_highres_recon_anatomical_wf(
         ds_fs_5tt_hsvs = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
-                atlas="hsvs",
+                seg="hsvs",
                 space="fsnative",
                 suffix="probseg",
                 compress=True,
@@ -494,7 +494,7 @@ def init_dwi_recon_anatomical_workflow(
         ds_qsiprep_5tt_hsvs = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
-                atlas="hsvs",
+                seg="hsvs",
                 suffix="probseg",
                 compress=True,
             ),
