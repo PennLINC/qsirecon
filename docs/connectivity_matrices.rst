@@ -8,9 +8,11 @@ Connectivity matrices
 
 Instead of offering a bewildering number of options for constructing connectivity matrices,
 ``qsirecon`` will construct as many connectivity matrices as it can given the reconstruction
-methods. It is **highly** recommended that you pick a weighting scheme before you run
-these pipelines and only look at those numbers. If you look at more than one weighting method
-be sure to adjust your statistics for the additional comparisons.
+methods.
+It is **highly** recommended that you pick a weighting scheme before you run
+these pipelines and only look at those numbers.
+If you look at more than one weighting method be sure to adjust your statistics for the
+additional comparisons.
 
 .. _connectivity_atlases:
 
@@ -18,53 +20,78 @@ be sure to adjust your statistics for the additional comparisons.
 Atlases
 *******
 
-The following atlases are included in ``qsirecon`` and are used by default in the
-:ref:`preconfigured_workflows`. If you use one of them please be sure to cite
-the relevant publication.
+The following atlases are included in ``qsirecon``.
+This means you do not need to add a ``--datasets`` argument to your command line,
+and can instead select them just with ``--atlases``.
 
- * ``schaefer100``, ``schaefer200``, ``schaefer400``: :footcite:t:`schaefer2018local,yeo2011organization`
- * ``brainnetome246``: :footcite:t:`fan2016human`
- * ``aicha384``: :footcite:t:`joliot2015aicha`
- * ``gordon333``: :footcite:t:`gordon2016generation`
- * ``aal116``: :footcite:t:`tzourio2002automated`
+If you previously were using the default atlases in a "connectivity matrix" workflow,
+you can match the previous behavior by adding
+
+``--atlases 4S156Parcels 4S256Parcels 4S456Parcels Brainnetome246Ext AICHA384Ext Gordon333Ext AAL116``
+
+If you use one of them please be sure to cite the relevant publication.
+
+ * ``Brainnetome246Ext``: :footcite:t:`fan2016human`, extended with subcortical parcels.
+ * ``AICHA384Ext``: :footcite:t:`joliot2015aicha`, extended with subcortical parcels.
+ * ``Gordon333Ext``: :footcite:t:`gordon2016generation`, extended with subcortical parcels.
+ * ``AAL116``: :footcite:t:`tzourio2002automated`
+
+The ``qsirecon`` atlas set can be downloaded directly from
+`box  <https://upenn.box.com/shared/static/8k17yt2rfeqm3emzol5sa0j9fh3dhs0i.xz>`_.
+
+The 4S atlas combines the Schaefer 2018 cortical atlas (version v0143) :footcite:p:`Schaefer_2017`
+at 10 different resolutions (100, 200, 300, 400, 500, 600, 700, 800, 900, and 1000 parcels) with
+the CIT168 subcortical atlas :footcite:p:`pauli2018high`,
+the Diedrichson cerebellar atlas :footcite:p:`king2019functional`,
+the HCP thalamic atlas :footcite:p:`najdenovska2018vivo`,
+and the amygdala and hippocampus parcels from the HCP CIFTI subcortical parcellation
+:footcite:p:`glasser2013minimal`.
+The 4S atlas is used in the same manner across three PennLINC BIDS Apps:
+QSIRecon, XCP-D, and ASLPrep, to produce synchronized outputs across modalities.
+For more information about the 4S atlas, please see https://github.com/PennLINC/AtlasPack.
+
+Atlases are written out to the ``atlases`` subfolder, following
+`BEP038 <https://docs.google.com/document/d/1RxW4cARr3-EiBEcXjLpSIVidvnUSHE7yJCUY91i5TfM/edit?usp=sharing>`_.
+
+.. code-block::
+
+   qsirecon/
+      atlases/
+         dataset_description.json
+         atlas-<label>/
+            atlas-<label>_space-<label>_res-<label>_dseg.nii.gz
+            atlas-<label>_space-<label>_res-<label>_dseg.json
+            atlas-<label>_dseg.tsv
+
+Additionally, each atlas is warped to the subject's anatomical space and written out in the
+associated reconstruction workflows dataset.
+
+.. code-block::
+
+   qsirecon/
+      derivatives/
+         qsirecon-<suffix>/
+            sub-<label>/
+               dwi/
+                  sub-<label>_space-T1w_seg-<label>_dseg.nii.gz
+                  sub-<label>_space-T1w_seg-<label>_dseg.mif.gz
+                  sub-<label>_space-T1w_seg-<label>_dseg.json
+                  sub-<label>_space-T1w_seg-<label>_dseg.tsv
+
 
 .. _custom_atlases:
 
 Using custom atlases
 ^^^^^^^^^^^^^^^^^^^^
 
-It's possible to use your own atlases provided you can match the format ``qsirecon`` uses to
-read atlases. The ``qsirecon`` atlas set can be downloaded directly from
-`box  <https://upenn.box.com/shared/static/8k17yt2rfeqm3emzol5sa0j9fh3dhs0i.xz>`_.
-
-In this directory there must exist a JSON file called ``atlas_config.json`` containing an
-entry for each atlas you would like included. The format is::
-
-  {
-    "my_custom_atlas": {
-      "file": "file_in_this_directory.nii.gz",
-      "node_names": ["Region1_L", "Region1_R" ... "RegionN_R"],
-      "node_ids": [1, 2, ..., N]
-    }
-    ...
-  }
-
-Where ``"node_names"`` are the text names of the regions in ``"my_custom_atlas"`` and
-``"node_ids"`` are the numbers in the nifti file that correspond to each region. When
-:ref:`custom_reconstruction` you can then inclued ``"my_custom_atlas"`` in the ``"atlases":[]``
-section.
-
-The directory containing ``atlas_config.json`` and the atlas nifti files should be mounted in
-the container at ``/atlas/qsirecon_atlases``. If using ``qsirecon-docker`` or
-``qsirecon-singularity`` this can be done with ``--custom-atlases /path/to/my/atlases`` or
-if you're running on your own system (not recommended) you can set the environment variable
-``QSIRECON_ATLAS=/path/to/my/atlases``.
+It's possible to use your own atlases provided you organize the atlases into BIDS-Atlas datasets.
+Users can control which atlases are used with the ``--atlases`` and ``--datasets`` parameters.
 
 The nifti images should be registered to the
 `MNI152NLin2009cAsym <https://github.com/PennLINC/qsirecon/blob/main/qsirecon/data/mni_1mm_t1w_lps.nii.gz>`_
 included in ``qsirecon``.
-It is essential that your images are in the LPS+ orientation and have the sform zeroed-out
-in the header. **Be sure to check for alignment and orientation** in your outputs.
+It is essential that your images are in the LPS+ orientation and have the sform zeroed-out in the header.
+**Be sure to check for alignment and orientation** in your outputs.
 
 
 **********

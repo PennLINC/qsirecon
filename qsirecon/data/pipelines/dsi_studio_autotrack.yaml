@@ -1,4 +1,3 @@
-atlases: []
 name: dsistudio_pipeline
 nodes:
 -   action: reconstruction

@@ -85,7 +85,7 @@ def init_pyafq_wf(available_anatomical_data, name="afq", qsirecon_suffix="", par
             ('bval_file', 'bval_file'),
             ('bvec_file', 'bvec_file'),
             ('dwi_mask', 'mask_file'),
-            ('t1_2_mni_reverse_transform', 'itk_file')]),
+            ('template_to_acpc_xfm', 'itk_file')]),
         (run_afq, outputnode, [('afq_dir', 'afq_dir')])
     ])  # fmt:skip
     if qsirecon_suffix:
