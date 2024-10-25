@@ -90,6 +90,8 @@ def test_mrtrix_multishell_msmt_hsvs(data_dir, output_dir, working_dir):
         "--sloppy",
         f"--freesurfer-input={freesurfer_dir}",
         "--recon-spec=mrtrix_multishell_msmt_ACT-hsvs",
+        "--atlases",
+        "AAL116",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
