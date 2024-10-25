@@ -483,6 +483,13 @@ workflows:
             tags:
               only: /.*/
 
+      - download_hsvs_data:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+
       - Recon_3Tissue_Singleshell_ACT:
           requires:
             - download_singleshell_output
