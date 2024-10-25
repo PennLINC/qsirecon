@@ -55,9 +55,6 @@ def test_mrtrix_singleshell_ss3t_act(data_dir, output_dir, working_dir):
         "--sloppy",
         "--recon-spec=mrtrix_singleshell_ss3t_ACT-fast",
         "--atlases",
-        "AAL116",
-        "AICHA384Ext",
-        "Brainnetome246Ext",
         "Gordon333Ext",
     ]
 
@@ -99,10 +96,6 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
         "--recon-spec=mrtrix_singleshell_ss3t_noACT",
         "--atlases",
         "AAL116",
-        "AICHA384Ext",
-        "Brainnetome246Ext",
-        "Gordon333Ext",
-        "4S156Parcels",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -403,10 +396,7 @@ def test_mrtrix3_recon(data_dir, output_dir, working_dir):
         "--sloppy",
         "--recon-spec=mrtrix_multishell_msmt_ACT-fast",
         "--atlases",
-        "AAL116",
-        "AICHA384Ext",
-        "Brainnetome246Ext",
-        "Gordon333Ext",
+        "4S156Parcels",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
