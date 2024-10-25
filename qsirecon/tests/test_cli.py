@@ -60,7 +60,7 @@ def test_mrtrix_singleshell_ss3t_act(data_dir, output_dir, working_dir):
 
 
 @pytest.mark.integration
-@pytest.mark.mrtrix_multishellshell_msmt_hsvs
+@pytest.mark.mrtrix_multishell_msmt_hsvs
 def test_mrtrix_multishell_msmt_hsvs(data_dir, output_dir, working_dir):
     """Run reconstruction workflow tests.
 
