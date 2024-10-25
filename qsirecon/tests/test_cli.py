@@ -77,13 +77,13 @@ def test_mrtrix_multishell_msmt_hsvs(data_dir, output_dir, working_dir):
     TEST_NAME = "mrtrix_multishell_msmt_hsvs"
 
     dataset_dir = download_test_data("hsvs_data", data_dir)
-    dataset_dir = os.path.join(dataset_dir, "araikes/qsiprep")
+    qsiprep_dir = os.path.join(dataset_dir, "araikes/qsiprep")
     freesurfer_dir = os.path.join(dataset_dir, "araikes/freesurfer")
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
-        dataset_dir,
+        qsiprep_dir,
         out_dir,
         "participant",
         f"-w={work_dir}",
