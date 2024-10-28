@@ -185,11 +185,9 @@ def collect_anatomical_data(
     anat_data = {}
     status = {}
 
-    infant_mode = config.workflow.infant
-
     _spec = yaml.safe_load(load_data.readable("io_spec.yaml").read_text())
     queries = _spec["queries"]["anat"]
-    if infant_mode:
+    if config.workflow.infant:
         queries["acpc_to_template_xfm"]["to"] = "MNIInfant"
         queries["template_to_acpc_xfm"]["from"] = "MNIInfant"
 
