@@ -136,6 +136,7 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
 
+
 @pytest.mark.integration
 @pytest.mark.amico_noddi
 def test_amico_noddi(data_dir, output_dir, working_dir):
