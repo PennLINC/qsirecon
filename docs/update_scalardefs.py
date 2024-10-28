@@ -46,8 +46,8 @@ def output_to_filepattern(bids):
     file_pattern = []
     if "space" in bids:
         file_pattern.append(f"space-{bids['space']}")
-    if "atlas" in bids:
-        file_pattern.append(f"atlas-{bids['atlas']}")
+    if "seg" in bids:
+        file_pattern.append(f"seg-{bids['seg']}")
     if "bundle" in bids:
         file_pattern.append(f"bundle-{bids['bundle']}")
     if "bundles" in bids:

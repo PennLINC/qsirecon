@@ -39,27 +39,27 @@ class QSIPrepAnatomicalIngressInputSpec(BaseInterfaceInputSpec):
 
 class QSIPrepAnatomicalIngressOutputSpec(TraitedSpec):
     # sub-1_desc-aparcaseg_dseg.nii.gz
-    t1_aparc = File()
+    acpc_aparc = File()
     # sub-1_dseg.nii.gz
-    t1_seg = File()
+    acpc_seg = File()
     # sub-1_desc-aseg_dseg.nii.gz
-    t1_aseg = File()
+    acpc_aseg = File()
     # sub-1_desc-brain_mask.nii.gz
-    t1_brain_mask = File()
+    acpc_brain_mask = File()
     # sub-1_desc-preproc_T1w.nii.gz
-    t1_preproc = File()
+    acpc_preproc = File()
     # sub-1_label-CSF_probseg.nii.gz
-    t1_csf_probseg = File()
+    acpc_csf_probseg = File()
     # sub-1_label-GM_probseg.nii.gz
-    t1_gm_probseg = File()
+    acpc_gm_probseg = File()
     # sub-1_label-WM_probseg.nii.gz
-    t1_wm_probseg = File()
+    acpc_wm_probseg = File()
     # sub-1_from-orig_to-T1w_mode-image_xfm.txt
-    orig_to_t1_mode_forward_transform = File()
+    orig_to_acpc_xfm = File()
     # sub-1_from-MNI152NLin2009cAsym_to-T1w_mode-image_xfm.h5
-    t1_2_mni_reverse_transform = File()
+    template_to_acpc_xfm = File()
     # sub-1_from-T1w_to-MNI152NLin2009cAsym_mode-image_xfm.h5
-    t1_2_mni_forward_transform = File()
+    acpc_to_template_xfm = File()
 
 
 class QSIPrepAnatomicalIngress(SimpleInterface):
@@ -79,65 +79,65 @@ class QSIPrepAnatomicalIngress(SimpleInterface):
         anat_root = op.join(qp_root, "anat")
         # space-T1w files
         self._get_if_exists(
-            "t1_aparc",
+            "acpc_aparc",
             "%s/sub-%s*desc-aparcaseg_dseg.nii.*" % (anat_root, sub),
             excludes=["space-MNI"],
         )
         self._get_if_exists(
-            "t1_seg", "%s/sub-%s_*dseg.nii*" % (anat_root, sub), excludes=["space-MNI", "aseg"]
+            "acpc_seg", "%s/sub-%s_*dseg.nii*" % (anat_root, sub), excludes=["space-MNI", "aseg"]
         )
         self._get_if_exists(
-            "t1_aseg",
+            "acpc_aseg",
             "%s/sub-%s_*aseg_dseg.nii*" % (anat_root, sub),
             excludes=["space-MNI", "aparc"],
         )
         self._get_if_exists(
-            "t1_brain_mask",
+            "acpc_brain_mask",
             "%s/sub-%s*_desc-brain_mask.nii*" % (anat_root, sub),
             excludes=["space-MNI"],
         )
         self._get_if_exists(
-            "t1_preproc",
+            "acpc_preproc",
             "%s/sub-%s_desc-preproc_T*w.nii*" % (anat_root, sub),
             excludes=["space-MNI"],
         )
-        if "t1_preproc" not in self._results:
+        if "acpc_preproc" not in self._results:
             LOGGER.warning("Unable to find a preprocessed T1w in %s", qp_root)
         self._get_if_exists(
-            "t1_csf_probseg",
+            "acpc_csf_probseg",
             "%s/sub-%s*_label-CSF_probseg.nii*" % (anat_root, sub),
             excludes=["space-MNI"],
         )
         self._get_if_exists(
-            "t1_gm_probseg",
+            "acpc_gm_probseg",
             "%s/sub-%s*_label-GM_probseg.nii*" % (anat_root, sub),
             excludes=["space-MNI"],
         )
         self._get_if_exists(
-            "t1_wm_probseg",
+            "acpc_wm_probseg",
             "%s/sub-%s*_label-WM_probseg.nii*" % (anat_root, sub),
             excludes=["space-MNI"],
         )
         self._get_if_exists(
-            "orig_to_t1_mode_forward_transform",
+            "orig_to_acpc_xfm",
             "%s/sub-%s*_from-orig_to-T*w_mode-image_xfm.txt" % (anat_root, sub),
         )
         if self.inputs.infant_mode:
             self._get_if_exists(
-                "t1_2_mni_reverse_transform",
+                "template_to_acpc_xfm",
                 "%s/sub-%s*_from-MNIInfant*_to-T*w*_xfm.h5" % (anat_root, sub),
             )
             self._get_if_exists(
-                "t1_2_mni_forward_transform",
+                "acpc_to_template_xfm",
                 "%s/sub-%s*_from-T*w_to-MNIInfant*_mode-image_xfm.h5" % (anat_root, sub),
             )
         else:
             self._get_if_exists(
-                "t1_2_mni_reverse_transform",
+                "template_to_acpc_xfm",
                 "%s/sub-%s*_from-MNI152NLin2009cAsym_to-T*w*_xfm.h5" % (anat_root, sub),
             )
             self._get_if_exists(
-                "t1_2_mni_forward_transform",
+                "acpc_to_template_xfm",
                 "%s/sub-%s*_from-T*w_to-MNI152NLin2009cAsym_mode-image_xfm.h5" % (anat_root, sub),
             )
 

@@ -1,0 +1,95 @@
+queries:
+    anat:
+        acpc_aparc:
+            datatype: anat
+            space: null
+            desc: aparcaseg
+            suffix: dseg
+            extension:
+            - .nii.gz
+            - .nii
+        acpc_seg:
+            datatype: anat
+            space: null
+            desc: null
+            suffix: dseg
+            extension:
+            - .nii.gz
+            - .nii
+        acpc_aseg:
+            datatype: anat
+            space: null
+            desc: aseg
+            suffix: dseg
+            extension:
+            - .nii.gz
+            - .nii
+        acpc_brain_mask:
+            datatype: anat
+            space: null
+            desc: brain
+            suffix: mask
+            extension:
+            - .nii.gz
+            - .nii
+        acpc_preproc:
+            datatype: anat
+            space: null
+            desc: preproc
+            suffix:
+            - T1w
+            - T2w
+            extension:
+            - .nii.gz
+            - .nii
+        acpc_csf_probseg:
+            datatype: anat
+            space: null
+            label: CSF
+            suffix: probseg
+            extension:
+            - .nii.gz
+            - .nii
+        acpc_gm_probseg:
+            datatype: anat
+            space: null
+            label: GM
+            suffix: probseg
+            extension:
+            - .nii.gz
+            - .nii
+        acpc_wm_probseg:
+            datatype: anat
+            space: null
+            label: WM
+            suffix: probseg
+            extension:
+            - .nii.gz
+            - .nii
+        orig_to_acpc_xfm:
+            datatype: anat
+            from: orig
+            to:
+            - T1w
+            - T2w
+            mode: image
+            suffix: xfm
+            extension: .txt
+        template_to_acpc_xfm:
+            datatype: anat
+            from: MNI152NLin2009cAsym
+            to:
+            - T1w
+            - T2w
+            mode: image
+            suffix: xfm
+            extension: .h5
+        acpc_to_template_xfm:
+            datatype: anat
+            from:
+            - T1w
+            - T2w
+            to: MNI152NLin2009cAsym
+            mode: image
+            suffix: xfm
+            extension: .h5

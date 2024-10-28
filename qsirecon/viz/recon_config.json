@@ -22,7 +22,7 @@
                 "raw": true
             },
             {
-                "name": "anat_preproc/t1_brain_seg",
+                "name": "acpc_preproc/t1_brain_seg",
                 "file_pattern": "anat/.*seg_brainmask",
                 "title": "Brain mask and brain tissue segmentation of the T1w",
                 "description": "This panel shows the template T1-weighted image (if several T1w images were found), with contours delineating the detected brain mask and brain tissue segmentations.",

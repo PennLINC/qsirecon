@@ -10,6 +10,7 @@ Miscellaneous utilities
 
 import os
 
+import nibabel as nb
 from nipype import logging
 from nipype.interfaces import ants
 from nipype.interfaces.base import (
@@ -21,72 +22,105 @@ from nipype.interfaces.base import (
     traits,
 )
 from nipype.utils.filemanip import fname_presuffix
-
-from ..utils.atlases import get_atlases
+from niworkflows.interfaces.header import ValidateImage
 
 IFLOGGER = logging.getLogger("nipype.interfaces")
 
 
-class GetConnectivityAtlasesInputSpec(BaseInterfaceInputSpec):
-    atlas_names = traits.List(mandatory=True, desc="atlas names to be used")
-    forward_transform = File(exists=True, desc="transform to get atlas into T1w space if desired")
+class _WarpConnectivityAtlasesInputSpec(BaseInterfaceInputSpec):
+    atlas_configs = traits.Dict(
+        mandatory=True,
+        desc=(
+            "Dictionary of atlas configurations. "
+            "Keys are atlas names and values are dictionaries with the following keys: "
+            "'file', 'label', 'metadata'. "
+            "'file' is the path to the atlas file. "
+            "'label' is the path to the label file. "
+            "'metadata' is a dictionary with relevant metadata. "
+            "'xfm_to_anat' is the path to the transform to get the atlas into T1w space."
+        ),
+    )
     reference_image = File(exists=True, desc="")
     space = traits.Str("T1w", usedefault=True)
 
 
-class GetConnectivityAtlasesOutputSpec(TraitedSpec):
-    atlas_configs = traits.Dict()
+class _WarpConnectivityAtlasesOutputSpec(TraitedSpec):
+    atlas_configs = traits.Dict(
+        desc=(
+            "Dictionary of atlas configurations. "
+            "This interface adds the following keys: "
+            "'dwi_resolution_file', 'dwi_resolution_mif', 'orig_lut', 'mrtrix_lut'. "
+            "The values are the paths to the transformed atlas files and the label files."
+        ),
+    )
     commands = File()
 
 
-class GetConnectivityAtlases(SimpleInterface):
-    input_spec = GetConnectivityAtlasesInputSpec
-    output_spec = GetConnectivityAtlasesOutputSpec
+class WarpConnectivityAtlases(SimpleInterface):
+    input_spec = _WarpConnectivityAtlasesInputSpec
+    output_spec = _WarpConnectivityAtlasesOutputSpec
 
     def _run_interface(self, runtime):
-        atlas_names = self.inputs.atlas_names
-        atlas_configs = get_atlases(atlas_names)
-
         if self.inputs.space == "T1w":
-            if not isdefined(self.inputs.forward_transform):
-                raise Exception("No MNI to T1w transform found in anatomical directory")
-            else:
-                transform = self.inputs.forward_transform
+            transforms = [cfg["xfm_to_anat"] for cfg in self.inputs.atlas_configs.values()]
+            if not all(os.path.isfile(transform) for transform in transforms):
+                raise ValueError("No standard to T1w transform found in anatomical directory.")
+
         else:
-            transform = "identity"
+            transforms = ["identity"] * len(self.inputs.atlas_configs)
 
         # Transform atlases to match the DWI data
+        atlas_configs = self.inputs.atlas_configs.copy()
         resample_commands = []
-        for atlas_name, atlas_config in atlas_configs.items():
+        for i_atlas, (atlas_name, atlas_config) in enumerate(atlas_configs.items()):
             output_name = fname_presuffix(
-                atlas_config["file"], newpath=runtime.cwd, suffix="_to_dwi"
+                atlas_config["image"],
+                newpath=runtime.cwd,
+                suffix="_to_dwi",
             )
             output_mif = fname_presuffix(
-                atlas_config["file"], newpath=runtime.cwd, suffix="_to_dwi.mif", use_ext=False
+                atlas_config["image"],
+                newpath=runtime.cwd,
+                suffix="_to_dwi.mif",
+                use_ext=False,
             )
             output_mif_txt = fname_presuffix(
-                atlas_config["file"],
+                atlas_config["image"],
                 newpath=runtime.cwd,
                 suffix="_mrtrixlabels.txt",
                 use_ext=False,
             )
             output_orig_txt = fname_presuffix(
-                atlas_config["file"], newpath=runtime.cwd, suffix="_origlabels.txt", use_ext=False
+                atlas_config["image"],
+                newpath=runtime.cwd,
+                suffix="_origlabels.txt",
+                use_ext=False,
             )
 
             atlas_configs[atlas_name]["dwi_resolution_file"] = output_name
             atlas_configs[atlas_name]["dwi_resolution_mif"] = output_mif
             atlas_configs[atlas_name]["orig_lut"] = output_mif_txt
             atlas_configs[atlas_name]["mrtrix_lut"] = output_orig_txt
+
+            conform_atlas = ConformAtlas(in_file=atlas_config["image"], orientation="LPS")
+            result = conform_atlas.run()
+            lps_name = result.outputs.out_file
+
             resample_commands.append(
                 _resample_atlas(
-                    input_atlas=atlas_config["file"],
+                    input_atlas=lps_name,
                     output_atlas=output_name,
-                    transform=transform,
+                    transform=transforms[i_atlas],
                     ref_image=self.inputs.reference_image,
                 )
             )
-            label_convert(output_name, output_mif, output_orig_txt, output_mif_txt, atlas_config)
+            label_convert(
+                output_name,
+                output_mif,
+                output_orig_txt,
+                output_mif_txt,
+                atlas_config["labels"],
+            )
 
         self._results["atlas_configs"] = atlas_configs
         commands_file = os.path.join(runtime.cwd, "transform_commands.txt")
@@ -129,15 +163,74 @@ def _resample_atlas(input_atlas, output_atlas, transform, ref_image):
     return result.runtime.cmdline
 
 
-def label_convert(original_atlas, output_mif, orig_txt, mrtrix_txt, metadata):
+def label_convert(original_atlas, output_mif, orig_txt, mrtrix_txt, atlas_labels_file):
     """Create a mrtrix label file from an atlas."""
+    import pandas as pd
+
+    atlas_labels_df = pd.read_table(atlas_labels_file)
+    index_label_pairs = zip(atlas_labels_df["index"], atlas_labels_df["label"])
+    orig_str = ""
+    mrtrix_str = ""
+    for i_row, (index, label) in enumerate(index_label_pairs):
+        orig_str += f"{index}\t{label}\n"
+        mrtrix_str += f"{i_row + 1}\t{label}\n"
 
     with open(mrtrix_txt, "w") as mrtrix_f:
-        with open(orig_txt, "w") as orig_f:
-            for row_num, (roi_num, roi_name) in enumerate(
-                zip(metadata["node_ids"], metadata["node_names"])
-            ):
-                orig_f.write("{}\t{}\n".format(roi_num, roi_name))
-                mrtrix_f.write("{}\t{}\n".format(row_num + 1, roi_name))
+        mrtrix_f.write(mrtrix_str)
+
+    with open(orig_txt, "w") as orig_f:
+        orig_f.write(orig_str)
+
     cmd = ["labelconvert", original_atlas, orig_txt, mrtrix_txt, output_mif]
     os.system(" ".join(cmd))
+
+
+class _ConformAtlasInputSpec(BaseInterfaceInputSpec):
+    in_file = File(mandatory=True, desc="dwi image")
+    orientation = traits.Enum("LPS", "LAS", default="LPS", usedefault=True)
+
+
+class _ConformAtlasOutputSpec(TraitedSpec):
+    out_file = File(exists=True, desc="conformed dwi image")
+
+
+class ConformAtlas(SimpleInterface):
+    """Conform a series of dwi images to enable merging.
+
+    Performs three basic functions:
+    #. Orient image to requested orientation
+    #. Validate the qform and sform, set qform code to 1
+    """
+
+    input_spec = _ConformAtlasInputSpec
+    output_spec = _ConformAtlasOutputSpec
+
+    def _run_interface(self, runtime):
+        fname = self.inputs.in_file
+        orientation = self.inputs.orientation
+        suffix = "_" + orientation
+        out_fname = fname_presuffix(fname, suffix=suffix, newpath=runtime.cwd)
+
+        validator = ValidateImage(in_file=fname)
+        validated = validator.run()
+        input_img = nb.load(validated.outputs.out_file)
+
+        input_axcodes = nb.aff2axcodes(input_img.affine)
+        # Is the input image oriented how we want?
+        new_axcodes = tuple(orientation)
+
+        if not input_axcodes == new_axcodes:
+            # Re-orient
+            input_orientation = nb.orientations.axcodes2ornt(input_axcodes)
+            desired_orientation = nb.orientations.axcodes2ornt(new_axcodes)
+            transform_orientation = nb.orientations.ornt_transform(
+                input_orientation, desired_orientation
+            )
+            reoriented_img = input_img.as_reoriented(transform_orientation)
+            reoriented_img.to_filename(out_fname)
+            self._results["out_file"] = out_fname
+
+        else:
+            self._results["out_file"] = fname
+
+        return runtime
