@@ -537,7 +537,7 @@ def init_dsi_studio_connectivity_wf(
             run_without_submitting=True,
         )
         workflow.connect([
-            (calc_connectivity, ds_connectivity, ('connectivity_matfile', 'in_file')),
+            (calc_connectivity, ds_connectivity, [('connectivity_matfile', 'in_file')]),
         ])  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)
