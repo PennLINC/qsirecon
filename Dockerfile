@@ -5,7 +5,7 @@ RUN pip install build
 RUN apt-get update && \
     apt-get install -y --no-install-recommends git
 
-FROM pennlinc/qsirecon_build:24.10.3
+FROM pennlinc/qsirecon_build:testwb.0.2
 
 # Install qsirecon
 COPY . /src/qsirecon
