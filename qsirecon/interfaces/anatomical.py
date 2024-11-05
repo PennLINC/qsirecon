@@ -122,14 +122,24 @@ class QSIPrepAnatomicalIngress(SimpleInterface):
             "orig_to_acpc_xfm",
             "%s/sub-%s*_from-orig_to-T*w_mode-image_xfm.txt" % (anat_root, sub),
         )
-        self._get_if_exists(
-            "template_to_acpc_xfm",
-            "%s/sub-%s*_from-MNI152NLin2009cAsym_to-T*w*_xfm.h5" % (anat_root, sub),
-        )
-        self._get_if_exists(
-            "acpc_to_template_xfm",
-            "%s/sub-%s*_from-T*w_to-MNI152NLin2009cAsym_mode-image_xfm.h5" % (anat_root, sub),
-        )
+        if self.inputs.infant_mode:
+            self._get_if_exists(
+                "template_to_acpc_xfm",
+                "%s/sub-%s*_from-MNIInfant*_to-T*w*_xfm.h5" % (anat_root, sub),
+            )
+            self._get_if_exists(
+                "acpc_to_template_xfm",
+                "%s/sub-%s*_from-T*w_to-MNIInfant*_mode-image_xfm.h5" % (anat_root, sub),
+            )
+        else:
+            self._get_if_exists(
+                "template_to_acpc_xfm",
+                "%s/sub-%s*_from-MNI152NLin2009cAsym_to-T*w*_xfm.h5" % (anat_root, sub),
+            )
+            self._get_if_exists(
+                "acpc_to_template_xfm",
+                "%s/sub-%s*_from-T*w_to-MNI152NLin2009cAsym_mode-image_xfm.h5" % (anat_root, sub),
+            )
 
         return runtime
 
