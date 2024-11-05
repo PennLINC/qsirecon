@@ -18,10 +18,10 @@ derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_
 derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-kfa_dwimap.nii.gz
 derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-md_dwimap.json
 derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-md_dwimap.nii.gz
-derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-mkt_dwimap.json
-derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-mkt_dwimap.nii.gz
 derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-mk_dwimap.json
 derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-mk_dwimap.nii.gz
+derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-mkt_dwimap.json
+derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-mkt_dwimap.nii.gz
 derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-rd_dwimap.json
 derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-rd_dwimap.nii.gz
 derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-rk_dwimap.json

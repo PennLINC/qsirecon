@@ -62,6 +62,42 @@ def test_mrtrix_singleshell_ss3t_act(data_dir, output_dir, working_dir):
 
 
 @pytest.mark.integration
+@pytest.mark.mrtrix_multishell_msmt_hsvs
+def test_mrtrix_multishell_msmt_hsvs(data_dir, output_dir, working_dir):
+    """Run reconstruction workflow tests.
+
+    Tests the mrtrix msmt hsvs workflow on data generously uploaded to openneuro
+    by araikes.
+
+    Inputs
+    ------
+    - hsvs input data (data/araikes/qsiprep, data/araikes/freesurfer)
+    """
+
+    TEST_NAME = "mrtrix_multishell_msmt_hsvs"
+
+    dataset_dir = download_test_data("hsvs_data", data_dir)
+    qsiprep_dir = os.path.join(dataset_dir, "araikes/qsiprep")
+    freesurfer_dir = os.path.join(dataset_dir, "araikes/freesurfer")
+    out_dir = os.path.join(output_dir, TEST_NAME)
+    work_dir = os.path.join(working_dir, TEST_NAME)
+
+    parameters = [
+        qsiprep_dir,
+        out_dir,
+        "participant",
+        f"-w={work_dir}",
+        "--sloppy",
+        f"--freesurfer-input={freesurfer_dir}",
+        "--recon-spec=mrtrix_multishell_msmt_ACT-hsvs",
+        "--atlases",
+        "AAL116",
+    ]
+
+    _run_and_generate(TEST_NAME, parameters, test_main=True)
+
+
+@pytest.mark.integration
 @pytest.mark.mrtrix_singleshell_ss3t_noact
 def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
     """Run reconstruction workflow tests.
