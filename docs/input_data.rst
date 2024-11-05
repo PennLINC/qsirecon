@@ -54,6 +54,7 @@ To use the UK BioBank preprocessed dMRI data, specify ``--input-type ukb``.
 Note that the transforms to/from MNI space are not able to be used at this time.
 This means that a new spatial normalization will have to be estimated in order to
 use any of the workflows that require one.
+Also note that only DSI_Studio recon-specs have been tested for UKB inputs.
 
 HCP Young Adult Preprocessed Data
 =================================
