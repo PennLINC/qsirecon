@@ -12,7 +12,7 @@ from glob import glob
 
 import nipype.pipeline.engine as pe
 import yaml
-from bids.layout import BIDSLayout
+from bids.layout import Query
 from dipy import __version__ as dipy_ver
 from nilearn import __version__ as nilearn_ver
 from nipype import __version__ as nipype_ver
@@ -95,7 +95,7 @@ def init_single_subject_recon_wf(subject_id):
     from .recon.build_workflow import init_dwi_recon_workflow
 
     spec = _load_recon_spec(config.workflow.recon_spec)
-    dwi_recon_inputs = _get_iterable_dwi_inputs(subject_id)
+    dwi_recon_inputs = _get_iterable_dwis_and_anats(subject_id)
 
     workflow = Workflow(name=f"sub-{subject_id}_{spec['name']}")
     workflow.__desc__ = f"""
@@ -417,30 +417,50 @@ def _load_recon_spec(spec_name):
     return spec
 
 
-def _get_iterable_dwi_inputs(subject_id):
-    """Return inputs for the recon ingressors depending on the pipeline source.
+def _get_iterable_dwis_and_anats(subject_id):
+    """Look through the BIDS Layout for DWIs and their corresponding anats.
 
-    If qsirecon was used as the pipeline source, the iterable is going to be the
-    dwi files (there can be an arbitrary number of them).
+    Parameters:
+    -----------
+    subject_id: str
+        Subject label (without "sub-") to find data for
 
-    If ukb or hcpya were used there is only one dwi file per subject, so the
-    ingressors are sent the subject directory, which makes it easier to find
-    the other files needed.
+    Returns:
+    --------
+    dwis_and_anats: list of tuple
+
 
     """
 
-    dwi_dir = config.execution.bids_dir
-    if not (dwi_dir / f"sub-{subject_id}").exists():
-        raise Exception(f"Unable to find subject directory in {config.execution.bids_dir}")
+    dwis_and_anats = []
+    dwi_files = config.execution.layout.get(
+        suffix="dwi",
+        session=Query.OPTIONAL,
+        space="T1w",
+        extension=["nii", "nii.gz"],
+    )
 
-    layout = BIDSLayout(dwi_dir, validate=False, absolute_paths=True)
-    # Get all the output files that are in this space
-    dwi_files = [
-        f.path
-        for f in layout.get(
-            suffix="dwi", subject=subject_id, absolute_paths=True, extension=["nii", "nii.gz"]
+    for dwi_scan in dwi_files:
+        subject_level_anats = config.execution.layout.get(
+            suffix=["T1w", "T2w"],
+            session=Query.NONE,
+            extension=["nii", "nii.gz"],
         )
-        if "space-T1w" in f.filename
-    ]
-    config.loggers.workflow.info("found %s in %s", dwi_files, dwi_dir)
-    return [{"bids_dwi_file": dwi_file} for dwi_file in dwi_files]
+
+        session_level_anats = []
+        if dwi_session := dwi_scan.entities.get("session"):
+            session_level_anats = config.execution.layout.get(
+                suffix=["T1w", "T2w"],
+                session=dwi_session,
+                absolute_paths=True,
+                extension=["nii", "nii.gz"],
+            )
+
+        if not (session_level_anats or subject_level_anats):
+            anat_dir = None
+        else:
+            best_anat_source = session_level_anats if session_level_anats else subject_level_anats
+            anat_dir = best_anat_source[0].dirname
+
+        dwis_and_anats.append((dwi_scan.path, anat_dir))
+    return dwis_and_anats

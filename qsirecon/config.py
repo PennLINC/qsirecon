@@ -406,8 +406,6 @@ class execution(_Config):
     """An existing file containing a FreeSurfer license."""
     fs_subjects_dir = None
     """FreeSurfer's subjects directory."""
-    interactive_reports_only = False
-    """Only build the interactive reports, based on the output directory."""
     layout = None
     """A :py:class:`~bids.layout.BIDSLayout` object, see :py:func:`init`."""
     log_dir = None
@@ -424,6 +422,8 @@ class execution(_Config):
     """Only build the reports, based on the reportlets found in a cached working directory."""
     run_uuid = f"{strftime('%Y%m%d-%H%M%S')}_{uuid4()}"
     """Unique identifier of this particular run."""
+    report_output_level = None
+    """Directory level at which the html reports should be written."""
     skip_odf_reports = False
     """Disable ODF recon reports."""
     participant_label = None

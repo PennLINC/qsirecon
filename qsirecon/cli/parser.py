@@ -286,10 +286,13 @@ def _build_parser(**kwargs):
         "aggregation, not reportlet generation for specific nodes.",
     )
     g_subset.add_argument(
-        "--interactive-reports-only",
-        action="store_true",
-        default=False,
-        help="create interactive report json files on already preprocessed data.",
+        "--report-output-level",
+        action="store",
+        choices=["root", "subject", "session"],
+        default="root",
+        help="Where should the html reports be written? By default root will write "
+        "them to the --output-dir. Other options will write them into their "
+        "subject or session directory.",
     )
 
     g_conf = parser.add_argument_group("Workflow configuration")
