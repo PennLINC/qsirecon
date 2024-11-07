@@ -15,7 +15,7 @@ If you look at more than one weighting method be sure to adjust your statistics 
 additional comparisons.
 
 To skip this step in your workflow, you can modify an existing recon pipeline by removing the 
-`action: connectivity` section from the yaml file.
+``action: connectivity`` section from the yaml file.
 
 .. _connectivity_atlases:
 
