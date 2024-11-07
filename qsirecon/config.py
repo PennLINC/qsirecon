@@ -207,7 +207,7 @@ except Exception:  # noqa: S110, BLE001
 
 # Debug modes are names that influence the exposure of internal details to
 # the user, either through additional derivatives or increased verbosity
-DEBUG_MODES = ("fieldmaps", "pdb")
+DEBUG_MODES = ("pdb")
 
 
 class _Config:
@@ -430,6 +430,8 @@ class execution(_Config):
     """List of participant identifiers that are to be preprocessed."""
     freesurfer_input = None
     """Directory containing FreeSurfer directories to use for recon workflows."""
+    session_id = None
+    """List of session identifiers that are to be preprocessed"""
     templateflow_home = _templateflow_home
     """The root folder of the TemplateFlow client."""
     work_dir = Path("work").absolute()
@@ -490,6 +492,10 @@ class execution(_Config):
                 # This is only done if the database is written out to a run-specific folder.
                 ignore_patterns.append(
                     re.compile(r"sub-(?!(" + "|".join(cls.participant_label) + r")(\b|_))")
+                )
+            if cls.session_id and cls.bids_database_dir is None:
+                ignore_patterns.append(
+                    re.compile(r"ses-(?!(" + "|".join(cls.session_id) + r")(\b|_))")
                 )
 
             _indexer = BIDSLayoutIndexer(

@@ -94,6 +94,9 @@ def _build_parser(**kwargs):
     def _drop_sub(value):
         return value[4:] if value.startswith("sub-") else value
 
+    def _drop_ses(value):
+        return value[4:] if value.startswith("ses-") else value
+
     def _process_value(value):
         import bids
 
@@ -176,12 +179,15 @@ def _build_parser(**kwargs):
         help="A space delimited list of participant identifiers or a single "
         "identifier (the sub- prefix can be removed)",
     )
-    # Re-enable when option is actually implemented
-    # g_bids.add_argument('-s', '--session-id', action='store', default='single_session',
-    #                     help='Select a specific session to be processed')
-    # Re-enable when option is actually implemented
-    # g_bids.add_argument('-r', '--run-id', action='store', default='single_run',
-    #                     help='Select a specific run to be processed')
+    g_bids.add_argument(
+        "--session-id",
+        action="store",
+        nargs="+",
+        type=_drop_ses,
+        default=None,
+        help="A space delimited list of session identifiers or a single "
+        "identifier (the ses- prefix can be removed)",
+    )
 
     g_bids.add_argument(
         "-d",
@@ -445,6 +451,8 @@ def parse_args(args=None, namespace=None):
     """Parse args and run further checks on the command line."""
     import logging
 
+    from bids.layout import Query
+
     # from niworkflows.utils.spaces import Reference, SpatialReferences
 
     parser = _build_parser()
@@ -473,9 +481,9 @@ def parse_args(args=None, namespace=None):
     config.from_dict(vars(opts), init=["nipype"])
 
     if not config.execution.notrack:
-        import pkgutil
+        import importlib.util
 
-        if pkgutil.find_loader("sentry_sdk") is None:
+        if importlib.util.find_spec("sentry_sdk") is None:
             config.execution.notrack = True
             config.loggers.cli.warning("Telemetry disabled because sentry_sdk is not installed.")
         else:
