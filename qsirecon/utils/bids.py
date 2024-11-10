@@ -146,6 +146,7 @@ def collect_participants(bids_dir, participant_label=None, strict=False, bids_va
 def collect_anatomical_data(
     layout,
     subject_id,
+    session_id,
     needs_t1w_transform,
     bids_filters=None,
 ):
@@ -185,6 +186,9 @@ def collect_anatomical_data(
     anat_data = {}
     status = {}
 
+    if session_id is None:
+        return anat_data, {"has_qsiprep_t1w": False, "has_qsiprep_t1w_transforms": False}
+
     _spec = yaml.safe_load(load_data.readable("io_spec.yaml").read_text())
     queries = _spec["queries"]["anat"]
     if config.workflow.infant:
@@ -201,6 +205,7 @@ def collect_anatomical_data(
         files = layout.get(
             return_type="file",
             subject=subject_id,
+            session=session_id,
             **query,
         )
         if len(files) == 1:
