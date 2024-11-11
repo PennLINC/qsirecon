@@ -85,7 +85,6 @@ def init_single_subject_recon_wf(subject_id):
         recon_workflow_input_fields,
     )
     from ..interfaces.reports import AboutSummary, SubjectSummary
-    from ..interfaces.utils import GetUnique
     from ..utils.atlases import collect_atlases
     from ..utils.bids import collect_anatomical_data, get_entity
     from .recon.anatomical import (
@@ -129,7 +128,7 @@ to workflows in *QSIRecon*'s documentation]\
 
     highres_anat_wfs = {}
     highres_anat_statuses = {}
-    for anat_input_file in anat_input_files:
+    for anat_num, anat_input_file in enumerate(anat_input_files):
         _session_filter = (
             None
             if anat_input_file is None
@@ -152,7 +151,7 @@ to workflows in *QSIRecon*'s documentation]\
         )
         anat_ingress_nodes[anat_input_file.path] = pe.Node(
             niu.IdentityInterface(fields=list(anat_data.keys())),
-            name="anat_ingress_node",
+            name=f"anat_ingress_node_{anat_num}",
         )
         highres_anat_wfs[anat_input_file.path], highres_anat_statuses[anat_input_file.path] = (
             init_highres_recon_anatomical_wf(
@@ -160,69 +159,77 @@ to workflows in *QSIRecon*'s documentation]\
                 session_id=_session_filter,
                 extras_to_make=spec.get("anatomical", []),
                 status=highres_anat_statuses[anat_input_file.path],
-                anat_data=anat_data,
+                name=f"recon_anatomical_wf_{anat_num}",
             )
         )
+        for key, value in anat_data.items():
+            config.loggers.workflow.info(f"{key} ({type(key)}): {value} ({type(value)})")
+            anat_ingress_nodes[anat_input_file.path].set_input(key, value)
+            workflow.connect([
+                (anat_ingress_nodes[anat_input_file.path],
+                 highres_anat_wfs[anat_input_file.path], [
+                     (key, f"inputnode.{key}")]),
+            ])  # fmt:skip
+
+        # Configure atlases _per_ anatomical workflow
+        atlas_configs = {}
+        if config.execution.atlases:
+            # Limit atlases to ones in the specified space.
+            xfm_to_anat = anat_data["template_to_acpc_xfm"]
+            template_space = get_entity(xfm_to_anat, "from")
+            bids_filters = (config.execution.bids_filters or {}).copy()
+            bids_filters["atlas"] = bids_filters.get("atlas", {})
+            bids_filters["atlas"]["space"] = template_space
+
+            # Collect atlases across datasets, including built-in atlases.
+            atlas_configs = collect_atlases(
+                datasets=config.execution.datasets,
+                atlases=config.execution.atlases,
+                bids_filters=bids_filters,
+            )
+            # Patch the transform into the atlas configs.
+            # This is a placeholder until we can support atlases in various spaces.
+            for atlas_name in atlas_configs.keys():
+                atlas_configs[atlas_name]["xfm_to_anat"] = xfm_to_anat
+
+            # Prepare the atlases.
+            # Reorient to LPS+ and zero out the sform.
+            for atlas_name, atlas_config in atlas_configs.items():
+                # Node is named dataset_ instead of ds_ so no clean_datasinks step will affect it.
+                # XXX: We should pass the outputs from these datasinks to any steps that use the
+                # atlases in order to track Sources.
+                ds_atlas_orig = pe.Node(
+                    CopyAtlas(
+                        in_file=atlas_config["image"],
+                        source_file=atlas_config["image"],
+                        out_dir=config.execution.output_dir,
+                        atlas=atlas_name,
+                        meta_dict=atlas_config["metadata"],
+                    ),
+                    name=f"datasink_atlas_orig_{atlas_name}_{anat_num}",
+                )
+                workflow.add_nodes([ds_atlas_orig])
+
+                ds_atlas_labels_orig = pe.Node(
+                    CopyAtlas(
+                        in_file=atlas_config["labels"],
+                        source_file=atlas_config["labels"],
+                        out_dir=config.execution.output_dir,
+                        atlas=atlas_name,
+                    ),
+                    name=f"datasink_atlas_labels_orig_{atlas_name}_{anat_num}",
+                )
+                workflow.add_nodes([ds_atlas_labels_orig])
     config.loggers.workflow.info(f"Found {len(anat_input_files)} high-res anatomicals to process")
-
-    atlas_configs = {}
-    if config.execution.atlases:
-        # Limit atlases to ones in the specified space.
-        xfm_to_anat = anat_data["template_to_acpc_xfm"]
-        template_space = get_entity(xfm_to_anat, "from")
-        bids_filters = (config.execution.bids_filters or {}).copy()
-        bids_filters["atlas"] = bids_filters.get("atlas", {})
-        bids_filters["atlas"]["space"] = template_space
-
-        # Collect atlases across datasets, including built-in atlases.
-        atlas_configs = collect_atlases(
-            datasets=config.execution.datasets,
-            atlases=config.execution.atlases,
-            bids_filters=bids_filters,
-        )
-        # Patch the transform into the atlas configs.
-        # This is a placeholder until we can support atlases in various spaces.
-        for atlas_name in atlas_configs.keys():
-            atlas_configs[atlas_name]["xfm_to_anat"] = xfm_to_anat
-
-        # Prepare the atlases.
-        # Reorient to LPS+ and zero out the sform.
-        for atlas_name, atlas_config in atlas_configs.items():
-            # Node is named dataset_ instead of ds_ so no clean_datasinks step will affect it.
-            # XXX: We should pass the outputs from these datasinks to any steps that use the
-            # atlases in order to track Sources.
-            ds_atlas_orig = pe.Node(
-                CopyAtlas(
-                    in_file=atlas_config["image"],
-                    source_file=atlas_config["image"],
-                    out_dir=config.execution.output_dir,
-                    atlas=atlas_name,
-                    meta_dict=atlas_config["metadata"],
-                ),
-                name=f"datasink_atlas_orig_{atlas_name}",
-            )
-            workflow.add_nodes([ds_atlas_orig])
-
-            ds_atlas_labels_orig = pe.Node(
-                CopyAtlas(
-                    in_file=atlas_config["labels"],
-                    source_file=atlas_config["labels"],
-                    out_dir=config.execution.output_dir,
-                    atlas=atlas_name,
-                ),
-                name=f"datasink_atlas_labels_orig_{atlas_name}",
-            )
-            workflow.add_nodes([ds_atlas_labels_orig])
 
     # create a processing pipeline for the dwis in each session
     dwi_recon_wfs = {}
     dwi_anat_wfs = {}
     recon_full_inputs = {}
     dwi_ingress_nodes = {}
-    anat_ingress_wfs = {}
-    dwi_files = [dwi_input["bids_dwi_file"] for dwi_input in dwis_and_anats]
-    for dwi_input, anat_input in enumerate(dwis_and_anat_wfs):
-        dwi_file = dwi_input["bids_dwi_file"]
+    dwi_files = [pair[0].path for pair in dwis_and_anats]
+    for dwi_input, anat_input in dwis_and_anats:
+        dwi_file = dwi_input.path
         wf_name = _get_wf_name(dwi_file)
 
         # Get the preprocessed DWI and all the related preprocessed images
@@ -238,7 +245,7 @@ to workflows in *QSIRecon*'s documentation]\
             needs_t1w_transform=bool(config.execution.atlases),
             extras_to_make=spec.get("anatomical", []),
             name=f"{wf_name}_dwi_specific_anat_wf",
-            **highres_anat_statuses[anat_input],
+            **highres_anat_statuses[anat_input.path],
         )
 
         # This node holds all the inputs that will go to the recon workflow.
@@ -278,11 +285,14 @@ to workflows in *QSIRecon*'s documentation]\
                 (trait, f"inputnode.{trait}") for trait in recon_workflow_input_fields
             ]),
 
-            (anat_ingress_wfs[dwi_file], dwi_anat_wfs[dwi_file], [
+            (highres_anat_wfs[anat_input.path], dwi_anat_wfs[dwi_file], [
                 (f"outputnode.{trait}", f"inputnode.{trait}")
                 for trait in anatomical_workflow_outputs
             ]),
         ])  # fmt:skip
+
+    # Preprocessing of anatomical data (includes possible registration template)
+    dwi_basename = fix_multi_T1w_source_name(dwi_files)
 
     about = pe.Node(
         AboutSummary(
@@ -299,11 +309,11 @@ to workflows in *QSIRecon*'s documentation]\
             std_spaces=["MNIInfant" if config.workflow.infant else "MNI152NLin2009cAsym"],
             nstd_spaces=[],
             dwi=dwi_files,
+            t1w=sorted(highres_anat_statuses.keys()),
         ),
         name="summary",
         run_without_submitting=True,
     )
-    workflow.connect([(reduce_t1_preproc, summary, [("outlist", "t1w")])])
 
     suffix_dirs = []
     for qsirecon_suffix in config.workflow.qsirecon_suffixes:

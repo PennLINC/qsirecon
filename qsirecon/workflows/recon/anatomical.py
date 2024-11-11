@@ -48,7 +48,7 @@ def init_highres_recon_anatomical_wf(
     session_id,
     extras_to_make,
     status,
-    anat_data,
+    name="recon_anatomical_wf",
 ):
     """Gather any high-res anatomical data (images, transforms, segmentations) to use
     in recon workflows.
@@ -56,7 +56,7 @@ def init_highres_recon_anatomical_wf(
     This workflow searches through input data to see what anatomical data is available.
     The anatomical data may be in a freesurfer directory.
     """
-    workflow = Workflow(name="recon_anatomical_wf")
+    workflow = Workflow(name=name)
 
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields),
