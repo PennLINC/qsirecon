@@ -454,8 +454,6 @@ def parse_args(args=None, namespace=None):
     """Parse args and run further checks on the command line."""
     import logging
 
-    from bids.layout import Query
-
     # from niworkflows.utils.spaces import Reference, SpatialReferences
 
     parser = _build_parser()
