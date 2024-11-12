@@ -47,7 +47,7 @@ structural connectivity matrix.
   We don't recommend using ACT with FAST segmentations. The full benefits of ACT
   require very precise tissue boundaries and FAST just doesn't do this reliably
   enough. We strongly recommend the ``hsvs`` segmentation if you're going to
-  use ACT. Note that this requires ``--freesurfer-input``
+  use ACT. Note that this requires ``--fs-subjects-dir``
 
 .. _mrtrix_dwi_outputs:
 
@@ -81,7 +81,7 @@ This workflow uses the ``msmt_csd`` algorithm :footcite:p:`msmt5tt` to estimate 
 gray matter and cerebrospinal fluid using *multi-shell acquisitions*. The white matter FODs are
 used for tractography and the T1w segmentation is used for anatomical constraints :footcite:p:`smith2012anatomically`.
 The T1w segmentation uses the hybrid surface volume segmentation (hsvs) :footcite:p:`smith2020hybrid` and
-requires ``--freesurfer-input``.
+requires ``--fs-subjects-dir``.
 This workflow produces :ref:`mrtrix_dwi_outputs` and :ref:`mrtrix_anatomical_outputs`.
 
 .. _mrtrix_multishell_msmt_ACT-fast:
@@ -117,7 +117,7 @@ to estimate FODs for white matter,
 and cerebrospinal fluid using *single shell (DTI) acquisitions*. The white matter FODs are
 used for tractography and the T1w segmentation is used for anatomical constraints :footcite:p:`smith2012anatomically`.
 The T1w segmentation uses the hybrid surface volume segmentation (hsvs) :footcite:p:`smith2020hybrid` and
-requires ``--freesurfer-input``.
+requires ``--fs-subjects-dir``.
 This workflow produces :ref:`mrtrix_dwi_outputs` and :ref:`mrtrix_anatomical_outputs`.
 
 .. _mrtrix_singleshell_ss3t_ACT-fast:

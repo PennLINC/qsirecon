@@ -428,8 +428,6 @@ class execution(_Config):
     """Disable ODF recon reports."""
     participant_label = None
     """List of participant identifiers that are to be preprocessed."""
-    freesurfer_input = None
-    """Directory containing FreeSurfer directories to use for recon workflows."""
     templateflow_home = _templateflow_home
     """The root folder of the TemplateFlow client."""
     work_dir = Path("work").absolute()
@@ -453,7 +451,6 @@ class execution(_Config):
         "eddy_config",
         "fs_license_file",
         "fs_subjects_dir",
-        "freesurfer_input",
         "layout",
         "log_dir",
         "output_dir",

@@ -70,7 +70,7 @@ def init_highres_recon_anatomical_wf(
 
     # If there is no high-res anat data in the inputs there may still be an image available
     # from freesurfer. Check for it:
-    freesurfer_dir = config.execution.freesurfer_input
+    freesurfer_dir = config.execution.fs_subjects_dir
     subject_freesurfer_path = find_fs_path(freesurfer_dir, subject_id)
     status["has_freesurfer"] = subject_freesurfer_path is not None
     status["has_qsiprep_5tt_hsvs"] = False
