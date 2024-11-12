@@ -115,7 +115,7 @@ Including FreeSurfer Data
 =========================
 
 Suppose you ran FreeSurfer on your data (e.g. as part of fmriprep). You can
-specify the directory containing freesurfer outputs with the ``--freesurfer-input`` flag. If you
+specify the directory containing freesurfer outputs with the ``--fs-subjects-dir`` flag. If you
 have::
 
     derivatives/freesurfer/sub-x
@@ -145,7 +145,7 @@ You can run:
        --omp-nthreads 8 \
        --fs-license-file /license.txt \
        --recon-spec mrtrix_multishell_msmt_ACT-hsvs \
-       --freesurfer-input "${PWD}/derivatives/freesurfer" \
+       --fs-subjects-dir "${PWD}/derivatives/freesurfer" \
        -v -v
 
 This will read the FreeSurfer data, align it to the ``qsiprep`` results and use it

@@ -347,8 +347,8 @@ def _build_parser(**kwargs):
         ),
     )
     g_recon.add_argument(
-        "--freesurfer-input",
-        "--freesurfer_input",
+        "--fs-subjects-dir",
+        "--fs_subjects_dir",
         action="store",
         metavar="PATH",
         type=Path,

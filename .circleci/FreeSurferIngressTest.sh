@@ -24,7 +24,7 @@ ${QSIRECON_CMD} \
 	 --recon-input ${BIDS_INPUT_DIR} \
 	 --sloppy \
 	 --recon-spec ${PWD}/test_5tt_hsv.json \
-	 --freesurfer-input ${SUBJECTS_DIR} \
+	 --fs-subjects-dir ${SUBJECTS_DIR} \
 	 --recon-only \
 	 -vv --debug pdb
 
