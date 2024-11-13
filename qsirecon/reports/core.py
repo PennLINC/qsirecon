@@ -84,7 +84,7 @@ def generate_reports(
 
     errors = []
     bootstrap_file = data.load("reports-spec.yml") if bootstrap_file is None else bootstrap_file
-    for subject_label, session_list in processing_list:
+    for subject_label, session_list in processing_list.items():
         subject_id = subject_label[4:] if subject_label.startswith("sub-") else subject_label
 
         # Beyond a certain number of sessions per subject,
