@@ -356,12 +356,15 @@ def _build_parser(**kwargs):
         ),
     )
     g_recon.add_argument(
-        "--freesurfer-input",
-        "--freesurfer_input",
+        "--fs-subjects-dir",
+        "--fs_subjects_dir",
         action="store",
         metavar="PATH",
-        type=Path,
-        help="Directory containing freesurfer outputs to be integrated into recon.",
+        type=PathExists,
+        help=(
+            "Directory containing Freesurfer outputs to be integrated into recon. "
+            "Freesurfer must already be run. QSIRecon will not run Freesurfer."
+        ),
     )
     g_recon.add_argument(
         "--skip-odf-reports",

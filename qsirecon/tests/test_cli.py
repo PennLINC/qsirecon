@@ -88,7 +88,7 @@ def test_mrtrix_multishell_msmt_hsvs(data_dir, output_dir, working_dir):
         "participant",
         f"-w={work_dir}",
         "--sloppy",
-        f"--freesurfer-input={freesurfer_dir}",
+        f"--fs-subjects-dir={freesurfer_dir}",
         "--recon-spec=mrtrix_multishell_msmt_ACT-hsvs",
         "--atlases",
         "AAL116",
