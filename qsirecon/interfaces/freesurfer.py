@@ -29,8 +29,19 @@ def find_fs_path(freesurfer_dir, subject_id, session_id=None):
     if freesurfer_dir is None:
         return None
 
-    # Try first with session, if specified
+    # Look for longitudinal pipeline outputs first
     if session_id is not None:
+        nosub = op.join(freesurfer_dir, f"{subject_id}_{session_id}.long.{subject_id}")
+        if op.exists(nosub):
+            return Path(nosub)
+        withsub = op.join(
+            freesurfer_dir,
+            f"sub-{subject_id}_ses-{session_id}.long.sub-{subject_id}",
+        )
+        if op.exists(withsub):
+            return Path(withsub)
+
+        # Next try with session but not longitudinal processing, if specified
         nosub = op.join(freesurfer_dir, f"{subject_id}_{session_id}")
         if op.exists(nosub):
             return Path(nosub)
