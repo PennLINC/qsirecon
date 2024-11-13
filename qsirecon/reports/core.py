@@ -68,88 +68,83 @@ def run_reports(
 
 
 def generate_reports(
-    subject_list,
+    processing_list,
+    output_level,
     output_dir,
     run_uuid,
-    session_list=None,
     bootstrap_file=None,
-    work_dir=None,
     qsirecon_suffix="",
 ):
-    """Generate reports for a list of subjects."""
-    reportlets_dir = None
-    if work_dir is not None:
-        reportlets_dir = Path(work_dir) / "reportlets"
+    """Generate reports for a list of subjects.
 
-    if isinstance(subject_list, str):
-        subject_list = [subject_list]
+    Parameters
+    ----------
+    output_level : {'root', 'subject', 'session'}
+    """
 
     errors = []
-    for subject_label in subject_list:
+    bootstrap_file = data.load("reports-spec.yml") if bootstrap_file is None else bootstrap_file
+    for subject_label, session_list in processing_list:
+        subject_id = subject_label[4:] if subject_label.startswith("sub-") else subject_label
+
+        # Beyond a certain number of sessions per subject,
+        # we separate the functional reports per session
+        if session_list is None:
+            all_filters = config.execution.bids_filters or {}
+            filters = all_filters.get("dwi", {})
+            session_list = config.execution.layout.get_sessions(subject=subject_label, **filters)
+
         # The number of sessions is intentionally not based on session_list but
         # on the total number of sessions, because I want the final derivatives
         # folder to be the same whether sessions were run one at a time or all-together.
-        n_ses = len(config.execution.layout.get_sessions(subject=subject_label))
-
-        if bootstrap_file is not None:
-            # If a config file is precised, we do not override it
-            html_report = "report.html"
-        elif n_ses <= config.execution.aggr_ses_reports:
-            # If there are only a few session for this subject,
-            # we aggregate them in a single visual report.
-            bootstrap_file = data.load("reports-spec.yml")
-            html_report = "report.html"
-        else:
-            # Beyond a threshold, we separate the anatomical report from the functional.
-            bootstrap_file = data.load("reports-spec-anat.yml")
-            html_report = f'sub-{subject_label.lstrip("sub-")}_anat.html'
-
-        report_error = run_reports(
-            output_dir,
-            subject_label,
-            run_uuid,
-            bootstrap_file=bootstrap_file,
-            out_filename=html_report,
-            reportlets_dir=reportlets_dir,
-            errorname=f"report-{run_uuid}-{subject_label}.err",
-            metadata={"qsirecon_suffix": qsirecon_suffix},
-            subject=subject_label,
-        )
-        # If the report generation failed, append the subject label for which it failed
-        if report_error is not None:
-            errors.append(report_error)
-
-        if n_ses > config.execution.aggr_ses_reports:
-            # Beyond a certain number of sessions per subject,
-            # we separate the functional reports per session
-            if session_list is None:
-                all_filters = config.execution.bids_filters or {}
-                filters = all_filters.get("bold", {})
-                session_list = config.execution.layout.get_sessions(
-                    subject=subject_label, **filters
-                )
-
-            # Drop ses- prefixes
+        n_ses = len(session_list)
+        if (n_ses > config.execution.aggr_ses_reports) or (output_level == "session"):
             session_list = [ses[4:] if ses.startswith("ses-") else ses for ses in session_list]
-
             for session_label in session_list:
-                bootstrap_file = data.load("reports-spec-func.yml")
-                html_report = f'sub-{subject_label.lstrip("sub-")}_ses-{session_label}_func.html'
+                html_report = html_report = f"sub-{subject_id}_ses-{session_label}.html"
+
+                if output_level == "root":
+                    report_dir = output_dir
+                elif output_level == "subject":
+                    report_dir = Path(output_dir) / f"sub-{subject_id}"
+                elif output_level == "session":
+                    report_dir = Path(output_dir) / f"sub-{subject_id}" / f"ses-{session_label}"
 
                 report_error = run_reports(
-                    output_dir,
+                    report_dir,
                     subject_label,
                     run_uuid,
                     bootstrap_file=bootstrap_file,
                     out_filename=html_report,
-                    reportlets_dir=reportlets_dir,
-                    errorname=f"report-{run_uuid}-{subject_label}-func.err",
+                    reportlets_dir=output_dir,
+                    errorname=f"report-{run_uuid}-{subject_label}.err",
                     metadata={"qsirecon_suffix": qsirecon_suffix},
                     subject=subject_label,
-                    session=session_label,
                 )
                 # If the report generation failed, append the subject label for which it failed
                 if report_error is not None:
                     errors.append(report_error)
+        else:
+            html_report = f"sub-{subject_id}.html"
+
+            if output_level == "root":
+                report_dir = output_dir
+            elif output_level == "subject":
+                report_dir = Path(output_dir) / f"sub-{subject_id}"
+
+            report_error = run_reports(
+                report_dir,
+                subject_label,
+                run_uuid,
+                bootstrap_file=bootstrap_file,
+                out_filename=html_report,
+                reportlets_dir=output_dir,
+                errorname=f"report-{run_uuid}-{subject_label}.err",
+                metadata={"qsirecon_suffix": qsirecon_suffix},
+                subject=subject_label,
+            )
+            # If the report generation failed, append the subject label for which it failed
+            if report_error is not None:
+                errors.append(report_error)
 
     return errors

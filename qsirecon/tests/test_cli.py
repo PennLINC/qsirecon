@@ -503,11 +503,12 @@ def _run_and_generate(test_name, parameters, test_main=True):
             if config.execution.bids_filters
             else None
         )
+        processing_list = {config.execution.participant_label: session_list}
         generate_reports(
-            subject_list=config.execution.participant_label,
+            processing_list=processing_list,
+            output_level=config.execution.report_output_level,
             output_dir=config.execution.output_dir,
             run_uuid=config.execution.run_uuid,
-            session_list=session_list,
             qsirecon_suffix="",
         )
 
