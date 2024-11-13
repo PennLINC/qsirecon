@@ -91,7 +91,7 @@ def build_workflow(config_file, retval):
         bids_filters = config.execution.bids_filters or {}
         session_list = bids_filters.get("dwi", {}).get("session")
 
-        processing_list = {config.execution.participant_label: session_list}
+        processing_list = {sub: session_list for sub in config.execution.participant_label}
         failed_reports = generate_reports(
             processing_list=processing_list,
             output_level=config.execution.report_output_level,

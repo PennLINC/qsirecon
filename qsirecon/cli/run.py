@@ -216,7 +216,7 @@ def main():
 
             # Copy the boilerplate files
             copy_boilerplate(config.execution.output_dir, suffix_dir)
-            processing_list = {config.execution.participant_label: session_list}
+            processing_list = {sub: session_list for sub in config.execution.participant_label}
             suffix_failed_reports = generate_reports(
                 processing_list=processing_list,
                 output_level=config.execution.report_output_level,
