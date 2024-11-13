@@ -24,7 +24,7 @@ def download_test_data(dset, data_dir=None):
         "singleshell_output": (
             "https://upenn.box.com/shared/static/9jhf0eo3ml6ojrlxlz6lej09ny12efgg.gz"
         ),
-        "hsvs_data": ("https://upenn.box.com/shared/static/8ggsyfhldqzckh1qbywlnbm9x0tin3yr.xz"),
+        "hsvs_data": "https://upenn.box.com/shared/static/8ggsyfhldqzckh1qbywlnbm9x0tin3yr.xz",
     }
     if dset == "*":
         for k in URLS:
