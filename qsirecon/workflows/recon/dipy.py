@@ -543,9 +543,7 @@ def init_dipy_mapmri_recon_wf(
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
-def init_dipy_dki_recon_wf(
-    inputs_dict, name="dipy_dki_recon", qsirecon_suffix="", params={}
-):
+def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="", params={}):
     """Fit DKI
 
     Inputs

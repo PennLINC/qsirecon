@@ -50,9 +50,7 @@ CITATIONS = {
 }
 
 
-def init_mrtrix_csd_recon_wf(
-    inputs_dict, name="mrtrix_recon", qsirecon_suffix="", params={}
-):
+def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="", params={}):
     """Create FOD images for WM, GM and CSF.
 
     This workflow uses mrtrix tools to run csd on multishell data. At the end,
@@ -405,9 +403,7 @@ def init_mrtrix_csd_recon_wf(
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
-def init_global_tractography_wf(
-    inputs_dict, name="mrtrix_recon", qsirecon_suffix="", params={}
-):
+def init_global_tractography_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="", params={}):
     """Run multi-shell, multi-tissue global tractography
 
     This workflow uses mrtrix tools to run csd on multishell data.

@@ -26,9 +26,7 @@ from .utils import init_scalar_output_wf
 LOGGER = logging.getLogger("nipype.workflow")
 
 
-def init_scalar_to_bundle_wf(
-    inputs_dict, name="scalar_to_bundle", qsirecon_suffix="", params={}
-):
+def init_scalar_to_bundle_wf(inputs_dict, name="scalar_to_bundle", qsirecon_suffix="", params={}):
     """Map scalar images to bundles
 
     Inputs

@@ -22,9 +22,7 @@ from ...utils.bids import clean_datasinks
 LOGGER = logging.getLogger("nipype.workflow")
 
 
-def init_mif_to_fibgz_wf(
-    inputs_dict, name="mif_to_fibgz", qsirecon_suffix="", params={}
-):
+def init_mif_to_fibgz_wf(inputs_dict, name="mif_to_fibgz", qsirecon_suffix="", params={}):
     """Converts a MRTrix mif file to DSI Studio fib file.
 
     This workflow uses ``sh2amp`` to sample the FODs on the standard DSI Studio
@@ -95,9 +93,7 @@ def init_fibgz_to_mif_wf(name="fibgz_to_mif", qsirecon_suffix="", params={}):
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
-def init_qsirecon_to_fsl_wf(
-    inputs_dict, name="qsirecon_to_fsl", qsirecon_suffix="", params={}
-):
+def init_qsirecon_to_fsl_wf(inputs_dict, name="qsirecon_to_fsl", qsirecon_suffix="", params={}):
     """Converts QSIRecon outputs (images, bval, bvec) to fsl standard orientation"""
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"

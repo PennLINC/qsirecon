@@ -43,9 +43,7 @@ from .utils import init_scalar_output_wf
 LOGGER = logging.getLogger("nipype.interface")
 
 
-def init_dsi_studio_recon_wf(
-    inputs_dict, name="dsi_studio_recon", qsirecon_suffix="", params={}
-):
+def init_dsi_studio_recon_wf(inputs_dict, name="dsi_studio_recon", qsirecon_suffix="", params={}):
     """Reconstructs diffusion data using DSI Studio.
 
     This workflow creates a ``.src.gz`` file from the input dwi, bvals and bvecs,
