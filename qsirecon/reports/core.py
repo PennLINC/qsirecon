@@ -22,6 +22,7 @@
 #
 from pathlib import Path
 
+from bids.layout import Query
 from nireports.assembler.report import Report
 
 from .. import config, data
@@ -68,7 +69,6 @@ def run_reports(
 
 
 def generate_reports(
-    processing_list,
     output_level,
     output_dir,
     run_uuid,
@@ -84,30 +84,46 @@ def generate_reports(
 
     errors = []
     bootstrap_file = data.load("reports-spec.yml") if bootstrap_file is None else bootstrap_file
-    for subject_label, session_list in processing_list.items():
+
+    for subject_label in config.execution.participant_label:
         subject_id = subject_label[4:] if subject_label.startswith("sub-") else subject_label
 
-        # Beyond a certain number of sessions per subject,
-        # we separate the functional reports per session
-        if session_list is None:
-            all_filters = config.execution.bids_filters or {}
-            filters = all_filters.get("dwi", {})
-            session_list = config.execution.layout.get_sessions(subject=subject_label, **filters)
-
-        # The number of sessions is intentionally not based on session_list but
-        # on the total number of sessions, because I want the final derivatives
-        # folder to be the same whether sessions were run one at a time or all-together.
         if output_level == "session":
-            session_list = [ses[4:] if ses.startswith("ses-") else ses for ses in session_list]
-            for session_label in session_list:
-                html_report = html_report = f"sub-{subject_id}_ses-{session_label}.html"
+            processed_dwis = [
+                pair[0]
+                for pair in config.execution.processing_list
+                if pair[0].entities["subject"] == subject_label
+            ]
+
+            sessions = set()
+            for processed_dwi in processed_dwis:
+                session_id = processed_dwi.entities.get("session")
+                if session_id is None:
+                    config.loggers.workflow.warning(
+                        "Session-level reports were requested, but data was found without"
+                        "a session level."
+                    )
+                    sessions.add(Query.NONE)
+                else:
+                    sessions.add(session_id)
+
+            for session_label in sessions:
+                if session_label == Query.NONE:
+                    html_report = html_report = f"sub-{subject_id}.html"
+                else:
+                    html_report = html_report = f"sub-{subject_id}_ses-{session_label}.html"
 
                 if output_level == "root":
                     report_dir = output_dir
                 elif output_level == "subject":
                     report_dir = Path(output_dir) / f"sub-{subject_id}"
                 elif output_level == "session":
-                    report_dir = Path(output_dir) / f"sub-{subject_id}" / f"ses-{session_label}"
+                    if session_label == Query.NONE:
+                        report_dir = Path(output_dir) / f"sub-{subject_id}"
+                    else:
+                        report_dir = (
+                            Path(output_dir) / f"sub-{subject_id}" / f"ses-{session_label}"
+                        )
 
                 report_error = run_reports(
                     report_dir,
@@ -119,10 +135,14 @@ def generate_reports(
                     errorname=f"report-{run_uuid}-{subject_label}.err",
                     metadata={"qsirecon_suffix": qsirecon_suffix},
                     subject=subject_label,
+                    session=session_id,
                 )
                 # If the report generation failed, append the subject label for which it failed
                 if report_error is not None:
                     errors.append(report_error)
+
+            # Someday, when we have anatomical reports, add a section here that
+            # finds sessions and makes the reports.
         else:
             html_report = f"sub-{subject_id}.html"
 

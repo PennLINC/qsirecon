@@ -177,9 +177,6 @@ def main():
         from ..reports.core import generate_reports
         from .workflow import copy_boilerplate
 
-        # Generate reports phase
-        session_list = config.execution.get().get("bids_filters", {}).get("dwi", {}).get("session")
-
         write_derivative_description(
             config.execution.bids_dir,
             config.execution.output_dir,
@@ -216,9 +213,8 @@ def main():
 
             # Copy the boilerplate files
             copy_boilerplate(config.execution.output_dir, suffix_dir)
-            processing_list = {sub: session_list for sub in config.execution.participant_label}
+
             suffix_failed_reports = generate_reports(
-                processing_list=processing_list,
                 output_level=config.execution.report_output_level,
                 output_dir=suffix_dir,
                 run_uuid=config.execution.run_uuid,
