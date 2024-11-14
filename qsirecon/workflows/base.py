@@ -116,8 +116,11 @@ to workflows in *QSIRecon*'s documentation]\
 ### References
 
     """
-
-    dwis_and_anats = _get_iterable_dwis_and_anats(subject_id)
+    dwis_and_anats = [
+        pair
+        for pair in config.execution.processing_list
+        if pair[0].entities["subject"] == subject_id
+    ]
 
     if len(dwis_and_anats) == 0:
         config.loggers.workflow.info("No dwi files found for %s", subject_id)
@@ -416,53 +419,3 @@ def _load_recon_spec(spec_name):
             spec["nodes"].append(node)
 
     return spec
-
-
-def _get_iterable_dwis_and_anats(subject_id):
-    """Look through the BIDS Layout for DWIs and their corresponding anats.
-
-    Parameters:
-    -----------
-    subject_id: str
-        Subject label (without "sub-") to find data for
-
-    Returns:
-    --------
-    dwis_and_anats: list of tuple
-
-
-    """
-
-    dwis_and_anats = []
-    dwi_files = config.execution.layout.get(
-        suffix="dwi",
-        session=Query.OPTIONAL,
-        space="T1w",
-        extension=["nii", "nii.gz"],
-    )
-
-    for dwi_scan in dwi_files:
-        subject_level_anats = config.execution.layout.get(
-            suffix=["T1w", "T2w"],
-            session=Query.NONE,
-            space=Query.NONE,
-            extension=["nii", "nii.gz"],
-        )
-
-        session_level_anats = []
-        if dwi_session := dwi_scan.entities.get("session"):
-            session_level_anats = config.execution.layout.get(
-                suffix=["T1w", "T2w"],
-                session=dwi_session,
-                space=Query.NONE,
-                extension=["nii", "nii.gz"],
-            )
-
-        if not (session_level_anats or subject_level_anats):
-            anat_scan = None
-        else:
-            best_anat_source = session_level_anats if session_level_anats else subject_level_anats
-            anat_scan = best_anat_source[0]
-
-        dwis_and_anats.append((dwi_scan, anat_scan))
-    return dwis_and_anats

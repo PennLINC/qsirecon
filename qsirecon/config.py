@@ -234,8 +234,13 @@ class _Config:
                 else:
                     setattr(cls, k, Path(v).absolute())
             elif hasattr(cls, k):
-                setattr(cls, k, v)
-
+                if k == "processing_list":
+                    new_v = []
+                    for el in v:
+                        new_v.append(el.split(":"))
+                    setattr(cls, k, new_v)
+                else:
+                    setattr(cls, k, v)
         if init:
             try:
                 cls.init()
@@ -428,6 +433,8 @@ class execution(_Config):
     """Disable ODF recon reports."""
     participant_label = None
     """List of participant identifiers that are to be preprocessed."""
+    processing_list = None
+    """List of (dwi_file, corresponding_anat) that need to be processed."""
     session_id = None
     """List of session identifiers that are to be preprocessed"""
     templateflow_home = _templateflow_home
@@ -526,6 +533,11 @@ class execution(_Config):
             for acq, filters in cls.bids_filters.items():
                 for k, v in filters.items():
                     cls.bids_filters[acq][k] = _process_value(v)
+
+        cls._processing_list = []
+        for dwi_relpath, anat_relpath in cls.processing_list or []:
+            cls._processing_list.append((cls.layout.get_file(dwi_relpath), cls.layout.get_file(anat_relpath)))
+        cls.processing_list = cls._processing_list
 
         dataset_links = {
             "preprocessed": cls.bids_dir,
@@ -733,6 +745,11 @@ def get(flat=False):
     }
     if not flat:
         return settings
+
+    if "processing_list" in settings["execution"]:
+        settings["execution"]["processing_list"] = [
+            f"{el[0].relpath}:{el[1].relpath}" for el in settings["execution"]["processing_list"]
+        ]
 
     return {
         ".".join((section, k)): v

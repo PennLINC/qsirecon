@@ -97,8 +97,7 @@ def generate_reports(
         # The number of sessions is intentionally not based on session_list but
         # on the total number of sessions, because I want the final derivatives
         # folder to be the same whether sessions were run one at a time or all-together.
-        n_ses = len(session_list)
-        if (n_ses > config.execution.aggr_ses_reports) or (output_level == "session"):
+        if output_level == "session":
             session_list = [ses[4:] if ses.startswith("ses-") else ses for ses in session_list]
             for session_label in session_list:
                 html_report = html_report = f"sub-{subject_id}_ses-{session_label}.html"
