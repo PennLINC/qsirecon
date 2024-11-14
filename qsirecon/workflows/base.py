@@ -241,6 +241,12 @@ to workflows in *QSIRecon*'s documentation]\
             **status,
         )
 
+        inputs_dict = {
+            "dwi_file": dwi_file,
+            "dwi_metadata": config.execution.layout.get_metadata(dwi_file),
+            **dwi_available_anatomical_data,
+        }
+
         # This node holds all the inputs that will go to the recon workflow.
         # It is the definitive place to check what the input files are
         recon_full_inputs[dwi_file] = pe.Node(
@@ -250,7 +256,7 @@ to workflows in *QSIRecon*'s documentation]\
 
         # This is the actual recon workflow for this dwi file
         dwi_recon_wfs[dwi_file] = init_dwi_recon_workflow(
-            available_anatomical_data=dwi_available_anatomical_data,
+            inputs_dict=inputs_dict,
             workflow_spec=spec,
             name=f"{wf_name}_recon_wf",
         )

@@ -67,7 +67,7 @@ def external_format_datasinks(qsirecon_suffix, params, wf):
 
 
 def init_dipy_brainsuite_shore_recon_wf(
-    available_anatomical_data,
+    inputs_dict,
     name="dipy_3dshore_recon",
     qsirecon_suffix="",
     params={},
@@ -213,7 +213,7 @@ def init_dipy_brainsuite_shore_recon_wf(
         ])  # fmt:skip
 
     # Plot targeted regions
-    if available_anatomical_data["has_qsiprep_t1w_transforms"] and plot_reports:
+    if inputs_dict["has_qsiprep_t1w_transforms"] and plot_reports:
         ds_report_odfs = pe.Node(
             DerivativesDataSink(
                 desc="3dSHOREODF",
@@ -347,7 +347,7 @@ def init_dipy_brainsuite_shore_recon_wf(
 
 
 def init_dipy_mapmri_recon_wf(
-    available_anatomical_data,
+    inputs_dict,
     name="dipy_mapmri_recon",
     qsirecon_suffix="",
     params={},
@@ -517,7 +517,7 @@ def init_dipy_mapmri_recon_wf(
         ])  # fmt:skip
 
     # Plot targeted regions
-    if available_anatomical_data["has_qsiprep_t1w_transforms"] and plot_reports:
+    if inputs_dict["has_qsiprep_t1w_transforms"] and plot_reports:
         ds_report_odfs = pe.Node(
             DerivativesDataSink(
                 desc="MAPLMRIODF",
@@ -544,7 +544,7 @@ def init_dipy_mapmri_recon_wf(
 
 
 def init_dipy_dki_recon_wf(
-    available_anatomical_data, name="dipy_dki_recon", qsirecon_suffix="", params={}
+    inputs_dict, name="dipy_dki_recon", qsirecon_suffix="", params={}
 ):
     """Fit DKI
 

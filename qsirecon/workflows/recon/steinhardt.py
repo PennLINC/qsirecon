@@ -14,7 +14,7 @@ LOGGER = logging.getLogger("nipype.interface")
 
 
 def init_steinhardt_order_param_wf(
-    available_anatomical_data, name="sop_recon", qsirecon_suffix="", params={}
+    inputs_dict, name="sop_recon", qsirecon_suffix="", params={}
 ):
     """Compute Steinhardt order parameters based on ODFs or FODs
 

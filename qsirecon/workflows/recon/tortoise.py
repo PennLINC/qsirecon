@@ -42,7 +42,7 @@ CITATIONS = {
 
 
 def init_tortoise_estimator_wf(
-    available_anatomical_data, name="tortoise_recon", qsirecon_suffix="", params={}
+    inputs_dict, name="tortoise_recon", qsirecon_suffix="", params={}
 ):
     """Run estimators from TORTOISE.
 

@@ -326,12 +326,26 @@ def init_dwi_recon_anatomical_workflow(
         brain parcellations.
       * ``"odf_rois"``: An image with some interesting ROIs for plotting ODFs
 
-    Parameters:
-    ===========
-        has_qsiprep_5tt_hsvs:
-        has_freesurfer_5tt_hsvs: True,
-        has_qsiprep_t1w:
-        has_qsiprep_t1w_transforms: True}
+    Parameters
+    ----------
+    has_qsiprep_5tt_hsvs : bool
+    has_freesurfer_5tt_hsvs : bool
+    has_qsiprep_t1w : bool
+    has_qsiprep_t1w_transforms : bool
+
+    Returns
+    -------
+    workflow : nipype Workflow
+        The workflow that calculates the necessary anatomical data
+    status : dict
+        A dictionary with the status of the anatomical data, with the following keys:
+
+        - ``has_qsiprep_5tt_hsvs``
+        - ``has_freesurfer_5tt_hsvs``
+        - ``has_qsiprep_t1w``
+        - ``has_qsiprep_t1w_transforms``
+
+        Each value is a boolean indicating whether the data is available.
     """
     # Inputnode holds data from the T1w-based anatomical workflow
     inputnode = pe.Node(

@@ -24,7 +24,7 @@ from qsirecon.data import load as load_data
 
 
 def init_amico_noddi_fit_wf(
-    available_anatomical_data,
+    inputs_dict,
     name="amico_noddi_recon",
     qsirecon_suffix="",
     params={},
