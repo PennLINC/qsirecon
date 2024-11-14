@@ -269,6 +269,8 @@ class _Config:
                 v = " ".join(str(s) for s in v.references) or None
             if isinstance(v, Reference):
                 v = str(v) or None
+            if k == "processing_list":
+                v = [f"{el[0].relpath}:{el[1].relpath}" for el in v]
             out[k] = v
         return out
 
@@ -433,7 +435,7 @@ class execution(_Config):
     """Disable ODF recon reports."""
     participant_label = None
     """List of participant identifiers that are to be preprocessed."""
-    processing_list = None
+    processing_list = []
     """List of (dwi_file, corresponding_anat) that need to be processed."""
     session_id = None
     """List of session identifiers that are to be preprocessed"""
@@ -451,6 +453,7 @@ class execution(_Config):
     """A dictionary of dataset links to be used to track Sources in sidecars."""
 
     _layout = None
+    _processing_list = None
 
     _paths = (
         "bids_dir",
@@ -535,7 +538,7 @@ class execution(_Config):
                     cls.bids_filters[acq][k] = _process_value(v)
 
         cls._processing_list = []
-        for dwi_relpath, anat_relpath in cls.processing_list or []:
+        for dwi_relpath, anat_relpath in cls.processing_list:
             cls._processing_list.append((cls.layout.get_file(dwi_relpath), cls.layout.get_file(anat_relpath)))
         cls.processing_list = cls._processing_list
 
@@ -745,11 +748,6 @@ def get(flat=False):
     }
     if not flat:
         return settings
-
-    if "processing_list" in settings["execution"]:
-        settings["execution"]["processing_list"] = [
-            f"{el[0].relpath}:{el[1].relpath}" for el in settings["execution"]["processing_list"]
-        ]
 
     return {
         ".".join((section, k)): v

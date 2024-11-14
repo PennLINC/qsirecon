@@ -667,4 +667,3 @@ def _get_iterable_dwis_and_anats():
 
         dwis_and_anats.append((dwi_scan, anat_scan))
     return dwis_and_anats
-
