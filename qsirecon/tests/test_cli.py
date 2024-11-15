@@ -164,12 +164,12 @@ def test_multises_pre1_qsiprep(data_dir, output_dir, working_dir):
 
 
 @pytest.mark.integration
-@pytest.mark.multises_post1_qsiprep_reportroot
-def test_multises_post1_qsiprep_reportroot(data_dir, output_dir, working_dir):
-    """Test reading inputs from post-1.0.0rc0 qsiprep"""
-    TEST_NAME = "multises_post1_qsiprep_reportroot"
+@pytest.mark.multises_pre1_qsiprep_reportroot
+def test_multises_pre1_qsiprep_reportroot(data_dir, output_dir, working_dir):
+    """Test reading inputs from pre-1.0.0rc0 qsiprep"""
+    TEST_NAME = "multises_pre1_qsiprep_reportroot"
 
-    dataset_dir = download_test_data("multises_post1_output", data_dir)
+    dataset_dir = download_test_data("multises_pre1_output", data_dir)
 
     # XXX: Having to modify dataset_dirs is suboptimal.
     dataset_dir = os.path.join(dataset_dir, "derivatives")
@@ -188,12 +188,12 @@ def test_multises_post1_qsiprep_reportroot(data_dir, output_dir, working_dir):
 
 
 @pytest.mark.integration
-@pytest.mark.multises_post1_qsiprep_reportsubject
-def test_multises_post1_qsiprep_reportsubject(data_dir, output_dir, working_dir):
-    """Test reading inputs from post-1.0.0rc0 qsiprep"""
-    TEST_NAME = "multises_post1_qsiprep_reportsubject"
+@pytest.mark.multises_pre1_qsiprep_reportsubject
+def test_multises_pre1_qsiprep_reportsubject(data_dir, output_dir, working_dir):
+    """Test reading inputs from pre-1.0.0rc0 qsiprep"""
+    TEST_NAME = "multises_pre1_qsiprep_reportsubject"
 
-    dataset_dir = download_test_data("multises_post1_output", data_dir)
+    dataset_dir = download_test_data("multises_pre1_output", data_dir)
 
     # XXX: Having to modify dataset_dirs is suboptimal.
     dataset_dir = os.path.join(dataset_dir, "derivatives")
@@ -215,10 +215,10 @@ def test_multises_post1_qsiprep_reportsubject(data_dir, output_dir, working_dir)
 @pytest.mark.integration
 @pytest.mark.multises_post1_qsiprep_reportsession
 def test_multises_post1_qsiprep_reportsession(data_dir, output_dir, working_dir):
-    """Test reading inputs from post-1.0.0rc0 qsiprep"""
-    TEST_NAME = "multises_post1_qsiprep_reportsession"
+    """Test reading inputs from pre-1.0.0rc0 qsiprep"""
+    TEST_NAME = "multises_pre1_qsiprep_reportsession"
 
-    dataset_dir = download_test_data("multises_post1_output", data_dir)
+    dataset_dir = download_test_data("multises_pre1_output", data_dir)
 
     # XXX: Having to modify dataset_dirs is suboptimal.
     dataset_dir = os.path.join(dataset_dir, "derivatives")
