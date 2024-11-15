@@ -85,6 +85,7 @@ def generate_reports(
     errors = []
     bootstrap_file = data.load("reports-spec.yml") if bootstrap_file is None else bootstrap_file
 
+    bids_filters = config.execution.bids_filters or {}
     for subject_label in config.execution.participant_label:
         subject_id = subject_label[4:] if subject_label.startswith("sub-") else subject_label
 
@@ -93,7 +94,7 @@ def generate_reports(
             subject=subject_label,
             session=config.execution.session_id,
             suffix="dwi",
-            **config.execution.bids_filters.get("dwi", {}),
+            **bids_filters.get("dwi", {}),
         )
         if output_level == "session" and not sessions:
             report_dir = output_dir
