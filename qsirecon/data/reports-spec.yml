@@ -1,5 +1,5 @@
 package: qsirecon
-title: Visual report for participant '{subject}' - QSIRecon-{qsirecon_suffix}
+title: Visual report for participant '{subject}'{session_str} - QSIRecon-{qsirecon_suffix}
 sections:
 - name: Summary
   reportlets:

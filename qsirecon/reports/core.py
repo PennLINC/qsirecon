@@ -130,7 +130,10 @@ def generate_reports(
                 out_filename=html_report,
                 reportlets_dir=output_dir,
                 errorname=f"report-{run_uuid}-{subject_label}.err",
-                metadata={"qsirecon_suffix": qsirecon_suffix},
+                metadata={
+                    "qsirecon_suffix": qsirecon_suffix,
+                    "session_str": f", session '{session_label}'" if session_label else "",
+                },
                 subject=subject_label,
                 session=session_label,
             )
