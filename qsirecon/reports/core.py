@@ -104,6 +104,8 @@ def generate_reports(
                 "but data was found without a session level. "
                 "Writing out reports to subject level."
             )
+
+        if not sessions:
             sessions = [Query.NONE]
 
         for session_label in sessions:
