@@ -140,3 +140,22 @@ def init_scalar_output_wf(
     ])  # fmt:skip
 
     return workflow
+
+
+def init_test_wf(
+    available_anatomical_data, name="test_wf", qsirecon_suffix="test", params={}
+):
+    """A workflow for testing how derivatives will be saved."""
+    inputnode = pe.Node(
+        niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
+    )
+    outputnode = pe.Node(
+        niu.IdentityInterface(fields=["fibgz", "recon_scalars"]), name="outputnode"
+    )
+    workflow = Workflow(name=name)
+    outputnode.inputs.recon_scalars = []
+    plot_reports = not config.execution.skip_odf_reports
+    omp_nthreads = config.nipype.omp_nthreads
+    desc = """Testing Workflow
+
+: """

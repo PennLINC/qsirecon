@@ -27,7 +27,7 @@ from .mrtrix import (
 from .scalar_mapping import init_scalar_to_bundle_wf, init_scalar_to_template_wf
 from .steinhardt import init_steinhardt_order_param_wf
 from .tortoise import init_tortoise_estimator_wf
-from .utils import init_conform_dwi_wf, init_discard_repeated_samples_wf
+from .utils import init_conform_dwi_wf, init_discard_repeated_samples_wf, init_test_wf
 
 
 def _check_repeats(nodelist):
@@ -272,6 +272,8 @@ def workflow_from_spec(available_anatomical_data, node_spec):
             return init_scalar_to_bundle_wf(**kwargs)
         if node_spec["action"] == "template_map":
             return init_scalar_to_template_wf(**kwargs)
+        if node_spec["action"] == "test_workflow":
+            return init_test_wf(**kwargs)
 
     raise Exception("Unknown node %s" % node_spec)
 
