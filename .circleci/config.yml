@@ -74,6 +74,40 @@ jobs:
           paths:
             - /src/qsirecon/.circleci/data/multishell_output
 
+  download_multises_pre1_output:
+    <<: *dockersetup
+    steps:
+      - checkout
+      - restore_cache:
+          key: multises_pre1_output-01
+      - run: *runinstall
+      - run:
+          name: Download multises pre-1.0 test data
+          command: |
+            cd /src/qsirecon/.circleci
+            python get_data.py $PWD/data multises_pre1_output
+      - save_cache:
+          key: multises_pre1_output-01
+          paths:
+            - /src/qsirecon/.circleci/data/multises_pre1_output
+
+  download_multises_post1_output:
+    <<: *dockersetup
+    steps:
+      - checkout
+      - restore_cache:
+          key: multises_post1_output-01
+      - run: *runinstall
+      - run:
+          name: Download multises post-1.0 test data
+          command: |
+            cd /src/qsirecon/.circleci
+            python get_data.py $PWD/data multises_post1_output
+      - save_cache:
+          key: multises_post1_output-01
+          paths:
+            - /src/qsirecon/.circleci/data/multises_post1_output
+
   download_hsvs_data:
     <<: *dockersetup
     steps:
@@ -477,6 +511,20 @@ workflows:
               only: /.*/
 
       - download_multishell_output:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+
+      - download_multises_pre1_output:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+
+      - download_multises_post1_output:
           requires:
             - build
           filters:
