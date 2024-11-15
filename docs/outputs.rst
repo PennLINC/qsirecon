@@ -35,7 +35,7 @@ Dataset Organization
 *QSIRecon* organizes its outputs as self-contained BIDS-Derivative datasets.
 
 In the output directory, you will find a derivative dataset containing anatomical and
-subject-space atlas files::
+subject-space atlas files, along with the `MRtrix3-specific renumbering <https://mrtrix.readthedocs.io/en/3.0.4/quantitative_structural_connectivity/labelconvert_tutorial.html>`_ files ::
 
    qsirecon/
       dataset_description.json
