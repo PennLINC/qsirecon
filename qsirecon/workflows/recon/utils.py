@@ -21,6 +21,7 @@ from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.mrtrix import MRTrixGradientTable
 from ...interfaces.recon_scalars import OrganizeScalarData
 from ...interfaces.utils import TestReportPlot, WriteSidecar
+from ...utils.bids import clean_datasinks
 
 LOGGER = logging.getLogger("nipyWorkflow")
 
@@ -142,7 +143,7 @@ def init_scalar_output_wf(
     return workflow
 
 
-def init_test_wf(available_anatomical_data, name="test_wf", qsirecon_suffix="test", params={}):
+def init_test_wf(inputs_dict, name="test_wf", qsirecon_suffix="test", params={}):
     """A workflow for testing how derivatives will be saved."""
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
@@ -156,18 +157,18 @@ def init_test_wf(available_anatomical_data, name="test_wf", qsirecon_suffix="tes
         "Testing Workflow\n\n: This workflow tests boilerplate, figures and derivatives"
     )
 
-    write_metadata = pe.Node(
-        WriteSidecar(metadata=available_anatomical_data), name="write_metadata"
-    )
+    write_metadata = pe.Node(WriteSidecar(metadata=inputs_dict), name="write_metadata")
     plot_image = pe.Node(TestReportPlot(), name="plot_image")
 
     ds_metadata = pe.Node(
-        DerivativesDataSink(),
+        DerivativesDataSink(desc="availablemetadata"),
         name="ds_metadata",
+        run_without_submitting=True,
     )
     ds_plot = pe.Node(
-        DerivativesDataSink(),
+        DerivativesDataSink(desc="exampleplot", datatype="figures", extension=".png"),
         name="ds_plot",
+        run_without_submitting=True,
     )
     workflow.connect([
         (inputnode, plot_image, [("dwi_file", "dwi_file")]),
@@ -175,4 +176,4 @@ def init_test_wf(available_anatomical_data, name="test_wf", qsirecon_suffix="tes
         (plot_image, ds_plot, [("out_file", "in_file")]),
     ])  # fmt:skip
 
-    return workflow
+    return clean_datasinks(workflow, qsirecon_suffix)

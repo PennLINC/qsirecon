@@ -74,6 +74,13 @@ sections:
     subtitle: NODDI
     caption: Directionally color-coded ODF peaks overlaid on the b=0 reference image.
 
+- name: Testing
+  ordering: session,task,acquisition,ceagent,reconstruction,direction,run,echo
+  reportlets:
+  - bids: {datatype: figures, desc: exampleplot, suffix: dwi}
+    subtitle: This is a test plot.
+    caption: A default plot of the first volume of a preprocessed DWI.
+
 - name: Connectome
   ordering: session,task,acquisition,ceagent,reconstruction,direction,run,echo
   reportlets:
