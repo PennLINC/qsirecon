@@ -11,16 +11,10 @@ derivatives/qsirecon-test/sub-PNC
 derivatives/qsirecon-test/sub-PNC/ses-1
 derivatives/qsirecon-test/sub-PNC/ses-1/dwi
 derivatives/qsirecon-test/sub-PNC/ses-1/dwi/sub-PNC_ses-1_acq-realistic_space-T1w_desc-availablemetadata_dwi.json
-derivatives/qsirecon-test/sub-PNC/ses-1/figures
-derivatives/qsirecon-test/sub-PNC/ses-1/figures/sub-PNC_ses-1_acq-realistic_space-T1w_desc-exampleplot_dwi.png
-derivatives/qsirecon-test/sub-PNC/ses-1/figures/sub-PNC_ses-1_desc-about_T1w.html
-derivatives/qsirecon-test/sub-PNC/ses-1/figures/sub-PNC_ses-1_desc-summary_T1w.html
 derivatives/qsirecon-test/sub-PNC/ses-1/sub-PNC_ses-1.html
 derivatives/qsirecon-test/sub-PNC/ses-2
 derivatives/qsirecon-test/sub-PNC/ses-2/dwi
 derivatives/qsirecon-test/sub-PNC/ses-2/dwi/sub-PNC_ses-2_acq-realistic_space-T1w_desc-availablemetadata_dwi.json
-derivatives/qsirecon-test/sub-PNC/ses-2/figures
-derivatives/qsirecon-test/sub-PNC/ses-2/figures/sub-PNC_ses-2_acq-realistic_space-T1w_desc-exampleplot_dwi.png
 derivatives/qsirecon-test/sub-PNC/ses-2/sub-PNC_ses-2.html
 logs
 logs/CITATION.bib
