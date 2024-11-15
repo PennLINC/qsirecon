@@ -208,15 +208,29 @@ jobs:
           name: Test the HSVS recon workflows
           no_output_timeout: 1h
           command: |
-            pytest -rP -o log_cli=true -m "multises_post1_qsiprep" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
             mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.multises_pre1_qsiprep
+
+            pytest -rP -o log_cli=true -m "multises_post1_qsiprep_reportroot" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
+            mv /src/qsirecon/.coverage /src/coverage/.coverage.multises_pre1_qsiprep_reportroot
+
+            pytest -rP -o log_cli=true -m "multises_post1_qsiprep_reportsession" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
+            mv /src/qsirecon/.coverage /src/coverage/.coverage.multises_pre1_qsiprep_reportsession
+
+            pytest -rP -o log_cli=true -m "multises_post1_qsiprep_reportsubject" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
+            mv /src/qsirecon/.coverage /src/coverage/.coverage.multises_pre1_qsiprep_reportsubject
+
       - persist_to_workspace:
           root: /src/coverage/
           paths:
-            - .coverage.multises_pre1_qsiprep
+            - .coverage.multises_pre1_qsiprep_reportsession
+            - .coverage.multises_pre1_qsiprep_reportsubject
+            - .coverage.multises_pre1_qsiprep_reportroot
       - store_artifacts:
-          path: /src/qsirecon/.circleci/out/mrtrix_multishell_msmt_hsvs/
+          path: /src/qsirecon/.circleci/out/multises_post1_qsiprep_reportroot/
+      - store_artifacts:
+          path: /src/qsirecon/.circleci/out/multises_post1_qsiprep_reportsubject/
+      - store_artifacts:
+          path: /src/qsirecon/.circleci/out/multises_post1_qsiprep_reportsession/
 
   Recon_MRtrix3:
     <<: *dockersetup
