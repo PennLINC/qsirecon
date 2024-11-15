@@ -169,7 +169,6 @@ def _build_parser(**kwargs):
     g_bids = parser.add_argument_group("Options for filtering input data")
     g_bids.add_argument(
         "--participant-label",
-        "--participant_label",
         action="store",
         nargs="+",
         type=_drop_sub,
@@ -220,7 +219,6 @@ def _build_parser(**kwargs):
     g_perfm.add_argument(
         "--nprocs",
         "--nthreads",
-        "--n_cpus",
         "--n-cpus",
         dest="nprocs",
         action="store",
@@ -235,7 +233,6 @@ def _build_parser(**kwargs):
     )
     g_perfm.add_argument(
         "--mem",
-        "--mem_mb",
         "--mem-mb",
         dest="memory_gb",
         action="store",
@@ -266,7 +263,6 @@ def _build_parser(**kwargs):
     g_subset = parser.add_argument_group("Options for performing only a subset of the workflow")
     g_subset.add_argument(
         "--boilerplate-only",
-        "--boilerplate_only",
         "--boilerplate",
         action="store_true",
         default=False,
@@ -292,7 +288,6 @@ def _build_parser(**kwargs):
     )
     g_conf.add_argument(
         "--b0-threshold",
-        "--b0_threshold",
         action="store",
         type=int,
         default=100,
@@ -302,7 +297,6 @@ def _build_parser(**kwargs):
     )
     g_conf.add_argument(
         "--output-resolution",
-        "--output_resolution",
         action="store",
         # required when not recon-only (which can be specified in sysargs 2 ways)
         required=False,
@@ -316,7 +310,6 @@ def _build_parser(**kwargs):
     g_fs = parser.add_argument_group("Specific options for FreeSurfer preprocessing")
     g_fs.add_argument(
         "--fs-license-file",
-        "--fs_license_file",
         metavar="PATH",
         type=Path,
         help="Path to FreeSurfer license key file. Get it (for free) by registering "
@@ -327,14 +320,12 @@ def _build_parser(**kwargs):
     g_recon = parser.add_argument_group("Options for recon workflows")
     g_recon.add_argument(
         "--recon-spec",
-        "--recon_spec",
         action="store",
         type=str,
         help="json file specifying a reconstruction pipeline to be run after preprocessing",
     )
     g_recon.add_argument(
         "--input-type",
-        "--input_type",
         action="store",
         default="qsiprep",
         choices=["qsiprep", "ukb", "hcpya"],
@@ -348,7 +339,6 @@ def _build_parser(**kwargs):
     )
     g_recon.add_argument(
         "--fs-subjects-dir",
-        "--fs_subjects_dir",
         action="store",
         metavar="PATH",
         type=PathExists,
@@ -359,7 +349,6 @@ def _build_parser(**kwargs):
     )
     g_recon.add_argument(
         "--skip-odf-reports",
-        "--skip_odf_reports",
         action="store_true",
         default=False,
         help="run only reconstruction, assumes preprocessing has already completed.",
