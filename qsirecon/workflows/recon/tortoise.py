@@ -113,6 +113,13 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
     # Do we have deltas?
     deltas = (params.get("big_delta", None), params.get("small_delta", None))
     approximate_deltas = None in deltas
+    dwi_metadata = inputs_dict.get("dwi_metadata", {})
+    if approximate_deltas:
+        deltas = (
+            dwi_metadata.get("LargeDelta", None),
+            dwi_metadata.get("SmallDelta", None),
+        )
+        approximate_deltas = None in deltas
 
     # TORTOISE requires unzipped float32 nifti files and a bmtxt file.
     tortoise_convert = pe.Node(TORTOISEConvert(), name="tortoise_convert")
