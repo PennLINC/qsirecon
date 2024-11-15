@@ -92,6 +92,7 @@ def test_mrtrix_multishell_msmt_hsvs(data_dir, output_dir, working_dir):
         "--recon-spec=mrtrix_multishell_msmt_ACT-hsvs",
         "--atlases",
         "AAL116",
+        "--report-output-level=root",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -132,6 +133,7 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
         "--recon-spec=mrtrix_singleshell_ss3t_noACT",
         "--atlases",
         "AAL116",
+        "--report-output-level=subject",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -170,6 +172,7 @@ def test_amico_noddi(data_dir, output_dir, working_dir):
         f"-w={work_dir}",
         "--sloppy",
         "--recon-spec=amico_noddi",
+        "--report-output-level=session",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=True)
@@ -498,14 +501,7 @@ def _run_and_generate(test_name, parameters, test_main=True):
         write_derivative_description(config.execution.fmri_dir, config.execution.output_dir)
 
         build_boilerplate(str(config_file), qsirecon_wf)
-        session_list = (
-            config.execution.bids_filters.get("bold", {}).get("session")
-            if config.execution.bids_filters
-            else None
-        )
-        processing_list = {sub: session_list for sub in config.execution.participant_label}
         generate_reports(
-            processing_list=processing_list,
             output_level=config.execution.report_output_level,
             output_dir=config.execution.output_dir,
             run_uuid=config.execution.run_uuid,
