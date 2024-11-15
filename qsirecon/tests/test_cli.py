@@ -141,30 +141,6 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
 
 @pytest.mark.integration
 @pytest.mark.multises_pre1_qsiprep
-def test_multises_pre1_qsiprep(data_dir, output_dir, working_dir):
-    """Test reading inputs from pre-1.0.0rc0 qsiprep"""
-    TEST_NAME = "multises_pre1_qsiprep"
-
-    dataset_dir = download_test_data("multises_pre1_output", data_dir)
-
-    # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "derivatives")
-    out_dir = os.path.join(output_dir, TEST_NAME)
-    work_dir = os.path.join(working_dir, TEST_NAME)
-
-    parameters = [
-        dataset_dir,
-        out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--recon-spec=test_workflow",
-    ]
-
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
-
-
-@pytest.mark.integration
-@pytest.mark.multises_pre1_qsiprep_reportroot
 def test_multises_pre1_qsiprep_reportroot(data_dir, output_dir, working_dir):
     """Test reading inputs from pre-1.0.0rc0 qsiprep"""
     TEST_NAME = "multises_pre1_qsiprep_reportroot"
@@ -188,7 +164,7 @@ def test_multises_pre1_qsiprep_reportroot(data_dir, output_dir, working_dir):
 
 
 @pytest.mark.integration
-@pytest.mark.multises_pre1_qsiprep_reportsubject
+@pytest.mark.multises_pre1_qsiprep
 def test_multises_pre1_qsiprep_reportsubject(data_dir, output_dir, working_dir):
     """Test reading inputs from pre-1.0.0rc0 qsiprep"""
     TEST_NAME = "multises_pre1_qsiprep_reportsubject"
@@ -213,7 +189,7 @@ def test_multises_pre1_qsiprep_reportsubject(data_dir, output_dir, working_dir):
 
 
 @pytest.mark.integration
-@pytest.mark.multises_pre1_qsiprep_reportsession
+@pytest.mark.multises_pre1_qsiprep
 def test_multises_pre1_qsiprep_reportsession(data_dir, output_dir, working_dir):
     """Test reading inputs from pre-1.0.0rc0 qsiprep"""
     TEST_NAME = "multises_pre1_qsiprep_reportsession"
