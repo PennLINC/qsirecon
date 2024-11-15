@@ -8,9 +8,11 @@ Miscellaneous utilities
 
 """
 
+import json
 import os
 
 import nibabel as nb
+from nilearn import image, plotting
 from nipype import logging
 from nipype.interfaces import ants
 from nipype.interfaces.base import (
@@ -233,4 +235,46 @@ class ConformAtlas(SimpleInterface):
         else:
             self._results["out_file"] = fname
 
+        return runtime
+
+
+class _WriteSidecarInputSpec(BaseInterfaceInputSpec):
+    metadata = traits.Dict()
+
+
+class _WriteSidecarOutputSpec(TraitedSpec):
+    out_file = File(exists=True)
+
+
+class WriteSidecar(SimpleInterface):
+    input_spec = _WriteSidecarInputSpec
+    output_spec = _WriteSidecarOutputSpec
+
+    def _run_interface(self, runtime):
+        out_file = os.path.join(runtime.cwd, "sidecar.json")
+        with open(out_file, "w") as outf:
+            json.dump(self.inputs.metadata, outf)
+        self._results["out_file"] = out_file
+        return runtime
+
+
+class _TestReportPlotInputSpec(BaseInterfaceInputSpec):
+    dwi_file = File(exists=True, mandatory=True)
+
+
+class _TestReportPlotOutputSpec(TraitedSpec):
+    out_file = File(exists=True)
+
+
+class TestReportPlot(SimpleInterface):
+    input_spec = _TestReportPlotInputSpec
+    output_spec = _TestReportPlotOutputSpec
+
+    def _run_interface(self, runtime):
+        img = image.index_img(self.inputs.dwi_file, 0)
+        out_file = os.path.join(runtime.cwd, "brainfig.png")
+        plotting.plot_img(
+            img=img, output_file=out_file, title=os.path.basename(self.inputs.dwi_file)
+        )
+        self._results["out_file"] = out_file
         return runtime

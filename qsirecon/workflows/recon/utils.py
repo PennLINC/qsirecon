@@ -12,15 +12,17 @@ import logging
 
 import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
+from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
-from qsirecon.interfaces import ConformDwi
-from qsirecon.interfaces.gradients import RemoveDuplicates
-from qsirecon.interfaces.mrtrix import MRTrixGradientTable
-from qsirecon.interfaces.recon_scalars import OrganizeScalarData
+from ...interfaces import ConformDwi
+from ...interfaces.gradients import RemoveDuplicates
+from ...interfaces.mrtrix import MRTrixGradientTable
+from ...interfaces.recon_scalars import OrganizeScalarData
+from ...interfaces.utils import TestReportPlot, WriteSidecar
 
-LOGGER = logging.getLogger("nipype.workflow")
+LOGGER = logging.getLogger("nipyWorkflow")
 
 
 def init_conform_dwi_wf(
@@ -35,7 +37,7 @@ def init_conform_dwi_wf(
         niu.IdentityInterface(fields=["dwi_file", "bval_file", "bvec_file", "b_file"]),
         name="outputnode",
     )
-    workflow = pe.Workflow(name=name)
+    workflow = Workflow(name=name)
     conform = pe.Node(ConformDwi(), name="conform_dwi")
     grad_table = pe.Node(MRTrixGradientTable(), name="grad_table")
     workflow.connect([
@@ -69,7 +71,7 @@ def init_discard_repeated_samples_wf(
         niu.IdentityInterface(fields=["dwi_file", "bval_file", "bvec_file", "local_bvec_file"]),
         name="outputnode",
     )
-    workflow = pe.Workflow(name=name)
+    workflow = Workflow(name=name)
 
     discard_repeats = pe.Node(RemoveDuplicates(**params), name="discard_repeats")
     workflow.connect([
@@ -105,7 +107,7 @@ def init_scalar_output_wf(
         niu.IdentityInterface(fields=["scalar_files"]),
         name="outputnode",
     )
-    workflow = pe.Workflow(name=name)
+    workflow = Workflow(name=name)
 
     organize_scalar_data = pe.MapNode(
         OrganizeScalarData(),
@@ -142,9 +144,7 @@ def init_scalar_output_wf(
     return workflow
 
 
-def init_test_wf(
-    available_anatomical_data, name="test_wf", qsirecon_suffix="test", params={}
-):
+def init_test_wf(available_anatomical_data, name="test_wf", qsirecon_suffix="test", params={}):
     """A workflow for testing how derivatives will be saved."""
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
@@ -154,8 +154,27 @@ def init_test_wf(
     )
     workflow = Workflow(name=name)
     outputnode.inputs.recon_scalars = []
-    plot_reports = not config.execution.skip_odf_reports
-    omp_nthreads = config.nipype.omp_nthreads
-    desc = """Testing Workflow
+    workflow.__desc__ = (
+        "Testing Workflow\n\n: This workflow tests boilerplate, figures and derivatives"
+    )
 
-: """
+    write_metadata = pe.Node(
+        WriteSidecar(metadata=available_anatomical_data), name="write_metadata"
+    )
+    plot_image = pe.Node(TestReportPlot(), name="plot_image")
+
+    ds_metadata = pe.Node(
+        DerivativesDataSink(),
+        name="ds_metadata",
+    )
+    ds_plot = pe.Node(
+        DerivativesDataSink(),
+        name="ds_plot",
+    )
+    workflow.connect([
+        (inputnode, plot_image, [("dwi_file", "dwi_file")]),
+        (write_metadata, ds_metadata, [("out_file", "in_file")]),
+        (plot_image, ds_plot, [("out_file", "in_file")]),
+    ])  # fmt:skip
+
+    return workflow
