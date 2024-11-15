@@ -14,10 +14,10 @@ import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
-from ...interfaces.bids import DerivativesDataSink
-from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces import ConformDwi
+from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.gradients import RemoveDuplicates
+from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.mrtrix import MRTrixGradientTable
 from ...interfaces.recon_scalars import OrganizeScalarData
 from ...interfaces.utils import TestReportPlot, WriteSidecar
