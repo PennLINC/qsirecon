@@ -17,8 +17,20 @@ will be the first argument to QSIRecon.
 Using Data from QSIPrep
 ***********************
 
-QSIprep outputs will work as inputs for QSIRecon as-is, aside from some
+QSIPrep outputs will work as inputs for QSIRecon as-is, aside from some
 when some specific options were selected for preprocessing.
+
+.. important::
+
+    QSIRecon endeavors to maintain compatibility with QSIPrep outputs from the same
+    release series.
+    We cannot guarantee that QSIPrep outputs from different releases will work
+    with QSIRecon.
+
+    QSIPrep and QSIRecon follow a matched release schedule,
+    with major (i.e., backwards-incompatible) releases made at the same time.
+    Minor and patch releases may be made independently.
+
 
 If ``--anat-modality none`` was used
 ====================================
@@ -115,7 +127,7 @@ Including FreeSurfer Data
 =========================
 
 Suppose you ran FreeSurfer on your data (e.g. as part of fmriprep). You can
-specify the directory containing freesurfer outputs with the ``--freesurfer-input`` flag. If you
+specify the directory containing freesurfer outputs with the ``--fs-subjects-dir`` flag. If you
 have::
 
     derivatives/freesurfer/sub-x
@@ -145,7 +157,7 @@ You can run:
        --omp-nthreads 8 \
        --fs-license-file /license.txt \
        --recon-spec mrtrix_multishell_msmt_ACT-hsvs \
-       --freesurfer-input "${PWD}/derivatives/freesurfer" \
+       --fs-subjects-dir "${PWD}/derivatives/freesurfer" \
        -v -v
 
 This will read the FreeSurfer data, align it to the ``qsiprep`` results and use it

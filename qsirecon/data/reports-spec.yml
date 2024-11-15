@@ -1,5 +1,5 @@
 package: qsirecon
-title: Visual report for participant '{subject}' - QSIRecon-{qsirecon_suffix}
+title: Visual report for participant '{subject}'{session_str} - QSIRecon-{qsirecon_suffix}
 sections:
 - name: Summary
   reportlets:
@@ -149,7 +149,7 @@ sections:
   reportlets:
   - bids: {datatype: figures, desc: about, suffix: T1w}
   - custom: boilerplate
-    path: '{out_dir}/logs'
+    path: '{reportlets_dir}/logs'
     bibfile: ['qsirecon', 'data/boilerplate.bib']
     caption: |
       <p>We kindly ask to report results preprocessed with this tool using the following boilerplate.</p>
@@ -162,6 +162,6 @@ sections:
       </p>
     title: Methods
   - custom: errors
-    path: '{out_dir}/sub-{subject}/log/{run_uuid}'
+    path: '{reportlets_dir}/sub-{subject}/log/{run_uuid}'
     captions: <em>NiReports</em> may have recorded failure conditions.
     title: Errors

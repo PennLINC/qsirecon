@@ -45,8 +45,10 @@ HSV_REQUIREMENTS = [
 
 def init_highres_recon_anatomical_wf(
     subject_id,
+    session_id,
     extras_to_make,
     status,
+    name="recon_anatomical_wf",
 ):
     """Gather any high-res anatomical data (images, transforms, segmentations) to use
     in recon workflows.
@@ -54,7 +56,7 @@ def init_highres_recon_anatomical_wf(
     This workflow searches through input data to see what anatomical data is available.
     The anatomical data may be in a freesurfer directory.
     """
-    workflow = Workflow(name="recon_anatomical_wf")
+    workflow = Workflow(name=name)
 
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields),
@@ -70,8 +72,8 @@ def init_highres_recon_anatomical_wf(
 
     # If there is no high-res anat data in the inputs there may still be an image available
     # from freesurfer. Check for it:
-    freesurfer_dir = config.execution.freesurfer_input
-    subject_freesurfer_path = find_fs_path(freesurfer_dir, subject_id)
+    freesurfer_dir = config.execution.fs_subjects_dir
+    subject_freesurfer_path = find_fs_path(freesurfer_dir, subject_id, session_id)
     status["has_freesurfer"] = subject_freesurfer_path is not None
     status["has_qsiprep_5tt_hsvs"] = False
     status["has_freesurfer_5tt_hsvs"] = False
@@ -326,12 +328,26 @@ def init_dwi_recon_anatomical_workflow(
         brain parcellations.
       * ``"odf_rois"``: An image with some interesting ROIs for plotting ODFs
 
-    Parameters:
-    ===========
-        has_qsiprep_5tt_hsvs:
-        has_freesurfer_5tt_hsvs: True,
-        has_qsiprep_t1w:
-        has_qsiprep_t1w_transforms: True}
+    Parameters
+    ----------
+    has_qsiprep_5tt_hsvs : bool
+    has_freesurfer_5tt_hsvs : bool
+    has_qsiprep_t1w : bool
+    has_qsiprep_t1w_transforms : bool
+
+    Returns
+    -------
+    workflow : nipype Workflow
+        The workflow that calculates the necessary anatomical data
+    status : dict
+        A dictionary with the status of the anatomical data, with the following keys:
+
+        - ``has_qsiprep_5tt_hsvs``
+        - ``has_freesurfer_5tt_hsvs``
+        - ``has_qsiprep_t1w``
+        - ``has_qsiprep_t1w_transforms``
+
+        Each value is a boolean indicating whether the data is available.
     """
     # Inputnode holds data from the T1w-based anatomical workflow
     inputnode = pe.Node(

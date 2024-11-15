@@ -6,8 +6,9 @@
 Installation
 ############
 
-The official source of QSIRecon is the `docker repository
-<https://hub.docker.com/pennlinc/qsirecon>`_. The image
+The official source of QSIRecon is the
+`Docker repository <https://hub.docker.com/pennlinc/qsirecon>`_.
+
 
 *******************************
 Running QSIRecon via containers

@@ -41,9 +41,7 @@ CITATIONS = {
 }
 
 
-def init_tortoise_estimator_wf(
-    available_anatomical_data, name="tortoise_recon", qsirecon_suffix="", params={}
-):
+def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suffix="", params={}):
     """Run estimators from TORTOISE.
 
     This workflow may run ``EstimateTensor`` and/or ``EstimateMAPMRI``
@@ -100,7 +98,7 @@ def init_tortoise_estimator_wf(
     )
     omp_nthreads = config.nipype.omp_nthreads
     desc = (
-        "TORTOISE Reconstruction\n\n: "
+        "#### TORTOISE Reconstruction\n\n"
         + "Methods implemented in TORTOISE (@tortoisev3) were used for reconstruction. "
     )
 
@@ -115,6 +113,13 @@ def init_tortoise_estimator_wf(
     # Do we have deltas?
     deltas = (params.get("big_delta", None), params.get("small_delta", None))
     approximate_deltas = None in deltas
+    dwi_metadata = inputs_dict.get("dwi_metadata", {})
+    if approximate_deltas:
+        deltas = (
+            dwi_metadata.get("LargeDelta", None),
+            dwi_metadata.get("SmallDelta", None),
+        )
+        approximate_deltas = None in deltas
 
     # TORTOISE requires unzipped float32 nifti files and a bmtxt file.
     tortoise_convert = pe.Node(TORTOISEConvert(), name="tortoise_convert")

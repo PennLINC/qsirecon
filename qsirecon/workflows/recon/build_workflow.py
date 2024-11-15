@@ -39,10 +39,22 @@ def _check_repeats(nodelist):
 
 def init_dwi_recon_workflow(
     workflow_spec,
-    available_anatomical_data,
+    inputs_dict,
     name="recon_wf",
 ):
-    """Convert a workflow spec into a nipype workflow."""
+    """Convert a workflow spec into a nipype workflow.
+
+    Parameters
+    ----------
+    workflow_spec : dict
+        A dictionary that describes the workflow to be built.
+    inputs_dict : dict
+        A dictionary of inputs to the workflow.
+        Keys include "dwi_file" (path to the DWI file),
+        "dwi_metadata" (metadata for the DWI file),
+        and the keys from the ``status`` output of
+        :func:`~qsirecon.workflows.recon.anatomical.init_dwi_recon_anatomical_workflow`.
+    """
 
     workflow = Workflow(name=name)
     inputnode = pe.Node(
@@ -56,7 +68,7 @@ def init_dwi_recon_workflow(
             raise Exception(f"Node has no name [{node_spec}]")
 
         new_node = workflow_from_spec(
-            available_anatomical_data=available_anatomical_data,
+            inputs_dict=inputs_dict,
             node_spec=node_spec,
         )
         if new_node is None:
@@ -178,7 +190,7 @@ def init_dwi_recon_workflow(
     return workflow
 
 
-def workflow_from_spec(available_anatomical_data, node_spec):
+def workflow_from_spec(inputs_dict, node_spec):
     """Build a nipype workflow based on a json file."""
     software = node_spec.get("software", "qsirecon")
     qsirecon_suffix = node_spec.get("qsirecon_suffix", "")
@@ -200,7 +212,7 @@ def workflow_from_spec(available_anatomical_data, node_spec):
     if node_name is None:
         raise Exception('Node %s must have a "name" attribute' % node_spec)
     kwargs = {
-        "available_anatomical_data": available_anatomical_data,
+        "inputs_dict": inputs_dict,
         "name": node_name,
         "qsirecon_suffix": qsirecon_suffix,
         "params": parameters,

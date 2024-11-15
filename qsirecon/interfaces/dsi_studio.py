@@ -391,6 +391,8 @@ class DSIStudioAtlasGraph(SimpleInterface):
         # Get all inputs from the ApplyTransforms object
         ifargs = self.inputs.get()
         ifargs.pop("connectivity")
+        ifargs.pop("atlas_name")
+        ifargs.pop("atlas_labels_file")
         ifargs["thread_count"] = 1
 
         # Get number of parallel jobs

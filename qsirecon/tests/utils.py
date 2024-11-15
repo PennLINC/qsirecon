@@ -32,7 +32,7 @@ def download_test_data(dset, data_dir=None):
         ),
         "multises_post1_output": (
             "https://upenn.box.com/shared/static/ifwzc3izdo72wx2syqcx74h3hqzulh7a.xz"
-        )
+        ),
     }
     if dset == "*":
         for k in URLS:

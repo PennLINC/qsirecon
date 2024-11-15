@@ -67,7 +67,7 @@ def external_format_datasinks(qsirecon_suffix, params, wf):
 
 
 def init_dipy_brainsuite_shore_recon_wf(
-    available_anatomical_data,
+    inputs_dict,
     name="dipy_3dshore_recon",
     qsirecon_suffix="",
     params={},
@@ -151,7 +151,7 @@ def init_dipy_brainsuite_shore_recon_wf(
     )
     plot_reports = not config.execution.skip_odf_reports
     workflow = Workflow(name=name)
-    desc = "Dipy Reconstruction\n\n: "
+    desc = "#### Dipy Reconstruction\n\n"
     recon_shore = pe.Node(BrainSuiteShoreReconstruction(**params), name="recon_shore")
     recon_scalars = pe.Node(
         BrainSuite3dSHOREReconScalars(qsirecon_suffix="name"),
@@ -213,7 +213,7 @@ def init_dipy_brainsuite_shore_recon_wf(
         ])  # fmt:skip
 
     # Plot targeted regions
-    if available_anatomical_data["has_qsiprep_t1w_transforms"] and plot_reports:
+    if inputs_dict["has_qsiprep_t1w_transforms"] and plot_reports:
         ds_report_odfs = pe.Node(
             DerivativesDataSink(
                 desc="3dSHOREODF",
@@ -347,7 +347,7 @@ def init_dipy_brainsuite_shore_recon_wf(
 
 
 def init_dipy_mapmri_recon_wf(
-    available_anatomical_data,
+    inputs_dict,
     name="dipy_mapmri_recon",
     qsirecon_suffix="",
     params={},
@@ -451,7 +451,7 @@ def init_dipy_mapmri_recon_wf(
     )
 
     workflow = Workflow(name=name)
-    desc = "Dipy Reconstruction\n\n: "
+    desc = "#### Dipy Reconstruction\n\n"
     plot_reports = not config.execution.skip_odf_reports
     omp_nthreads = config.nipype.omp_nthreads
     recon_map = pe.Node(MAPMRIReconstruction(**params), name="recon_map")
@@ -517,7 +517,7 @@ def init_dipy_mapmri_recon_wf(
         ])  # fmt:skip
 
     # Plot targeted regions
-    if available_anatomical_data["has_qsiprep_t1w_transforms"] and plot_reports:
+    if inputs_dict["has_qsiprep_t1w_transforms"] and plot_reports:
         ds_report_odfs = pe.Node(
             DerivativesDataSink(
                 desc="MAPLMRIODF",
@@ -543,9 +543,7 @@ def init_dipy_mapmri_recon_wf(
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
-def init_dipy_dki_recon_wf(
-    available_anatomical_data, name="dipy_dki_recon", qsirecon_suffix="", params={}
-):
+def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="", params={}):
     """Fit DKI
 
     Inputs
@@ -605,7 +603,7 @@ def init_dipy_dki_recon_wf(
         name="recon_scalars",
     )
     workflow = Workflow(name=name)
-    desc = "Dipy Reconstruction\n\n: "
+    desc = "#### Dipy Reconstruction\n\n"
     plot_reports = not config.execution.skip_odf_reports
     recon_dki = pe.Node(KurtosisReconstruction(**params), name="recon_dki")
 

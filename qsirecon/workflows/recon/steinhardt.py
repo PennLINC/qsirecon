@@ -13,9 +13,7 @@ from ...utils.bids import clean_datasinks
 LOGGER = logging.getLogger("nipype.interface")
 
 
-def init_steinhardt_order_param_wf(
-    available_anatomical_data, name="sop_recon", qsirecon_suffix="", params={}
-):
+def init_steinhardt_order_param_wf(inputs_dict, name="sop_recon", qsirecon_suffix="", params={}):
     """Compute Steinhardt order parameters based on ODFs or FODs
 
     Inputs

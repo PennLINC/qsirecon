@@ -13,6 +13,7 @@ Contents
    installation
    builtin_workflows
    building_workflows
+   outputs
    connectivity_matrices
    comparisons
    help

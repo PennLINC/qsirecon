@@ -207,7 +207,7 @@ except Exception:  # noqa: S110, BLE001
 
 # Debug modes are names that influence the exposure of internal details to
 # the user, either through additional derivatives or increased verbosity
-DEBUG_MODES = ("fieldmaps", "pdb")
+DEBUG_MODES = ("pdb",)
 
 
 class _Config:
@@ -234,8 +234,13 @@ class _Config:
                 else:
                     setattr(cls, k, Path(v).absolute())
             elif hasattr(cls, k):
-                setattr(cls, k, v)
-
+                if k == "processing_list":
+                    new_v = []
+                    for el in v:
+                        new_v.append(el.split(":"))
+                    setattr(cls, k, new_v)
+                else:
+                    setattr(cls, k, v)
         if init:
             try:
                 cls.init()
@@ -264,6 +269,8 @@ class _Config:
                 v = " ".join(str(s) for s in v.references) or None
             if isinstance(v, Reference):
                 v = str(v) or None
+            if k == "processing_list":
+                v = [f"{el[0].relpath}:{el[1].relpath}" for el in v]
             out[k] = v
         return out
 
@@ -406,8 +413,6 @@ class execution(_Config):
     """An existing file containing a FreeSurfer license."""
     fs_subjects_dir = None
     """FreeSurfer's subjects directory."""
-    interactive_reports_only = False
-    """Only build the interactive reports, based on the output directory."""
     layout = None
     """A :py:class:`~bids.layout.BIDSLayout` object, see :py:func:`init`."""
     log_dir = None
@@ -424,12 +429,16 @@ class execution(_Config):
     """Only build the reports, based on the reportlets found in a cached working directory."""
     run_uuid = f"{strftime('%Y%m%d-%H%M%S')}_{uuid4()}"
     """Unique identifier of this particular run."""
+    report_output_level = None
+    """Directory level at which the html reports should be written."""
     skip_odf_reports = False
     """Disable ODF recon reports."""
     participant_label = None
     """List of participant identifiers that are to be preprocessed."""
-    freesurfer_input = None
-    """Directory containing FreeSurfer directories to use for recon workflows."""
+    processing_list = []
+    """List of (dwi_file, corresponding_anat) that need to be processed."""
+    session_id = None
+    """List of session identifiers that are to be preprocessed"""
     templateflow_home = _templateflow_home
     """The root folder of the TemplateFlow client."""
     work_dir = Path("work").absolute()
@@ -438,12 +447,11 @@ class execution(_Config):
     """Write out the computational graph corresponding to the planned postprocessing."""
     dataset_links = {}
     """A dictionary of dataset links to be used to track Sources in sidecars."""
-    aggr_ses_reports = 4  # TODO: Change to None when implemented on command line
-    """Maximum number of sessions aggregated in one subject's visual report."""
     dataset_links = {}
     """A dictionary of dataset links to be used to track Sources in sidecars."""
 
     _layout = None
+    _processing_list = None
 
     _paths = (
         "bids_dir",
@@ -453,7 +461,6 @@ class execution(_Config):
         "eddy_config",
         "fs_license_file",
         "fs_subjects_dir",
-        "freesurfer_input",
         "layout",
         "log_dir",
         "output_dir",
@@ -491,6 +498,10 @@ class execution(_Config):
                 ignore_patterns.append(
                     re.compile(r"sub-(?!(" + "|".join(cls.participant_label) + r")(\b|_))")
                 )
+            if cls.session_id and cls.bids_database_dir is None:
+                ignore_patterns.append(
+                    re.compile(r"ses-(?!(" + "|".join(cls.session_id) + r")(\b|_))")
+                )
 
             _indexer = BIDSLayoutIndexer(
                 validate=False,
@@ -523,6 +534,11 @@ class execution(_Config):
             for acq, filters in cls.bids_filters.items():
                 for k, v in filters.items():
                     cls.bids_filters[acq][k] = _process_value(v)
+
+        cls._processing_list = []
+        for dwi_relpath, anat_relpath in cls.processing_list:
+            cls._processing_list.append((cls.layout.get_file(dwi_relpath), cls.layout.get_file(anat_relpath)))
+        cls.processing_list = cls._processing_list
 
         dataset_links = {
             "preprocessed": cls.bids_dir,

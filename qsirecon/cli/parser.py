@@ -94,6 +94,9 @@ def _build_parser(**kwargs):
     def _drop_sub(value):
         return value[4:] if value.startswith("sub-") else value
 
+    def _drop_ses(value):
+        return value[4:] if value.startswith("ses-") else value
+
     def _process_value(value):
         import bids
 
@@ -176,12 +179,15 @@ def _build_parser(**kwargs):
         help="A space delimited list of participant identifiers or a single "
         "identifier (the sub- prefix can be removed)",
     )
-    # Re-enable when option is actually implemented
-    # g_bids.add_argument('-s', '--session-id', action='store', default='single_session',
-    #                     help='Select a specific session to be processed')
-    # Re-enable when option is actually implemented
-    # g_bids.add_argument('-r', '--run-id', action='store', default='single_run',
-    #                     help='Select a specific run to be processed')
+    g_bids.add_argument(
+        "--session-id",
+        action="store",
+        nargs="+",
+        type=_drop_ses,
+        default=None,
+        help="A space delimited list of session identifiers or a single "
+        "identifier (the ses- prefix can be removed)",
+    )
 
     g_bids.add_argument(
         "-d",
@@ -193,7 +199,7 @@ def _build_parser(**kwargs):
         help=(
             "Search PATH(s) for derivatives or atlas datasets. "
             "These may be provided as named folders "
-            "(e.g., `--datasets smriprep=/path/to/smriprep`)."
+            "(e.g., ``--datasets smriprep=/path/to/smriprep``)."
         ),
     )
     g_bids.add_argument(
@@ -280,10 +286,13 @@ def _build_parser(**kwargs):
         "aggregation, not reportlet generation for specific nodes.",
     )
     g_subset.add_argument(
-        "--interactive-reports-only",
-        action="store_true",
-        default=False,
-        help="create interactive report json files on already preprocessed data.",
+        "--report-output-level",
+        action="store",
+        choices=["root", "subject", "session"],
+        default="root",
+        help="Where should the html reports be written? By default root will write "
+        "them to the --output-dir. Other options will write them into their "
+        "subject or session directory.",
     )
 
     g_conf = parser.add_argument_group("Workflow configuration")
@@ -347,12 +356,15 @@ def _build_parser(**kwargs):
         ),
     )
     g_recon.add_argument(
-        "--freesurfer-input",
-        "--freesurfer_input",
+        "--fs-subjects-dir",
+        "--fs_subjects_dir",
         action="store",
         metavar="PATH",
-        type=Path,
-        help="Directory containing freesurfer outputs to be integrated into recon.",
+        type=PathExists,
+        help=(
+            "Directory containing Freesurfer outputs to be integrated into recon. "
+            "Freesurfer must already be run. QSIRecon will not run Freesurfer."
+        ),
     )
     g_recon.add_argument(
         "--skip-odf-reports",
@@ -473,9 +485,9 @@ def parse_args(args=None, namespace=None):
     config.from_dict(vars(opts), init=["nipype"])
 
     if not config.execution.notrack:
-        import pkgutil
+        import importlib.util
 
-        if pkgutil.find_loader("sentry_sdk") is None:
+        if importlib.util.find_spec("sentry_sdk") is None:
             config.execution.notrack = True
             config.loggers.cli.warning("Telemetry disabled because sentry_sdk is not installed.")
         else:
@@ -608,3 +620,50 @@ def parse_args(args=None, namespace=None):
         )
 
     config.execution.participant_label = sorted(participant_label)
+    config.execution.processing_list = _get_iterable_dwis_and_anats()
+
+
+def _get_iterable_dwis_and_anats():
+    """Look through the BIDS Layout for DWIs and their corresponding anats.
+
+    Returns
+    -------
+    dwis_and_anats : list of tuple
+        List of two-element tuples where the first element is a DWI scan and the second is
+        the corresponding anatomical scan.
+    """
+    from bids.layout import Query
+
+    dwis_and_anats = []
+    dwi_files = config.execution.layout.get(
+        suffix="dwi",
+        session=Query.OPTIONAL,
+        space="T1w",
+        extension=["nii", "nii.gz"],
+    )
+
+    for dwi_scan in dwi_files:
+        subject_level_anats = config.execution.layout.get(
+            suffix=["T1w", "T2w"],
+            session=Query.NONE,
+            space=Query.NONE,
+            extension=["nii", "nii.gz"],
+        )
+
+        session_level_anats = []
+        if dwi_session := dwi_scan.entities.get("session"):
+            session_level_anats = config.execution.layout.get(
+                suffix=["T1w", "T2w"],
+                session=dwi_session,
+                space=Query.NONE,
+                extension=["nii", "nii.gz"],
+            )
+
+        if not (session_level_anats or subject_level_anats):
+            anat_scan = None
+        else:
+            best_anat_source = session_level_anats if session_level_anats else subject_level_anats
+            anat_scan = best_anat_source[0]
+
+        dwis_and_anats.append((dwi_scan, anat_scan))
+    return dwis_and_anats
