@@ -626,11 +626,11 @@ def parse_args(args=None, namespace=None):
 def _get_iterable_dwis_and_anats():
     """Look through the BIDS Layout for DWIs and their corresponding anats.
 
-    Returns:
-    --------
-    dwis_and_anats: list of tuple
-
-
+    Returns
+    -------
+    dwis_and_anats : list of tuple
+        List of two-element tuples where the first element is a DWI scan and the second is
+        the corresponding anatomical scan.
     """
     from bids.layout import Query
 

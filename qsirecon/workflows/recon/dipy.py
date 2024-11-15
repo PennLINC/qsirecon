@@ -151,7 +151,7 @@ def init_dipy_brainsuite_shore_recon_wf(
     )
     plot_reports = not config.execution.skip_odf_reports
     workflow = Workflow(name=name)
-    desc = "Dipy Reconstruction\n\n: "
+    desc = "#### Dipy Reconstruction\n\n"
     recon_shore = pe.Node(BrainSuiteShoreReconstruction(**params), name="recon_shore")
     recon_scalars = pe.Node(
         BrainSuite3dSHOREReconScalars(qsirecon_suffix="name"),
@@ -451,7 +451,7 @@ def init_dipy_mapmri_recon_wf(
     )
 
     workflow = Workflow(name=name)
-    desc = "Dipy Reconstruction\n\n: "
+    desc = "#### Dipy Reconstruction\n\n"
     plot_reports = not config.execution.skip_odf_reports
     omp_nthreads = config.nipype.omp_nthreads
     recon_map = pe.Node(MAPMRIReconstruction(**params), name="recon_map")
@@ -605,7 +605,7 @@ def init_dipy_dki_recon_wf(
         name="recon_scalars",
     )
     workflow = Workflow(name=name)
-    desc = "Dipy Reconstruction\n\n: "
+    desc = "#### Dipy Reconstruction\n\n"
     plot_reports = not config.execution.skip_odf_reports
     recon_dki = pe.Node(KurtosisReconstruction(**params), name="recon_dki")
 
