@@ -88,68 +88,35 @@ def generate_reports(
     for subject_label in config.execution.participant_label:
         subject_id = subject_label[4:] if subject_label.startswith("sub-") else subject_label
 
-        if output_level == "session":
-            processed_dwis = [
-                pair[0]
-                for pair in config.execution.processing_list
-                if pair[0].entities["subject"] == subject_label
-            ]
+        # Extract session IDs from the processed DWIs
+        sessions = config.execution.layout.get_sessions(
+            subject=subject_label,
+            session=config.execution.session_id,
+            suffix="dwi",
+            **config.execution.bids_filters.get("dwi", {}),
+        )
+        if output_level == "session" and not sessions:
+            report_dir = output_dir
+            output_level = "subject"
+            config.loggers.workflow.warning(
+                "Session-level reports were requested, "
+                "but data was found without a session level. "
+                "Writing out reports to subject level."
+            )
+            sessions = [Query.NONE]
 
-            sessions = set()
-            for processed_dwi in processed_dwis:
-                session_id = processed_dwi.entities.get("session")
-                if session_id is None:
-                    config.loggers.workflow.warning(
-                        "Session-level reports were requested, but data was found without"
-                        "a session level."
-                    )
-                    sessions.add(Query.NONE)
-                else:
-                    sessions.add(session_id)
-
-            for session_label in sessions:
-                if session_label == Query.NONE:
-                    html_report = html_report = f"sub-{subject_id}.html"
-                else:
-                    html_report = html_report = f"sub-{subject_id}_ses-{session_label}.html"
-
-                if output_level == "root":
-                    report_dir = output_dir
-                elif output_level == "subject":
-                    report_dir = Path(output_dir) / f"sub-{subject_id}"
-                elif output_level == "session":
-                    if session_label == Query.NONE:
-                        report_dir = Path(output_dir) / f"sub-{subject_id}"
-                    else:
-                        report_dir = (
-                            Path(output_dir) / f"sub-{subject_id}" / f"ses-{session_label}"
-                        )
-
-                report_error = run_reports(
-                    report_dir,
-                    subject_label,
-                    run_uuid,
-                    bootstrap_file=bootstrap_file,
-                    out_filename=html_report,
-                    reportlets_dir=output_dir,
-                    errorname=f"report-{run_uuid}-{subject_label}.err",
-                    metadata={"qsirecon_suffix": qsirecon_suffix},
-                    subject=subject_label,
-                    session=session_id,
-                )
-                # If the report generation failed, append the subject label for which it failed
-                if report_error is not None:
-                    errors.append(report_error)
-
-            # Someday, when we have anatomical reports, add a section here that
-            # finds sessions and makes the reports.
-        else:
-            html_report = f"sub-{subject_id}.html"
+        for session_label in sessions:
+            if session_label == Query.NONE:
+                html_report = html_report = f"sub-{subject_id}.html"
+            else:
+                html_report = html_report = f"sub-{subject_id}_ses-{session_label}.html"
 
             if output_level == "root":
                 report_dir = output_dir
             elif output_level == "subject":
                 report_dir = Path(output_dir) / f"sub-{subject_id}"
+            elif output_level == "session":
+                report_dir = Path(output_dir) / f"sub-{subject_id}" / f"ses-{session_label}"
 
             report_error = run_reports(
                 report_dir,
@@ -161,9 +128,13 @@ def generate_reports(
                 errorname=f"report-{run_uuid}-{subject_label}.err",
                 metadata={"qsirecon_suffix": qsirecon_suffix},
                 subject=subject_label,
+                session=session_label,
             )
             # If the report generation failed, append the subject label for which it failed
             if report_error is not None:
                 errors.append(report_error)
+
+        # Someday, when we have anatomical reports, add a section here that
+        # finds sessions and makes the reports.
 
     return errors
