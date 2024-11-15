@@ -213,8 +213,8 @@ def test_multises_pre1_qsiprep_reportsubject(data_dir, output_dir, working_dir):
 
 
 @pytest.mark.integration
-@pytest.mark.multises_post1_qsiprep_reportsession
-def test_multises_post1_qsiprep_reportsession(data_dir, output_dir, working_dir):
+@pytest.mark.multises_pre1_qsiprep_reportsession
+def test_multises_pre1_qsiprep_reportsession(data_dir, output_dir, working_dir):
     """Test reading inputs from pre-1.0.0rc0 qsiprep"""
     TEST_NAME = "multises_pre1_qsiprep_reportsession"
 

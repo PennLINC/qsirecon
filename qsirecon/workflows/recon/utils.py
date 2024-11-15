@@ -8,8 +8,6 @@ Miscellaneous workflows
 
 """
 
-import logging
-
 import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
@@ -22,8 +20,6 @@ from ...interfaces.mrtrix import MRTrixGradientTable
 from ...interfaces.recon_scalars import OrganizeScalarData
 from ...interfaces.utils import TestReportPlot, WriteSidecar
 from ...utils.bids import clean_datasinks
-
-LOGGER = logging.getLogger("nipyWorkflow")
 
 
 def init_conform_dwi_wf(inputs_dict, name="conform_dwi", qsirecon_suffix="", params={}):
