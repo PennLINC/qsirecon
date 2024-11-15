@@ -30,9 +30,9 @@ def download_test_data(dset, data_dir=None):
         "multises_pre1_output": (
             "https://upenn.box.com/shared/static/i2g8m0d026g46kew5g82yc50a8m0jez7.xz"
         ),
-        "multises_post1_output": {
+        "multises_post1_output": (
             "https://upenn.box.com/shared/static/ifwzc3izdo72wx2syqcx74h3hqzulh7a.xz"
-        }
+        )
     }
     if dset == "*":
         for k in URLS:
