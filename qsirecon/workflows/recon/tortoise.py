@@ -98,7 +98,7 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
     )
     omp_nthreads = config.nipype.omp_nthreads
     desc = (
-        "TORTOISE Reconstruction\n\n: "
+        "#### TORTOISE Reconstruction\n\n"
         + "Methods implemented in TORTOISE (@tortoisev3) were used for reconstruction. "
     )
 

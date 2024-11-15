@@ -230,7 +230,7 @@ def init_dsi_studio_tractography_wf(
     omp_nthreads = config.nipype.omp_nthreads
     workflow = Workflow(name=name)
     desc = (
-        "DSI Studio Tractography\n\n: Tractography was run in DSI Studio "
+        "#### DSI Studio Tractography\n\nTractography was run in DSI Studio "
         "(version %s) using a deterministic algorithm "
         "[@yeh2013deterministic]. " % DSI_STUDIO_VERSION
     )
@@ -321,7 +321,7 @@ def init_dsi_studio_autotrack_wf(
     )
     outputnode.inputs.recon_scalars = []
     desc = (
-        "DSI Studio Automatic Tractography\n\n: Automatic Tractography was run in "
+        "#### DSI Studio Automatic Tractography\n\nAutomatic Tractography was run in "
         "DSI Studio (version %s) and bundle shape statistics were calculated [@autotrack]. "
         % DSI_STUDIO_VERSION
     )

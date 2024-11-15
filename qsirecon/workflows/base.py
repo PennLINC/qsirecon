@@ -12,7 +12,7 @@ from glob import glob
 
 import nipype.pipeline.engine as pe
 import yaml
-from bids.layout import BIDSLayout
+from bids.layout import Query
 from dipy import __version__ as dipy_ver
 from nilearn import __version__ as nilearn_ver
 from nipype import __version__ as nipype_ver
@@ -85,7 +85,6 @@ def init_single_subject_recon_wf(subject_id):
         recon_workflow_input_fields,
     )
     from ..interfaces.reports import AboutSummary, SubjectSummary
-    from ..interfaces.utils import GetUnique
     from ..utils.atlases import collect_atlases
     from ..utils.bids import collect_anatomical_data, get_entity
     from .recon.anatomical import (
@@ -95,9 +94,8 @@ def init_single_subject_recon_wf(subject_id):
     from .recon.build_workflow import init_dwi_recon_workflow
 
     spec = _load_recon_spec(config.workflow.recon_spec)
-    dwi_recon_inputs = _get_iterable_dwi_inputs(subject_id)
-
     workflow = Workflow(name=f"sub-{subject_id}_{spec['name']}")
+
     workflow.__desc__ = f"""
 Reconstruction was
 performed using *QSIRecon* {config.__version__} (@cieslak2021qsiprep),
@@ -118,103 +116,123 @@ to workflows in *QSIRecon*'s documentation]\
 ### References
 
     """
+    dwis_and_anats = [
+        pair
+        for pair in config.execution.processing_list
+        if pair[0].entities["subject"] == subject_id
+    ]
 
-    if len(dwi_recon_inputs) == 0:
+    if len(dwis_and_anats) == 0:
         config.loggers.workflow.info("No dwi files found for %s", subject_id)
         return workflow
 
-    # This is here because qsiprep currently only makes one anatomical result per subject
-    # regardless of sessions. So process it on its own.
-    anat_data, status = collect_anatomical_data(
-        layout=config.execution.layout,
-        subject_id=subject_id,
-        needs_t1w_transform=bool(config.execution.atlases),
-        bids_filters=config.execution.bids_filters or {},
-    )
-    config.loggers.workflow.info(
-        "Anatomical (T1w) data available for recon:\n"
-        f"{yaml.dump(anat_data, default_flow_style=False, indent=4)}"
-    )
-    anat_ingress_node = pe.Node(
-        niu.IdentityInterface(fields=list(anat_data.keys())),
-        name="anat_ingress_node",
-    )
-    highres_recon_anatomical_wf, status = init_highres_recon_anatomical_wf(
-        subject_id=subject_id,
-        extras_to_make=spec.get("anatomical", []),
-        status=status,
-    )
-    for key, value in anat_data.items():
-        config.loggers.workflow.info(f"{key} ({type(key)}): {value} ({type(value)})")
-        anat_ingress_node.set_input(key, value)
-        workflow.connect([
-            (anat_ingress_node, highres_recon_anatomical_wf, [(key, f"inputnode.{key}")]),
-        ])  # fmt:skip
+    anat_ingress_nodes = {}
+    anat_input_files = [pair[1] for pair in dwis_and_anats]
 
-    atlas_configs = {}
-    if config.execution.atlases:
-        # Limit atlases to ones in the specified space.
-        xfm_to_anat = anat_data["template_to_acpc_xfm"]
-        template_space = get_entity(xfm_to_anat, "from")
-        bids_filters = (config.execution.bids_filters or {}).copy()
-        bids_filters["atlas"] = bids_filters.get("atlas", {})
-        bids_filters["atlas"]["space"] = template_space
-
-        # Collect atlases across datasets, including built-in atlases.
-        atlas_configs = collect_atlases(
-            datasets=config.execution.datasets,
-            atlases=config.execution.atlases,
-            bids_filters=bids_filters,
+    highres_anat_wfs = {}
+    highres_anat_statuses = {}
+    for anat_num, anat_input_file in enumerate(anat_input_files):
+        _session_filter = (
+            None
+            if anat_input_file is None
+            else anat_input_file.entities.get("session", Query.NONE)
         )
-        # Patch the transform into the atlas configs.
-        # This is a placeholder until we can support atlases in various spaces.
-        for atlas_name in atlas_configs.keys():
-            atlas_configs[atlas_name]["xfm_to_anat"] = xfm_to_anat
 
-        # Prepare the atlases.
-        # Reorient to LPS+ and zero out the sform.
-        for atlas_name, atlas_config in atlas_configs.items():
-            # Node is named dataset_ instead of ds_ so no clean_datasinks step will affect it.
-            # XXX: We should pass the outputs from these datasinks to any steps that use the
-            # atlases in order to track Sources.
-            ds_atlas_orig = pe.Node(
-                CopyAtlas(
-                    in_file=atlas_config["image"],
-                    source_file=atlas_config["image"],
-                    out_dir=config.execution.output_dir,
-                    atlas=atlas_name,
-                    meta_dict=atlas_config["metadata"],
-                ),
-                name=f"datasink_atlas_orig_{atlas_name}",
+        # We only need to process unique anat files that match dwis
+        if anat_input_file.path in highres_anat_wfs:
+            continue
+        anat_data, highres_anat_statuses[anat_input_file.path] = collect_anatomical_data(
+            layout=config.execution.layout,
+            subject_id=subject_id,
+            session_id=_session_filter,
+            needs_t1w_transform=bool(config.execution.atlases),
+            bids_filters=config.execution.bids_filters or {},
+        )
+        config.loggers.workflow.info(
+            f"Anatomical data available for {anat_input_file.path}:\n"
+            f"{yaml.dump(anat_data, default_flow_style=False, indent=4)}"
+        )
+        anat_ingress_nodes[anat_input_file.path] = pe.Node(
+            niu.IdentityInterface(fields=list(anat_data.keys())),
+            name=f"anat_ingress_node_{anat_num}",
+        )
+        highres_anat_wfs[anat_input_file.path], highres_anat_statuses[anat_input_file.path] = (
+            init_highres_recon_anatomical_wf(
+                subject_id=subject_id,
+                session_id=_session_filter,
+                extras_to_make=spec.get("anatomical", []),
+                status=highres_anat_statuses[anat_input_file.path],
+                name=f"recon_anatomical_wf_{anat_num}",
             )
-            workflow.add_nodes([ds_atlas_orig])
+        )
+        for key, value in anat_data.items():
+            config.loggers.workflow.info(f"{key} ({type(key)}): {value} ({type(value)})")
+            anat_ingress_nodes[anat_input_file.path].set_input(key, value)
+            workflow.connect([
+                (anat_ingress_nodes[anat_input_file.path],
+                 highres_anat_wfs[anat_input_file.path], [
+                     (key, f"inputnode.{key}")]),
+            ])  # fmt:skip
 
-            ds_atlas_labels_orig = pe.Node(
-                CopyAtlas(
-                    in_file=atlas_config["labels"],
-                    source_file=atlas_config["labels"],
-                    out_dir=config.execution.output_dir,
-                    atlas=atlas_name,
-                ),
-                name=f"datasink_atlas_labels_orig_{atlas_name}",
+        # Configure atlases _per_ anatomical workflow
+        atlas_configs = {}
+        if config.execution.atlases:
+            # Limit atlases to ones in the specified space.
+            xfm_to_anat = anat_data["template_to_acpc_xfm"]
+            template_space = get_entity(xfm_to_anat, "from")
+            bids_filters = (config.execution.bids_filters or {}).copy()
+            bids_filters["atlas"] = bids_filters.get("atlas", {})
+            bids_filters["atlas"]["space"] = template_space
+
+            # Collect atlases across datasets, including built-in atlases.
+            atlas_configs = collect_atlases(
+                datasets=config.execution.datasets,
+                atlases=config.execution.atlases,
+                bids_filters=bids_filters,
             )
-            workflow.add_nodes([ds_atlas_labels_orig])
+            # Patch the transform into the atlas configs.
+            # This is a placeholder until we can support atlases in various spaces.
+            for atlas_name in atlas_configs.keys():
+                atlas_configs[atlas_name]["xfm_to_anat"] = xfm_to_anat
 
-    # Connect the anatomical-only inputs. NOTE this is not to the inputnode!
-    aggregate_anatomical_nodes = pe.Node(
-        niu.Merge(len(dwi_recon_inputs)),
-        name="aggregate_anatomical_nodes",
-    )
+            # Prepare the atlases.
+            # Reorient to LPS+ and zero out the sform.
+            for atlas_name, atlas_config in atlas_configs.items():
+                # Node is named dataset_ instead of ds_ so no clean_datasinks step will affect it.
+                # XXX: We should pass the outputs from these datasinks to any steps that use the
+                # atlases in order to track Sources.
+                ds_atlas_orig = pe.Node(
+                    CopyAtlas(
+                        in_file=atlas_config["image"],
+                        source_file=atlas_config["image"],
+                        out_dir=config.execution.output_dir,
+                        atlas=atlas_name,
+                        meta_dict=atlas_config["metadata"],
+                    ),
+                    name=f"datasink_atlas_orig_{atlas_name}_{anat_num}",
+                )
+                workflow.add_nodes([ds_atlas_orig])
+
+                ds_atlas_labels_orig = pe.Node(
+                    CopyAtlas(
+                        in_file=atlas_config["labels"],
+                        source_file=atlas_config["labels"],
+                        out_dir=config.execution.output_dir,
+                        atlas=atlas_name,
+                    ),
+                    name=f"datasink_atlas_labels_orig_{atlas_name}_{anat_num}",
+                )
+                workflow.add_nodes([ds_atlas_labels_orig])
+    config.loggers.workflow.info(f"Found {len(anat_input_files)} high-res anatomicals to process")
 
     # create a processing pipeline for the dwis in each session
     dwi_recon_wfs = {}
     dwi_anat_wfs = {}
     recon_full_inputs = {}
     dwi_ingress_nodes = {}
-    anat_ingress_wfs = {}
-    dwi_files = [dwi_input["bids_dwi_file"] for dwi_input in dwi_recon_inputs]
-    for i_run, dwi_input in enumerate(dwi_recon_inputs):
-        dwi_file = dwi_input["bids_dwi_file"]
+    dwi_files = [pair[0].path for pair in dwis_and_anats]
+    for dwi_input, anat_input in dwis_and_anats:
+        dwi_file = dwi_input.path
         wf_name = _get_wf_name(dwi_file)
 
         # Get the preprocessed DWI and all the related preprocessed images
@@ -222,14 +240,6 @@ to workflows in *QSIRecon*'s documentation]\
             QSIPrepDWIIngress(dwi_file=dwi_file),
             name=f"{wf_name}_ingressed_dwi_data",
         )
-        anat_ingress_wfs[dwi_file] = highres_recon_anatomical_wf
-
-        # Aggregate the anatomical data from all the dwi files
-        workflow.connect([
-            (anat_ingress_wfs[dwi_file], aggregate_anatomical_nodes, [
-                ("outputnode.acpc_preproc", f"in{i_run + 1}"),
-            ]),
-        ])  # fmt:skip
 
         # Create scan-specific anatomical data (mask, atlas configs, odf ROIs for reports)
         dwi_anat_wfs[dwi_file], dwi_available_anatomical_data = init_dwi_recon_anatomical_workflow(
@@ -238,7 +248,7 @@ to workflows in *QSIRecon*'s documentation]\
             needs_t1w_transform=bool(config.execution.atlases),
             extras_to_make=spec.get("anatomical", []),
             name=f"{wf_name}_dwi_specific_anat_wf",
-            **status,
+            **highres_anat_statuses[anat_input.path],
         )
 
         inputs_dict = {
@@ -284,7 +294,7 @@ to workflows in *QSIRecon*'s documentation]\
                 (trait, f"inputnode.{trait}") for trait in recon_workflow_input_fields
             ]),
 
-            (anat_ingress_wfs[dwi_file], dwi_anat_wfs[dwi_file], [
+            (highres_anat_wfs[anat_input.path], dwi_anat_wfs[dwi_file], [
                 (f"outputnode.{trait}", f"inputnode.{trait}")
                 for trait in anatomical_workflow_outputs
             ]),
@@ -292,12 +302,6 @@ to workflows in *QSIRecon*'s documentation]\
 
     # Preprocessing of anatomical data (includes possible registration template)
     dwi_basename = fix_multi_T1w_source_name(dwi_files)
-
-    reduce_t1_preproc = pe.Node(
-        GetUnique(),
-        name="reduce_t1_preproc",
-    )
-    workflow.connect([(aggregate_anatomical_nodes, reduce_t1_preproc, [("out", "inlist")])])
 
     about = pe.Node(
         AboutSummary(
@@ -314,11 +318,11 @@ to workflows in *QSIRecon*'s documentation]\
             std_spaces=["MNIInfant" if config.workflow.infant else "MNI152NLin2009cAsym"],
             nstd_spaces=[],
             dwi=dwi_files,
+            t1w=sorted(highres_anat_statuses.keys()),
         ),
         name="summary",
         run_without_submitting=True,
     )
-    workflow.connect([(reduce_t1_preproc, summary, [("outlist", "t1w")])])
 
     suffix_dirs = []
     for qsirecon_suffix in config.workflow.qsirecon_suffixes:
@@ -421,32 +425,3 @@ def _load_recon_spec(spec_name):
             spec["nodes"].append(node)
 
     return spec
-
-
-def _get_iterable_dwi_inputs(subject_id):
-    """Return inputs for the recon ingressors depending on the pipeline source.
-
-    If qsirecon was used as the pipeline source, the iterable is going to be the
-    dwi files (there can be an arbitrary number of them).
-
-    If ukb or hcpya were used there is only one dwi file per subject, so the
-    ingressors are sent the subject directory, which makes it easier to find
-    the other files needed.
-
-    """
-
-    dwi_dir = config.execution.bids_dir
-    if not (dwi_dir / f"sub-{subject_id}").exists():
-        raise Exception(f"Unable to find subject directory in {config.execution.bids_dir}")
-
-    layout = BIDSLayout(dwi_dir, validate=False, absolute_paths=True)
-    # Get all the output files that are in this space
-    dwi_files = [
-        f.path
-        for f in layout.get(
-            suffix="dwi", subject=subject_id, absolute_paths=True, extension=["nii", "nii.gz"]
-        )
-        if "space-T1w" in f.filename
-    ]
-    config.loggers.workflow.info("found %s in %s", dwi_files, dwi_dir)
-    return [{"bids_dwi_file": dwi_file} for dwi_file in dwi_files]
