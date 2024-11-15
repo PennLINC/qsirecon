@@ -49,7 +49,7 @@ def _parse_qsirecon_params_dict(params_dict):
     return kwargs
 
 
-def init_pyafq_wf(available_anatomical_data, name="afq", qsirecon_suffix="", params={}):
+def init_pyafq_wf(inputs_dict, name="afq", qsirecon_suffix="", params={}):
     """Run PyAFQ on some qsirecon outputs
 
     Inputs

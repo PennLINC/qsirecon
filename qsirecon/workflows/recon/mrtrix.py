@@ -50,9 +50,7 @@ CITATIONS = {
 }
 
 
-def init_mrtrix_csd_recon_wf(
-    available_anatomical_data, name="mrtrix_recon", qsirecon_suffix="", params={}
-):
+def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="", params={}):
     """Create FOD images for WM, GM and CSF.
 
     This workflow uses mrtrix tools to run csd on multishell data. At the end,
@@ -261,7 +259,7 @@ def init_mrtrix_csd_recon_wf(
         ])  # fmt:skip
 
         # Plot targeted regions
-        if available_anatomical_data["has_qsiprep_t1w_transforms"]:
+        if inputs_dict["has_qsiprep_t1w_transforms"]:
             ds_report_odfs = pe.Node(
                 DerivativesDataSink(
                     desc="wmFOD",
@@ -405,9 +403,7 @@ def init_mrtrix_csd_recon_wf(
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
-def init_global_tractography_wf(
-    available_anatomical_data, name="mrtrix_recon", qsirecon_suffix="", params={}
-):
+def init_global_tractography_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="", params={}):
     """Run multi-shell, multi-tissue global tractography
 
     This workflow uses mrtrix tools to run csd on multishell data.
@@ -526,7 +522,7 @@ def init_global_tractography_wf(
 
 
 def init_mrtrix_tractography_wf(
-    available_anatomical_data, name="mrtrix_tracking", qsirecon_suffix="", params={}
+    inputs_dict, name="mrtrix_tracking", qsirecon_suffix="", params={}
 ):
     """Run tractography
 
@@ -647,7 +643,7 @@ def init_mrtrix_tractography_wf(
 
 
 def init_mrtrix_connectivity_wf(
-    available_anatomical_data,
+    inputs_dict,
     name="mrtrix_connectiity",
     params={},
     qsirecon_suffix="",
