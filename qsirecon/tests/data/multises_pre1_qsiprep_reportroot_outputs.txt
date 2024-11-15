@@ -14,7 +14,8 @@ derivatives/qsirecon-test/sub-PNC/ses-1/dwi/sub-PNC_ses-1_acq-realistic_space-T1
 derivatives/qsirecon-test/sub-PNC/ses-2
 derivatives/qsirecon-test/sub-PNC/ses-2/dwi
 derivatives/qsirecon-test/sub-PNC/ses-2/dwi/sub-PNC_ses-2_acq-realistic_space-T1w_desc-availablemetadata_dwi.json
-derivatives/qsirecon-test/sub-PNC.html
+derivatives/qsirecon-test/sub-PNC_ses-1.html
+derivatives/qsirecon-test/sub-PNC_ses-2.html
 logs
 logs/CITATION.bib
 logs/CITATION.html
