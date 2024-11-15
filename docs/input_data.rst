@@ -17,8 +17,20 @@ will be the first argument to QSIRecon.
 Using Data from QSIPrep
 ***********************
 
-QSIprep outputs will work as inputs for QSIRecon as-is, aside from some
+QSIPrep outputs will work as inputs for QSIRecon as-is, aside from some
 when some specific options were selected for preprocessing.
+
+.. important::
+
+    QSIRecon endeavors to maintain compatibility with QSIPrep outputs from the same
+    release series.
+    We cannot guarantee that QSIPrep outputs from different releases will work
+    with QSIRecon.
+
+    QSIPrep and QSIRecon follow a matched release schedule,
+    with major (i.e., backwards-incompatible) releases made at the same time.
+    Minor and patch releases may be made independently.
+
 
 If ``--anat-modality none`` was used
 ====================================
