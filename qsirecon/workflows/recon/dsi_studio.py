@@ -43,9 +43,7 @@ from .utils import init_scalar_output_wf
 LOGGER = logging.getLogger("nipype.interface")
 
 
-def init_dsi_studio_recon_wf(
-    available_anatomical_data, name="dsi_studio_recon", qsirecon_suffix="", params={}
-):
+def init_dsi_studio_recon_wf(inputs_dict, name="dsi_studio_recon", qsirecon_suffix="", params={}):
     """Reconstructs diffusion data using DSI Studio.
 
     This workflow creates a ``.src.gz`` file from the input dwi, bvals and bvecs,
@@ -128,7 +126,7 @@ distance of %02f in DSI Studio (version %s). """ % (
         ])  # fmt:skip
 
         # Plot targeted regions
-        if available_anatomical_data["has_qsiprep_t1w_transforms"]:
+        if inputs_dict["has_qsiprep_t1w_transforms"]:
             ds_report_odfs = pe.Node(
                 DerivativesDataSink(
                     desc="GQIODF",
@@ -160,7 +158,7 @@ distance of %02f in DSI Studio (version %s). """ % (
 
 
 def init_dsi_studio_tractography_wf(
-    available_anatomical_data,
+    inputs_dict,
     name="dsi_studio_tractography",
     params={},
     qsirecon_suffix="",
@@ -265,7 +263,7 @@ def init_dsi_studio_tractography_wf(
 
 
 def init_dsi_studio_autotrack_wf(
-    available_anatomical_data,
+    inputs_dict,
     params={},
     qsirecon_suffix="",
     name="dsi_studio_autotrack_wf",
@@ -418,7 +416,7 @@ def init_dsi_studio_autotrack_wf(
 
 
 def init_dsi_studio_connectivity_wf(
-    available_anatomical_data,
+    inputs_dict,
     name="dsi_studio_connectivity",
     params={},
     qsirecon_suffix="",
@@ -544,7 +542,7 @@ def init_dsi_studio_connectivity_wf(
 
 
 def init_dsi_studio_export_wf(
-    available_anatomical_data,
+    inputs_dict,
     name="dsi_studio_export",
     params={},
     qsirecon_suffix="",

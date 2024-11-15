@@ -23,9 +23,7 @@ from qsirecon.interfaces.recon_scalars import OrganizeScalarData
 LOGGER = logging.getLogger("nipype.workflow")
 
 
-def init_conform_dwi_wf(
-    available_anatomical_data, name="conform_dwi", qsirecon_suffix="", params={}
-):
+def init_conform_dwi_wf(inputs_dict, name="conform_dwi", qsirecon_suffix="", params={}):
     """If data were preprocessed elsewhere, ensure the gradients and images
     conform to LPS+ before running other parts of the pipeline."""
     inputnode = pe.Node(
@@ -55,7 +53,7 @@ def init_conform_dwi_wf(
 
 
 def init_discard_repeated_samples_wf(
-    available_anatomical_data,
+    inputs_dict,
     name="discard_repeats",
     qsirecon_suffix="",
     space="T1w",
