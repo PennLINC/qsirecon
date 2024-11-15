@@ -199,7 +199,7 @@ def _build_parser(**kwargs):
         help=(
             "Search PATH(s) for derivatives or atlas datasets. "
             "These may be provided as named folders "
-            "(e.g., `--datasets smriprep=/path/to/smriprep`)."
+            "(e.g., ``--datasets smriprep=/path/to/smriprep``)."
         ),
     )
     g_bids.add_argument(
