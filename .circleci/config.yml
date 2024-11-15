@@ -74,6 +74,40 @@ jobs:
           paths:
             - /src/qsirecon/.circleci/data/multishell_output
 
+  download_multises_pre1_output:
+    <<: *dockersetup
+    steps:
+      - checkout
+      - restore_cache:
+          key: multises_pre1_output-01
+      - run: *runinstall
+      - run:
+          name: Download multises pre-1.0 test data
+          command: |
+            cd /src/qsirecon/.circleci
+            python get_data.py $PWD/data multises_pre1_output
+      - save_cache:
+          key: multises_pre1_output-01
+          paths:
+            - /src/qsirecon/.circleci/data/multises_pre1_output
+
+  download_multises_post1_output:
+    <<: *dockersetup
+    steps:
+      - checkout
+      - restore_cache:
+          key: multises_post1_output-01
+      - run: *runinstall
+      - run:
+          name: Download multises post-1.0 test data
+          command: |
+            cd /src/qsirecon/.circleci
+            python get_data.py $PWD/data multises_post1_output
+      - save_cache:
+          key: multises_post1_output-01
+          paths:
+            - /src/qsirecon/.circleci/data/multises_post1_output
+
   download_hsvs_data:
     <<: *dockersetup
     steps:
@@ -162,6 +196,33 @@ jobs:
             - .coverage.mrtrix_multishell_msmt_hsvs
       - store_artifacts:
           path: /src/qsirecon/.circleci/out/mrtrix_multishell_msmt_hsvs/
+
+  Recon_multises_pre1_IO_test:
+    <<: *dockersetup
+    steps:
+      - checkout
+      - restore_cache:
+          key: multises_pre1_output-01
+      - run: *runinstall
+      - run:
+          name: Test reading multi-ses data
+          no_output_timeout: 1h
+          command: |
+            mkdir /src/coverage
+
+            pytest -rP -o log_cli=true -m "multises_pre1_qsiprep" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
+            mv /src/qsirecon/.coverage /src/coverage/.coverage.multises_pre1_qsiprep
+
+      - persist_to_workspace:
+          root: /src/coverage/
+          paths:
+            - .coverage.multises_pre1_qsiprep
+      - store_artifacts:
+          path: /src/qsirecon/.circleci/out/multises_pre1_qsiprep_reportroot/
+      - store_artifacts:
+          path: /src/qsirecon/.circleci/out/multises_pre1_qsiprep_reportsubject/
+      - store_artifacts:
+          path: /src/qsirecon/.circleci/out/multises_pre1_qsiprep_reportsession/
 
   Recon_MRtrix3:
     <<: *dockersetup
@@ -483,6 +544,20 @@ workflows:
             tags:
               only: /.*/
 
+      - download_multises_pre1_output:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+
+      - download_multises_post1_output:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+
       - download_hsvs_data:
           requires:
             - build
@@ -500,6 +575,13 @@ workflows:
       - Recon_msmt_Multishell_HSVS:
           requires:
             - download_hsvs_data
+          filters:
+            tags:
+              only: /.*/
+
+      - Recon_multises_pre1_IO_test:
+          requires:
+            - download_multises_pre1_output
           filters:
             tags:
               only: /.*/
@@ -587,6 +669,7 @@ workflows:
             - Recon_PYAFQ
             - Recon_PYAFQExternalTrk
             - Recon_ScalarMap
+            - Recon_multises_pre1_IO_test
           filters:
             branches:
               ignore:
@@ -609,6 +692,7 @@ workflows:
             - Recon_PYAFQ
             - Recon_PYAFQExternalTrk
             - Recon_ScalarMap
+            - Recon_multises_pre1_IO_test
           filters:
             branches:
               only: main

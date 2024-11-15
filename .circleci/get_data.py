@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-"""Download test data."""
 import sys
 
 from qsirecon.tests.utils import download_test_data

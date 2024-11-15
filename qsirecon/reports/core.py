@@ -92,7 +92,7 @@ def generate_reports(
         # Extract session IDs from the processed DWIs
         sessions = config.execution.layout.get_sessions(
             subject=subject_label,
-            session=config.execution.session_id,
+            session=config.execution.session_id or Query.OPTIONAL,
             suffix="dwi",
             **bids_filters.get("dwi", {}),
         )

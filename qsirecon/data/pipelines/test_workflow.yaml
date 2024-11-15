@@ -1,0 +1,7 @@
+description: A workflow that writes empty files. Useful for testing
+name: test_workflow
+nodes:
+-   action: test_workflow
+    input: qsirecon
+    name: test_workflow
+    qsirecon_suffix: test
