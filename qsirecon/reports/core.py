@@ -109,6 +109,7 @@ def generate_reports(
         for session_label in sessions:
             if session_label == Query.NONE:
                 html_report = html_report = f"sub-{subject_id}.html"
+                session_label = None
             else:
                 html_report = html_report = f"sub-{subject_id}_ses-{session_label}.html"
 
