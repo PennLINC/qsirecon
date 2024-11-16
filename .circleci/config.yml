@@ -224,6 +224,33 @@ jobs:
       - store_artifacts:
           path: /src/qsirecon/.circleci/out/multises_pre1_qsiprep_reportsession/
 
+  Recon_multises_post1_IO_test:
+    <<: *dockersetup
+    steps:
+      - checkout
+      - restore_cache:
+          key: multises_post1_output-01
+      - run: *runinstall
+      - run:
+          name: Test reading multi-ses data (post 1.0.0rc0)
+          no_output_timeout: 1h
+          command: |
+            mkdir /src/coverage
+
+            pytest -rP -o log_cli=true -m "multises_post1_qsiprep" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
+            mv /src/qsirecon/.coverage /src/coverage/.coverage.multises_post1_qsiprep
+
+      - persist_to_workspace:
+          root: /src/coverage/
+          paths:
+            - .coverage.multises_pre1_qsiprep
+      - store_artifacts:
+          path: /src/qsirecon/.circleci/out/multises_pre1_qsiprep_reportroot/
+      - store_artifacts:
+          path: /src/qsirecon/.circleci/out/multises_pre1_qsiprep_reportsubject/
+      - store_artifacts:
+          path: /src/qsirecon/.circleci/out/multises_pre1_qsiprep_reportsession/
+
   Recon_MRtrix3:
     <<: *dockersetup
     steps:
@@ -586,6 +613,13 @@ workflows:
             tags:
               only: /.*/
 
+      - Recon_multises_post1_IO_test:
+          requires:
+            - download_multises_post1_output
+          filters:
+            tags:
+              only: /.*/
+
       - Recon_3Tissue_Singleshell_NoACT:
           requires:
             - download_singleshell_output
@@ -693,7 +727,8 @@ workflows:
             - Recon_PYAFQExternalTrk
             - Recon_ScalarMap
             - Recon_multises_pre1_IO_test
-          filters:
+            - Recon_multises_post1_IO_test
+        filters:
             branches:
               only: main
             tags:
