@@ -241,7 +241,7 @@ jobs:
       - persist_to_workspace:
           root: /src/coverage/
           paths:
-            - .coverage.multises_pre1_qsiprep
+            - .coverage.multises_post1_qsiprep
       - store_artifacts:
           path: /src/qsirecon/.circleci/out/multises_post1_qsiprep_reportroot/
       - store_artifacts:
