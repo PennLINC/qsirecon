@@ -2,7 +2,9 @@ queries:
     anat:
         acpc_aparc:
             datatype: anat
-            space: null
+            space:
+            - null
+            - ACPC
             desc: aparcaseg
             suffix: dseg
             extension:
@@ -10,7 +12,9 @@ queries:
             - .nii
         acpc_seg:
             datatype: anat
-            space: null
+            space:
+            - null
+            - ACPC
             desc: null
             suffix: dseg
             extension:
@@ -18,7 +22,9 @@ queries:
             - .nii
         acpc_aseg:
             datatype: anat
-            space: null
+            space:
+            - null
+            - ACPC
             desc: aseg
             suffix: dseg
             extension:
@@ -26,7 +32,9 @@ queries:
             - .nii
         acpc_brain_mask:
             datatype: anat
-            space: null
+            space:
+            - null
+            - ACPC
             desc: brain
             suffix: mask
             extension:
@@ -34,7 +42,9 @@ queries:
             - .nii
         acpc_preproc:
             datatype: anat
-            space: null
+            space:
+            - null
+            - ACPC
             desc: preproc
             suffix:
             - T1w
@@ -44,7 +54,9 @@ queries:
             - .nii
         acpc_csf_probseg:
             datatype: anat
-            space: null
+            space:
+            - null
+            - ACPC
             label: CSF
             suffix: probseg
             extension:
@@ -52,7 +64,9 @@ queries:
             - .nii
         acpc_gm_probseg:
             datatype: anat
-            space: null
+            space:
+            - null
+            - ACPC
             label: GM
             suffix: probseg
             extension:
@@ -60,7 +74,9 @@ queries:
             - .nii
         acpc_wm_probseg:
             datatype: anat
-            space: null
+            space:
+            - null
+            - ACPC
             label: WM
             suffix: probseg
             extension:
@@ -72,6 +88,7 @@ queries:
             to:
             - T1w
             - T2w
+            - ACPC
             mode: image
             suffix: xfm
             extension: .txt
@@ -81,6 +98,7 @@ queries:
             to:
             - T1w
             - T2w
+            - ACPC
             mode: image
             suffix: xfm
             extension: .h5
@@ -89,6 +107,7 @@ queries:
             from:
             - T1w
             - T2w
+            - ACPC
             to: MNI152NLin2009cAsym
             mode: image
             suffix: xfm

@@ -627,7 +627,7 @@ def _get_iterable_dwis_and_anats():
     dwi_files = config.execution.layout.get(
         suffix="dwi",
         session=Query.OPTIONAL,
-        space="T1w",
+        space=["T1w", "ACPC"],
         extension=["nii", "nii.gz"],
     )
 
@@ -635,7 +635,7 @@ def _get_iterable_dwis_and_anats():
         subject_level_anats = config.execution.layout.get(
             suffix=["T1w", "T2w"],
             session=Query.NONE,
-            space=Query.NONE,
+            space=[Query.NONE, "ACPC"],
             extension=["nii", "nii.gz"],
         )
 
@@ -644,7 +644,7 @@ def _get_iterable_dwis_and_anats():
             session_level_anats = config.execution.layout.get(
                 suffix=["T1w", "T2w"],
                 session=dwi_session,
-                space=Query.NONE,
+                space=[Query.NONE, "ACPC"],
                 extension=["nii", "nii.gz"],
             )
 
