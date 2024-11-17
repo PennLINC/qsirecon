@@ -243,11 +243,11 @@ jobs:
           paths:
             - .coverage.multises_pre1_qsiprep
       - store_artifacts:
-          path: /src/qsirecon/.circleci/out/multises_pre1_qsiprep_reportroot/
+          path: /src/qsirecon/.circleci/out/multises_post1_qsiprep_reportroot/
       - store_artifacts:
-          path: /src/qsirecon/.circleci/out/multises_pre1_qsiprep_reportsubject/
+          path: /src/qsirecon/.circleci/out/multises_post1_qsiprep_reportsubject/
       - store_artifacts:
-          path: /src/qsirecon/.circleci/out/multises_pre1_qsiprep_reportsession/
+          path: /src/qsirecon/.circleci/out/multises_post1_qsiprep_reportsession/
 
   Recon_MRtrix3:
     <<: *dockersetup
