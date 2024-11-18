@@ -578,12 +578,18 @@ def parse_args(args=None, namespace=None):
         # Create the ingression workflow
         wf = create_ingress2qsirecon_wf(
             layouts,
+            config.workflow.input_type,
             base_dir=work_dir,
         )
 
         # Configure the nipype workflow
         wf.config["execution"]["crashdump_dir"] = str(log_dir)
         wf.run()
+
+        # Change the participants label based on ingression renaming
+        if config.execution.participant_label is not None:
+            config.execution.participant_label = [layout["subject"] for layout in layouts]
+
     else:
         config.execution.bids_dir = config.execution.input_dir
 
