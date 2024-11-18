@@ -23,7 +23,7 @@ dependencies = [
     "filelock",
     "fury",
     "indexed_gzip <= 1.8.7",
-    "Ingress2QSIRecon == 0.2.2rc0",
+    "Ingress2QSIRecon == 0.2.3",
     "jinja2 < 3.1",
     "matplotlib",
     "networkx ~= 2.8.8",
