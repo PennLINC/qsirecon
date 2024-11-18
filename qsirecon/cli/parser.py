@@ -588,6 +588,7 @@ def parse_args(args=None, namespace=None):
         # Change the participants label based on ingression renaming
         if config.execution.participant_label is not None:
             config.execution.participant_label = [layout['subject'] for layout in layouts]
+
     else:
         config.execution.bids_dir = config.execution.input_dir
 
