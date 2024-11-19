@@ -8,7 +8,7 @@ qsiprep_5tt_hsvs:
     metadata:
         Description: |
             Hybrid Surface/Voume Segmentation in MRtrix3 5tt format.
-            Aligned in coordinate space to ``space-T1w``.
+            Aligned in coordinate space to ``space-ACPC``.
 
 fs_5tt_hsvs:
     bids:
