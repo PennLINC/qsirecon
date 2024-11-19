@@ -552,7 +552,9 @@ def _sanitized_network_measures(network_txt, official_labels, atlas_name, measur
     assert np.all(truncated_labels == network_region_ids)
 
     for net_measure_name, net_measure_data in network_data.items():
-        variable_name = f"atlas_{atlas_name}_{measure}_{net_measure_name}"
+        net_measure_name = net_measure_name.replace("-", "_")
+        measure_name = measure.replace("-", "_")
+        variable_name = f"atlas_{atlas_name}_{measure_name}_{net_measure_name}"
         if type(net_measure_data) is np.ndarray:
             tmp = np.zeros(n_atlas_labels)
             tmp[in_this_mask] = net_measure_data
