@@ -529,9 +529,8 @@ To skip this step in your workflow, you can modify an existing recon pipeline by
 
 .. _connectivity_atlases:
 
-*******
 Atlases
-*******
+=======
 
 The following atlases are included in ``qsirecon``.
 This means you do not need to add a ``--datasets`` argument to your command line,
@@ -595,7 +594,7 @@ associated reconstruction workflows dataset.
 .. _custom_atlases:
 
 Using custom atlases
-^^^^^^^^^^^^^^^^^^^^
+--------------------
 
 It's possible to use your own atlases provided you organize the atlases into BIDS-Atlas datasets.
 Users can control which atlases are used with the ``--atlases`` and ``--datasets`` parameters.
@@ -607,9 +606,8 @@ It is essential that your images are in the LPS+ orientation and have the sform 
 **Be sure to check for alignment and orientation** in your outputs.
 
 
-*********************
 Connectivity Measures
-*********************
+=====================
 
 Connectivity measures are bundled together in binary ``.mat`` files,
 rather than as atlas- and measure-specific tabular files.
@@ -646,15 +644,15 @@ the ``.mat`` file will contain the following keys:
 
 
 MRtrix3 Connectivity Measures
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-----------------------------
 
 MRtrix3 connectivity workflows produce 4 structural connectome outputs for each atlas.
 The 4 connectivity matrix outputs are
 
-   * *radiusN.count.connectivity*: raw streamline count based matrix
-   * *sift.radiusN.count.connectivity*: sift-weighted streamline count based matrix
-   * *radiusN.meanlength.connectivity*: a matrix containing mean length of raw streamlines
-   * *sift.radiusN.meanlength.connectivity*: a matrix containing mean length of sifted output
+   * *atlas_<atlas>_radius<N>.count.connectivity*: raw streamline count based matrix
+   * *atlas_<atlas>_sift.radius<N>.count.connectivity*: sift-weighted streamline count based matrix
+   * *atlas_<atlas>_radius<N>.meanlength.connectivity*: a matrix containing mean length of raw streamlines
+   * *atlas_<atlas>_sift.radius<N>.meanlength.connectivity*: a matrix containing mean length of sifted output
 
 The number ``N`` in ``radiusN`` indicates how many mm the algorithm would search up from a
 given streamline's endpoint for a cortical region. E.g., a radius of 2 indicates that
@@ -663,7 +661,7 @@ termination region could be up to 2mm from the endpoint.
 
 
 DSI Studio Connectivity Measures
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+--------------------------------
 
 DSI Studio has two options for how to count streamlines as "connnecting" a region pair.
 ``pass`` counts a connection if any part of a streamline intersects two regions.
