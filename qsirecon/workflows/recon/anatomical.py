@@ -148,6 +148,7 @@ def init_highres_recon_anatomical_wf(
                 seg="hsvs",
                 space="fsnative",
                 suffix="probseg",
+                extension=".mif.gz",
                 compress=True,
             ),
             name="ds_fs_5tt_hsvs",
