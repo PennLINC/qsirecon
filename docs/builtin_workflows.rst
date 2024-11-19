@@ -512,9 +512,9 @@ the model-fitting workflows and which sampling schemes work with them.
 
 .. _connectivity_matrices:
 
-#####################
+*********************
 Connectivity matrices
-#####################
+*********************
 
 Instead of offering a bewildering number of options for constructing connectivity matrices,
 ``qsirecon`` will construct as many connectivity matrices as it can given the reconstruction
