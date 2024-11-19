@@ -744,13 +744,13 @@ class BuildConnectome(MRTrix3Base):
 
         # Aggregate the connectivity/network data from DSI Studio
         connectivity_data = {
-            f"{atlas_name}_region_ids": atlas_labels_df["index"].values.astype(int),
-            f"{atlas_name}_region_labels": atlas_labels_df["label"].values,
+            f"atlas_{atlas_name}_region_ids": atlas_labels_df["index"].values.astype(int),
+            f"atlas_{atlas_name}_region_labels": atlas_labels_df["label"].values,
         }
 
         # get the connectivity matrix
         prefix = f"{atlas_name}_{self.inputs.measure}"
-        connectivity_data[f"{prefix}_connectivity"] = np.loadtxt(
+        connectivity_data[f"atlas_{prefix}_connectivity"] = np.loadtxt(
             self.inputs.out_file, delimiter=","
         )
         connectivity_data["command"] = self.cmdline

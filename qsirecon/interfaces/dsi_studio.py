@@ -334,15 +334,15 @@ class DSIStudioConnectivityMatrix(CommandLine):
         # Aggregate the connectivity/network data from DSI Studio
         official_labels = atlas_labels_df["index"].values.astype(int)
         connectivity_data = {
-            f"{atlas_name}_region_ids": official_labels,
-            f"{atlas_name}_region_labels": atlas_labels_df["label"].values,
+            f"atlas_{atlas_name}_region_ids": official_labels,
+            f"atlas_{atlas_name}_region_labels": atlas_labels_df["label"].values,
         }
 
         # Gather the connectivity matrices
         matfiles = glob(op.join(runtime.cwd, "*.connectivity.mat"))
         for matfile in matfiles:
             measure = "_".join(matfile.split(".")[-4:-2])
-            connectivity_data[f"{atlas_name}_{measure}_connectivity"] = (
+            connectivity_data[f"atlas_{atlas_name}_{measure}_connectivity"] = (
                 _sanitized_connectivity_matrix(matfile, official_labels)
             )
 
@@ -552,7 +552,7 @@ def _sanitized_network_measures(network_txt, official_labels, atlas_name, measur
     assert np.all(truncated_labels == network_region_ids)
 
     for net_measure_name, net_measure_data in network_data.items():
-        variable_name = atlas_name + "_" + measure + "_" + net_measure_name
+        variable_name = f"atlas_{atlas_name}_{measure}_{net_measure_name}"
         if type(net_measure_data) is np.ndarray:
             tmp = np.zeros(n_atlas_labels)
             tmp[in_this_mask] = net_measure_data
