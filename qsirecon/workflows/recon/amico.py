@@ -126,7 +126,7 @@ diffusivity.""" % (
 
     if plot_reports:
         plot_peaks = pe.Node(
-            CLIReconPeaksReport(environ={"TMPDIR": str(config.execution.work_dir)}),
+            CLIReconPeaksReport(),
             name="plot_peaks",
             n_procs=omp_nthreads,
         )

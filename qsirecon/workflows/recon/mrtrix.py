@@ -240,7 +240,7 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
     if not config.execution.skip_odf_reports:
         # Make a visual report of the model
         plot_peaks = pe.Node(
-            CLIReconPeaksReport(environ={"TMPDIR": str(config.execution.work_dir)}),
+            CLIReconPeaksReport(),
             name="plot_peaks",
             n_procs=omp_nthreads,
         )
