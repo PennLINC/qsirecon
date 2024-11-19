@@ -34,8 +34,7 @@ scalars_to_csv(recon_scalars.dipy_mapmri_scalars, "recon_scalars/dipy_mapmri.csv
 scalars_to_csv(recon_scalars.dsistudio_scalars, "recon_scalars/dsi_studio_gqi.csv")
 ## hbcd_scalar_maps.yaml
 scalars_to_csv(
-    recon_scalars.amico_scalars
-    | recon_scalars.dipy_dki_scalars
+    recon_scalars.dipy_dki_scalars
     | recon_scalars.tortoise_scalars
     | recon_scalars.dsistudio_scalars,
     "recon_scalars/hbcd_scalar_maps.csv",
