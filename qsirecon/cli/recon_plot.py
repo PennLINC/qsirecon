@@ -101,6 +101,7 @@ def recon_plot():
     parser.add_argument("--padding", type=int, default=10, help="number of slices to plot")
     opts = parser.parse_args()
 
+    print(f"TMPDIR={os.getenv('TMPDIR')}")
     if opts.mif:
         odf_img, directions = mif2amps(opts.mif, os.getcwd())
         LOGGER.info("converting %s to plot ODF/peaks", opts.mif)
