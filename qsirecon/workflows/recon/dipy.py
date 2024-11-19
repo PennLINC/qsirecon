@@ -189,7 +189,11 @@ def init_dipy_brainsuite_shore_recon_wf(
     ])  # fmt:skip
 
     if plot_reports:
-        plot_peaks = pe.Node(CLIReconPeaksReport(), name="plot_peaks", n_procs=omp_nthreads)
+        plot_peaks = pe.Node(
+            CLIReconPeaksReport(environ={"TMPDIR": str(config.execution.work_dir)}),
+            name="plot_peaks",
+            n_procs=omp_nthreads,
+        )
         ds_report_peaks = pe.Node(
             DerivativesDataSink(
                 desc="3dSHOREODF",
@@ -495,7 +499,11 @@ def init_dipy_mapmri_recon_wf(
     ])  # fmt:skip
 
     if plot_reports:
-        plot_peaks = pe.Node(CLIReconPeaksReport(), name="plot_peaks", n_procs=omp_nthreads)
+        plot_peaks = pe.Node(
+            CLIReconPeaksReport(environ={"TMPDIR": str(config.execution.work_dir)}),
+            name="plot_peaks",
+            n_procs=omp_nthreads,
+        )
         ds_report_peaks = pe.Node(
             DerivativesDataSink(
                 desc="MAPLMRIODF",
