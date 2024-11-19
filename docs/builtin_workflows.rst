@@ -614,7 +614,7 @@ rather than as atlas- and measure-specific tabular files.
 
 .. warning::
 
-   We ultimately plan to organize the connectivity matrices accoring to the BIDS-Connectivity BEP,
+   We ultimately plan to organize the connectivity matrices according to the BIDS-Connectivity BEP,
    wherein each measure from each atlas is stored in a separate file.
 
    Therefore, this organization will change in the future.
