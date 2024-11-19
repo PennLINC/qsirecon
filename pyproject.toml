@@ -29,8 +29,8 @@ dependencies = [
     "networkx ~= 2.8.8",
     "nibabel <= 6.0.0",
     "nilearn == 0.10.1",
-    "nipype == 1.8.6",
-    "nireports ~= 24.0.2",
+    "nipype == 1.9.1",
+    "nireports >= 24.0.3",
     "niworkflows >=1.9,<= 1.10",
     "numpy <= 1.26.3",
     "packaging",  # for version string parsing
