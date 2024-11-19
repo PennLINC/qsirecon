@@ -7,8 +7,8 @@ dki,mkt,DKI MKT
 dki,rd,DKI RD
 dki,rk,DKI RK
 gqi,gfa,Generalized Fractional Anisotropy
-gqi,iso,Isotropic Diffusion
-gqi,qa,Fractional Anisotropy from a tensor fit
+gqi,iso,Isotropic Diffusion from GQI
+gqi,qa,Quantitative Anisotropy from a GQI fit
 mapmri,ng,Non-Gaussianity from MAPMRI
 mapmri,ngpar,Non-Gaussianity parallel from MAPMRI
 mapmri,ngperp,Non-Gaussianity perpendicular from MAPMRI
@@ -17,20 +17,16 @@ mapmri,path,PAth from MAPMRI
 mapmri,rtap,Return to axis probability from MAPMRI
 mapmri,rtop,Return to origin probability from MAPMRI
 mapmri,rtpp,Return to plane probability from MAPMRI
-noddi,direction,Peak directions from NODDI
-noddi,icvf,Intracellular volume fraction from NODDI
-noddi,isovf,Isotropic volume fraction from NODDI
-noddi,od,Orientation dispersion index from NODDI
 rdi,rd1,RD1
 rdi,rd2,RD2
-tensor,ad,AD
+tensor,ad,Apparent Diffusivity from a tensor fit
 tensor,am,A0 from a tensor fit
 tensor,fa,DKI FA
 tensor,fa,Fractional Anisotropy from a tensor fit
 tensor,fa,Radial Diffusivity from a tensor fit
-tensor,ha,HA
+tensor,ha,Helix Angle from tensor fit
 tensor,li,LI from a tensor fit
-tensor,md,Mean Diffusivity
+tensor,md,Mean Diffusivity from a tensor fit
 tensor,rd,Radial Diffusivity
 tensor,txx,Tensor fit txx
 tensor,txy,Tensor fit txy

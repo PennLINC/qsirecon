@@ -1,12 +1,12 @@
 gqi,gfa,Generalized Fractional Anisotropy
-gqi,iso,Isotropic Diffusion
-gqi,qa,Fractional Anisotropy from a tensor fit
+gqi,iso,Isotropic Diffusion from GQI
+gqi,qa,Quantitative Anisotropy from a GQI fit
 rdi,rd1,RD1
 rdi,rd2,RD2
-tensor,ad,AD
+tensor,ad,Apparent Diffusivity from a tensor fit
 tensor,fa,Radial Diffusivity from a tensor fit
-tensor,ha,HA
-tensor,md,Mean Diffusivity
+tensor,ha,Helix Angle from tensor fit
+tensor,md,Mean Diffusivity from a tensor fit
 tensor,rd,Radial Diffusivity
 tensor,txx,Tensor fit txx
 tensor,txy,Tensor fit txy
