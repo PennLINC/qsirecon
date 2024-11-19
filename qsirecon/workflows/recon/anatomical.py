@@ -137,6 +137,7 @@ def init_highres_recon_anatomical_wf(
                 seg="hsvs",
                 space="T1w",
                 suffix="probseg",
+                extension=".nii.gz",
                 compress=True,
             ),
             name="ds_qsiprep_5tt_hsvs",
