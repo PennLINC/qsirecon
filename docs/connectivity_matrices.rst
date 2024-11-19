@@ -14,7 +14,7 @@ these pipelines and only look at those numbers.
 If you look at more than one weighting method be sure to adjust your statistics for the
 additional comparisons.
 
-To skip this step in your workflow, you can modify an existing recon pipeline by removing the 
+To skip this step in your workflow, you can modify an existing recon pipeline by removing the
 ``action: connectivity`` section from the yaml file.
 
 .. _connectivity_atlases:
@@ -95,6 +95,44 @@ The nifti images should be registered to the
 included in ``qsirecon``.
 It is essential that your images are in the LPS+ orientation and have the sform zeroed-out in the header.
 **Be sure to check for alignment and orientation** in your outputs.
+
+
+*********************
+Connectivity Measures
+*********************
+
+Connectivity measures are bundled together in binary ``.mat`` files,
+rather than as atlas- and measure-specific tabular files.
+
+.. warning::
+
+   We ultimately plan to organize the connectivity matrices accoring to the BIDS-Connectivity BEP,
+   wherein each measure from each atlas is stored in a separate file.
+
+   Therefore, this organization will change in the future.
+
+.. code-block::
+
+   qsirecon/
+      derivatives/
+         qsirecon-<suffix>/
+            sub-<label>/[ses-<label>/]
+               dwi/
+                  <source_entities>_connectivity.mat
+
+The ``.mat`` file contains a dictionary with all of the connectivity measures specified
+by the recon spec for all of the different atlases specified by the user.
+
+For example, in the case where a user has selected a single atlas (``<atlas>``) and
+the recon spec specifies a single connectivity measure (``<measure>``),
+the ``.mat`` file will contain the following keys:
+
+.. code-block::
+
+   command                                # The command that was run
+   atlas_<atlas>_region_ids               # The region ids for the atlas (1 x n_parcels array)
+   atlas_<atlas>_region_labels            # The region labels for the atlas (1 x n_parcels array)
+   atlas_<atlas>_<measure>_connectivity   # The connectivity matrix for the atlas and measure (n_parcels x n_parcels array)
 
 
 **********
