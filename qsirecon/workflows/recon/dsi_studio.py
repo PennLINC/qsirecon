@@ -104,7 +104,11 @@ distance of %02f in DSI Studio (version %s). """ % (
     if plot_reports:
         # Make a visual report of the model
         plot_peaks = pe.Node(
-            CLIReconPeaksReport(subtract_iso=True), name="plot_peaks", n_procs=omp_nthreads
+            CLIReconPeaksReport(
+                environ={"TMPDIR": str(config.execution.work_dir)}, subtract_iso=True
+            ),
+            name="plot_peaks",
+            n_procs=omp_nthreads,
         )
         ds_report_peaks = pe.Node(
             DerivativesDataSink(
