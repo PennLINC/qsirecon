@@ -702,6 +702,8 @@ workflows:
             - Recon_PYAFQExternalTrk
             - Recon_ScalarMap
             - Recon_multises_pre1_IO_test
+            - Recon_multises_post1_IO_test
+            - Recon_msmt_Multishell_HSVS
           filters:
             branches:
               ignore:

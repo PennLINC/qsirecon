@@ -1,5 +1,6 @@
 """Utility functions for tests."""
 
+import base64
 import lzma
 import os
 import tarfile
@@ -139,3 +140,12 @@ def reorder_expected_outputs():
 
         with open(expected_output_file, "w") as fo:
             fo.writelines(file_contents)
+
+
+def freesurfer_license(base_dir):
+    """Create a freesurfer license in base_dir."""
+    _lic = b"bWFyay5iZXJnbWFuQHVwaHMudXBlbm4uZWR1CjIwMjU5CiAqQ3J2L0QwTXpxcVE2CiBGU3pTdGZYUmlGN2RN"
+    license_file = base_dir / "license.txt"
+    with license_file.open("w") as licensef:
+        licensef.write(base64.b64decode(_lic).decode("utf-8"))
+    return license_file
