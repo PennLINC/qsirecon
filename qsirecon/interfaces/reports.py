@@ -282,7 +282,6 @@ class CLIReconPeaksReport(CommandLine):
     input_spec = _ReconPeaksReportInputSpec
     output_spec = _ReconPeaksReportOutputSpec
     _cmd = "recon_plot"
-    _redirect_x = True
 
     def _list_outputs(self):
         outputs = self.output_spec().get()
