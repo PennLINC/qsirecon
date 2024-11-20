@@ -283,13 +283,6 @@ class CLIReconPeaksReport(CommandLine):
     output_spec = _ReconPeaksReportOutputSpec
     _cmd = "recon_plot"
 
-    def _list_outputs(self):
-        outputs = self.output_spec().get()
-        outputs["peak_report"] = op.abspath(self.inputs.peak_report)
-        if not self.inputs.peaks_only:
-            outputs["odf_report"] = op.abspath(self.inputs.odf_report)
-        return outputs
-
 
 class _ConnectivityReportInputSpec(BaseInterfaceInputSpec):
     connectivity_matfile = File(exists=True)
