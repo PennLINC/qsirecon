@@ -101,7 +101,6 @@ def recon_plot():
     parser.add_argument("--padding", type=int, default=10, help="number of slices to plot")
     opts = parser.parse_args()
 
-    print(f"TMPDIR={os.getenv('TMPDIR')}")
     if opts.mif:
         odf_img, directions = mif2amps(opts.mif, os.getcwd())
         LOGGER.info("converting %s to plot ODF/peaks", opts.mif)
@@ -126,29 +125,65 @@ def recon_plot():
     else:
         background_data = nb.load(opts.background_image).get_fdata()
 
-    LOGGER.info("saving peaks image to %s", opts.peaks_image)
-    peak_slice_series(
-        odf_4d,
-        sphere,
-        background_data,
-        opts.peaks_image,
-        n_cuts=opts.ncuts,
-        mask_image=opts.mask_file,
-        padding=opts.padding,
-    )
+    LOGGER.info("Starting a virtual framebuffer for FURY")
 
-    # Plot ODFs in interesting regions
-    if opts.odf_rois and not opts.peaks_only:
-        LOGGER.info("saving odfs image to %s", opts.odfs_image)
-        odf_roi_plot(
+    # Xvfb won't allow an empty $DISPLAY
+    if "DISPLAY" in os.environ:
+        del os.environ["DISPLAY"]
+
+    from xvfbwrapper import Xvfb
+
+    display = Xvfb(nolisten="tcp")
+    display.extra_xvfb_args += ["+iglx"]
+
+    try:
+        display.start()
+    except Exception as exc:
+        LOGGER.warning(
+            "Unable to start Xvfb!! If you are running this via Apptainer/Singularity "
+            "there may be an issue accessing the /tmp directory.\n\n"
+            "If you used the --containall flag, please also use --writable-tmpfs.\n\n"
+            "Otherwise, be sure that the /tmp directory is writable by Singularity/Apptainer. "
+            "This may require contacting a system administrator.\n\n"
+            f"The python error was\n{exc}"
+        )
+        sys.exit(1)
+
+    try:
+        peak_slice_series(
             odf_4d,
             sphere,
             background_data,
-            opts.odfs_image,
-            opts.odf_rois,
-            subtract_iso=opts.subtract_iso,
-            mask=opts.mask_file,
+            opts.peaks_image,
+            n_cuts=opts.ncuts,
+            mask_image=opts.mask_file,
+            padding=opts.padding,
         )
+    except Exception as exc:
+        LOGGER.warning(exc)
+        sys.exit(1)
+
+    LOGGER.info("saving peaks image to %s", opts.peaks_image)
+
+    # Plot ODFs in interesting regions
+    if opts.odf_rois and not opts.peaks_only:
+        try:
+            odf_roi_plot(
+                odf_4d,
+                sphere,
+                background_data,
+                opts.odfs_image,
+                opts.odf_rois,
+                subtract_iso=opts.subtract_iso,
+                mask=opts.mask_file,
+            )
+        except Exception as exc:
+            LOGGER.warning(exc)
+            sys.exit(1)
+
+        LOGGER.info("saved odfs image to %s", opts.odfs_image)
+
+    display.stop()
     sys.exit(0)
 
 

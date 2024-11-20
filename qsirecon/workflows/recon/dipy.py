@@ -190,7 +190,7 @@ def init_dipy_brainsuite_shore_recon_wf(
 
     if plot_reports:
         plot_peaks = pe.Node(
-            CLIReconPeaksReport(environ={"TMPDIR": str(config.execution.work_dir)}),
+            CLIReconPeaksReport(),
             name="plot_peaks",
             n_procs=omp_nthreads,
         )
@@ -500,7 +500,7 @@ def init_dipy_mapmri_recon_wf(
 
     if plot_reports:
         plot_peaks = pe.Node(
-            CLIReconPeaksReport(environ={"TMPDIR": str(config.execution.work_dir)}),
+            CLIReconPeaksReport(),
             name="plot_peaks",
             n_procs=omp_nthreads,
         )
