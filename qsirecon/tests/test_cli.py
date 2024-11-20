@@ -16,7 +16,16 @@ from qsirecon.tests.utils import (
     download_test_data,
     get_test_data_path,
 )
-from qsirecon.utils.bids import write_derivative_description
+
+
+from qsirecon.utils.bids import (
+    write_derivative_description,
+    write_bidsignore,
+    write_atlas_dataset_description,
+)
+from qsirecon.cli.workflow import copy_boilerplate
+
+from .utils import freesurfer_license
 
 nipype_config.enable_debug_mode()
 
@@ -620,7 +629,7 @@ def test_tortoise_recon(data_dir, output_dir, working_dir):
     _run_and_generate(TEST_NAME, parameters, test_main=True)
 
 
-def _run_and_generate(test_name, parameters, test_main=True):
+def _run_and_generate(test_name, parameters, test_main=False):
     from qsirecon import config
 
     # TODO: Add --clean-workdir param to CLI
@@ -637,24 +646,80 @@ def _run_and_generate(test_name, parameters, test_main=True):
 
             assert e.value.code == 0
     else:
-        # XXX: This isn't working because config.execution.fs_license_file is None.
         parse_args(parameters)
         config_file = config.execution.work_dir / f"config-{config.execution.run_uuid}.toml"
         config.loggers.cli.warning(f"Saving config file to {config_file}")
+        config.execution.fs_license_file = freesurfer_license(config.execution.work_dir)
         config.to_filename(config_file)
 
         retval = build_workflow(config_file, retval={})
         qsirecon_wf = retval["workflow"]
-        qsirecon_wf.run()
-        write_derivative_description(config.execution.fmri_dir, config.execution.output_dir)
-
         build_boilerplate(str(config_file), qsirecon_wf)
+        config.loggers.workflow.log(
+            15,
+            "\n".join(["config:"] + ["\t\t%s" % s for s in config.dumps().splitlines()]),
+        )
+
+        qsirecon_wf.run(**config.nipype.get_plugin())
+
+        write_derivative_description(
+            config.execution.bids_dir,
+            config.execution.output_dir,
+            atlases=config.execution.atlases,
+            dataset_links=config.execution.dataset_links,
+        )
+
         generate_reports(
             output_level=config.execution.report_output_level,
             output_dir=config.execution.output_dir,
             run_uuid=config.execution.run_uuid,
             qsirecon_suffix="",
         )
+        if config.execution.atlases:
+            write_atlas_dataset_description(config.execution.output_dir / "atlases")
+
+        # Compile list of output folders
+        qsirecon_suffixes = config.workflow.qsirecon_suffixes
+        config.loggers.cli.info(f"QSIRecon pipeline suffixes: {qsirecon_suffixes}")
+        failed_reports = []
+        for qsirecon_suffix in qsirecon_suffixes:
+            suffix_dir = str(
+                config.execution.output_dir / "derivatives" / f"qsirecon-{qsirecon_suffix}"
+            )
+
+            # Add other pipeline-specific suffixes to the dataset links
+            other_suffixes = [s for s in qsirecon_suffixes if s != qsirecon_suffix]
+            dataset_links = config.execution.dataset_links.copy()
+            dataset_links["qsirecon"] = str(config.execution.output_dir)
+            dataset_links.update(
+                {
+                    f"qsirecon-{s}": str(
+                        config.execution.output_dir / "derivatives" / f"qsirecon-{s}"
+                    )
+                    for s in other_suffixes
+                }
+            )
+
+            # Copy the boilerplate files
+            copy_boilerplate(config.execution.output_dir, suffix_dir)
+
+            suffix_failed_reports = generate_reports(
+                output_level=config.execution.report_output_level,
+                output_dir=suffix_dir,
+                run_uuid=config.execution.run_uuid,
+                qsirecon_suffix=qsirecon_suffix,
+            )
+            failed_reports += suffix_failed_reports
+            write_derivative_description(
+                config.execution.bids_dir,
+                suffix_dir,
+                atlases=config.execution.atlases,
+                dataset_links=dataset_links,
+            )
+            write_bidsignore(suffix_dir)
+
+        if failed_reports:
+            print(failed_reports)
 
     output_list_file = os.path.join(get_test_data_path(), f"{test_name}_outputs.txt")
     optional_outputs_list = os.path.join(get_test_data_path(), f"{test_name}_optional_outputs.txt")
