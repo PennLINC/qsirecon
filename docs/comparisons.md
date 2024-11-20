@@ -1,14 +1,12 @@
 # Comparisons to other pipelines
 
-Other pipelines for preprocessing DWI data are currently being developed. Below are tables comparing
-their current feature sets. These other
+Other pipelines for preprocessing DWI data are currently being developed.
+Below are tables comparing their current feature sets.
+These other pipelines include:
 
  * [Tractoflow](https://doi.org/10.1016/j.neuroimage.2020.116889)
  * [PreQual](https://doi.org/10.1101/2020.09.14.260240)
  * [MRtrix3_connectome](https://github.com/BIDS-Apps/MRtrix3_connectome)
- * [dMRIPrep](https://github.com/nipreps/dmriprep)
-
- dMRIPrep exclusively performs preprocessing and is therefore omitted from the [reconstruction](#reconstruction) and [tractography](#tractography) sections.
 
 
 ## Reconstruction
@@ -39,5 +37,4 @@ their current feature sets. These other
 |                               | QSIRecon           | Tractoflow | PreQual | MRtrix3_connectome |
 | ----------------------------- | :---------------: | :--------: | :-----: | :----------------: |
 | Automated methods boilerplate |         ✔         |     ✘      |    ✘    |         ✘          |
-| HTML Preprocessing Report     | [NiWorkflows-based](preprocessing.html#visual-reports) |     ✘      | Custom  |      EddyQuad      |
 | HTML Reconstruction Report    | NiWorkflows-based |     ✘      | Custom  |         ✘          |

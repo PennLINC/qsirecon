@@ -6,8 +6,8 @@
 Custom Reconstruction Workflows
 ###############################
 
-QSIRecon workflows are defined in ``YAML`` files. The :ref:`builtin_workflows`
-can be found in the QSIRecon ``YAML`` format on
+*QSIRecon* workflows are defined in ``YAML`` files. The :ref:`builtin_workflows`
+can be found in the *QSIRecon* ``YAML`` format on
 `github <https://github.com/PennLINC/qsirecon/tree/main/qsirecon/data/pipelines>`_,
 and are a great place to get started with customizing parts of these workflows.
 
@@ -37,7 +37,7 @@ based on the T1w or T2w images in the input data. Currently accepted values are
 Pipeline nodes
 **************
 
-A *node* in the QSIRecon ``"nodes"`` list represents a unit of processing.
+A *node* in the *QSIRecon* ``"nodes"`` list represents a unit of processing.
 Unlike NiPype nodes, which represent a single call to a commandline program
 or function, a node here represents a set of steps that accomplish a task.
 For example, if you want to perform CSD there are other steps that should
@@ -62,7 +62,7 @@ The entry for this in the ``"nodes"`` list could look like:
       qsirecon_suffix: MRtrix3_act-FAST
       software: MRTrix3
 
-QSIRecon figures out which software to use based on the values specified
+*QSIRecon* figures out which software to use based on the values specified
 for ``"software"`` and ``"action"``. The full list of recognized actions
 for each software package can be found in
 :meth:`qsirecon.workflows.build_workflow.workflow_from_spec`.
@@ -75,7 +75,7 @@ as an id for this node and is used for :ref:`passing_downstream`.
 Connecting Nodes
 ================
 
-Mixing between software packages is something QSIRecon generally does well.
+Mixing between software packages is something *QSIRecon* generally does well.
 There are a number of ways that nodes can exchange data with one another.
 
 .. _passing_downstream:
