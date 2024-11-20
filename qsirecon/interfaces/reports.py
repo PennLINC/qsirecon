@@ -303,7 +303,7 @@ class CLIReconPeaksReport(CommandLine):
         # There will always be a peak report
         peaks_file = workdir / self.inputs.peak_report
         if not peaks_file.exists():
-            raise Exception(XVFB_ERROR.format(peaks_file))
+            raise Exception(XVFB_ERROR.format(peaks_file.absolute()))
         outputs["peak_report"] = str(peaks_file.absolute())
 
         # If there will be no ODF report, we are done
@@ -313,7 +313,7 @@ class CLIReconPeaksReport(CommandLine):
         # Find the ODF report
         odfs_file = workdir / self.inputs.odf_report
         if not odfs_file.exists():
-            raise Exception(XVFB_ERROR.format(odfs_file))
+            raise Exception(XVFB_ERROR.format(odfs_file.absolute()))
         outputs["odf_report"] = str(odfs_file.absolute())
 
         return outputs
