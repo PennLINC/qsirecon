@@ -669,12 +669,12 @@ def _run_and_generate(test_name, parameters, test_main=False):
             dataset_links=config.execution.dataset_links,
         )
 
-        generate_reports(
-            output_level=config.execution.report_output_level,
-            output_dir=config.execution.output_dir,
-            run_uuid=config.execution.run_uuid,
-            qsirecon_suffix="",
-        )
+        # generate_reports(
+        #     output_level=config.execution.report_output_level,
+        #     output_dir=config.execution.output_dir,
+        #     run_uuid=config.execution.run_uuid,
+        #     qsirecon_suffix="",
+        # )
         if config.execution.atlases:
             write_atlas_dataset_description(config.execution.output_dir / "atlases")
 
