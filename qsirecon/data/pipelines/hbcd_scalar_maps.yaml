@@ -35,15 +35,6 @@ nodes:
         small_delta: null
     qsirecon_suffix: TORTOISE_model-tensor
     software: TORTOISE
--   action: fit_noddi
-    input: qsirecon
-    name: fit_noddi
-    parameters:
-        dIso: 0.003
-        dPar: 0.0017
-        isExvivo: false
-    qsirecon_suffix: NODDI
-    software: AMICO
 -   action: reconstruction
     input: qsirecon
     name: dsistudio_gqi
@@ -72,7 +63,6 @@ nodes:
     scalars_from:
     - gqi_scalars
     - dipy_dki
-    - fit_noddi
     - tortoise_fullshell_tensor
     - tortoise_dtmapmri
     software: qsirecon
@@ -84,7 +74,6 @@ nodes:
     scalars_from:
     - gqi_scalars
     - dipy_dki
-    - fit_noddi
     - tortoise_fullshell_tensor
     - tortoise_dtmapmri
     software: qsirecon

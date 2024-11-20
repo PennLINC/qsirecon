@@ -1,2 +1,2 @@
-\*space-T1w\*atlas-hsvs\*_dseg.nii.gz,Hybrid Surface/Voume Segmentation in MRtrix3 5tt format. Aligned in coordinate space to ``space-T1w``. 
-\*space-fsnative\*atlas-hsvs\*_dseg.nii.gz,Hybrid Surface/Voume Segmentation in MRtrix3 5tt format. Aligned to the FreeSurfer ``orig.mgz`` image.
+\*space-ACPC\*seg-hsvs\*_dseg.nii.gz,Hybrid Surface/Volume Segmentation in MRtrix3 5tt format. Aligned in coordinate space to ``space-ACPC``.
+\*space-fsnative\*seg-hsvs\*_dseg.nii.gz,Hybrid Surface/Volume Segmentation in MRtrix3 5tt format. Aligned to the FreeSurfer ``orig.mgz`` image.

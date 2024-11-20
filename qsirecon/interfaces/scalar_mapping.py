@@ -241,7 +241,10 @@ class TemplateMapper(ScalarMapper):
                 continue
             new_metadata = recon_scalar.copy()
             output_fname = op.split(recon_scalar["path"])[1]
-            output_fname = output_fname.replace("_space-T1w_", "_transformed_")
+            output_fname = output_fname.replace("_space-T1w_", "_transformed_").replace(
+                "_space-ACPC_",
+                "_transformed_",
+            )
             output_fname = op.join(runtime.cwd, output_fname)
             transform = ants.ApplyTransforms(
                 input_image=recon_scalar["path"],

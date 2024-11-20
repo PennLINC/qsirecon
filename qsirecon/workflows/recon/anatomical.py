@@ -135,8 +135,9 @@ def init_highres_recon_anatomical_wf(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
                 seg="hsvs",
-                space="T1w",
+                space="ACPC",
                 suffix="probseg",
+                extension=".nii.gz",
                 compress=True,
             ),
             name="ds_qsiprep_5tt_hsvs",
