@@ -24,6 +24,10 @@ QSIRecon: Reconstruction of preprocessed q-space images (dMRI)
   :target: https://doi.org/10.1038/s41592-021-01185-5
   :alt: Publication DOI
 
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.14193616.svg
+  :target: https://doi.org/10.5281/zenodo.14193616
+  :alt: Zenodo DOI
+
 .. image:: https://img.shields.io/badge/License-BSD--3--Clause-green
   :target: https://opensource.org/licenses/BSD-3-Clause
   :alt: License
