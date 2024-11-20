@@ -12,6 +12,7 @@ Interfaces to generate reportlets
 import json
 import os.path as op
 import time
+from pathlib import Path
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -273,6 +274,17 @@ class _ReconPeaksReportInputSpec(CommandLineInputSpec):
     )
 
 
+XVFB_ERROR = """
+
+ODF/Peak Plotting did not produce the expected outputs.
+This could be due to how QSIRecon was run as a container.
+
+
+If you ran Singularity/Apptainer with --containall, please also use --writable-tmpfs
+
+"""
+
+
 class _ReconPeaksReportOutputSpec(TraitedSpec):
     peak_report = File(exists=True)
     odf_report = File()
@@ -282,6 +294,24 @@ class CLIReconPeaksReport(CommandLine):
     input_spec = _ReconPeaksReportInputSpec
     output_spec = _ReconPeaksReportOutputSpec
     _cmd = "recon_plot"
+
+    def _list_outputs(self):
+        outputs = self.output_spec().get()
+        workdir = Path(".")
+
+        peaks_file = workdir / self.inputs.peak_report
+        if not peaks_file.exists():
+            raise Exception(XVFB_ERROR)
+        outputs["peak_report"] = str(peaks_file.absolute())
+        if self.inputs.peaks_only:
+            return outputs
+
+        odfs_file = workdir / self.inputs.odf_report
+        if not odfs_file.exists():
+            raise Exception(XVFB_ERROR)
+        outputs["odf_report"] = str(odfs_file.absolute())
+
+        return outputs
 
 
 class _ConnectivityReportInputSpec(BaseInterfaceInputSpec):

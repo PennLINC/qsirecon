@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import os
-from pathlib import Path
 import sys
 import warnings
 from argparse import ArgumentParser, RawTextHelpFormatter
+from pathlib import Path
 
 import nibabel as nb
 import numpy as np
@@ -42,12 +42,8 @@ def recon_plot():
         formatter_class=RawTextHelpFormatter,
     )
 
-    parser.add_argument(
-        "--fib", action="store", help="DSI Studio fib file to convert"
-    )
-    parser.add_argument(
-        "--mif", action="store", help="path to a MRtrix mif file"
-    )
+    parser.add_argument("--fib", action="store", help="DSI Studio fib file to convert")
+    parser.add_argument("--mif", action="store", help="path to a MRtrix mif file")
     parser.add_argument(
         "--amplitudes",
         action="store",
