@@ -9,23 +9,19 @@ from nipype import config as nipype_config
 
 from qsirecon.cli import run
 from qsirecon.cli.parser import parse_args
-from qsirecon.cli.workflow import build_boilerplate, build_workflow
+from qsirecon.cli.workflow import build_boilerplate, build_workflow, copy_boilerplate
 from qsirecon.reports.core import generate_reports
 from qsirecon.tests.utils import (
     check_generated_files,
     download_test_data,
+    freesurfer_license,
     get_test_data_path,
 )
-
-
 from qsirecon.utils.bids import (
-    write_derivative_description,
-    write_bidsignore,
     write_atlas_dataset_description,
+    write_bidsignore,
+    write_derivative_description,
 )
-from qsirecon.cli.workflow import copy_boilerplate
-
-from .utils import freesurfer_license
 
 nipype_config.enable_debug_mode()
 
@@ -669,12 +665,6 @@ def _run_and_generate(test_name, parameters, test_main=False):
             dataset_links=config.execution.dataset_links,
         )
 
-        # generate_reports(
-        #     output_level=config.execution.report_output_level,
-        #     output_dir=config.execution.output_dir,
-        #     run_uuid=config.execution.run_uuid,
-        #     qsirecon_suffix="",
-        # )
         if config.execution.atlases:
             write_atlas_dataset_description(config.execution.output_dir / "atlases")
 
