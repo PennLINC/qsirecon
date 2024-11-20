@@ -67,7 +67,7 @@ def test_mrtrix_singleshell_ss3t_act(data_dir, output_dir, working_dir):
         "Gordon333Ext",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -104,7 +104,7 @@ def test_mrtrix_multishell_msmt_hsvs(data_dir, output_dir, working_dir):
         "--report-output-level=root",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -145,7 +145,7 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
         "--report-output-level=subject",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -169,7 +169,7 @@ def test_multises_post1_qsiprep_reportroot(data_dir, output_dir, working_dir):
         "--recon-spec=test_workflow",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -194,7 +194,7 @@ def test_multises_post1_qsiprep_reportsubject(data_dir, output_dir, working_dir)
         "--recon-spec=test_workflow",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -219,7 +219,7 @@ def test_multises_post1_qsiprep_reportsession(data_dir, output_dir, working_dir)
         "--recon-spec=test_workflow",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -243,7 +243,7 @@ def test_multises_pre1_qsiprep_reportroot(data_dir, output_dir, working_dir):
         "--recon-spec=test_workflow",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -268,7 +268,7 @@ def test_multises_pre1_qsiprep_reportsubject(data_dir, output_dir, working_dir):
         "--recon-spec=test_workflow",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -293,7 +293,7 @@ def test_multises_pre1_qsiprep_reportsession(data_dir, output_dir, working_dir):
         "--recon-spec=test_workflow",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -332,7 +332,7 @@ def test_amico_noddi(data_dir, output_dir, working_dir):
         "--report-output-level=session",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -371,7 +371,7 @@ def test_autotrack(data_dir, output_dir, working_dir):
         "--recon-spec=dsi_studio_autotrack",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -413,7 +413,7 @@ def test_dipy_mapmri(data_dir, output_dir, working_dir):
         "--output-resolution=5",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -454,7 +454,7 @@ def test_dipy_dki(data_dir, output_dir, working_dir):
         "--recon-spec=dipy_dki",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -487,7 +487,7 @@ def test_scalar_mapper(data_dir, output_dir, working_dir):
         "--nthreads=1",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -521,7 +521,7 @@ def test_pyafq_recon_external_trk(data_dir, output_dir, working_dir):
         "--recon-spec=mrtrix_multishell_msmt_pyafq_tractometry",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -555,7 +555,7 @@ def test_pyafq_recon_full(data_dir, output_dir, working_dir):
         "--recon-spec=pyafq_tractometry",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -595,7 +595,7 @@ def test_mrtrix3_recon(data_dir, output_dir, working_dir):
         "4S156Parcels",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 @pytest.mark.integration
@@ -626,7 +626,7 @@ def test_tortoise_recon(data_dir, output_dir, working_dir):
         "--recon-spec=TORTOISE",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=True)
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
 def _run_and_generate(test_name, parameters, test_main=False):
