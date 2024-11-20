@@ -537,7 +537,9 @@ class execution(_Config):
 
         cls._processing_list = []
         for dwi_relpath, anat_relpath in cls.processing_list:
-            cls._processing_list.append((cls.layout.get_file(dwi_relpath), cls.layout.get_file(anat_relpath)))
+            cls._processing_list.append(
+                (cls.layout.get_file(dwi_relpath), cls.layout.get_file(anat_relpath))
+            )
         cls.processing_list = cls._processing_list
 
         dataset_links = {
