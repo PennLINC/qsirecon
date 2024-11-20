@@ -14,8 +14,10 @@ By default, work should be built off of `pennlinc/qsirecon:latest
 installation_ guide for the basic procedure for running).
 
 
+*****************************
 Patching working repositories
-=============================
+*****************************
+
 In order to test new code without rebuilding the Docker image, it is
 possible to mount working repositories as source directories within the
 container.
@@ -54,8 +56,39 @@ Or you can patch Singularity containers using the PYTHONPATH variable: ::
         /scratch/dataset /scratch/out participant -w /out/work/
 
 
+Running tests locally
+=====================
+
+To run the tests locally, *QSIRecon* includes a Python script to automatically mount the
+local clone into ``pennlinc/qsirecon:unstable`` and run tests with ``pytest``.
+The script will also download any required test data from Box.
+
+To run the tests, navigate to the tests folder and run ``run_local_tests.py``::
+
+    $ cd /path/to/qsirecon/qsirecon/tests
+    $ python run_local_tests.py
+
+You can select individual tests to run by using the ``-m`` (to select markers) or ``-k`` (the select tests by name) flags::
+
+    $ python run_local_tests.py -m "dsdti_fmap"
+    $ python run_local_tests.py -k "test_some_name"
+
+.. warning::
+
+    Please note that the integration tests in *QSIRecon* are computationally intensive
+    and may take a long time to run, so be prepared for that before running them on a laptop.
+
+
+If the tests pass, that's a good sign that your changes are solid.
+We also recommend opening the HTML reports produced by integration tests to check the results.
+Evaluating whether the HTML reports look "good" requires some domain knowledge and
+familiarity with *QSIRecon* outputs.
+
+
+*******************
 Adding dependencies
-===================
+*******************
+
 New dependencies to be inserted into the Docker image will either be
 Python or non-Python dependencies.
 Python dependencies may be added in three places, depending on whether
@@ -81,8 +114,11 @@ For example, installing an ``apt`` package may be done as follows: ::
     RUN apt-get update && \
         apt-get install -y <PACKAGE>
 
+
+***********************
 Rebuilding Docker image
-=======================
+***********************
+
 If it is necessary to rebuild the Docker image, a local image named
 ``qsirecon`` may be built from within the working *QSIRecon*
 repository, located in ``~/projects/qsirecon``: ::
@@ -93,8 +129,9 @@ To work in this image, replace ``pennlinc/qsirecon:latest`` with
 ``qsirecon`` in any of the above commands.
 
 
+***********************************************
 Adding new features to the citation boilerplate
-===============================================
+***********************************************
 
 The citation boilerplate is built by adding two dunder attributes
 of workflow objects: ``__desc__`` and ``__postdesc__``.
