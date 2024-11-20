@@ -178,6 +178,8 @@ def recon_plot():
             sys.exit(1)
 
         LOGGER.info(f"Saved odfs image to {odfs_png_file}")
+    else:
+        LOGGER.info("Not plotting ODFs.")
 
     display.stop()
     sys.exit(0)

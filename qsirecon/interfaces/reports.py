@@ -276,9 +276,10 @@ class _ReconPeaksReportInputSpec(CommandLineInputSpec):
 
 XVFB_ERROR = """
 
-ODF/Peak Plotting did not produce the expected outputs.
-This could be due to how QSIRecon was run as a container.
+ODF/Peak Plotting did not produce the expected output:
+  {}
 
+This could be due to how QSIRecon was run as a container.
 
 If you ran Singularity/Apptainer with --containall, please also use --writable-tmpfs
 
@@ -299,16 +300,20 @@ class CLIReconPeaksReport(CommandLine):
         outputs = self.output_spec().get()
         workdir = Path(".")
 
+        # There will always be a peak report
         peaks_file = workdir / self.inputs.peak_report
         if not peaks_file.exists():
-            raise Exception(XVFB_ERROR)
+            raise Exception(XVFB_ERROR.format(peaks_file))
         outputs["peak_report"] = str(peaks_file.absolute())
-        if self.inputs.peaks_only:
+
+        # If there will be no ODF report, we are done
+        if self.inputs.peaks_only or not isdefined(self.inputs.odf_rois):
             return outputs
 
+        # Find the ODF report
         odfs_file = workdir / self.inputs.odf_report
         if not odfs_file.exists():
-            raise Exception(XVFB_ERROR)
+            raise Exception(XVFB_ERROR.format(odfs_file))
         outputs["odf_report"] = str(odfs_file.absolute())
 
         return outputs
