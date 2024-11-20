@@ -1,8 +1,8 @@
 .. include:: links.rst
 
-------------------------
-Contributing to qsirecon
-------------------------
+##########################
+Contributing to *QSIRecon*
+##########################
 
 This document explains how to prepare a new development environment and
 update an existing environment, as necessary.
@@ -34,7 +34,7 @@ For example, ::
         -w /out/work/
 
 In order to work directly in the container, use ``--entrypoint=bash`` and omit the qsirecon
-arguments in a ``docker`` command::
+argument in a ``docker`` command::
 
     $ docker run --rm -v $HOME/fullds005:/data:ro -v $HOME/dockerout:/out \
         -v $HOME/projects/qsirecon/qsirecon:/usr/local/miniconda/lib/python3.10/site-packages/qsirecon:ro --entrypoint=bash \
@@ -84,7 +84,7 @@ For example, installing an ``apt`` package may be done as follows: ::
 Rebuilding Docker image
 =======================
 If it is necessary to rebuild the Docker image, a local image named
-``qsirecon`` may be built from within the working qsirecon
+``qsirecon`` may be built from within the working *QSIRecon*
 repository, located in ``~/projects/qsirecon``: ::
 
     ~/projects/qsirecon$ docker build -t qsirecon .
@@ -98,7 +98,7 @@ Adding new features to the citation boilerplate
 
 The citation boilerplate is built by adding two dunder attributes
 of workflow objects: ``__desc__`` and ``__postdesc__``.
-Once the full *qsirecon* workflow is built, starting from the
+Once the full *QSIRecon* workflow is built, starting from the
 outer workflow and visiting all sub-workflows in topological
 order, all defined ``__desc__`` are appended to the citation
 boilerplate before descending into sub-workflows.

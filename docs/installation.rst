@@ -6,13 +6,13 @@
 Installation
 ############
 
-The official source of QSIRecon is the
+The official source of *QSIRecon* is the
 `Docker repository <https://hub.docker.com/pennlinc/qsirecon>`_.
 
 
-*******************************
-Running QSIRecon via containers
-*******************************
+*********************************
+Running *QSIRecon* via containers
+*********************************
 
 
 .. _install_docker`:
@@ -20,7 +20,7 @@ Running QSIRecon via containers
 Docker
 ======
 
-In order to run qsirecon in a Docker container, Docker must be `installed
+In order to run *QSIRecon* in a Docker container, Docker must be `installed
 <https://docs.docker.com/engine/installation/>`_.
 
 .. note:: If running Docker Desktop on MacOS (or via Docker Desktop), be sure to set
@@ -45,13 +45,13 @@ A Docker command line may look like:
 Singularity/Apptainer
 =====================
 
-The easiest way to get a Sigularity image is to run:
+The easiest way to get a Singularity image is to run:
 
 .. code-block:: bash
 
     apptainer build qsirecon-<version>.sif docker://pennlinc/qsirecon:<version>
 
-Where ``<version>`` should be replaced with the desired version of qsirecon that you want to download.
+Where ``<version>`` should be replaced with the desired version of *QSIRecon* that you want to download.
 Do not use ``latest`` or ``unstable`` unless you are performing limited testing.
 
 As with Docker, you will need to bind the Freesurfer license.txt when running Singularity :
@@ -75,7 +75,7 @@ As with Docker, you will need to bind the Freesurfer license.txt when running Si
 External Dependencies
 ---------------------
 
-QSIRecon is written using Python 3.10, and is based on nipype_.
+*QSIRecon* is written using Python 3.10, and is based on nipype_.
 The external dependencies are built in the
 `qsirecon_build <https://github.com/PennLINC/qsirecon_build>`_ repository.
 There you can find the URLs used to download the dependency source code

@@ -1,14 +1,14 @@
 .. include:: links.rst
 
-###############
-Getting Started
-###############
+###########
+Quick Start
+###########
 
-Before you can use QSIRecon, you must have some preprocessed dMRI.
+Before you can use *QSIRecon*, you must have some preprocessed dMRI data.
 See :ref:`input_data`
 
-The next step is to get a containerized version of QSIRecon. This can be
-done with Singularity_, Apptainer_ or Docker_. Most users run QSIRecon on
+The next step is to get a containerized version of *QSIRecon*. This can be
+done with Singularity_, Apptainer_ or Docker_. Most users run *QSIRecon* on
 a high performance computing cluster, so we will assume Apptainer is being
 used throughout this documentation. See :ref:`install_qsirecon` on how to create
 a `sif` file or pull the image with Docker.
@@ -17,9 +17,9 @@ Next, you need to decide which workflow you'd like to run. You can pick
 from any of the :ref:`builtin_workflows` or :ref:`building_workflows`.
 Here we'll pick the ``dsi_studio_autotrack`` workflow.
 
-Finally, you'll need to craft a command to set up your QSIRecon run.
+Finally, you'll need to craft a command to set up your *QSIRecon* run.
 Suppose you're in a directory where there are some qsiprep results in
-``inputs/qsiprep``. You'd like to save QSIRecon outputs in ``results``. You
+``inputs/qsiprep``. You'd like to save *QSIRecon* outputs in ``results``. You
 have access to 8 cpus.  To run the from ``qsirecon-latest.sif`` you could use:
 
 .. code-block:: bash

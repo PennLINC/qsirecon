@@ -250,7 +250,7 @@ generated streamlines belong to the target tract based on the Hausdorff distance
 subject and atlas streamlines.
 
 Reconstructed subject-specific tracts are written out as .tck files that are aligned to the
-qsirecon-generated _dwiref.nii.gz and preproc_T1w.nii.gz volumes; .tck files can be visualized
+*QSIRecon*-generated _dwiref.nii.gz and preproc_T1w.nii.gz volumes; .tck files can be visualized
 overlaid on these volumes in mrview or MI-brain. Note, .tck files will not appear in alignment
 with the dwiref/T1w volumes in DSI Studio due to how the .tck files are read in.
 
@@ -389,8 +389,8 @@ Scalar Maps
 ``reorient_fslstd``
 ===================
 
-Reorients the ``qsirecon`` preprocessed DWI and bval/bvec to the standard FSL orientation.
-This can be useful if FSL tools will be applied outside of ``qsirecon``.
+Reorients the *QSIRecon* preprocessed DWI and bval/bvec to the standard FSL orientation.
+This can be useful if FSL tools will be applied outside of *QSIRecon*.
 
 
 .. _csdsi_3dshore:
@@ -517,7 +517,7 @@ Connectivity matrices
 *********************
 
 Instead of offering a bewildering number of options for constructing connectivity matrices,
-``qsirecon`` will construct as many connectivity matrices as it can given the reconstruction
+*QSIRecon* will construct as many connectivity matrices as it can given the reconstruction
 methods.
 It is **highly** recommended that you pick a weighting scheme before you run
 these pipelines and only look at those numbers.
@@ -532,7 +532,7 @@ To skip this step in your workflow, you can modify an existing recon pipeline by
 Atlases
 =======
 
-The following atlases are included in ``qsirecon``.
+The following atlases are included in *QSIRecon*.
 This means you do not need to add a ``--datasets`` argument to your command line,
 and can instead select them just with ``--atlases``.
 
@@ -548,7 +548,7 @@ If you use one of them please be sure to cite the relevant publication.
  * ``Gordon333Ext``: :footcite:t:`gordon2016generation`, extended with subcortical parcels.
  * ``AAL116``: :footcite:t:`tzourio2002automated`
 
-The ``qsirecon`` atlas set can be downloaded directly from
+The *QSIRecon* atlas set can be downloaded directly from
 `box  <https://upenn.box.com/shared/static/8k17yt2rfeqm3emzol5sa0j9fh3dhs0i.xz>`_.
 
 The 4S atlas combines the Schaefer 2018 cortical atlas (version v0143) :footcite:p:`Schaefer_2017`
@@ -559,7 +559,7 @@ the HCP thalamic atlas :footcite:p:`najdenovska2018vivo`,
 and the amygdala and hippocampus parcels from the HCP CIFTI subcortical parcellation
 :footcite:p:`glasser2013minimal`.
 The 4S atlas is used in the same manner across three PennLINC BIDS Apps:
-QSIRecon, XCP-D, and ASLPrep, to produce synchronized outputs across modalities.
+*QSIRecon*, *XCP-D*, and *ASLPrep*, to produce synchronized outputs across modalities.
 For more information about the 4S atlas, please see https://github.com/PennLINC/AtlasPack.
 
 Atlases are written out to the ``atlases`` subfolder, following
@@ -601,7 +601,7 @@ Users can control which atlases are used with the ``--atlases`` and ``--datasets
 
 The nifti images should be registered to the
 `MNI152NLin2009cAsym <https://github.com/PennLINC/qsirecon/blob/main/qsirecon/data/mni_1mm_t1w_lps.nii.gz>`_
-included in ``qsirecon``.
+included in *QSIRecon*.
 It is essential that your images are in the LPS+ orientation and have the sform zeroed-out in the header.
 **Be sure to check for alignment and orientation** in your outputs.
 

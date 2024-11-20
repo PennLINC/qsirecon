@@ -3,31 +3,31 @@
 
 .. _input_data:
 
-#######################
-Input Data for QSIRecon
-#######################
+#########################
+Input Data for *QSIRecon*
+#########################
 
 *Raw BIDS dMRI should not be used and will not work*. Instead,
 gather data processed by QSIPrep_ or UKBioBank_. The directory
 containing the ``sub-*`` directories (if from QSIPrep) or the
 directory with the numerals/underscores per subject if UKBB
-will be the first argument to QSIRecon.
+will be the first argument to *QSIRecon*.
 
-***********************
-Using Data from QSIPrep
-***********************
+*************************
+Using Data from *QSIPrep*
+*************************
 
-QSIPrep outputs will work as inputs for QSIRecon as-is, aside from some
+*QSIPrep* outputs will work as inputs for *QSIRecon* as-is, aside from some
 when some specific options were selected for preprocessing.
 
 .. important::
 
-    QSIRecon endeavors to maintain compatibility with QSIPrep outputs from the same
+    *QSIRecon* endeavors to maintain compatibility with *QSIPrep* outputs from the same
     release series.
-    We cannot guarantee that QSIPrep outputs from different releases will work
-    with QSIRecon.
+    We cannot guarantee that *QSIPrep* outputs from different releases will work
+    with *QSIRecon*.
 
-    QSIPrep and QSIRecon follow a matched release schedule,
+    *QSIPrep* and *QSIRecon* follow a matched release schedule,
     with major (i.e., backwards-incompatible) releases made at the same time.
     Minor and patch releases may be made independently.
 
@@ -36,7 +36,7 @@ If ``--anat-modality none`` was used
 ====================================
 
 If ``--anat-modality none`` was used, there will be no preprocessed T1w data in
-the ``qsirecon`` results. Instead the DWI images have been aligned to AC-PC as
+the *QSIRecon* results. Instead the DWI images have been aligned to AC-PC as
 closely as possible (likely imperfectly). In this case, the FreeSurfer
 skull-stripped ``brain.mgz`` is rigidly registered to ``dwiref`` of each
 preprocessed DWI. The FreeSurfer brain mask is resampled to the grid of the DWI.
@@ -55,7 +55,7 @@ Using Data Preprocessed by Other Pipelines
 
 Many open datasets are provided in minimally preprocessed form. Most of these have a
 bespoke processing pipeline and in many cases these pipelines are very similar to
-QSIRecon. Instead of preprocessing these from scratch, you can run reconstruction
+*QSIRecon*. Instead of preprocessing these from scratch, you can run reconstruction
 workflows on the minimally preprocessed data by specifying the pipeline that was
 used for preprocessing.
 
@@ -74,7 +74,7 @@ HCP Young Adult Preprocessed Data
 To use minimally preprocessed dMRI data from HCP-YA specify ``--input-type hcpya``.
 Note that the transforms to/from MNI space are not able to be used at this time. Please note that if you have the
 HCPYA dataset from datalad (https://github.com/datalad-datasets/human-connectome-project-openaccess)
-then you should ``datalad get`` relevant subject data before running QSIRecon,
+then you should ``datalad get`` relevant subject data before running *QSIRecon*,
 and be mindful about how you mount the directory in Docker/Apptainer.
 
 .. _anat_reqs:
@@ -160,7 +160,7 @@ You can run:
        --fs-subjects-dir "${PWD}/derivatives/freesurfer" \
        -v -v
 
-This will read the FreeSurfer data, align it to the ``qsiprep`` results and use it
+This will read the FreeSurfer data, align it to the *QSIPrep* results and use it
 for subsequent reconstruction steps.
 
 

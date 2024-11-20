@@ -8,12 +8,13 @@ Contents
 .. toctree::
    :maxdepth: 2
 
-   getting_started
-   input_data
    installation
+   quickstart
    builtin_workflows
    building_workflows
    outputs
+   contributors
+   changes
    comparisons
    help
    license
