@@ -55,7 +55,6 @@ def init_discard_repeated_samples_wf(
     inputs_dict,
     name="discard_repeats",
     qsirecon_suffix="",
-    space="T1w",
     params={},
 ):
     """Remove a sample if a similar direction/gradient has already been sampled."""

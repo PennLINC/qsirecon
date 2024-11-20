@@ -585,10 +585,10 @@ associated reconstruction workflows dataset.
          qsirecon-<suffix>/
             sub-<label>/
                dwi/
-                  sub-<label>_space-T1w_seg-<label>_dseg.nii.gz
-                  sub-<label>_space-T1w_seg-<label>_dseg.mif.gz
-                  sub-<label>_space-T1w_seg-<label>_dseg.json
-                  sub-<label>_space-T1w_seg-<label>_dseg.tsv
+                  sub-<label>_space-ACPC_seg-<label>_dseg.nii.gz
+                  sub-<label>_space-ACPC_seg-<label>_dseg.mif.gz
+                  sub-<label>_space-ACPC_seg-<label>_dseg.json
+                  sub-<label>_space-ACPC_seg-<label>_dseg.tsv
 
 
 .. _custom_atlases:

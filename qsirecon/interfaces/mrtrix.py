@@ -1057,7 +1057,7 @@ def _rename_connectome(connectome_csv, suffix="_connectome.csv"):
     ...    "calc_connectivity/mrtrix_atlasgraph/" \
     ...    "schaefer200x17_sift_invnodevol_radius2_count/connectome.csv"
     >>> _rename_connectome(pth)
-    "sub-X_ses-1_space-T1w_desc-preproc_schaefer200x17_sift_invnodevol_radius2_count_connectome.csv"
+    "sub-X_ses-1_space-ACPC_desc-preproc_schaefer200x17_sift_invnodevol_radius2_count_connectome.csv"
     """
     parts = connectome_csv.split(os.sep)
     conn_name = parts[-2]
