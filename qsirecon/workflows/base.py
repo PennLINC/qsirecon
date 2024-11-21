@@ -148,6 +148,7 @@ to workflows in *QSIRecon*'s documentation]\
             needs_t1w_transform=bool(config.execution.atlases),
             bids_filters=config.execution.bids_filters or {},
         )
+
         config.loggers.workflow.info(
             f"Anatomical data available for {anat_input_file.path}:\n"
             f"{yaml.dump(anat_data, default_flow_style=False, indent=4)}"
@@ -250,7 +251,6 @@ to workflows in *QSIRecon*'s documentation]\
             name=f"{wf_name}_dwi_specific_anat_wf",
             **highres_anat_statuses[anat_input.path],
         )
-
         inputs_dict = {
             "dwi_file": dwi_file,
             "dwi_metadata": config.execution.layout.get_metadata(dwi_file),
