@@ -312,11 +312,7 @@ class VoxelSizeChooser(SimpleInterface):
 
 
 class _GetTemplateInputSpec(BaseInterfaceInputSpec):
-    template_name = traits.Enum(
-        "MNI152NLin2009cAsym",
-        "MNIInfant",
-        mandatory=True,
-    )
+    template_name = traits.Str(mandatory=True)
 
 
 class _GetTemplateOutputSpec(BaseInterfaceInputSpec):
@@ -331,10 +327,15 @@ class GetTemplate(SimpleInterface):
     def _run_interface(self, runtime):
         from templateflow.api import get as get_template
 
+        template_name = self.inputs.template_name
+        cohort = None
+        if "+" in template_name:
+            template_name, cohort = template_name.split("+")
+
         template_file = str(
             get_template(
-                self.inputs.template_name,
-                cohort=[None, "2"],
+                template_name,
+                cohort=cohort,
                 resolution="1",
                 desc=None,
                 suffix="T1w",
@@ -343,8 +344,8 @@ class GetTemplate(SimpleInterface):
         )
         mask_file = str(
             get_template(
-                self.inputs.template_name,
-                cohort=[None, "2"],
+                template_name,
+                cohort=cohort,
                 resolution="1",
                 desc="brain",
                 suffix="mask",

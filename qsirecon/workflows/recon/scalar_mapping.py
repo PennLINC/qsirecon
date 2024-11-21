@@ -165,7 +165,10 @@ def init_scalar_to_template_wf(
         name="outputnode",
     )
     workflow = Workflow(name=name)
-    template_mapper = pe.Node(TemplateMapper(**params), name="template_mapper")
+    template_mapper = pe.Node(
+        TemplateMapper(template_space=inputs_dict["template_output_space"], **params),
+        name="template_mapper",
+    )
 
     scalar_output_wf = init_scalar_output_wf()
     workflow.connect([

@@ -318,6 +318,7 @@ def init_dwi_recon_anatomical_workflow(
     has_freesurfer,
     extras_to_make,
     name,
+    template_output_space,
     prefer_dwi_mask=False,
 ):
     """Ensure that anatomical data is available for the reconstruction workflows.
@@ -398,12 +399,12 @@ def init_dwi_recon_anatomical_workflow(
             "has_freesurfer_5tt_hsvs": has_freesurfer_5tt_hsvs,
             "has_qsiprep_t1w": has_qsiprep_t1w,
             "has_qsiprep_t1w_transforms": has_qsiprep_t1w_transforms,
+            "template_output_space": template_output_space,
         }
 
-    # XXX: This is a temporary solution until QSIRecon supports flexible output spaces.
     get_template = pe.Node(
         GetTemplate(
-            template_name="MNI152NLin2009cAsym" if not config.workflow.infant else "MNIInfant",
+            template_name=template_output_space,
         ),
         name="get_template",
     )

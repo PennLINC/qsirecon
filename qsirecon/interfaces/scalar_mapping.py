@@ -23,7 +23,6 @@ from nipype.interfaces.base import (
 )
 from nipype.utils.filemanip import fname_presuffix
 
-from .. import config
 from .bids import get_bids_params
 
 LOGGER = logging.getLogger("nipype.interface")
@@ -219,6 +218,7 @@ class _TemplateMapperInputSpec(ScalarMapperInputSpec):
     template_reference_image = File(exists=True, mandatory=True)
     to_template_transform = File(exists=True, mandatory=True)
     interpolation = traits.Str("NearestNeighbor", usedefault=True)
+    template_space = traits.Str(mandatory=True)
 
 
 class _TemplateMapperOutputSpec(ScalarMapperOutputSpec):
@@ -263,13 +263,9 @@ class TemplateMapper(ScalarMapper):
             new_metadata["path"] = output_fname
             if "bids" not in new_metadata:
                 raise Exception(f"incomplete metadata spec {new_metadata}")
-            new_metadata["bids"]["space"] = (
-                "MNIInfant" if config.workflow.infant else "MNI152NLin2009cAsym"
-            )
+            new_metadata["bids"]["space"] = self.inputs.template_space
             resampled_image_metadata.append(new_metadata)
 
         self._results["template_space_scalars"] = resampled_images
         self._results["template_space_scalar_info"] = resampled_image_metadata
-        self._results["template_space"] = (
-            "MNIInfant" if config.workflow.infant else "MNI152NLin2009cAsym"
-        )
+        self._results["template_space"] = self.inputs.template_space

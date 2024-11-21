@@ -184,13 +184,14 @@ def collect_anatomical_data(
     from qsirecon.data import load as load_data
 
     anat_data = {}
-    status = {}
+    status = {"template_output_space": None}
 
     if session_id is None:
         return anat_data, {"has_qsiprep_t1w": False, "has_qsiprep_t1w_transforms": False}
 
     _spec = yaml.safe_load(load_data.readable("io_spec.yaml").read_text())
     queries = _spec["queries"]["anat"]
+
     if config.workflow.infant:
         queries["acpc_to_template_xfm"]["to"] = "MNIInfant"
         queries["template_to_acpc_xfm"]["from"] = "MNIInfant"
@@ -241,8 +242,18 @@ def collect_anatomical_data(
 
         config.loggers.utils.warning("No anat-to-template or template-to-anat transforms found.")
         status["has_qsiprep_t1w_transforms"] = False
-
+    else:
+        # Determine the output space from the transform file
+        status["template_output_space"] = _determine_output_space(anat_data)
     return anat_data, status
+
+
+def _determine_output_space(status):
+    """Determine what output space the transform maps to/from"""
+    if not status["template_to_acpc_xfm"]:
+        return None
+
+    return get_entity(status["template_to_acpc_xfm"], "from")
 
 
 def write_derivative_description(
