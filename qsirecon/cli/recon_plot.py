@@ -3,6 +3,7 @@ import os
 import sys
 import warnings
 from argparse import ArgumentParser, RawTextHelpFormatter
+from pathlib import Path
 
 import nibabel as nb
 import numpy as np
@@ -41,54 +42,43 @@ def recon_plot():
         formatter_class=RawTextHelpFormatter,
     )
 
-    parser.add_argument(
-        "--fib", action="store", type=os.path.abspath, help="DSI Studio fib file to convert"
-    )
-    parser.add_argument(
-        "--mif", type=os.path.abspath, action="store", help="path to a MRtrix mif file"
-    )
+    parser.add_argument("--fib", action="store", help="DSI Studio fib file to convert")
+    parser.add_argument("--mif", action="store", help="path to a MRtrix mif file")
     parser.add_argument(
         "--amplitudes",
-        type=os.path.abspath,
         action="store",
         help="4D ampliudes corresponding to --directions",
     )
     parser.add_argument(
         "--directions",
-        type=os.path.abspath,
         action="store",
         help="text file of directions corresponding to --amplitudes",
     )
     parser.add_argument(
         "--mask_file",
         action="store",
-        type=os.path.abspath,
         help="a NIfTI-1 format file defining a brain mask.",
     )
     parser.add_argument(
         "--odf_rois",
         action="store",
-        type=os.path.abspath,
         help="a NIfTI-1 format file with ROIs for plotting ODFs",
     )
     parser.add_argument(
         "--peaks_image",
         action="store",
         default="peaks_mosiac.png",
-        type=os.path.abspath,
         help="png file for odf peaks image",
     )
     parser.add_argument(
         "--odfs_image",
         action="store",
         default="odfs_mosaic.png",
-        type=os.path.abspath,
         help="png file for odf results",
     )
     parser.add_argument(
         "--background_image",
         action="store",
-        type=os.path.abspath,
         help="a NIfTI-1 format file with a valid q/sform.",
     )
     parser.add_argument(
@@ -100,6 +90,9 @@ def recon_plot():
     parser.add_argument("--ncuts", type=int, default=3, help="number of slices to plot")
     parser.add_argument("--padding", type=int, default=10, help="number of slices to plot")
     opts = parser.parse_args()
+    peaks_png = str(Path(opts.peaks_image).absolute())
+    cwd = os.getcwd()
+    LOGGER.info(f"Running in {cwd}")
 
     if opts.mif:
         odf_img, directions = mif2amps(opts.mif, os.getcwd())
@@ -150,11 +143,12 @@ def recon_plot():
         sys.exit(1)
 
     try:
+        LOGGER.info("Plotting ODF Peaks images...")
         peak_slice_series(
             odf_4d,
             sphere,
             background_data,
-            opts.peaks_image,
+            peaks_png,
             n_cuts=opts.ncuts,
             mask_image=opts.mask_file,
             padding=opts.padding,
@@ -163,16 +157,18 @@ def recon_plot():
         LOGGER.warning(exc)
         sys.exit(1)
 
-    LOGGER.info("saving peaks image to %s", opts.peaks_image)
+    LOGGER.info(f"Saved peaks image to {peaks_png}")
 
     # Plot ODFs in interesting regions
     if opts.odf_rois and not opts.peaks_only:
+        odfs_png_file = str(Path(opts.odfs_image).absolute())
         try:
+            LOGGER.info("Attempting to render ODFs...")
             odf_roi_plot(
                 odf_4d,
                 sphere,
                 background_data,
-                opts.odfs_image,
+                odfs_png_file,
                 opts.odf_rois,
                 subtract_iso=opts.subtract_iso,
                 mask=opts.mask_file,
@@ -181,7 +177,9 @@ def recon_plot():
             LOGGER.warning(exc)
             sys.exit(1)
 
-        LOGGER.info("saved odfs image to %s", opts.odfs_image)
+        LOGGER.info(f"Saved odfs image to {odfs_png_file}")
+    else:
+        LOGGER.info("Not plotting ODFs.")
 
     display.stop()
     sys.exit(0)
