@@ -312,11 +312,7 @@ class VoxelSizeChooser(SimpleInterface):
 
 
 class _GetTemplateInputSpec(BaseInterfaceInputSpec):
-    template_name = traits.Enum(
-        "MNI152NLin2009cAsym",
-        "MNIInfant",
-        mandatory=True,
-    )
+    template_name = traits.Str(mandatory=True)
 
 
 class _GetTemplateOutputSpec(BaseInterfaceInputSpec):
