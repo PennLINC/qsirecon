@@ -12,16 +12,19 @@ Summarize and Transform recon outputs
 
 import logging
 
+from bids.layout import BIDSLayout
 import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
+from ... import config
 from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import ReconScalarsTableSplitterDataSink
 from ...interfaces.scalar_mapping import BundleMapper, TemplateMapper
 from ...utils.bids import clean_datasinks
 from .utils import init_scalar_output_wf
+
 
 LOGGER = logging.getLogger("nipype.workflow")
 
@@ -199,3 +202,47 @@ def init_scalar_to_surface_wf(
 ):
     """Maps scalar data to a surface."""
     raise NotImplementedError()
+
+
+def init_ingress_scalars_wf(
+    inputs_dict,
+    name="ingress_scalars",
+    qsirecon_suffix="",
+    params={},
+):
+    """Read in scalars from an input dataset."""
+
+    from qsirecon.data import load as load_data
+
+    inputnode = pe.Node(
+        niu.IdentityInterface(
+            fields=recon_workflow_input_fields,
+        ),
+        name="inputnode",
+    )
+    outputnode = pe.Node(
+        niu.IdentityInterface(
+            fields=[
+                "scalar_image_info",
+                "recon_scalars",
+            ]
+        ),
+        name="outputnode",
+    )
+    workflow = Workflow(name=name)
+    dataset_name = params.get("dataset")
+    if not dataset_name:
+        raise Exception("Must specify a dataset key in the recon spec parameters")
+
+    dataset_path = config.execution.datasets.get(dataset_name)
+    if dataset_path is None:
+        raise Exception(
+            f"Dataset {dataset_name} is not available in the specified "
+            "inputs datasets. Either change the recon spec yaml file or "
+            f"include --datasets {dataset_name}=/path/to/dataset on the command line."
+        )
+    scalars_cfg = load_data("recon_scalars_bids_config.json")
+    layout = BIDSLayout(dataset_path, config=[scalars_cfg], validate=False)
+
+
+    return workflow
