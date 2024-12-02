@@ -204,9 +204,9 @@ def init_scalar_to_surface_wf(
     raise NotImplementedError()
 
 
-def init_ingress_scalars_wf(
+def init_import_scalars_wf(
     inputs_dict,
-    name="ingress_scalars",
+    name="import_scalars",
     qsirecon_suffix="",
     params={},
 ):
@@ -243,6 +243,12 @@ def init_ingress_scalars_wf(
         )
     scalars_cfg = load_data("recon_scalars_bids_config.json")
     layout = BIDSLayout(dataset_path, config=[scalars_cfg], validate=False)
+
+    # Find all dwimaps that have the same entities (-desc) as the input dwi file
+    input_dwi_file = config.execution.layout.get(inputs_dict["dwi_file"])
+    dwimaps = layout.get(suffix="dwimap", **input_dwi_file.entities)
+
+    # Send them to the scalar gatherer
 
 
     return workflow

@@ -1,0 +1,43 @@
+name: bundle_scalar_map
+anatomical: []
+nodes:
+
+-   action: import_scalars
+    input: qsirecon
+    name: dipy_dki_ingress
+    parameters:
+        # Whatever was specified with --datasets dipydki=/x/y/z
+        dataset_name: dipydki
+        # Do you want a copy of the inputs to go in the output dataset?
+        # Metadata from the input will be included in the output no matter what
+        copy_inputs: false
+    # This is where the tsv will go
+    qsirecon_suffix: DIPYDKI
+    # Future idea: Get ALFF/REHO/something into ACPC, then resample into each dwi ACPC space
+
+-   action: autotrack
+    input: dsistudio_gqi
+    name: autotrackgqi
+    parameters:
+        tolerance: 22,26,30
+        track_id: Fasciculus,Cingulum,Aslant,Corticos,Thalamic_R,Reticular,Optic,Fornix,Corpus
+        track_voxel_ratio: 2.0
+        yield_rate: 1.0e-06
+    qsirecon_suffix: DSIStudio
+    software: DSI Studio
+
+-   action: bundle_map
+    input: autotrackgqi
+    name: bundle_means
+    scalars_from:
+    - dipy_dki_ingress
+    software: qsirecon
+
+-   action: template_map
+    input: qsirecon
+    name: template_map
+    parameters:
+        interpolation: NearestNeighbor
+    scalars_from:
+    - dipy_dki
+    software: qsirecon
