@@ -1,0 +1,29 @@
+{
+    "name": "qsirecon",
+    "entities": [
+        {
+            "name": "cohort",
+            "pattern": "(?:^|_)cohort-([0-9]+)",
+            "dtype": "int"
+        },
+        {
+            "name": "seg",
+            "pattern": "(?:^|_)seg-([a-zA-Z0-9]+)"
+        },
+        {
+            "name": "bundles",
+            "pattern": "(?:^|_)bundles-([a-zA-Z0-9]+)"
+        },
+        {
+            "name": "param",
+            "pattern": "(?:^|_)param-([a-zA-Z0-9]+)"
+        },
+        {
+            "name": "bundle",
+            "pattern": "(?:^|_)bundle-([a-zA-Z0-9]+)"
+        }
+    ],
+    "default_path_patterns": [
+        "sub-{subject}[/ses-{session}]/{datatype<dwi>|dwi}/sub-{subject}[_ses-{session}][_acq-{acquisition}][_ce-{ceagent}][_dir-{direction}][_rec-{reconstruction}][_run-{run}][_space-{space}][_cohort-{cohort}][_seg-{seg}][_model-{model}][_bundles-{bundles}][_param-{param}][_bundle-{bundle}][_label-{label}][_desc-{desc}]_{suffix<dwimap|config|dwi>}.{extension<nii|nii.gz|fib|fib.gz|mif|mif.gz|pickle.gz|b|bvec|bval|txt|json>|nii.gz}"
+    ]
+}
