@@ -1,7 +1,7 @@
 # Contributing to QSIRecon
 
 Contributions are welcome.
-Please see the guidelines for contributing to fMRIPrep and follow those here.
+Please see the [guidelines for contributing to fmriprep](https://fmriprep.org/en/stable/api.html) and follow those here.
 
 ## Licensing
 
