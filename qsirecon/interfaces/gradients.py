@@ -7,6 +7,7 @@ import numpy as np
 from nilearn import image as nim
 from nipype.interfaces.base import (
     BaseInterfaceInputSpec,
+    InputMultiObject,
     File,
     SimpleInterface,
     TraitedSpec,
@@ -18,7 +19,81 @@ from nipype.utils.filemanip import fname_presuffix
 LOGGER = logging.getLogger("nipype.interface")
 
 
-class RemoveDuplicatesInputSpec(BaseInterfaceInputSpec):
+class _GradientSelectInputSpec(BaseInterfaceInputSpec):
+    dwi_file = File(exists=True, mandatory=True)
+    bval_file = File(exists=True, mandatory=True)
+    bvec_file = File(exists=True, mandatory=True)
+    bval_distance_cutoff = traits.Float(5.0, usedefault=True)
+    expected_n_input_shells = traits.Int()
+    expected_n_output_shells = traits.Int()
+    requested_shell_bvals = InputMultiObject(traits.CInt(), mandatory=True)
+
+
+class _GradientSelectOutputSpec(TraitedSpec):
+    dwi_file = File(exists=True)
+    bval_file = File(exists=True)
+    bvec_file = File(exists=True)
+    local_bvec_file = File(exists=True)
+
+
+class GradientSelect(SimpleInterface):
+    input_spec = _GradientSelectInputSpec
+    output_spec = _GradientSelectOutputSpec
+
+    def _run_interface(self, runtime):
+        """Find shells in the input data and select"""
+
+        from sklearn.cluster import AgglomerativeClustering
+        from sklearn.d
+        max_distance = self.inputs.bval_distance_cutoff
+        bvals = np.loadtxt(self.inputs.bval_file)
+        agg_cluster = AgglomerativeClustering(
+            n_clusters=None,
+            distance_threshold=2 * max_distance,
+            linkage="complete",
+        ).fit(bvals.reshape(-1, 1))
+
+        # Check that the correct number of input shells are detected
+        if isdefined(self.inputs.expected_n_input_shells):
+            if not self.inputs.expected_n_input_shells == agg_cluster.n_clusters_:
+                howmuch, newthresh = (
+                    ("too many", "higher")
+                    if agg_cluster.n_clusters_ > self.inputs.expected_n_input_shells
+                    else ("too few", "lower")
+                )
+                raise Exception(
+                    f"Expected to find {self.inputs.expected_n_input_shells} shells in "
+                    f"the input data. Instead we found {agg_cluster.n_clusters_}. Having "
+                    f"{howmuch} shells detected means you may need to adjust the"
+                    f"bval_distance_cutoff parameter to be {newthresh}."
+                )
+
+        # Ensure that at lease 1 b>0 and one b=0 shell are selected
+        select_shell_bs = self.inputs.requested_shell_bvals
+        if len(select_shell_bs) < 2:
+            if select_shell_bs[0] < max_distance:
+                LOGGER.critical("No effectively b>0 shells are selected.")
+            else:
+                LOGGER.warning("Adding a b=0 shell to the selection.")
+                select_shell_bs.append(0)
+
+        # Make sure the shells are unique
+        select_shell_bs = np.array(sorted(select_shell_bs))
+        shell_distances =
+
+
+
+        return runtime
+
+
+def _select_shell_by_bval(desired_bval, distance_max, bvals, bval_assignments=None):
+    """Find indices where bvals are within distance_max of desired_bval.
+
+    If bval_assignments is defined,
+    """
+
+
+class _RemoveDuplicatesInputSpec(BaseInterfaceInputSpec):
     dwi_file = File(exists=True, mandatory=True)
     bval_file = File(exists=True, mandatory=True)
     bvec_file = File(exists=True, mandatory=True)
@@ -27,7 +102,7 @@ class RemoveDuplicatesInputSpec(BaseInterfaceInputSpec):
     expected_directions = traits.Int()
 
 
-class RemoveDuplicatesOutputSpec(TraitedSpec):
+class _RemoveDuplicatesOutputSpec(TraitedSpec):
     dwi_file = File(exists=True)
     bval_file = File(exists=True)
     bvec_file = File(exists=True)
@@ -35,8 +110,8 @@ class RemoveDuplicatesOutputSpec(TraitedSpec):
 
 
 class RemoveDuplicates(SimpleInterface):
-    input_spec = RemoveDuplicatesInputSpec
-    output_spec = RemoveDuplicatesOutputSpec
+    input_spec = _RemoveDuplicatesInputSpec
+    output_spec = _RemoveDuplicatesOutputSpec
 
     def _run_interface(self, runtime):
         bvecs = np.loadtxt(self.inputs.bvec_file).T

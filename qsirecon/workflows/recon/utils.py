@@ -14,7 +14,7 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ...interfaces import ConformDwi
 from ...interfaces.bids import DerivativesDataSink
-from ...interfaces.gradients import RemoveDuplicates
+from ...interfaces.gradients import RemoveDuplicates, GradientSelect
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.mrtrix import MRTrixGradientTable
 from ...interfaces.recon_scalars import OrganizeScalarData
@@ -74,6 +74,37 @@ def init_discard_repeated_samples_wf(
             ('bval_file', 'bval_file'),
             ('bvec_file', 'bvec_file')]),
         (discard_repeats, outputnode, [
+            ('dwi_file', 'dwi_file'),
+            ('bval_file', 'bval_file'),
+            ('bvec_file', 'bvec_file')])
+    ])  # fmt:skip
+
+    return workflow
+
+
+def init_gradient_select_wf(
+    inputs_dict,
+    name="gradient_select_wf",
+    qsirecon_suffix="",
+    params={},
+):
+    """Remove a sample if a similar direction/gradient has already been sampled."""
+    inputnode = pe.Node(
+        niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
+    )
+    outputnode = pe.Node(
+        niu.IdentityInterface(fields=["dwi_file", "bval_file", "bvec_file", "local_bvec_file"]),
+        name="outputnode",
+    )
+    workflow = Workflow(name=name)
+
+    gradient_select = pe.Node(GradientSelect(**params), name="gradient_select")
+    workflow.connect([
+        (inputnode, gradient_select, [
+            ('dwi_file', 'dwi_file'),
+            ('bval_file', 'bval_file'),
+            ('bvec_file', 'bvec_file')]),
+        (gradient_select, outputnode, [
             ('dwi_file', 'dwi_file'),
             ('bval_file', 'bval_file'),
             ('bvec_file', 'bvec_file')])
