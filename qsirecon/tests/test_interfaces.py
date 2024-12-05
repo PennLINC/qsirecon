@@ -61,7 +61,7 @@ def test_shell_selection(data_dir, working_dir):
         _find_shells(dsi_bval, 100)
 
     # Some other assorted test schemes that should fail
-    nonshelled_schemes = ["HASC55-1", "HASC55-2", "HASC92", "RAND57"]
+    nonshelled_schemes = ["HASC55-1", "HASC55-2", "HASC92", "RAND57", "Q7"]
     for scheme in nonshelled_schemes:
         bval_file = Path(get_test_data_path()) / f"{scheme}.bval"
         test_bvals = np.loadtxt(bval_file)

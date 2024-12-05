@@ -176,9 +176,10 @@ def _find_shells(bvals, max_distance):
     ).fit(X)
     shells = agg_cluster.labels_
 
+    # Introduce a new check:
     score = silhouette_score(X, shells)
     if score < 0.8:
-        print("Silhouette score is low. Is this is a DSI scheme?")
+        raise Exception("Silhouette score is low. Is this is a DSI scheme?")
 
     # Do the same check as mrtrix
     max_shells = np.sqrt(np.sum(bvals > max_distance))
