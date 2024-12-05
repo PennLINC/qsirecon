@@ -1,11 +1,11 @@
 import logging
+
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
 
 from ... import config
 from ...engine import Workflow
 from ...interfaces.interchange import recon_workflow_input_fields
-
 from .dsi_studio import (
     init_dsi_studio_autotrack_wf,
     init_dsi_studio_connectivity_wf,
@@ -97,23 +97,35 @@ def init_singleshell_benchmarking_wf(
         AggregateAutoTrackResults(expected_bundles=bundle_names), name="aggregate_csd_atk_results"
     )
 
-    convert_gqi_to_tck = pe.MapNode(DSIStudioTrkToTck(), name="convert_gqi_to_tck", iterfield="trk_file")
-    convert_ss3t_to_tck = pe.MapNode(DSIStudioTrkToTck(), name="convert_ss3t_to_tck", iterfield="trk_file")
-    convert_csd_to_tck = pe.MapNode(DSIStudioTrkToTck(), name="convert_csd_to_tck", iterfield="trk_file")
+    convert_gqi_to_tck = pe.MapNode(
+        DSIStudioTrkToTck(), name="convert_gqi_to_tck", iterfield="trk_file"
+    )
+    convert_ss3t_to_tck = pe.MapNode(
+        DSIStudioTrkToTck(), name="convert_ss3t_to_tck", iterfield="trk_file"
+    )
+    convert_csd_to_tck = pe.MapNode(
+        DSIStudioTrkToTck(), name="convert_csd_to_tck", iterfield="trk_file"
+    )
 
     # Save the bundle csv
     ds_gqi_bundle_csv = pe.Node(
-        ReconDerivativesDataSink(suffix="bundlestats", qsirecon_suffix=f"{qsirecon_suffix}_part-GQI"),
+        ReconDerivativesDataSink(
+            suffix="bundlestats", qsirecon_suffix=f"{qsirecon_suffix}_part-GQI"
+        ),
         name="ds_gqi_bundle_csv",
         run_without_submitting=True,
     )
     ds_ss3t_bundle_csv = pe.Node(
-        ReconDerivativesDataSink(suffix="bundlestats", qsirecon_suffix=f"{qsirecon_suffix}_part-SS3T"),
+        ReconDerivativesDataSink(
+            suffix="bundlestats", qsirecon_suffix=f"{qsirecon_suffix}_part-SS3T"
+        ),
         name="ds_ss3t_bundle_csv",
         run_without_submitting=True,
     )
     ds_csd_bundle_csv = pe.Node(
-        ReconDerivativesDataSink(suffix="bundlestats", qsirecon_suffix=f"{qsirecon_suffix}_part-CSD"),
+        ReconDerivativesDataSink(
+            suffix="bundlestats", qsirecon_suffix=f"{qsirecon_suffix}_part-CSD"
+        ),
         name="ds_csd_bundle_csv",
         run_without_submitting=True,
     )

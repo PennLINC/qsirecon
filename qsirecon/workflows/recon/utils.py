@@ -14,7 +14,7 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ...interfaces import ConformDwi
 from ...interfaces.bids import DerivativesDataSink
-from ...interfaces.gradients import RemoveDuplicates, GradientSelect
+from ...interfaces.gradients import GradientSelect, RemoveDuplicates
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.mrtrix import MRTrixGradientTable
 from ...interfaces.recon_scalars import OrganizeScalarData

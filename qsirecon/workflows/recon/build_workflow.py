@@ -27,7 +27,12 @@ from .mrtrix import (
 from .scalar_mapping import init_scalar_to_bundle_wf, init_scalar_to_template_wf
 from .steinhardt import init_steinhardt_order_param_wf
 from .tortoise import init_tortoise_estimator_wf
-from .utils import init_conform_dwi_wf, init_discard_repeated_samples_wf, init_test_wf
+from .utils import (
+    init_conform_dwi_wf,
+    init_discard_repeated_samples_wf,
+    init_gradient_select_wf,
+    init_test_wf,
+)
 
 
 def _check_repeats(nodelist):
@@ -272,6 +277,8 @@ def workflow_from_spec(inputs_dict, node_spec):
     else:
         if node_spec["action"] == "discard_repeated_samples":
             return init_discard_repeated_samples_wf(**kwargs)
+        if node_spec["action"] == "select_gradients":
+            return init_gradient_select_wf(**kwargs)
         if node_spec["action"] == "conform":
             return init_conform_dwi_wf(**kwargs)
         if node_spec["action"] == "mif_to_fib":
