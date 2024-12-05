@@ -166,14 +166,21 @@ def _find_shells(bvals, max_distance):
 
     import pandas as pd
     from sklearn.cluster import AgglomerativeClustering
+    from sklearn.metrics import silhouette_score
 
+    X = bvals.reshape(-1, 1)
     agg_cluster = AgglomerativeClustering(
         n_clusters=None,
         distance_threshold=2 * max_distance,
         linkage="complete",
-    ).fit(bvals.reshape(-1, 1))
+    ).fit(X)
+    shells = agg_cluster.labels_
+    
+    score = silhouette_score(X, shells)
+    if score < 0.8:
+        print('Silhouette score is low. Is this is a DSI scheme?')
 
-    bval_df = pd.DataFrame({"bvalue": bvals, "assignment": agg_cluster.labels_})
+    bval_df = pd.DataFrame({"bvalue": bvals, "assignment": shells})
     shell_df = bval_df.groupby("assignment", as_index=False).agg({"bvalue": "median"})
     bval_df["assigned_shell"] = bval_df["assignment"].replace(
         shell_df["assignment"].tolist(), shell_df["bvalue"].tolist()
