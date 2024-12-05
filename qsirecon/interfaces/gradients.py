@@ -382,11 +382,13 @@ def subset_dwi(
     nim.index_img(original_nifti, indices).to_filename(new_nifti)
 
     # If there is a b file, subset and write it
+    new_b = None
     if original_b is not None:
         new_b = fname_presuffix(original_b, newpath=newdir, suffix=suffix)
         _select_lines(original_b, new_b, indices)
 
     # If there is a dsi studio btable file, subset and write it
+    new_btable = None
     if original_btable is not None:
         new_btable = fname_presuffix(original_btable, newpath=newdir, suffix=suffix)
         _select_lines(original_btable, new_btable, indices)
