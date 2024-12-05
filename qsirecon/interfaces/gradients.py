@@ -175,10 +175,10 @@ def _find_shells(bvals, max_distance):
         linkage="complete",
     ).fit(X)
     shells = agg_cluster.labels_
-    
+
     score = silhouette_score(X, shells)
     if score < 0.8:
-        print('Silhouette score is low. Is this is a DSI scheme?')
+        print("Silhouette score is low. Is this is a DSI scheme?")
 
     bval_df = pd.DataFrame({"bvalue": bvals, "assignment": shells})
     shell_df = bval_df.groupby("assignment", as_index=False).agg({"bvalue": "median"})
