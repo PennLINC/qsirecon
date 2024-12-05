@@ -312,7 +312,7 @@ def test_amico_noddi(data_dir, output_dir, working_dir):
     """
     TEST_NAME = "amico_noddi"
 
-    dataset_dir = download_test_data("singleshell_output", data_dir)
+    dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
     dataset_dir = os.path.join(dataset_dir, "qsiprep")
     out_dir = os.path.join(output_dir, TEST_NAME)

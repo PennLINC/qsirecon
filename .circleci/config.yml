@@ -468,7 +468,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: singleshell_output-01
+          key: multishell_output-01
       - run: *runinstall
       - run:
           name: Test the DIPY recon workflows
@@ -688,7 +688,7 @@ workflows:
 
       - Recon_AMICO:
           requires:
-            - download_singleshell_output
+            - download_multishell_output
           filters:
             tags:
               only: /.*/

@@ -180,6 +180,11 @@ def _find_shells(bvals, max_distance):
     if score < 0.8:
         print("Silhouette score is low. Is this is a DSI scheme?")
 
+    # Do the same check as mrtrix
+    max_shells = np.sqrt(np.sum(bvals > max_distance))
+    if agg_cluster.n_clusters_ > max_shells:
+        raise Exception("Too many possible shells detected.")
+
     bval_df = pd.DataFrame({"bvalue": bvals, "assignment": shells})
     shell_df = bval_df.groupby("assignment", as_index=False).agg({"bvalue": "median"})
     bval_df["assigned_shell"] = bval_df["assignment"].replace(
