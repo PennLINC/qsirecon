@@ -22,8 +22,8 @@ class _GradientSelectInputSpec(BaseInterfaceInputSpec):
     dwi_file = File(exists=True, mandatory=True)
     bval_file = File(exists=True, mandatory=True)
     bvec_file = File(exists=True, mandatory=True)
-    b_file = File(exists=True, mandatory=True)
-    btable_file = File(exists=True, mandatory=True)
+    b_file = File(exists=True)
+    btable_file = File(exists=True)
     bval_distance_cutoff = traits.Float(5.0, usedefault=True)
     expected_n_input_shells = traits.Int()
     requested_shells = InputMultiObject(
@@ -106,10 +106,10 @@ def _select_gradients(
             )
 
     # Ensure that at lease 1 b>0 and one b=0 shell are selected
-    select_shell_bs = _parse_shell_selection(requested_gradients, bval_df)
+    select_shell_bs = _parse_shell_selection(requested_gradients, bval_df, max_distance)
 
     # Make sure the shells are unique (no overlap when accounting for allowed distances)
-    shell_distances = pairwise_distances(select_shell_bs)
+    shell_distances = pairwise_distances(select_shell_bs.reshape(-1, 1))
     if np.any(shell_distances[np.triu_indices_from(shell_distances, k=1)] < max_distance):
         raise Exception(
             "Shells and bval_distance_cutoff have overlap. Choose a lower "
@@ -159,7 +159,7 @@ def _parse_shell_selection(requested_bvals, bval_df, max_distance):
             LOGGER.warning("Adding a b=0 shell to the selection.")
             numeric_bvals.append(0)
 
-    return sorted(numeric_bvals)
+    return np.array(sorted(numeric_bvals))
 
 
 def _find_shells(bvals, max_distance):
@@ -186,7 +186,7 @@ def _find_shells(bvals, max_distance):
         shell_df["assignment"].tolist(), shell_df["bvalue"].tolist()
     )
     bval_df["shell_num"] = bval_df["assigned_shell"].rank(method="dense")
-    bval_df.drop("assigned_shell", inplace=True)
+    bval_df.drop(columns=["assignment"], inplace=True)
 
     return bval_df
 
@@ -383,7 +383,7 @@ def subset_dwi(
     # If there is a dsi studio btable file, subset and write it
     if original_btable is not None:
         new_btable = fname_presuffix(original_btable, newpath=newdir, suffix=suffix)
-        _select_lines(original_btable, new_btable)
+        _select_lines(original_btable, new_btable, indices)
     return new_bval, new_bvec, new_b, new_btable, new_nifti
 
 

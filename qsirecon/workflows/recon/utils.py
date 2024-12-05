@@ -72,10 +72,14 @@ def init_discard_repeated_samples_wf(
         (inputnode, discard_repeats, [
             ('dwi_file', 'dwi_file'),
             ('bval_file', 'bval_file'),
+            ('b_file', 'b_file'),
+            ('btable_file', 'btable_file'),
             ('bvec_file', 'bvec_file')]),
         (discard_repeats, outputnode, [
             ('dwi_file', 'dwi_file'),
             ('bval_file', 'bval_file'),
+            ('b_file', 'b_file'),
+            ('btable_file', 'btable_file'),
             ('bvec_file', 'bvec_file')])
     ])  # fmt:skip
 
@@ -103,10 +107,14 @@ def init_gradient_select_wf(
         (inputnode, gradient_select, [
             ('dwi_file', 'dwi_file'),
             ('bval_file', 'bval_file'),
+            ('b_file', 'b_file'),
+            ('btable_file', 'btable_file'),
             ('bvec_file', 'bvec_file')]),
         (gradient_select, outputnode, [
             ('dwi_file', 'dwi_file'),
             ('bval_file', 'bval_file'),
+            ('b_file', 'b_file'),
+            ('btable_file', 'btable_file'),
             ('bvec_file', 'bvec_file')])
     ])  # fmt:skip
 
