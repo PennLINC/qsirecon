@@ -12,7 +12,7 @@ from qsirecon.tests.utils import download_test_data, get_test_data_path
 
 
 @pytest.mark.interfaces
-def test_shell_selection(data_dir, working_dir):
+def test_shell_selection(data_dir):
     """Run reconstruction workflow tests."""
     dwi_prefix = "sub-ABCD_acq-10per000_space-T1w_desc-preproc_dwi"
     data_dir = "/home/matt/projects/qsirecon/.circleci/data"
@@ -44,6 +44,9 @@ def test_shell_selection(data_dir, working_dir):
     # before those were written in the outputs.
     assert not Path(dwi_prefix + "_selected.txt").exists()
 
+
+@pytest.mark.interfaces
+def test_real_shells():
     # Check some other sequences we might run into
     # ABCD has 4 shells + b=0s
     abcd_bval = np.loadtxt(load_data("schemes/ABCD.bval"))
@@ -57,14 +60,21 @@ def test_shell_selection(data_dir, working_dir):
 
     # DSIQ5 should raise an exception
     dsi_bval = np.loadtxt(load_data("schemes/DSIQ5.bval"))
-    with pytest.raises(Exception):
+    with pytest.raises(Exception, match="Too many possible shells detected."):
         _find_shells(dsi_bval, 100)
 
     # Some other assorted test schemes that should fail
-    nonshelled_schemes = ["HASC55-1", "HASC55-2", "HASC92", "RAND57", "Q7"]
+    nonshelled_schemes = ["HASC55-1", "HASC55-2", "HASC92", "RAND57"]
     for scheme in nonshelled_schemes:
         bval_file = Path(get_test_data_path()) / f"{scheme}.bval"
         test_bvals = np.loadtxt(bval_file)
 
-        with pytest.raises(Exception):
+        with pytest.raises(Exception, match="Too many possible shells detected."):
             _find_shells(test_bvals, 100)
+
+    # DSIQ7 actually _passes_ the mrtrix test, but failes silhouette
+    bval_file = Path(get_test_data_path()) / "Q7.bval"
+    test_bvals = np.loadtxt(bval_file)
+
+    with pytest.raises(Exception, match="Silhouette score is low. Is this is a DSI scheme?"):
+        _find_shells(test_bvals, 100)
