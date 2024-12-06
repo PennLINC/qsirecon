@@ -2,8 +2,16 @@ anatomical:
 - mrtrix_5tt_hsvs
 name: mrtrix_singleshell_ss3_hsvst
 nodes:
--   action: csd
+-   action: select_gradients
     input: qsirecon
+    name: select_single_shell
+    parameters:
+        requested_shells:
+            - 0
+            - highest
+        bval_distance_cutoff: 100
+-   action: csd
+    input: select_single_shell
     name: ss3t_csd
     parameters:
         fod:

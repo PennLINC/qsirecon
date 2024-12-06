@@ -249,6 +249,25 @@ jobs:
       - store_artifacts:
           path: /src/qsirecon/.circleci/out/multises_post1_qsiprep_reportsession/
 
+  Recon_Interfaces:
+    <<: *dockersetup
+    steps:
+      - checkout
+      - restore_cache:
+          key: multishell_output-01
+      - run: *runinstall
+      - run:
+          name: Pytest the recon interfaces
+          no_output_timeout: 1h
+          command: |
+            pytest -rP -o log_cli=true -m "interfaces" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
+            mkdir /src/coverage
+            mv /src/qsirecon/.coverage /src/coverage/.coverage.recon_interfaces
+      - persist_to_workspace:
+          root: /src/coverage/
+          paths:
+            - .coverage.recon_interfaces
+
   Recon_MRtrix3:
     <<: *dockersetup
     steps:
@@ -632,6 +651,13 @@ workflows:
             tags:
               only: /.*/
 
+      - Recon_Interfaces:
+          requires:
+            - download_multishell_output
+          filters:
+            tags:
+              only: /.*/
+
       - Recon_AutoTrack:
           requires:
             - download_multishell_output
@@ -693,6 +719,7 @@ workflows:
             - Recon_3Tissue_Singleshell_ACT
             - Recon_3Tissue_Singleshell_NoACT
             - Recon_MRtrix3
+            - Recon_Interfaces
             - Recon_AutoTrack
             - Recon_Tortoise
             - Recon_DIPY_MAPMRI
@@ -717,6 +744,7 @@ workflows:
             - Recon_3Tissue_Singleshell_ACT
             - Recon_3Tissue_Singleshell_NoACT
             - Recon_MRtrix3
+            - Recon_Interfaces
             - Recon_msmt_Multishell_HSVS
             - Recon_AutoTrack
             - Recon_Tortoise
