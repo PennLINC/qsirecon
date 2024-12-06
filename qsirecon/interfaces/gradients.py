@@ -145,8 +145,8 @@ def _parse_shell_selection(requested_bvals, bval_df, max_distance):
             ]
             if len(ok_shells.unique()) > 1:
                 raise Exception(
-                    f"Unable to unambiguously select b={requested_bval}."
-                    f"instead select from {bval_df.assigned_shells.unique().tolist()}"
+                    f"Unable to unambiguously select b={requested_bval}. "
+                    f"Instead select from {bval_df.assigned_shells.unique().tolist()}"
                 )
 
             numeric_bvals.append(ok_shells.iloc[0])
