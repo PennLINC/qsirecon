@@ -1,0 +1,69 @@
+name: FODAutoTrack
+nodes:
+
+    # Fit the actual GQI model to the data
+-   action: reconstruction
+    input: qsirecon
+    name: dsistudio_gqi
+    parameters:
+        method: gqi
+    qsirecon_suffix: DSIStudio
+    software: DSI Studio
+
+    # Performs the registration of QA+ISO to template
+    # also passes through the GQI fib/etc
+-   action: autotrack_registration
+    software: DSI Studio
+    input: dsistudio_gqi
+    qsirecon_suffix: DSIStudio
+
+    # Select just one shell + b=0 for autotrack
+-   action: select_gradients
+    input: qsirecon
+    name: select_single_shell
+    parameters:
+        requested_shells:
+            - 0
+            - highest
+        bval_distance_cutoff: 100
+
+    # Do SS3T on the single-shell data
+-   action: csd
+    input: select_single_shell
+    name: ss3t_csd
+    parameters:
+        fod:
+            algorithm: ss3t
+        mtnormalize: true
+        response:
+            algorithm: dhollander
+
+-   action: fod_convert
+    name: create_fod_fib
+    # to include the fib file and the map file
+    input: autotrack_registration
+    csd_input: ss3t_csd
+    # outputs include the FOD fib file and the map file is passed through
+
+-   action: autotrack
+    input: autotrack_registration
+    name: autotrack_gqi
+    parameters:
+        tolerance: 22,26,30
+        track_id: Association,Projection,Commissure,Cerebellum,CranialNerve
+        track_voxel_ratio: 2.0
+        yield_rate: 1.0e-06
+    qsirecon_suffix: GQIAutoTrack
+    software: DSI Studio
+
+
+-   action: autotrack
+    input: create_fod_fib
+    name: autotrack_fod
+    parameters:
+        tolerance: 22,26,30
+        track_id: Association,Projection,Commissure,Cerebellum,CranialNerve
+        track_voxel_ratio: 2.0
+        yield_rate: 1.0e-06
+    qsirecon_suffix: SS3TAutoTrack
+    software: DSI Studio

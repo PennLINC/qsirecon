@@ -1,6 +1,7 @@
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
+from scipy import special
 
 from ... import config
 from ...interfaces.interchange import default_input_set, recon_workflow_input_fields
@@ -183,6 +184,42 @@ def init_dwi_recon_workflow(
                 "input_metadata",
                 node,
                 "inputnode.mapping_metadata")  # fmt:skip
+
+        # There are some special cases where we need a second input node.
+        if "input_csd" in node_spec:
+            csd_input = node_spec["csd_input"]
+            config.loggers.workflow.info(f"Using csd inputs from {csd_input} in {node_name}.")
+
+            special_upstream_node = workflow.get_node(csd_input)
+            special_upstream_outputnode_name = f"{csd_input}.outputnode"
+            special_upstream_outputnode = workflow.get_node(special_upstream_outputnode_name)
+            special_upstream_outputs = set(special_upstream_outputnode.outputs.get().keys())
+
+            downstream_inputnode_name = f"{node_name}.inputnode"
+            downstream_inputnode = workflow.get_node(downstream_inputnode_name)
+            downstream_inputs = set(downstream_inputnode.outputs.get().keys())
+
+            connect_from_special_upstream = special_upstream_outputs.intersection(
+                downstream_inputs
+            )
+            config.loggers.workflow.info(
+                "connecting %s from %s to %s",
+                connect_from_special_upstream,
+                special_upstream_node,
+                node,
+            )
+            workflow.connect([
+                (
+                    special_upstream_node,
+                    node,
+                    _as_connections(
+                        connect_from_special_upstream - set(("mapping_metadata",)),
+                        src_prefix='outputnode.',
+                        dest_prefix='inputnode.',
+                    ),
+                ),
+            ])  # fmt:skip
+            _check_repeats(workflow.list_node_names())
 
     # Set the source_file for any datasinks
     for node in workflow.list_node_names():
