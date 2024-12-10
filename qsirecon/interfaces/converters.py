@@ -95,7 +95,7 @@ class FODtoFIBGZ(SimpleInterface):
             num_fibers=self.inputs.num_fibers,
             unit_odf=self.inputs.unit_odf,
         )
-        os.remove("amplitudes.nii")
+        os.remove(odf_amplitudes_nii)
         return runtime
 
 
@@ -211,6 +211,34 @@ class DSIStudioTrkToTck(SimpleInterface):
         return runtime
 
 
+class _MergeFODGQIFibsInputSpec(FODtoFIBGZInputSpec):
+    fibgz_map = File(exists=True)
+    csd_fib_file = File(exists=True, mandatory=True)
+    reference_fib_file = File(exists=True, mandatory=True)
+
+
+class _MergeFODGQIFibsOutputSpec(TraitedSpec):
+    fibgz = File(exists=True, mandatory=True)
+    fibgz_map = File(exists=True)
+
+
+class MergeFODGQIFibs(SimpleInterface):
+    input_spec = _MergeFODGQIFibsInputSpec
+    output_spec = _MergeFODGQIFibsOutputSpec
+
+    def _run_interface(self, runtime):
+        merged_fib_file = fname_presuffix(
+            self.inputs.reference_fib_file, suffix="FOD", newpath=runtime.cwd
+        )
+        combine_gqi_and_csd_fib_files(
+            path_gqi_fib=self.inputs.reference_fib_file,
+            path_fod_fib=self.inputs.csd_fib_file,
+            merged_fib=merged_fib_file,
+        )
+
+        return runtime
+
+
 def get_dsi_studio_ODF_geometry(odf_key):
     mat_path = pkgr("qsirecon", "data/odfs.mat")
     m = loadmat(mat_path)
@@ -224,6 +252,41 @@ def popen_run(arg_list):
     out, err = cmd.communicate()
     LOGGER.info(out)
     LOGGER.info(err)
+
+
+def combine_gqi_and_csd_fib_files(path_gqi_fib: str, path_fod_fib: str, merged_fib: str):
+    """
+    Combine the GQI and CSD .fib-files such that the new CSD fib file contains ODF information
+    from the old CSD file and DTI maps from the GQI file.
+
+    Args:
+      path_gqi_file: Full path to the GQI file
+      path_csd_file: Full path to the csd file. This will be overwritten with the updated csd file.
+    """
+
+    gqi_data = loadmat(path_gqi_fib, appendmat=False)
+    fod_data = loadmat(path_fod_fib, appendmat=False)
+    merged_data = gqi_data.copy()
+
+    # Remove any of the fixel-related variables from the old GQI fib
+    for gqi_key in gqi_data.keys():
+        if (
+            re.match(r"odf\d+", gqi_key)
+            or re.match(r"fa\d+", gqi_key)
+            or re.match(r"index\d+", gqi_key)
+        ):
+            del merged_data[gqi_key]
+    # Copy in the fixel-related variables from the FOD fib
+    for fod_key in fod_data.keys():
+        if (
+            re.match(r"odf\d+", fod_key)
+            or re.match(r"fa\d+", fod_key)
+            or re.match(r"index\d+", fod_key)
+        ):
+            merged_data[fod_key] = fod_data[fod_key]
+
+    savemat(merged_fib, merged_data, format="4", appendmat=False)
+    return
 
 
 def amplitudes_to_fibgz(

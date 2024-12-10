@@ -14,7 +14,7 @@ import nipype.pipeline.engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ...interfaces.bids import DerivativesDataSink
-from ...interfaces.converters import FODtoFIBGZ
+from ...interfaces.converters import FODtoFIBGZ, MergeFODGQIFibs
 from ...interfaces.images import ConformDwi
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...utils.bids import clean_datasinks
@@ -89,6 +89,78 @@ def init_fibgz_to_mif_wf(name="fibgz_to_mif", qsirecon_suffix="", params={}):
         (inputnode, convert_to_fib, [('mif_file', 'mif_file')]),
         (convert_to_fib, outputnode, [('fib_file', 'fib_file')])
     ])  # fmt:skip
+
+    return clean_datasinks(workflow, qsirecon_suffix)
+
+
+def init_fod_fib_wf(inputs_dict, name="fod_fib", qsirecon_suffix="", params={}):
+    """Converts MRTrix FODs to a DSI Studio fib file for the FOD-AutoTrack method.
+
+    Inputs
+
+        fod_sh_mif
+            MRTrix format mif file containing sh coefficients representing FODs.
+        fibgz
+            DSI Studio file containing a standard GQI reconstruction
+        fibgz_map
+            DSI Studio spatial normalization file.
+
+    Outputs
+
+        fibgz
+            DSI Studio fib file containing the FODs from the input ``mif_file``.
+        fibgz_map
+            DSI Studio spatial normalization file. Passed through unchanged, but renamed
+            to match ``fibgz`` so it will be recognized by DSI Studio.
+        recon_scalars
+            Ununsed.
+
+    """
+    inputnode = pe.Node(
+        niu.IdentityInterface(
+            fields=recon_workflow_input_fields + ["fod_sh_mif", "fibgz", "fibgz_map"]
+        ),
+        name="inputnode",
+    )
+    outputnode = pe.Node(
+        niu.IdentityInterface(fields=["fibgz", "fibgz_map", "recon_scalars"]), name="outputnode"
+    )
+    outputnode.inputs.recon_scalars = []
+    workflow = Workflow(name=name)
+
+    # Convert the FOD sh nifti into a valid fib file
+    convert_fod_to_fib = pe.Node(FODtoFIBGZ(), name="convert_fod_to_fib")
+    # Merge the reference fib file and the FOD fib file
+    merge_fod_and_qgi_fibs = pe.Node(MergeFODGQIFibs(), name="merge_fod_and_gqi_fibs")
+
+    workflow.connect([
+        (inputnode, convert_fod_to_fib, [
+            ('fod_sh_mif', 'mif_file'),
+            ('fibgz', 'fib_file'),
+            ('dwi_mask', 'mask_file')]),
+        (inputnode, merge_fod_and_qgi_fibs, [
+            ('fibgz', 'reference_fib_file'),
+            ('fibgz_map', 'fibgz_map')]),
+        (convert_fod_to_fib, merge_fod_and_qgi_fibs, [('fibgz', 'csd_fib_file')]),
+        (merge_fod_and_qgi_fibs, outputnode, [
+            ('fibgz_map', 'fibgz_map'),
+            ('fibgz', 'fibgz'),
+        ])
+    ])  # fmt:skip
+
+    if qsirecon_suffix:
+        # Save the output in the outputs directory
+        ds_fibgz = pe.Node(
+            DerivativesDataSink(
+                dismiss_entities=("desc",),
+                extension=".fib.gz",
+                compress=True,
+            ),
+            name="ds_fibgz",
+            run_without_submitting=True,
+        )
+        workflow.connect(outputnode, 'fibgz',
+                         ds_fibgz, 'in_file')  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
