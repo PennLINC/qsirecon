@@ -12,10 +12,11 @@ nodes:
 
     # Performs the registration of QA+ISO to template
     # also passes through the GQI fib/etc
--   action: autotrack_registration
-    software: DSI Studio
-    input: dsistudio_gqi
-    qsirecon_suffix: DSIStudio
+# -   action: autotrack_registration
+#     software: DSI Studio
+#     name: autotrack_register
+#     input: dsistudio_gqi
+#     qsirecon_suffix: DSIStudio
 
     # Select just one shell + b=0 for autotrack
 -   action: select_gradients
@@ -29,6 +30,7 @@ nodes:
 
     # Do SS3T on the single-shell data
 -   action: csd
+    software: MRTrix3
     input: select_single_shell
     name: ss3t_csd
     parameters:
@@ -38,15 +40,15 @@ nodes:
         response:
             algorithm: dhollander
 
--   action: fod_convert
+-   action: fod_fib_merge
     name: create_fod_fib
     # to include the fib file and the map file
-    input: autotrack_registration
+    input: dsistudio_gqi
     csd_input: ss3t_csd
     # outputs include the FOD fib file and the map file is passed through
 
 -   action: autotrack
-    input: autotrack_registration
+    input: dsistudio_gqi
     name: autotrack_gqi
     parameters:
         tolerance: 22,26,30

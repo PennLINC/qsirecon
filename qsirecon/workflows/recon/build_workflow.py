@@ -6,7 +6,7 @@ from scipy import special
 from ... import config
 from ...interfaces.interchange import default_input_set, recon_workflow_input_fields
 from .amico import init_amico_noddi_fit_wf
-from .converters import init_mif_to_fibgz_wf, init_qsirecon_to_fsl_wf
+from .converters import init_fod_fib_wf, init_mif_to_fibgz_wf, init_qsirecon_to_fsl_wf
 from .dipy import (
     init_dipy_brainsuite_shore_recon_wf,
     init_dipy_dki_recon_wf,
@@ -70,7 +70,7 @@ def init_dwi_recon_workflow(
     nodes_to_add = []
     workflow_metadata_nodes = {}
     for node_spec in workflow_spec["nodes"]:
-        if not node_spec["name"]:
+        if not node_spec.get("name"):
             raise Exception(f"Node has no name [{node_spec}]")
 
         new_node = workflow_from_spec(
@@ -186,7 +186,7 @@ def init_dwi_recon_workflow(
                 "inputnode.mapping_metadata")  # fmt:skip
 
         # There are some special cases where we need a second input node.
-        if "input_csd" in node_spec:
+        if "csd_input" in node_spec:
             csd_input = node_spec["csd_input"]
             config.loggers.workflow.info(f"Using csd inputs from {csd_input} in {node_name}.")
 
@@ -330,6 +330,8 @@ def workflow_from_spec(inputs_dict, node_spec):
             return init_scalar_to_template_wf(**kwargs)
         if node_spec["action"] == "test_workflow":
             return init_test_wf(**kwargs)
+        if node_spec["action"] == "fod_fib_merge":
+            return init_fod_fib_wf(**kwargs)
 
     raise Exception("Unknown node %s" % node_spec)
 

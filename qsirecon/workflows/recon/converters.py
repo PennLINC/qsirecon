@@ -51,9 +51,7 @@ def init_mif_to_fibgz_wf(inputs_dict, name="mif_to_fibgz", qsirecon_suffix="", p
     workflow = Workflow(name=name)
     convert_to_fib = pe.Node(FODtoFIBGZ(), name="convert_to_fib")
     workflow.connect([
-        (inputnode, convert_to_fib, [
-            ('fod_sh_mif', 'mif_file'),
-            ('fibgz', 'fib_file')]),
+        (inputnode, convert_to_fib, [('fod_sh_mif', 'mif_file')]),
         (convert_to_fib, outputnode, [('fib_file', 'fibgz')]),
     ])  # fmt:skip
 
@@ -68,7 +66,7 @@ def init_mif_to_fibgz_wf(inputs_dict, name="mif_to_fibgz", qsirecon_suffix="", p
             name="ds_fibgz",
             run_without_submitting=True,
         )
-        workflow.connect(convert_to_fib, 'fib_file',
+        workflow.connect(convert_to_fib, 'fib',
                          ds_fibgz, 'in_file')  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)
@@ -136,12 +134,11 @@ def init_fod_fib_wf(inputs_dict, name="fod_fib", qsirecon_suffix="", params={}):
     workflow.connect([
         (inputnode, convert_fod_to_fib, [
             ('fod_sh_mif', 'mif_file'),
-            ('fibgz', 'fib_file'),
             ('dwi_mask', 'mask_file')]),
         (inputnode, merge_fod_and_qgi_fibs, [
             ('fibgz', 'reference_fib_file'),
             ('fibgz_map', 'fibgz_map')]),
-        (convert_fod_to_fib, merge_fod_and_qgi_fibs, [('fibgz', 'csd_fib_file')]),
+        (convert_fod_to_fib, merge_fod_and_qgi_fibs, [('fib_file', 'csd_fib_file')]),
         (merge_fod_and_qgi_fibs, outputnode, [
             ('fibgz_map', 'fibgz_map'),
             ('fibgz', 'fibgz'),

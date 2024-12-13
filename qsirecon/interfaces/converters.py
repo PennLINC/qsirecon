@@ -6,6 +6,7 @@ import os
 import os.path as op
 import re
 import subprocess
+from pathlib import Path
 
 import nibabel as nb
 import numpy as np
@@ -40,7 +41,7 @@ class FODtoFIBGZInputSpec(BaseInterfaceInputSpec):
     mask_file = File(exists=True)
     num_fibers = traits.Int(5, usedefault=True)
     unit_odf = traits.Bool(False, usedefault=True)
-    fib_file = File()
+    output_fib_file = File()
 
 
 class FODtoFIBGZOutputSpec(TraitedSpec):
@@ -54,10 +55,14 @@ class FODtoFIBGZ(SimpleInterface):
     def _run_interface(self, runtime):
         mif_file = self.inputs.mif_file
         mask_file = self.inputs.mask_file
-        if isdefined(self.inputs.fib_file):
-            output_fib_file = self.inputs.fib_file
-            if output_fib_file.endswith(".gz"):
-                output_fib_file = output_fib_file[:-3]
+        if isdefined(self.inputs.output_fib_file):
+            output_fib_path = Path(self.inputs.output_fib_file)
+            if output_fib_path.name.endswith(".gz"):
+                LOGGER.warning("A non-gzipped output will be written.")
+                output_fib_path.name = output_fib_path.name[:-3]
+            if not output_fib_path.is_absolute():
+                output_fib_file = str(Path(runtime.cwd) / output_fib_path)
+
         else:
             output_fib_file = fname_presuffix(
                 mif_file, newpath=runtime.cwd, suffix=".fib", use_ext=False
@@ -211,10 +216,10 @@ class DSIStudioTrkToTck(SimpleInterface):
         return runtime
 
 
-class _MergeFODGQIFibsInputSpec(FODtoFIBGZInputSpec):
-    fibgz_map = File(exists=True)
+class _MergeFODGQIFibsInputSpec(BaseInterfaceInputSpec):
     csd_fib_file = File(exists=True, mandatory=True)
     reference_fib_file = File(exists=True, mandatory=True)
+    fibgz_map = File(exists=True)
 
 
 class _MergeFODGQIFibsOutputSpec(TraitedSpec):
@@ -227,14 +232,17 @@ class MergeFODGQIFibs(SimpleInterface):
     output_spec = _MergeFODGQIFibsOutputSpec
 
     def _run_interface(self, runtime):
-        merged_fib_file = fname_presuffix(
-            self.inputs.reference_fib_file, suffix="FOD", newpath=runtime.cwd
-        )
+
+        # fname presuffix doesn't work with .fib.gz
+        fib_name = Path(self.inputs.reference_fib_file).name.replace(".odf.", ".odf.FOD.")
+        merged_fib_file = str(Path(runtime.cwd) / fib_name)
+
         combine_gqi_and_csd_fib_files(
             path_gqi_fib=self.inputs.reference_fib_file,
             path_fod_fib=self.inputs.csd_fib_file,
             merged_fib=merged_fib_file,
         )
+        self._results["fibgz"] = merged_fib_file
 
         return runtime
 
@@ -264,29 +272,25 @@ def combine_gqi_and_csd_fib_files(path_gqi_fib: str, path_fod_fib: str, merged_f
       path_csd_file: Full path to the csd file. This will be overwritten with the updated csd file.
     """
 
-    gqi_data = loadmat(path_gqi_fib, appendmat=False)
-    fod_data = loadmat(path_fod_fib, appendmat=False)
+    gqi_data = fast_load_fibgz(path_gqi_fib)
+    fod_data = fast_load_fibgz(path_fod_fib)
     merged_data = gqi_data.copy()
 
-    # Remove any of the fixel-related variables from the old GQI fib
     for gqi_key in gqi_data.keys():
         if (
             re.match(r"odf\d+", gqi_key)
             or re.match(r"fa\d+", gqi_key)
             or re.match(r"index\d+", gqi_key)
         ):
+            LOGGER.info(f"Deleting {gqi_key} from GQI data")
             del merged_data[gqi_key]
-    # Copy in the fixel-related variables from the FOD fib
-    for fod_key in fod_data.keys():
-        if (
-            re.match(r"odf\d+", fod_key)
-            or re.match(r"fa\d+", fod_key)
-            or re.match(r"index\d+", fod_key)
-        ):
-            merged_data[fod_key] = fod_data[fod_key]
+            if gqi_key in fod_data:
+                LOGGER.info(f"Copying {gqi_key} from FOD data")
+                merged_data[gqi_key] = fod_data[gqi_key]
+            else:
+                LOGGER.warning(f"Data for {gqi_key} not present in FOD Fib")
 
     savemat(merged_fib, merged_data, format="4", appendmat=False)
-    return
 
 
 def amplitudes_to_fibgz(
