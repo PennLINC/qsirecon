@@ -236,6 +236,9 @@ class MergeFODGQIFibs(SimpleInterface):
         # fname presuffix doesn't work with .fib.gz
         fib_name = Path(self.inputs.reference_fib_file).name.replace(".odf.", ".odf.FOD.")
         merged_fib_file = str(Path(runtime.cwd) / fib_name)
+        merged_fib_file = (
+            merged_fib_file if not merged_fib_file.endswith(".gz") else merged_fib_file[:-3]
+        )
 
         combine_gqi_and_csd_fib_files(
             path_gqi_fib=self.inputs.reference_fib_file,
@@ -276,7 +279,7 @@ def combine_gqi_and_csd_fib_files(path_gqi_fib: str, path_fod_fib: str, merged_f
     fod_data = fast_load_fibgz(path_fod_fib)
     merged_data = gqi_data.copy()
 
-    for gqi_key in gqi_data.keys():
+    for gqi_key in gqi_data:
         if (
             re.match(r"odf\d+", gqi_key)
             or re.match(r"fa\d+", gqi_key)
@@ -284,11 +287,14 @@ def combine_gqi_and_csd_fib_files(path_gqi_fib: str, path_fod_fib: str, merged_f
         ):
             LOGGER.info(f"Deleting {gqi_key} from GQI data")
             del merged_data[gqi_key]
-            if gqi_key in fod_data:
-                LOGGER.info(f"Copying {gqi_key} from FOD data")
-                merged_data[gqi_key] = fod_data[gqi_key]
-            else:
-                LOGGER.warning(f"Data for {gqi_key} not present in FOD Fib")
+    for fod_key in fod_data:
+        if (
+            re.match(r"odf\d+", fod_key)
+            or re.match(r"fa\d+", fod_key)
+            or re.match(r"index\d+", fod_key)
+        ):
+            LOGGER.info(f"Copying {fod_key} from FOD data")
+            merged_data[fod_key] = fod_data[fod_key]
 
     savemat(merged_fib, merged_data, format="4", appendmat=False)
 

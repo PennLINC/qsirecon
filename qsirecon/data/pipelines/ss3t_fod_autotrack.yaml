@@ -7,7 +7,7 @@ nodes:
     name: dsistudio_gqi
     parameters:
         method: gqi
-    qsirecon_suffix: DSIStudio
+    qsirecon_suffix: GQIAutoTrack
     software: DSI Studio
 
     # Performs the registration of QA+ISO to template
@@ -39,6 +39,7 @@ nodes:
         mtnormalize: true
         response:
             algorithm: dhollander
+    qsirecon_suffix: SS3TAutoTrack
 
 -   action: fod_fib_merge
     name: create_fod_fib
@@ -46,6 +47,7 @@ nodes:
     input: dsistudio_gqi
     csd_input: ss3t_csd
     # outputs include the FOD fib file and the map file is passed through
+    qsirecon_suffix: SS3TAutoTrack
 
 -   action: autotrack
     input: dsistudio_gqi
