@@ -1,7 +1,6 @@
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
-from scipy import special
 
 from ... import config
 from ...interfaces.interchange import default_input_set, recon_workflow_input_fields

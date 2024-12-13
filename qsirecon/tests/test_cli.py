@@ -27,6 +27,34 @@ nipype_config.enable_debug_mode()
 
 
 @pytest.mark.integration
+@pytest.mark.ss3t_fod_autotrack
+def test_mrtrix_singleshell_ss3t_fod_autotrack(data_dir, output_dir, working_dir):
+    """Test the ss3t FOD-based autotrack workflow.
+
+    Inputs
+    ------
+    - qsirecon single shell results
+    """
+    TEST_NAME = "ss3t_fod_autotrack"
+
+    dataset_dir = download_test_data("singleshell_output", data_dir)
+    dataset_dir = os.path.join(dataset_dir, "qsiprep")
+    out_dir = os.path.join(output_dir, TEST_NAME)
+    work_dir = os.path.join(working_dir, TEST_NAME)
+
+    parameters = [
+        dataset_dir,
+        out_dir,
+        "participant",
+        f"-w={work_dir}",
+        "--sloppy",
+        "--recon-spec=ss3t_fod_autotrack",
+    ]
+
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
+
+
+@pytest.mark.integration
 @pytest.mark.mrtrix_singleshell_ss3t_act
 def test_mrtrix_singleshell_ss3t_act(data_dir, output_dir, working_dir):
     """Run reconstruction workflow tests.
