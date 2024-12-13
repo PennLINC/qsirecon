@@ -147,6 +147,7 @@ distance of %02f in DSI Studio (version %s). """ % (
                 dismiss_entities=("desc",),
                 suffix="dwimap",
                 extension=".fib.gz",
+                model="gqi",
                 compress=True,
             ),
             name="ds_gqi_fibgz",

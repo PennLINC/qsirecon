@@ -7,16 +7,8 @@ nodes:
     name: dsistudio_gqi
     parameters:
         method: gqi
-    qsirecon_suffix: GQIAutoTrack
+    qsirecon_suffix: SS3TAutoTrack
     software: DSI Studio
-
-    # Performs the registration of QA+ISO to template
-    # also passes through the GQI fib/etc
-# -   action: autotrack_registration
-#     software: DSI Studio
-#     name: autotrack_register
-#     input: dsistudio_gqi
-#     qsirecon_suffix: DSIStudio
 
     # Select just one shell + b=0 for autotrack
 -   action: select_gradients
@@ -41,6 +33,24 @@ nodes:
             algorithm: dhollander
     qsirecon_suffix: SS3TAutoTrack
 
+    # Get 3D images of DSI Studio's scalar maps
+-   action: export
+    input: dsistudio_gqi
+    name: gqi_scalars
+    qsirecon_suffix: SS3TAutoTrack
+    software: DSI Studio
+
+# Uncomment to map scalar maps to template space
+# -   action: template_map
+#     input: qsirecon
+#     name: template_map
+#     parameters:
+#         interpolation: NearestNeighbor
+#     scalars_from:
+#     - gqi_scalars
+#     - dipy_dki
+#     software: qsirecon
+
 -   action: fod_fib_merge
     name: create_fod_fib
     # to include the fib file and the map file
@@ -48,18 +58,6 @@ nodes:
     csd_input: ss3t_csd
     # outputs include the FOD fib file and the map file is passed through
     qsirecon_suffix: SS3TAutoTrack
-
--   action: autotrack
-    input: dsistudio_gqi
-    name: autotrack_gqi
-    parameters:
-        tolerance: 22,26,30
-        track_id: Association,Projection,Commissure,Cerebellum,CranialNerve
-        track_voxel_ratio: 2.0
-        yield_rate: 1.0e-06
-    qsirecon_suffix: GQIAutoTrack
-    software: DSI Studio
-
 
 -   action: autotrack
     input: create_fod_fib

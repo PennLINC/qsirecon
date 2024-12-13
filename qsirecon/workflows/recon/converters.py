@@ -150,7 +150,9 @@ def init_fod_fib_wf(inputs_dict, name="fod_fib", qsirecon_suffix="", params={}):
         ds_fibgz = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
+                suffix="dwimap",
                 extension=".fib.gz",
+                model="ss3t",
                 compress=True,
             ),
             name="ds_fibgz",

@@ -145,7 +145,7 @@ jobs:
       - persist_to_workspace:
           root: /src/coverage/
           paths:
-            - /src/coverage/.coverage.ss3t_fod_autotrack
+            - .coverage.ss3t_fod_autotrack
       - store_artifacts:
           path: /src/qsirecon/.circleci/out/ss3t_fod_autotrack/
 
