@@ -1,3 +1,12 @@
+dataset_description.json
+derivatives
+derivatives/qsirecon-SS3TAutoTrack
+derivatives/qsirecon-SS3TAutoTrack/dataset_description.json
+derivatives/qsirecon-SS3TAutoTrack/logs
+derivatives/qsirecon-SS3TAutoTrack/logs/CITATION.bib
+derivatives/qsirecon-SS3TAutoTrack/logs/CITATION.html
+derivatives/qsirecon-SS3TAutoTrack/logs/CITATION.md
+derivatives/qsirecon-SS3TAutoTrack/logs/CITATION.tex
 derivatives/qsirecon-SS3TAutoTrack/sub-PNC
 derivatives/qsirecon-SS3TAutoTrack/sub-PNC.html
 derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi
@@ -47,4 +56,9 @@ derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_m
 derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-tensor_param-tyz_dwimap.nii.gz
 derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-tensor_param-tzz_dwimap.json
 derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-tensor_param-tzz_dwimap.nii.gz
+logs
+logs/CITATION.bib
+logs/CITATION.html
+logs/CITATION.md
+logs/CITATION.tex
 sub-PNC
