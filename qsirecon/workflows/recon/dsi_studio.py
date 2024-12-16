@@ -304,26 +304,20 @@ def init_dsi_studio_autotrack_registration_wf(
     outputnode.inputs.recon_scalars = []
 
     omp_nthreads = config.nipype.omp_nthreads
-    bundle_names = _get_dsi_studio_bundles(params.get("track_id", ""))
-    bundle_desc = (
-        "AutoTrack attempted to reconstruct the following bundles:\n  * "
-        + "\n  * ".join(bundle_names)
-        + "\n\n"
-    )
-    LOGGER.info(bundle_desc)
-
     workflow = Workflow(name=name)
 
-    # Run autotrack on only one bundle
-    actual_trk = pe.Node(
-        AutoTrack(num_threads=omp_nthreads, **params), name="actual_trk", n_procs=omp_nthreads
-    )  # An extra thread is needed
+    # Run autotrack on only one bundle. The important part is getting the map.gz
+    registration_atk = pe.Node(
+        AutoTrack(num_threads=omp_nthreads, track_id="Association_ArcuateFasciculusL"),
+        name="registration_atk",
+        n_procs=omp_nthreads,
+    )
 
     workflow.connect([
-        (inputnode, actual_trk, [
+        (inputnode, registration_atk, [
             ('fibgz', 'fib_file')]),
         (inputnode, outputnode, [('fibgz', 'fibgz')]),
-        (actual_trk, outputnode, [('map_file', 'fibgz_map')]),
+        (registration_atk, outputnode, [('map_file', 'fibgz_map')]),
     ])  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)
@@ -396,7 +390,7 @@ def init_dsi_studio_autotrack_wf(
         "DSI Studio (version %s) and bundle shape statistics were calculated [@autotrack]. "
         % DSI_STUDIO_VERSION
     )
-    model_name = params.get("model_name", "gqi")
+    model_name = params.pop("model", "gqi")
     omp_nthreads = config.nipype.omp_nthreads
     bundle_names = _get_dsi_studio_bundles(params.get("track_id", ""))
     bundle_desc = (
@@ -460,9 +454,9 @@ def init_dsi_studio_autotrack_wf(
     ds_mapping = pe.Node(
         DerivativesDataSink(
             dismiss_entities=("desc",),
-            suffix="mapping",
+            suffix="dwimap",
             model=model_name,
-            extension=".fib.gz.map.gz",
+            extension="map.gz",
             compress=True,
         ),
         name="ds_mapping",
@@ -472,10 +466,12 @@ def init_dsi_studio_autotrack_wf(
     workflow.connect([
         (inputnode, actual_trk, [
             ('fibgz', 'fib_file'),
-            ('fibgz_map', 'fibgz_map')]),
+            ('fibgz_map', 'map_file')]),
         (inputnode, aggregate_atk_results, [('dwi_file', 'source_file')]),
         (inputnode, convert_to_tck, [('dwi_file', 'reference_nifti')]),
-        (actual_trk, ds_mapping, [('map_file', 'in_file')]),
+        (actual_trk, ds_mapping, [
+            ('map_file', 'in_file'),
+            ('dsistudiotemplate', 'dsistudiotemplate')]),
         (actual_trk, aggregate_atk_results, [
             ("native_trk_files", "trk_files"),
             ("stat_files", "stat_files"),

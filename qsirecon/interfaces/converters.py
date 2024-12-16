@@ -5,6 +5,7 @@ import logging
 import os
 import os.path as op
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -245,7 +246,28 @@ class MergeFODGQIFibs(SimpleInterface):
             path_fod_fib=self.inputs.csd_fib_file,
             merged_fib=merged_fib_file,
         )
-        self._results["fibgz"] = merged_fib_file
+
+        # gzip the merged file
+        merged_fibgz_file = merged_fib_file + ".gz"
+
+        p = subprocess.Popen(
+            ["gzip", "-v", merged_fib_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        response = p.communicate()
+        if not p.returncode == 0:
+            raise Exception(f"Gzip exitted with code {p.returncode}: {response}")
+        if not Path(merged_fibgz_file).exists():
+            raise Exception(f"Failed to gzip {merged_fib_file}")
+        self._results["fibgz"] = merged_fibgz_file
+
+        # Handle the map file if it was provided
+        if isdefined(self.inputs.fibgz_map):
+            LOGGER.info(f"Creating new map file to match {merged_fib_file}.")
+            # DSI Studio stores the template of the mapping file like icbm_adult.map.gz
+            dsistudiotemplate = self.inputs.fibgz_map.split(".")[-3]
+            new_mapping_file = merged_fibgz_file + f".{dsistudiotemplate}.map.gz"
+            shutil.copyfile(self.inputs.fibgz_map, new_mapping_file)
+            self._results["fibgz_map"] = new_mapping_file
 
         return runtime
 

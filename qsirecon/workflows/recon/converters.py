@@ -152,14 +152,13 @@ def init_fod_fib_wf(inputs_dict, name="fod_fib", qsirecon_suffix="", params={}):
                 dismiss_entities=("desc",),
                 suffix="dwimap",
                 extension=".fib.gz",
-                model="ss3t",
+                model=params.get("model", "csd"),
                 compress=True,
             ),
             name="ds_fibgz",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, 'fibgz',
-                         ds_fibgz, 'in_file')  # fmt:skip
+        workflow.connect(outputnode, 'fibgz', ds_fibgz, 'in_file')  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)
 

@@ -13,6 +13,7 @@ from .dipy import (
 )
 from .dsi_studio import (
     init_dsi_studio_autotrack_wf,
+    init_dsi_studio_autotrack_registration_wf,
     init_dsi_studio_connectivity_wf,
     init_dsi_studio_export_wf,
     init_dsi_studio_recon_wf,
@@ -271,6 +272,8 @@ def workflow_from_spec(inputs_dict, node_spec):
             return init_dsi_studio_tractography_wf(**kwargs)
         if node_spec["action"] == "connectivity":
             return init_dsi_studio_connectivity_wf(**kwargs)
+        if node_spec["action"] == "autotrack_registration":
+            return init_dsi_studio_autotrack_registration_wf(**kwargs)
         if node_spec["action"] == "autotrack":
             return init_dsi_studio_autotrack_wf(**kwargs)
 
