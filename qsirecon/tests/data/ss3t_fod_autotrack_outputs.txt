@@ -10,10 +10,10 @@ derivatives/qsirecon-SS3TAutoTrack/logs/CITATION.tex
 derivatives/qsirecon-SS3TAutoTrack/sub-PNC
 derivatives/qsirecon-SS3TAutoTrack/sub-PNC.html
 derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi
-derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-gqi_bundle-AssociationArcuateFasciculusL_streamlines.tck.gz
-derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-gqi_bundle-AssociationArcuateFasciculusR_streamlines.tck.gz
-derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-gqi_bundlestats.csv
-derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-gqi_dwimap.fib.gz.icbm152_adult.map.gz
+derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-ss3t_bundle-AssociationArcuateFasciculusL_streamlines.tck.gz
+derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-ss3t_bundle-AssociationArcuateFasciculusR_streamlines.tck.gz
+derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-ss3t_bundlestats.csv
+derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-ss3t_dwimap.fib.gz.icbm152_adult.map.gz
 derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-gqi_dwimap.fib.gz
 derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-gqi_param-gfa_dwimap.json
 derivatives/qsirecon-SS3TAutoTrack/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-gqi_param-gfa_dwimap.nii.gz

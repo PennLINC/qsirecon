@@ -12,8 +12,8 @@ from .dipy import (
     init_dipy_mapmri_recon_wf,
 )
 from .dsi_studio import (
-    init_dsi_studio_autotrack_wf,
     init_dsi_studio_autotrack_registration_wf,
+    init_dsi_studio_autotrack_wf,
     init_dsi_studio_connectivity_wf,
     init_dsi_studio_export_wf,
     init_dsi_studio_recon_wf,
