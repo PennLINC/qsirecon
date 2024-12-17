@@ -314,8 +314,7 @@ def init_dsi_studio_autotrack_registration_wf(
     )
 
     workflow.connect([
-        (inputnode, registration_atk, [
-            ('fibgz', 'fib_file')]),
+        (inputnode, registration_atk, [('fibgz', 'fib_file')]),
         (inputnode, outputnode, [('fibgz', 'fibgz')]),
         (registration_atk, outputnode, [('map_file', 'fibgz_map')]),
     ])  # fmt:skip
