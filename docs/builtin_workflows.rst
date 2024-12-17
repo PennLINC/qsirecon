@@ -275,14 +275,20 @@ Other Outputs
 
 .. _ss3t_autotrack:
 
-``ss3t_autotrack``
-========================
+``ss3t_fod_autotrack``
+======================
 
 This workflow is identical to :ref:`dsi_studio_autotrack`, except it substitutes
 the GQI fit with the ``ss3t_csd_beta1`` algorithm :footcite:p:`dhollander2016novel`
 to estimate FODs for white matter.
 
+A GQI reconstruction is performed first based on the entier input data.
+The QA and ISO images from GQI are used to register the ACPC data to DSI Studio's ICBM 152 template.
+The GQI-based registration is used to transform the template bundles to subject ACPC space,
+where the SS3T-based FODs are used for tractography.
+
 This is a good workflow for doing tractometry on low-quality single shell data.
+If more than one shell is present in the input data, only the highest b-value shell is used.
 
 Scalar Maps
 -----------
@@ -295,7 +301,7 @@ Other Outputs
 -------------
 .. csv-table::
    :header: "File Name", "Description"
-   :file: nonscalars/ss3t_autotrack.csv
+   :file: nonscalars/ss3t_fod_autotrack.csv
    :widths: 15, 30
 
 .. _tortoise:
@@ -482,6 +488,8 @@ the model-fitting workflows and which sampling schemes work with them.
 |:ref:`mrtrix_singleshell_ss3t_ACT-hsvs`    |     No      |    No      |      Yes        |
 +-------------------------------------------+-------------+------------+-----------------+
 |:ref:`mrtrix_singleshell_ss3t_ACT-fast`\*  |     No      |    No      |      Yes        |
++-------------------------------------------+-------------+------------+-----------------+
+|:ref:`ss3t_fod_autotrack`                  |     Yes     |    No      |      Yes        |
 +-------------------------------------------+-------------+------------+-----------------+
 |:ref:`pyafq_tractometry`                   |     Yes     |    No      |      Yes        |
 +-------------------------------------------+-------------+------------+-----------------+

@@ -1,0 +1,6 @@
+\*bundles-DSIStudio\*_scalarstats.csv,Statistics on scalars produced by this workflow. 
+\*bundles-DSIStudio\*_tdistats.tsv,Statistics on streamline density in voxels.
+\*model-ss3t\*_streamlines.tck.gz,One tck.gz per bundle. The bundle represented by this file is specified in the ``bundle-`` tag. Bundles were tracked using the SS3t FODs. 
+\*space-ACPC|T1w\*model-gqi\*_dwimap.fib.gz,DSI Studio fib format containing the GQI ODFs used for AutoTrack registration. 
+\*space-ACPC|T1w\*model-ss3t\*_dwimap.fib.gz,DSI Studio fib format containing the SS3T FODs used for AutoTrack. 
+\*space-ACPC|T1w\*model-ss3t\*_dwimap.map.gz,Mapping file produced by DSI Studio. Here the model entity specifies ss3t so that DSI Studio associates the mapping with the model-ss3t fib.gz file. Be aware that this mapping was created using the model-gqi fib.gz file. 
