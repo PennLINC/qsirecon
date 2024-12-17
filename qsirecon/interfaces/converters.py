@@ -229,6 +229,8 @@ class _MergeFODGQIFibsOutputSpec(TraitedSpec):
 
 
 class MergeFODGQIFibs(SimpleInterface):
+    """Merge FOD and GQI fib files."""
+
     input_spec = _MergeFODGQIFibsInputSpec
     output_spec = _MergeFODGQIFibsOutputSpec
 
