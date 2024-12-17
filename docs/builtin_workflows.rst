@@ -273,7 +273,7 @@ Other Outputs
    :widths: 15, 30
 
 
-.. _ss3t_autotrack:
+.. _ss3t_fod_autotrack:
 
 ``ss3t_fod_autotrack``
 ======================
@@ -502,8 +502,6 @@ the model-fitting workflows and which sampling schemes work with them.
 |:ref:`dsi_studio_gqi`                      |     Yes     |   Yes      |    Yes*         |
 +-------------------------------------------+-------------+------------+-----------------+
 |:ref:`dsi_studio_autotrack`                |     Yes     |   Yes      |    Yes          |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`ss3t_autotrack`                      |     No      |   No       |    Yes          |
 +-------------------------------------------+-------------+------------+-----------------+
 |:ref:`dipy_mapmri`                         |     Yes     |   Yes      |      No         |
 +-------------------------------------------+-------------+------------+-----------------+
