@@ -134,15 +134,17 @@ def init_fod_fib_wf(inputs_dict, name="fod_fib", qsirecon_suffix="", params={}):
     workflow.connect([
         (inputnode, convert_fod_to_fib, [
             ('fod_sh_mif', 'mif_file'),
-            ('dwi_mask', 'mask_file')]),
+            ('dwi_mask', 'mask_file'),
+        ]),
         (inputnode, merge_fod_and_qgi_fibs, [
             ('fibgz', 'reference_fib_file'),
-            ('fibgz_map', 'fibgz_map')]),
+            ('fibgz_map', 'fibgz_map'),
+        ]),
         (convert_fod_to_fib, merge_fod_and_qgi_fibs, [('fib_file', 'csd_fib_file')]),
         (merge_fod_and_qgi_fibs, outputnode, [
             ('fibgz_map', 'fibgz_map'),
             ('fibgz', 'fibgz'),
-        ])
+        ]),
     ])  # fmt:skip
 
     if qsirecon_suffix:
