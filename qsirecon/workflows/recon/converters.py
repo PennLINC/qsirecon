@@ -160,7 +160,7 @@ def init_fod_fib_wf(inputs_dict, name="fod_fib", qsirecon_suffix="", params={}):
             name="ds_fibgz",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, 'fibgz', ds_fibgz, 'in_file')  # fmt:skip
+        workflow.connect(outputnode, 'fibgz', ds_fibgz, 'in_file')
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
