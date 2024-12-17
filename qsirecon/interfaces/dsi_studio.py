@@ -31,6 +31,14 @@ from .bids import get_bids_params
 
 LOGGER = logging.getLogger("nipype.interface")
 DSI_STUDIO_VERSION = "94b9c79"
+DSI_STUDIO_TEMPLATES = [
+    "c57bl6_mouse",
+    "icbm152_adult",
+    "indi_rhesus",
+    "pitt_marmoset",
+    "whs_sd_rat",
+    "dhcp_neonate",
+]
 
 
 class DSIStudioCommandLineInputSpec(CommandLineInputSpec):
@@ -712,6 +720,7 @@ class _AutoTrackOutputSpec(TraitedSpec):
     native_trk_files = OutputMultiObject(File(exists=True))
     stat_files = OutputMultiObject(File(exists=True))
     map_file = File(exists=True)
+    dsistudiotemplate = traits.Str(desc="DSI Studio's name for the template used for registration")
 
 
 class AutoTrack(CommandLine):
@@ -738,7 +747,16 @@ class AutoTrack(CommandLine):
             raise Exception("Too many map files generated")
         if not map_files:
             raise Exception("No map files found in " + str(cwd.absolute()))
-        outputs["map_file"] = str(map_files[0].absolute())
+        map_path = map_files[0]
+        outputs["map_file"] = str(map_path.absolute())
+
+        # Which of the template spaces was used?
+        template_space = traits.Undefined
+        for _template_name in DSI_STUDIO_TEMPLATES:
+            if _template_name in map_path.name:
+                template_space = _template_name
+        outputs["dsistudiotemplate"] = template_space
+
         return outputs
 
 

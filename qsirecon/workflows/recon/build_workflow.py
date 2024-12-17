@@ -5,13 +5,14 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ... import config
 from ...interfaces.interchange import default_input_set, recon_workflow_input_fields
 from .amico import init_amico_noddi_fit_wf
-from .converters import init_mif_to_fibgz_wf, init_qsirecon_to_fsl_wf
+from .converters import init_fod_fib_wf, init_mif_to_fibgz_wf, init_qsirecon_to_fsl_wf
 from .dipy import (
     init_dipy_brainsuite_shore_recon_wf,
     init_dipy_dki_recon_wf,
     init_dipy_mapmri_recon_wf,
 )
 from .dsi_studio import (
+    init_dsi_studio_autotrack_registration_wf,
     init_dsi_studio_autotrack_wf,
     init_dsi_studio_connectivity_wf,
     init_dsi_studio_export_wf,
@@ -69,7 +70,7 @@ def init_dwi_recon_workflow(
     nodes_to_add = []
     workflow_metadata_nodes = {}
     for node_spec in workflow_spec["nodes"]:
-        if not node_spec["name"]:
+        if not node_spec.get("name"):
             raise Exception(f"Node has no name [{node_spec}]")
 
         new_node = workflow_from_spec(
@@ -184,6 +185,42 @@ def init_dwi_recon_workflow(
                 node,
                 "inputnode.mapping_metadata")  # fmt:skip
 
+        # There are some special cases where we need a second input node.
+        if "csd_input" in node_spec:
+            csd_input = node_spec["csd_input"]
+            config.loggers.workflow.info(f"Using csd inputs from {csd_input} in {node_name}.")
+
+            special_upstream_node = workflow.get_node(csd_input)
+            special_upstream_outputnode_name = f"{csd_input}.outputnode"
+            special_upstream_outputnode = workflow.get_node(special_upstream_outputnode_name)
+            special_upstream_outputs = set(special_upstream_outputnode.outputs.get().keys())
+
+            downstream_inputnode_name = f"{node_name}.inputnode"
+            downstream_inputnode = workflow.get_node(downstream_inputnode_name)
+            downstream_inputs = set(downstream_inputnode.outputs.get().keys())
+
+            connect_from_special_upstream = special_upstream_outputs.intersection(
+                downstream_inputs
+            )
+            config.loggers.workflow.info(
+                "connecting %s from %s to %s",
+                connect_from_special_upstream,
+                special_upstream_node,
+                node,
+            )
+            workflow.connect([
+                (
+                    special_upstream_node,
+                    node,
+                    _as_connections(
+                        connect_from_special_upstream - set(("mapping_metadata",)),
+                        src_prefix='outputnode.',
+                        dest_prefix='inputnode.',
+                    ),
+                ),
+            ])  # fmt:skip
+            _check_repeats(workflow.list_node_names())
+
     # Set the source_file for any datasinks
     for node in workflow.list_node_names():
         node_name = node.split(".")[-1]
@@ -235,6 +272,8 @@ def workflow_from_spec(inputs_dict, node_spec):
             return init_dsi_studio_tractography_wf(**kwargs)
         if node_spec["action"] == "connectivity":
             return init_dsi_studio_connectivity_wf(**kwargs)
+        if node_spec["action"] == "autotrack_registration":
+            return init_dsi_studio_autotrack_registration_wf(**kwargs)
         if node_spec["action"] == "autotrack":
             return init_dsi_studio_autotrack_wf(**kwargs)
 
@@ -293,6 +332,8 @@ def workflow_from_spec(inputs_dict, node_spec):
             return init_scalar_to_template_wf(**kwargs)
         if node_spec["action"] == "test_workflow":
             return init_test_wf(**kwargs)
+        if node_spec["action"] == "fod_fib_merge":
+            return init_fod_fib_wf(**kwargs)
 
     raise Exception("Unknown node %s" % node_spec)
 

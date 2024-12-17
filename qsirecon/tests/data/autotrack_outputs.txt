@@ -10,11 +10,11 @@ derivatives/qsirecon-DSIStudio/logs/CITATION.tex
 derivatives/qsirecon-DSIStudio/sub-ABCD
 derivatives/qsirecon-DSIStudio/sub-ABCD.html
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi
-derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_bundle-AssociationArcuateFasciculusL_streamlines.tck.gz
-derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_bundle-AssociationArcuateFasciculusR_streamlines.tck.gz
-derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_bundlestats.csv
-derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap.fib.gz
-derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_mapping.map.gz
+derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-gqi_bundle-AssociationArcuateFasciculusL_streamlines.tck.gz
+derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-gqi_bundle-AssociationArcuateFasciculusR_streamlines.tck.gz
+derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-gqi_bundlestats.csv
+derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-gqi_dwimap.fib.gz
+derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-gqi_dwimap.fib.gz.icbm152_adult.map.gz
 logs
 logs/CITATION.bib
 logs/CITATION.html

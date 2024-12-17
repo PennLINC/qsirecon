@@ -90,7 +90,7 @@ outputs_to_csv(
     load_yaml(load_data("nonscalars/csdsi_3dshore.yaml")), "nonscalars/csdsi_3dshore.csv"
 )
 outputs_to_csv(
-    load_yaml(load_data("nonscalars/ss3t_autotrack.yaml")), "nonscalars/ss3t_autotrack.csv"
+    load_yaml(load_data("nonscalars/ss3t_fod_autotrack.yaml")), "nonscalars/ss3t_fod_autotrack.csv"
 )
 outputs_to_csv(load_yaml(load_data("nonscalars/mrtrix_dwi.yaml")), "nonscalars/mrtrix_dwi.csv")
 outputs_to_csv(load_yaml(load_data("nonscalars/mrtrix_anat.yaml")), "nonscalars/mrtrix_anat.csv")

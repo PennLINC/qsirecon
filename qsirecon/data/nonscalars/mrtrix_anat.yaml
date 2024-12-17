@@ -2,7 +2,7 @@
 qsiprep_5tt_hsvs:
     bids:
         seg: hsvs
-        space: T1w
+        space: ACPC|T1w
         suffix: dseg
         extension: nii.gz
     metadata:
@@ -18,5 +18,5 @@ fs_5tt_hsvs:
         extension: nii.gz
     metadata:
         Description: |
-            Hybrid Surface/Voume Segmentation in MRtrix3 5tt format.
+            Hybrid Surface/Volume Segmentation in MRtrix3 5tt format.
             Aligned to the FreeSurfer ``orig.mgz`` image.

@@ -147,6 +147,7 @@ distance of %02f in DSI Studio (version %s). """ % (
                 dismiss_entities=("desc",),
                 suffix="dwimap",
                 extension=".fib.gz",
+                model="gqi",
                 compress=True,
             ),
             name="ds_gqi_fibgz",
@@ -264,6 +265,63 @@ def init_dsi_studio_tractography_wf(
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
+def init_dsi_studio_autotrack_registration_wf(
+    inputs_dict,
+    params={},
+    qsirecon_suffix="",
+    name="dsi_studio_autotrack_registration_wf",
+):
+    """Run DSI Studio's AutoTrack method to create a map.gz file. No bundles are saved.
+
+    This workflow is designed to be used as input to other workflows that need both a
+    fib and a map file (eg FOD Autotrack). The registration is better using GQI scalars
+    than the imported FOD scalars.
+
+    As such, this workflow does not produce derivatives (qsirecon_suffix is ignored).
+    The map file will instead be included in the derivatives of the autotrack workflow.
+
+    Inputs
+
+        fibgz
+            A DSI Studio fib file produced by DSI Studio reconstruction.
+
+    Outputs
+
+        fibgz
+            The input fibgz file, unaltered
+        fibgz_map
+            A map.gz file corresponding to the fibgz file
+
+    """
+    inputnode = pe.Node(
+        niu.IdentityInterface(fields=recon_workflow_input_fields + ["fibgz"]),
+        name="inputnode",
+    )
+    outputnode = pe.Node(
+        niu.IdentityInterface(fields=["fibgz", "fibgz_map", "recon_scalars"]),
+        name="outputnode",
+    )
+    outputnode.inputs.recon_scalars = []
+
+    omp_nthreads = config.nipype.omp_nthreads
+    workflow = Workflow(name=name)
+
+    # Run autotrack on only one bundle. The important part is getting the map.gz
+    registration_atk = pe.Node(
+        AutoTrack(num_threads=omp_nthreads, track_id="Association_ArcuateFasciculusL"),
+        name="registration_atk",
+        n_procs=omp_nthreads,
+    )
+
+    workflow.connect([
+        (inputnode, registration_atk, [('fibgz', 'fib_file')]),
+        (inputnode, outputnode, [('fibgz', 'fibgz')]),
+        (registration_atk, outputnode, [('map_file', 'fibgz_map')]),
+    ])  # fmt:skip
+
+    return clean_datasinks(workflow, qsirecon_suffix)
+
+
 def init_dsi_studio_autotrack_wf(
     inputs_dict,
     params={},
@@ -313,9 +371,13 @@ def init_dsi_studio_autotrack_wf(
         yield_rate: float
             This rate will be used to terminate tracking early if DSI Studio finds that the
             fiber tracking is not generating results. (default: 0.00001)
+
+        model_name: str
+            The name of the model used for ODFs (default "gqi")
     """
     inputnode = pe.Node(
-        niu.IdentityInterface(fields=recon_workflow_input_fields + ["fibgz"]), name="inputnode"
+        niu.IdentityInterface(fields=recon_workflow_input_fields + ["fibgz", "fibgz_map"]),
+        name="inputnode",
     )
     outputnode = pe.Node(
         niu.IdentityInterface(fields=["tck_files", "bundle_names", "recon_scalars"]),
@@ -327,6 +389,7 @@ def init_dsi_studio_autotrack_wf(
         "DSI Studio (version %s) and bundle shape statistics were calculated [@autotrack]. "
         % DSI_STUDIO_VERSION
     )
+    model_name = params.pop("model", "gqi")
     omp_nthreads = config.nipype.omp_nthreads
     bundle_names = _get_dsi_studio_bundles(params.get("track_id", ""))
     bundle_desc = (
@@ -366,6 +429,7 @@ def init_dsi_studio_autotrack_wf(
         DerivativesDataSink(
             dismiss_entities=("desc",),
             suffix="streamlines",
+            model=model_name,
             extension=".tck.gz",
             compress=True,
         ),
@@ -378,6 +442,7 @@ def init_dsi_studio_autotrack_wf(
         DerivativesDataSink(
             dismiss_entities=("desc",),
             suffix="bundlestats",
+            model=model_name,
             extension=".csv",
         ),
         name="ds_bundle_csv",
@@ -388,8 +453,9 @@ def init_dsi_studio_autotrack_wf(
     ds_mapping = pe.Node(
         DerivativesDataSink(
             dismiss_entities=("desc",),
-            suffix="mapping",
-            extension=".map.gz",
+            suffix="dwimap",
+            model=model_name,
+            extension="map.gz",
             compress=True,
         ),
         name="ds_mapping",
@@ -397,10 +463,14 @@ def init_dsi_studio_autotrack_wf(
     )
 
     workflow.connect([
-        (inputnode, actual_trk, [('fibgz', 'fib_file')]),
+        (inputnode, actual_trk, [
+            ('fibgz', 'fib_file'),
+            ('fibgz_map', 'map_file')]),
         (inputnode, aggregate_atk_results, [('dwi_file', 'source_file')]),
         (inputnode, convert_to_tck, [('dwi_file', 'reference_nifti')]),
-        (actual_trk, ds_mapping, [('map_file', 'in_file')]),
+        (actual_trk, ds_mapping, [
+            ('map_file', 'in_file'),
+            ('dsistudiotemplate', 'dsistudiotemplate')]),
         (actual_trk, aggregate_atk_results, [
             ("native_trk_files", "trk_files"),
             ("stat_files", "stat_files"),

@@ -111,7 +111,7 @@ def mif_to_fib():
     if opts.mask is not None:
         converter = FODtoFIBGZ(
             mif_file=opts.mif,
-            fib_file=opts.fib,
+            output_fib_file=opts.fib,
             num_fibers=opts.num_fibers,
             unit_odf=opts.unit_odf,
             mask_file=opts.mask,
@@ -119,7 +119,7 @@ def mif_to_fib():
     else:
         converter = FODtoFIBGZ(
             mif_file=opts.mif,
-            fib_file=opts.fib,
+            output_fib_file=opts.fib,
             num_fibers=opts.num_fibers,
             unit_odf=opts.unit_odf,
         )

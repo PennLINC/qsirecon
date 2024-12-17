@@ -62,7 +62,16 @@ def init_discard_repeated_samples_wf(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
     )
     outputnode = pe.Node(
-        niu.IdentityInterface(fields=["dwi_file", "bval_file", "bvec_file", "local_bvec_file"]),
+        niu.IdentityInterface(
+            fields=[
+                "dwi_file",
+                "bval_file",
+                "bvec_file",
+                "local_bvec_file",
+                "b_file",
+                "btable_file",
+            ]
+        ),
         name="outputnode",
     )
     workflow = Workflow(name=name)
@@ -97,7 +106,16 @@ def init_gradient_select_wf(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
     )
     outputnode = pe.Node(
-        niu.IdentityInterface(fields=["dwi_file", "bval_file", "bvec_file", "local_bvec_file"]),
+        niu.IdentityInterface(
+            fields=[
+                "dwi_file",
+                "bval_file",
+                "bvec_file",
+                "local_bvec_file",
+                "b_file",
+                "btable_file",
+            ]
+        ),
         name="outputnode",
     )
     workflow = Workflow(name=name)
