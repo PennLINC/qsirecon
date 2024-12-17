@@ -282,7 +282,7 @@ This workflow is identical to :ref:`dsi_studio_autotrack`, except it substitutes
 the GQI fit with the ``ss3t_csd_beta1`` algorithm :footcite:p:`dhollander2016novel`
 to estimate FODs for white matter.
 
-A GQI reconstruction is performed first based on the entier input data.
+A GQI reconstruction is performed first based on the entire input data.
 The QA and ISO images from GQI are used to register the ACPC data to DSI Studio's ICBM 152 template.
 The GQI-based registration is used to transform the template bundles to subject ACPC space,
 where the SS3T-based FODs are used for tractography.
