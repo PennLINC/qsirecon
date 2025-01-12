@@ -719,6 +719,9 @@ class _AutoTrackInputSpec(DSIStudioCommandLineInputSpec):
         desc="Topologically-informed pruning iterations",
         argstr="--tip_iteration=%d",
     )
+    template = traits.Int(
+        0, usedefault=True, argstr="--template=%d", desc="Must be 0 for autotrack"
+    )
     _boilerplate_traits = [
         "track_id",
         "track_voxel_ratio",
