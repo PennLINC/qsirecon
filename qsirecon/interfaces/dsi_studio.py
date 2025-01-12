@@ -713,7 +713,19 @@ class _AutoTrackInputSpec(DSIStudioCommandLineInputSpec):
     output_dir = traits.Str(
         "cwd", argstr="%s", usedefault=True, desc="Forces DSI Studio to write results in cwd"
     )
-    _boilerplate_traits = ["track_id", "track_voxel_ratio", "tolerance", "yield_rate"]
+    tip_iterations = traits.Int(
+        16,
+        usedefault=False,
+        desc="Topologically-informed pruning iterations",
+        argstr="--tip_iteration=%d",
+    )
+    _boilerplate_traits = [
+        "track_id",
+        "track_voxel_ratio",
+        "tolerance",
+        "yield_rate",
+        "tip_iteration",
+    ]
 
 
 class _AutoTrackOutputSpec(TraitedSpec):
