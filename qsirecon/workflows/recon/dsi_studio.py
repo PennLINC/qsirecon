@@ -25,6 +25,7 @@ from ...interfaces.dsi_studio import (
     DSI_STUDIO_VERSION,
     AggregateAutoTrackResults,
     AutoTrack,
+    ChenAutoTrack,
     DSIStudioAtlasGraph,
     DSIStudioCreateSrc,
     DSIStudioExport,
@@ -306,9 +307,13 @@ def init_dsi_studio_autotrack_registration_wf(
     omp_nthreads = config.nipype.omp_nthreads
     workflow = Workflow(name=name)
 
+    dsi_studio_version = params.pop("dsi_studio_version", "hou")
+
+    _AutoTrack = AutoTrack if dsi_studio_version == "hou" else ChenAutoTrack
+
     # Run autotrack on only one bundle. The important part is getting the map.gz
     registration_atk = pe.Node(
-        AutoTrack(num_threads=omp_nthreads, track_id="Association_ArcuateFasciculusL"),
+        _AutoTrack(num_threads=omp_nthreads, track_id="Association_ArcuateFasciculusL"),
         name="registration_atk",
         n_procs=omp_nthreads,
     )
@@ -402,9 +407,13 @@ def init_dsi_studio_autotrack_wf(
     workflow = Workflow(name=name)
     workflow.__desc__ = desc + bundle_desc
 
+    dsi_studio_version = params.pop("dsi_studio_version", "hou")
+
+    _AutoTrack = AutoTrack if dsi_studio_version == "hou" else ChenAutoTrack
+
     # Run autotrack!
     actual_trk = pe.Node(
-        AutoTrack(num_threads=omp_nthreads, **params), name="actual_trk", n_procs=omp_nthreads
+        _AutoTrack(num_threads=omp_nthreads, **params), name="actual_trk", n_procs=omp_nthreads
     )  # An extra thread is needed
 
     # Create a single output

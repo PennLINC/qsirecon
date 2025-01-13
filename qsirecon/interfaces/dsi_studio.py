@@ -713,7 +713,22 @@ class _AutoTrackInputSpec(DSIStudioCommandLineInputSpec):
     output_dir = traits.Str(
         "cwd", argstr="%s", usedefault=True, desc="Forces DSI Studio to write results in cwd"
     )
-    _boilerplate_traits = ["track_id", "track_voxel_ratio", "tolerance", "yield_rate"]
+    tip_iterations = traits.Int(
+        16,
+        usedefault=False,
+        desc="Topologically-informed pruning iterations",
+        argstr="--tip_iteration=%d",
+    )
+    template = traits.Int(
+        0, usedefault=True, argstr="--template=%d", desc="Must be 0 for autotrack"
+    )
+    _boilerplate_traits = [
+        "track_id",
+        "track_voxel_ratio",
+        "tolerance",
+        "yield_rate",
+        "tip_iteration",
+    ]
 
 
 class _AutoTrackOutputSpec(TraitedSpec):
@@ -758,6 +773,20 @@ class AutoTrack(CommandLine):
         outputs["dsistudiotemplate"] = template_space
 
         return outputs
+
+
+class _ChenAutoTrackInputSpec(_AutoTrackInputSpec):
+    pass
+
+
+class _ChenAutoTrackOutputSpec(_AutoTrackOutputSpec):
+    pass
+
+
+class ChenAutoTrack(AutoTrack):
+    input_spec = _ChenAutoTrackInputSpec
+    output_spec = _ChenAutoTrackOutputSpec
+    _cmd = "dsi_studio_chen --action=atk"
 
 
 class _AggregateAutoTrackResultsInputSpec(BaseInterfaceInputSpec):
