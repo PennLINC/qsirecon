@@ -396,7 +396,9 @@ def init_dsi_studio_autotrack_wf(
     )
     model_name = params.pop("model", "gqi")
     omp_nthreads = config.nipype.omp_nthreads
-    bundle_names = _get_dsi_studio_bundles(params.get("track_id", ""))
+    dsi_studio_version = params.pop("dsi_studio_version", "hou")
+
+    bundle_names = _get_dsi_studio_bundles(params.get("track_id", ""), version=dsi_studio_version)
     bundle_desc = (
         "AutoTrack attempted to reconstruct the following bundles:\n  * "
         + "\n  * ".join(bundle_names)
@@ -406,8 +408,6 @@ def init_dsi_studio_autotrack_wf(
 
     workflow = Workflow(name=name)
     workflow.__desc__ = desc + bundle_desc
-
-    dsi_studio_version = params.pop("dsi_studio_version", "hou")
 
     _AutoTrack = AutoTrack if dsi_studio_version == "hou" else ChenAutoTrack
 
