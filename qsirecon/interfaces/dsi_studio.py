@@ -775,6 +775,20 @@ class AutoTrack(CommandLine):
         return outputs
 
 
+class _ChenAutoTrackInputSpec(_AutoTrackInputSpec):
+    pass
+
+
+class _ChenAutoTrackOutputSpec(_AutoTrackOutputSpec):
+    pass
+
+
+class ChenAutoTrack(AutoTrack):
+    input_spec = _ChenAutoTrackInputSpec
+    output_spec = _ChenAutoTrackOutputSpec
+    _cmd = "dsi_studio_chen --action=atk"
+
+
 class _AggregateAutoTrackResultsInputSpec(BaseInterfaceInputSpec):
     expected_bundles = InputMultiObject(traits.Str())
     trk_files = InputMultiObject(File(exists=True))
