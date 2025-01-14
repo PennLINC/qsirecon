@@ -880,9 +880,15 @@ def btable_from_bvals_bvecs(bval_file, bvec_file, output_file):
         btablef.write("\n".join(rows) + "\n")
 
 
-def _get_dsi_studio_bundles(desired_bundles=""):
+def _get_dsi_studio_bundles(desired_bundles="", version="hou"):
 
-    dsi_studio_exe = which("dsi_studio")
+    if version == "hou":
+        dsi_studio_exe = which("dsi_studio")
+    elif version == "chen":
+        dsi_studio_exe = which("dsi_studio_chen")
+    else:
+        raise Exception(f"Unrecognized version of DSI Studio. Must be hou or chen, got {version}")
+
     if not dsi_studio_exe:
         raise Exception("No dsi_studio executable found in $PATH")
     bundle_dir = op.split(dsi_studio_exe)[0]
@@ -935,6 +941,6 @@ def _get_dsi_studio_bundles(desired_bundles=""):
         else:
             matching_bundles = get_bundles(bundle)
             if not matching_bundles:
-                LOGGER.warn("No matching bundles found for " + bundle)
+                LOGGER.warning("No matching bundles found for " + bundle)
             bundles_to_track.extend(matching_bundles)
     return bundles_to_track

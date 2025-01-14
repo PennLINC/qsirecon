@@ -1,6 +1,8 @@
 anatomical: []
 name: hbcd_postproc_beta
+space: T1w
 nodes:
+
 -   action: DKI_reconstruction
     input: qsirecon
     name: dipy_dki
@@ -9,6 +11,7 @@ nodes:
         write_mif: false
     qsirecon_suffix: DIPYDKI
     software: Dipy
+
 -   action: estimate
     input: qsirecon
     name: tortoise_dtmapmri
@@ -23,6 +26,7 @@ nodes:
         small_delta: null
     qsirecon_suffix: TORTOISE_model-MAPMRI
     software: TORTOISE
+
 -   action: estimate
     input: qsirecon
     name: tortoise_fullshell_tensor
@@ -35,6 +39,7 @@ nodes:
         small_delta: null
     qsirecon_suffix: TORTOISE_model-tensor
     software: TORTOISE
+
 -   action: reconstruction
     input: qsirecon
     name: dsistudio_gqi
@@ -42,21 +47,25 @@ nodes:
         method: gqi
     qsirecon_suffix: DSIStudio
     software: DSI Studio
+
 -   action: autotrack
     input: dsistudio_gqi
     name: autotrackgqi
     parameters:
+        dsi_studio_version: chen
         tolerance: 22,26,30
-        track_id: Association,Projection,Commissure,Cerebellum,CranialNerve
+        track_id: Association,Projection,Commissure,Cerebellum
         track_voxel_ratio: 2.0
         yield_rate: 1.0e-06
     qsirecon_suffix: DSIStudio
     software: DSI Studio
+
 -   action: export
     input: dsistudio_gqi
     name: gqi_scalars
     qsirecon_suffix: DSIStudio
     software: DSI Studio
+
 -   action: bundle_map
     input: autotrackgqi
     name: bundle_means
@@ -66,6 +75,7 @@ nodes:
     - tortoise_fullshell_tensor
     - tortoise_dtmapmri
     software: qsirecon
+
 -   action: template_map
     input: qsirecon
     name: template_map
@@ -77,4 +87,4 @@ nodes:
     - tortoise_fullshell_tensor
     - tortoise_dtmapmri
     software: qsirecon
-space: T1w
+
