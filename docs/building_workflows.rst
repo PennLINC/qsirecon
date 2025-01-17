@@ -146,7 +146,7 @@ output directory for each node that produces the scalars.
 
 .. _scalars_to_bundles:
 
-Mapping scelar data to bundles
+Mapping scalar data to bundles
 ------------------------------
 
 Perhaps the most biologically meaningful unit of analysis for dMRI is
