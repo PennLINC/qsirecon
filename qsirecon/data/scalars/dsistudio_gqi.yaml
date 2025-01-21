@@ -9,7 +9,7 @@ dti_fa_file:
         model: tensor
         param: fa
     metadata:
-        Description: Radial Diffusivity from a tensor fit
+        Description: Fractional Anisotropy from a tensor fit
 gfa_file:
     bids:
         model: gqi
