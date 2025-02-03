@@ -433,8 +433,7 @@ def _create_gif(slice_png_paths, duration, output_gif_path=None):
 
 
 def init_dwires_png_space_wf(res="dwi", name="dwires_png_space_wf"):
-    """Create an output space with dwi voxel size that is ideal for
-    creating square png images.
+    """Create an output space with dwi voxel size that is ideal for creating square png images.
 
     Parameters
     ----------
@@ -443,52 +442,48 @@ def init_dwires_png_space_wf(res="dwi", name="dwires_png_space_wf"):
 
     Inputs
     ------
-    dwi_file: str
+    dwi_file : str
         Path to qsiprep-preprocessed dwi file
-    hires_maskfile: str
+    mask_hires : str
         Path to the brain mask from qsiprep. If res is "anat" it should be a
         cube already
-    hires_anatfile: str
+    anat_hires : str
         Path to the brain mask from qsiprep. If res is "anat" it should be a
         cube already
 
     Outputs
     -------
-    pngres_dec
-        PNG-resolution DEC image
-    pngres_fa
-        PNG-resolution FA image
-    pngres_mask : str
-        Path to the brain mask in png space
-    pngres_anat : str
-        Path to the anatomical image in png space
+    fa_pngres : str
+        Path to the fractional anisotropy image in png space
+    dec_pngres : str
+        Path to the DEC image in png space
     """
+    from nipype.interfaces.afni.utils import Zeropad
+    from nipype.interfaces.ants.resampling import ApplyTransforms
+
     workflow = Workflow(name=name)
     inputnode = pe.Node(
         niu.IdentityInterface(
             fields=[
                 "dwi_file",
-                "hires_maskfile",
-                "hires_anatfile",
-                "res",
+                "mask_hires",
+                "anat_hires",
+                "bval",
+                "bvec",
             ],
         ),
         name="inputnode",
     )
     outputnode = pe.Node(
-        niu.IdentityInterface(fields=["pngres_maskfile", "pngres_anatfile"]),
+        niu.IdentityInterface(fields=["fa_pngres", "dec_pngres"]),
         name="outputnode",
     )
     PNGRES_SIZE = 90
 
-    # Create a cube bounding box that we will use to take pics
-    pngres_dwi = op.abspath(f"{res}pngres_dwi.nii")
-    pngres_anat = op.abspath(f"{res}pngres_anat.nii")
-    pngres_dec = op.abspath(f"{res}pngres_dec.nii")
-    pngres_fa = op.abspath(f"{res}pngres_fa.nii")
-    pngres_mask = op.abspath(f"{res}pngres_mask.nii")
-    fstem = dwi_file.replace(".nii.gz", "")
-
+    buffernode = pe.Node(
+        niu.IdentityInterface(fields=["dwi", "mask", "anat"]),
+        name="buffernode",
+    )
     if res == "dwi":
         # Zeropad the DWI so it's a cube
         zeropad_dwi = pe.Node(
@@ -502,7 +497,10 @@ def init_dwires_png_space_wf(res="dwi", name="dwires_png_space_wf"):
             ),
             name="zeropad_dwi",
         )
-        workflow.connect([(inputnode, zeropad_dwi, [("dwi_file", "in_files")])])
+        workflow.connect([
+            (inputnode, zeropad_dwi, [("dwi_file", "in_files")]),
+            (zeropad_dwi, buffernode, [("out_file", "dwi")]),
+        ])  # fmt:skip
 
         # Get the brainmask in pngref space
         warp_mask_to_pngref = pe.Node(
@@ -510,8 +508,9 @@ def init_dwires_png_space_wf(res="dwi", name="dwires_png_space_wf"):
             name="warp_mask_to_pngref",
         )
         workflow.connect([
-            (inputnode, warp_mask_to_pngref, [("hires_maskfile", "input_image")]),
+            (inputnode, warp_mask_to_pngref, [("mask_hires", "input_image")]),
             (zeropad_dwi, warp_mask_to_pngref, [("out_file", "reference_image")]),
+            (warp_mask_to_pngref, buffernode, [("output_image", "mask")]),
         ])  # fmt:skip
 
         # Resample the anat file into pngres
@@ -520,52 +519,51 @@ def init_dwires_png_space_wf(res="dwi", name="dwires_png_space_wf"):
             name="warp_anat_to_pngref",
         )
         workflow.connect([
-            (inputnode, warp_anat_to_pngref, [("hires_anatfile", "input_image")]),
+            (inputnode, warp_anat_to_pngref, [("anat_hires", "input_image")]),
             (zeropad_dwi, warp_anat_to_pngref, [("out_file", "reference_image")]),
+            (warp_anat_to_pngref, buffernode, [("output_image", "anat")]),
         ])  # fmt:skip
     elif res == "anat":
-        subprocess.run(
-            [
-                "antsApplyTransforms",
-                "-d",
-                "3",
-                "-e",
-                "3",
-                "-i",
-                dwi_file,
-                "-r",
-                hires_maskfile,
-                "-o",
-                pngres_dwi,
-                "-v",
-                "1",
-                "--interpolation",
-                "BSpline",
-            ],
-            check=True,
+        # Warp the DWI to the hi-res space
+        warp_dwi_to_hires = pe.Node(
+            ApplyTransforms(dimension=3, input_image_type=3, interpolation="BSpline"),
+            name="warp_dwi_to_hires",
         )
-        pngres_mask = hires_maskfile
-        pngres_anat = hires_anatfile
+        workflow.connect([
+            (inputnode, warp_dwi_to_hires, [
+                ("dwi_file", "input_image")
+                ("mask_hires", "reference_image"),
+            ]),
+            (inputnode, buffernode, [
+                ("mask_hires", "mask"),
+                ("anat_hires", "anat"),
+            ]),
+            (warp_dwi_to_hires, buffernode, [("output_image", "dwi")]),
+        ])  # fmt:skip
 
-    # Use DIPY to fit a tensor
-    data, affine = load_nifti(pngres_dwi)
-    mask_data, _ = load_nifti(pngres_mask)
-    bvals, bvecs = read_bvals_bvecs(f"{fstem}.bval", f"{fstem}.bvec")
-    gtab = gradient_table(bvals, bvecs)
-    tenmodel = dti.TensorModel(gtab)
-    print(f"Fitting Tensor to {pngres_dwi}")
-    tenfit = tenmodel.fit(data, mask=mask_data > 0)
-
-    # Get FA and DEC from the tensor fit
-    FA = dti.fractional_anisotropy(tenfit.evals)
-    FA = np.clip(FA, 0, 1)
-
-    # Convert to colorFA image as in DIPY documentation
-    FA_masked = FA * mask_data
-    RGB = dti.color_fa(FA_masked, tenfit.evecs)
-    RGB = np.array(255 * RGB, 'uint8')
-    save_nifti(pngres_fa, FA_masked.astype(np.float32), affine)
-    save_nifti(pngres_dec, RGB, affine)
+    # Run tensor model and get FA and DEC
+    tensor_model = pe.Node(
+        niu.Function(
+            input_names=["dwi_file", "mask_file", "bval_file", "bvec_file"],
+            output_names=["fa_file", "dec_file"],
+            function=_run_tensor_model,
+        ),
+        name="tensor_model",
+    )
+    workflow.connect([
+        (inputnode, tensor_model, [
+            ("bval", "bval_file"),
+            ("bvec", "bvec_file"),
+        ]),
+        (buffernode, tensor_model, [
+            ("dwi", "dwi_file"),
+            ("mask", "mask_file"),
+        ]),
+        (tensor_model, outputnode, [
+            ("fa_file", "fa_pngres"),
+            ("dec_file", "dec_pngres"),
+        ]),
+    ])  # fmt:skip
 
     return workflow
 
@@ -576,20 +574,20 @@ def init_hires_png_space_wf(name="hires_png_space_wf"):
     Parameters
     ----------
 
-    hires_maskfile: str
+    mask_hires: str
         Path to the brain mask from qsiprep
 
-    hires_anatfile: str
+    anat_hires: str
         Path to high-res anatomical image from qsiprep. Can be T1w or T2w
 
 
     Returns
     -------
 
-    pngres_maskfile: str
+    mask_pngres: str
         Path to the brain mask in png space
 
-    pngres_anatfile: str
+    anat_pngres: str
         Path to the anatomical image in png space
 
     """
@@ -649,3 +647,36 @@ def init_hires_png_space_wf(name="hires_png_space_wf"):
     ])  # fmt:skip
 
     return workflow
+
+
+def _run_tensor_model(dwi_file, mask_file, bval_file, bvec_file):
+    import os
+
+    import dipy.reconst.dti as dti
+    import numpy as np
+    from dipy.core.gradients import gradient_table
+    from dipy.io import read_bvals_bvecs
+    from dipy.io.image import load_nifti, save_nifti
+
+    fa_file = os.path.abspath("fa.nii.gz")
+    dec_file = os.path.abspath("dec.nii.gz")
+
+    # Use DIPY to fit a tensor
+    data, affine = load_nifti(dwi_file)
+    mask_data, _ = load_nifti(mask_file)
+    bvals, bvecs = read_bvals_bvecs(bval_file, bvec_file)
+    gtab = gradient_table(bvals, bvecs)
+    tenmodel = dti.TensorModel(gtab)
+    tenfit = tenmodel.fit(data, mask=mask_data > 0)
+
+    # Get FA and DEC from the tensor fit
+    FA = dti.fractional_anisotropy(tenfit.evals)
+    FA = np.clip(FA, 0, 1)
+
+    # Convert to colorFA image as in DIPY documentation
+    FA_masked = FA * mask_data
+    RGB = dti.color_fa(FA_masked, tenfit.evecs)
+    RGB = np.array(255 * RGB, "uint8")
+    save_nifti(fa_file, FA_masked.astype(np.float32), affine)
+    save_nifti(dec_file, RGB, affine)
+    return fa_file, dec_file
