@@ -1,4 +1,4 @@
-""" Tools for using spherical harmonic models to fit diffusion data
+"""Tools for using spherical harmonic models to fit diffusion data
 
 References
 ----------
