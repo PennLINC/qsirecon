@@ -232,7 +232,22 @@ def init_test_wf(inputs_dict, name="test_wf", qsirecon_suffix="test", params={})
 
 
 def init_brainswipes_figures_wf(name="brainswipes_figures_wf"):
-    """Create figures for the BrainSwipes tool."""
+    """Create figures for the BrainSwipes tool.
+
+    Parameters
+    ----------
+    name : str, optional
+        Workflow name (default: 'brainswipes_figures_wf').
+
+    Inputs
+    ------
+    anat_file : str
+        Path to the anatomical image.
+    dec_file : str
+        Path to the DEC image.
+    mask_file : str
+        Path to the mask image.
+    """
     from nipype.interfaces.ants.visualization import CreateTiledMosaic
 
     inputnode = pe.Node(
@@ -415,3 +430,222 @@ def _create_gif(slice_png_paths, duration, output_gif_path=None):
     )
 
     return output_gif_path
+
+
+def init_dwires_png_space_wf(res="dwi", name="dwires_png_space_wf"):
+    """Create an output space with dwi voxel size that is ideal for
+    creating square png images.
+
+    Parameters
+    ----------
+    res : str
+        "dwi" or "anat" - which resolution to do calculations in
+
+    Inputs
+    ------
+    dwi_file: str
+        Path to qsiprep-preprocessed dwi file
+    hires_maskfile: str
+        Path to the brain mask from qsiprep. If res is "anat" it should be a
+        cube already
+    hires_anatfile: str
+        Path to the brain mask from qsiprep. If res is "anat" it should be a
+        cube already
+
+    Outputs
+    -------
+    pngres_dec
+        PNG-resolution DEC image
+    pngres_fa
+        PNG-resolution FA image
+    pngres_mask : str
+        Path to the brain mask in png space
+    pngres_anat : str
+        Path to the anatomical image in png space
+    """
+    workflow = Workflow(name=name)
+    inputnode = pe.Node(
+        niu.IdentityInterface(
+            fields=[
+                "dwi_file",
+                "hires_maskfile",
+                "hires_anatfile",
+                "res",
+            ],
+        ),
+        name="inputnode",
+    )
+    outputnode = pe.Node(
+        niu.IdentityInterface(fields=["pngres_maskfile", "pngres_anatfile"]),
+        name="outputnode",
+    )
+    PNGRES_SIZE = 90
+
+    # Create a cube bounding box that we will use to take pics
+    pngres_dwi = op.abspath(f"{res}pngres_dwi.nii")
+    pngres_anat = op.abspath(f"{res}pngres_anat.nii")
+    pngres_dec = op.abspath(f"{res}pngres_dec.nii")
+    pngres_fa = op.abspath(f"{res}pngres_fa.nii")
+    pngres_mask = op.abspath(f"{res}pngres_mask.nii")
+    fstem = dwi_file.replace(".nii.gz", "")
+
+    if res == "dwi":
+        # Zeropad the DWI so it's a cube
+        zeropad_dwi = pe.Node(
+            Zeropad(
+                R=PNGRES_SIZE,
+                L=PNGRES_SIZE,
+                A=PNGRES_SIZE,
+                P=PNGRES_SIZE,
+                I=PNGRES_SIZE,
+                S=PNGRES_SIZE,
+            ),
+            name="zeropad_dwi",
+        )
+        workflow.connect([(inputnode, zeropad_dwi, [("dwi_file", "in_files")])])
+
+        # Get the brainmask in pngref space
+        warp_mask_to_pngref = pe.Node(
+            ApplyTransforms(dimension=3, interpolation="NearestNeighbor"),
+            name="warp_mask_to_pngref",
+        )
+        workflow.connect([
+            (inputnode, warp_mask_to_pngref, [("hires_maskfile", "input_image")]),
+            (zeropad_dwi, warp_mask_to_pngref, [("out_file", "reference_image")]),
+        ])  # fmt:skip
+
+        # Resample the anat file into pngres
+        warp_anat_to_pngref = pe.Node(
+            ApplyTransforms(dimension=3, interpolation="NearestNeighbor"),
+            name="warp_anat_to_pngref",
+        )
+        workflow.connect([
+            (inputnode, warp_anat_to_pngref, [("hires_anatfile", "input_image")]),
+            (zeropad_dwi, warp_anat_to_pngref, [("out_file", "reference_image")]),
+        ])  # fmt:skip
+    elif res == "anat":
+        subprocess.run(
+            [
+                "antsApplyTransforms",
+                "-d",
+                "3",
+                "-e",
+                "3",
+                "-i",
+                dwi_file,
+                "-r",
+                hires_maskfile,
+                "-o",
+                pngres_dwi,
+                "-v",
+                "1",
+                "--interpolation",
+                "BSpline",
+            ],
+            check=True,
+        )
+        pngres_mask = hires_maskfile
+        pngres_anat = hires_anatfile
+
+    # Use DIPY to fit a tensor
+    data, affine = load_nifti(pngres_dwi)
+    mask_data, _ = load_nifti(pngres_mask)
+    bvals, bvecs = read_bvals_bvecs(f"{fstem}.bval", f"{fstem}.bvec")
+    gtab = gradient_table(bvals, bvecs)
+    tenmodel = dti.TensorModel(gtab)
+    print(f"Fitting Tensor to {pngres_dwi}")
+    tenfit = tenmodel.fit(data, mask=mask_data > 0)
+
+    # Get FA and DEC from the tensor fit
+    FA = dti.fractional_anisotropy(tenfit.evals)
+    FA = np.clip(FA, 0, 1)
+
+    # Convert to colorFA image as in DIPY documentation
+    FA_masked = FA * mask_data
+    RGB = dti.color_fa(FA_masked, tenfit.evecs)
+    RGB = np.array(255 * RGB, 'uint8')
+    save_nifti(pngres_fa, FA_masked.astype(np.float32), affine)
+    save_nifti(pngres_dec, RGB, affine)
+
+    return workflow
+
+
+def init_hires_png_space_wf(name="hires_png_space_wf"):
+    """Create an output space that is ideal for creating square png images.
+
+    Parameters
+    ----------
+
+    hires_maskfile: str
+        Path to the brain mask from qsiprep
+
+    hires_anatfile: str
+        Path to high-res anatomical image from qsiprep. Can be T1w or T2w
+
+
+    Returns
+    -------
+
+    pngres_maskfile: str
+        Path to the brain mask in png space
+
+    pngres_anatfile: str
+        Path to the anatomical image in png space
+
+    """
+    from nipype.interfaces.afni.utils import Autobox, Zeropad
+    from nipype.interfaces.ants.resampling import ApplyTransforms
+    from nipype.interfaces.ants.utils import ImageMath
+
+    workflow = Workflow(name=name)
+    inputnode = pe.Node(
+        niu.IdentityInterface(
+            fields=[
+                "mask_hires",
+                "anat_hires",
+            ],
+        ),
+        name="inputnode",
+    )
+    outputnode = pe.Node(
+        niu.IdentityInterface(fields=["mask_pngres", "anat_pngres"]),
+        name="outputnode",
+    )
+
+    autobox_mask = pe.Node(
+        Autobox(),
+        name="autobox_mask",
+    )
+    workflow.connect([(inputnode, autobox_mask, [("mask_hires", "in_file")])])
+
+    zeropad_mask = pe.Node(
+        Zeropad(R=128, L=128, A=128, P=128, I=128, S=128),
+        name="zeropad_mask",
+    )
+    workflow.connect([
+        (autobox_mask, zeropad_mask, [("out_file", "in_files")]),
+        (zeropad_mask, outputnode, [("out_file", "mask_pngres")]),
+    ])  # fmt:skip
+
+    warp_anat_to_pngref = pe.Node(
+        ApplyTransforms(dimension=3, interpolation="NearestNeighbor"),
+        name="warp_anat_to_pngref",
+    )
+    workflow.connect([
+        (inputnode, warp_anat_to_pngref, [("anat_hires", "input_image")]),
+        (zeropad_mask, warp_anat_to_pngref, [("out_file", "reference_image")]),
+    ])  # fmt:skip
+
+    scale_anat = pe.Node(
+        ImageMath(
+            operation="TruncateImageIntensity",
+            op2="0.02 0.98 256",
+        ),
+        name="scale_anat",
+    )
+    workflow.connect([
+        (warp_anat_to_pngref, scale_anat, [("output_image", "op1")]),
+        (scale_anat, outputnode, [("output_image", "anat_pngres")]),
+    ])  # fmt:skip
+
+    return workflow
