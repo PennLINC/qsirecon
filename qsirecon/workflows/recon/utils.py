@@ -231,7 +231,7 @@ def init_test_wf(inputs_dict, name="test_wf", qsirecon_suffix="test", params={})
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
-def init_brainswipes_figures_wf(name="brainswipes_figures_wf"):
+def init_brainswipes_figures_wf(method, name="brainswipes_figures_wf"):
     """Create figures for the BrainSwipes tool.
 
     Parameters
@@ -255,6 +255,7 @@ def init_brainswipes_figures_wf(name="brainswipes_figures_wf"):
             fields=[
                 "anat_file",
                 "dec_file",
+                "fa_file",
                 "mask_file",
             ],
         ),
@@ -308,35 +309,62 @@ def init_brainswipes_figures_wf(name="brainswipes_figures_wf"):
             (get_anchor_slices, loop_slice_indices, [("slice_indices", "base_slice_idx")]),
         ])  # fmt:skip
 
-        format_slice_indices = pe.MapNode(
-            niu.Function(
-                input_names=["slice_indices"],
-                output_names=["slice_idx"],
-                function=_format_slice_index,
-            ),
-            iterfield=["slice_indices"],
-            name=f"format_slice_indices_axis-{axis}",
+        png_buffer = pe.MapNode(
+            niu.IdentityInterface(fields=["slice_png"]),
+            name="png_buffer",
+            iterfield=["slice_png"],
         )
-        workflow.connect([
-            (loop_slice_indices, format_slice_indices, [("slice_idx", "slice_indices")]),
-        ])  # fmt:skip
 
-        kwargs = {}
-        if axis in [0, 1]:
-            kwargs["flip_slice"] = "0x1"
-        create_tiled_mosaic = pe.MapNode(
-            CreateTiledMosaic(alpha_value=0.65, tile_geometry="1x1", direction=axis, **kwargs),
-            iterfield=["slice_idx", "slice_name"],
-        )
-        create_tiled_mosaic.inputs.slice_name = axis_slice_names
-        workflow.connect([
-            (inputnode, create_tiled_mosaic, [
-                ("anat_file", "input_image"),
-                ("dec_file", "rgb_image"),
-                ("mask_file", "mask_image"),
-            ]),
-            (format_slice_indices, create_tiled_mosaic, [("slice_idx", "slice_idx")]),
-        ])  # fmt:skip
+        if method == "richie":
+            create_richie_mosaic = pe.MapNode(
+                niu.Function(
+                    input_names=["anat_file", "dec_file", "fa_file", "idx", "axis"],
+                    output_names=["slice_png"],
+                    function=_plot_thing,
+                ),
+                iterfield=["idx"],
+                name=f"create_richie_mosaic_axis-{axis}",
+            )
+            create_richie_mosaic.inputs.axis = axis
+            workflow.connect([
+                (inputnode, create_richie_mosaic, [
+                    ("anat_file", "anat_file"),
+                    ("dec_file", "dec_file"),
+                    ("fa_file", "fa_file"),
+                ]),
+                (loop_slice_indices, create_richie_mosaic, [("slice_idx", "idx")]),
+            ])  # fmt:skip
+        else:
+            format_slice_indices = pe.MapNode(
+                niu.Function(
+                    input_names=["slice_indices"],
+                    output_names=["slice_idx"],
+                    function=_format_slice_index,
+                ),
+                iterfield=["slice_indices"],
+                name=f"format_slice_indices_axis-{axis}",
+            )
+            workflow.connect([
+                (loop_slice_indices, format_slice_indices, [("slice_idx", "slice_indices")]),
+            ])  # fmt:skip
+
+            kwargs = {}
+            if axis in [0, 1]:
+                kwargs["flip_slice"] = "0x1"
+            create_tiled_mosaic = pe.MapNode(
+                CreateTiledMosaic(alpha_value=0.65, tile_geometry="1x1", direction=axis, **kwargs),
+                iterfield=["slice_idx", "slice_name"],
+            )
+            create_tiled_mosaic.inputs.slice_name = axis_slice_names
+            workflow.connect([
+                (inputnode, create_tiled_mosaic, [
+                    ("anat_file", "input_image"),
+                    ("dec_file", "rgb_image"),
+                    ("mask_file", "mask_image"),
+                ]),
+                (format_slice_indices, create_tiled_mosaic, [("slice_idx", "slice_idx")]),
+                (create_tiled_mosaic, png_buffer, [("out_file", "slice_png")]),
+            ])  # fmt:skip
 
         create_gif = pe.Node(
             niu.Function(
@@ -348,7 +376,7 @@ def init_brainswipes_figures_wf(name="brainswipes_figures_wf"):
         )
         workflow.connect([
             (loop_slice_indices, create_gif, [("duration", "duration")]),
-            (create_tiled_mosaic, create_gif, [("output_image", "slice_png_paths")]),
+            (png_buffer, create_gif, [("slice_png", "slice_png_paths")]),
         ])  # fmt:skip
 
         ds_gif = pe.MapNode(
@@ -680,3 +708,176 @@ def _run_tensor_model(dwi_file, mask_file, bval_file, bvec_file):
     save_nifti(fa_file, FA_masked.astype(np.float32), affine)
     save_nifti(dec_file, RGB, affine)
     return fa_file, dec_file
+
+
+def get_anat_rgba_slices(anat_data, rgb_data, fa_data, idx, axis):
+    import numpy as np
+
+    # Select slice from axis and handle rotation
+    if axis == 0:
+        anat = anat_data[idx, :, :]
+        rgb = rgb_data[idx, :, :]
+        fa = fa_data[idx, :, :]
+    elif axis == 1:
+        anat = anat_data[:, idx, :]
+        rgb = rgb_data[:, idx, :]
+        fa = fa_data[:, idx, :]
+    else:
+        anat = anat_data[:, :, idx]
+        rgb = rgb_data[:, :, idx]
+        fa = fa_data[:, :, idx]
+    rgba = np.concatenate([rgb, fa[:, :, np.newaxis]], axis=-1)
+    return anat, rgba
+
+
+def _plot_thing(anat, rgb, fa, slice_idx, axis):
+    from qsirecon.workflows.recon.utils import get_anat_rgba_slices
+
+    # Make the gifs!
+    temp_image_files = []
+    for axis in [0, 1, 2]:
+        # Compute the indices of the slices
+        slice_indices = get_anchor_slices_from_mask(mask_file, axis)
+        axis_slice_names = slice_names[axis]
+        named_slices = zip(slice_indices, axis_slice_names)
+
+        for base_slice_idx, slice_name in named_slices:
+            output_gif_path = f"{prefix}{slice_name}.gif"
+            images = []
+
+            for offset_idx, slice_offset in enumerate(slice_gif_offsets):
+                slice_idx = base_slice_idx + slice_offset
+                slice_png_path = f"{prefix}{slice_name}_part-{offset_idx}_dec.png"
+                fig, ax = plt.subplots(1, 1, figsize=my_figsize)
+                slice_anat, slice_rgba = get_anat_rgba_slices(slice_idx, axis)
+
+                _ = ax.imshow(
+                    slice_anat,
+                    vmin=anat_vmin,
+                    vmax=anat_vmax,
+                    cmap=plt.cm.Greys_r,
+                )
+                _ = ax.imshow(slice_rgba.astype(np.uint8))
+                _ = ax.axis("off")
+
+                fig.savefig(slice_png_path, bbox_inches="tight")
+                plt.close(fig)
+                images.append(load_and_rotate_png(slice_png_path, axis))
+                temp_image_files.append(slice_png_path)
+
+            # Create a back and forth animation by appending the images to
+            # themselves, but reversed
+            images = images + images[-2:0:-1]
+
+            # Save the gif
+            imageio.mimsave(
+                output_gif_path,
+                images,
+                loop=0,
+                duration=(1 / fps) * 1000,
+                subrectangles=True,
+            )
+
+def richie_fa_gifs(dec_file, fa_file, anat_file, mask_file, prefix):
+    """Create GIFs for Swipes using ARH's method from HBN-POD2.
+
+    Parameters
+    ----------
+
+    dec_file: str
+        Path to an RGB DEC NIFTI file resampled into pngres space
+
+    fa_file: str
+        Path to a NIFTI file of FA values in pngres space
+
+    anat_file: str
+        Path to anatomical file to display in grayscale behind the RBGA data.
+        Also must be in pngres space
+
+    mask_file: str
+        Path to the brainmask NIFTI file in pngres space
+
+    prefix: str
+        Stem of the gifs that will be written
+
+    Returns: None
+
+    """
+
+    anat_img = nb.load(anat_file)
+    anat_data = anat_img.get_fdata()
+    anat_vmin, anat_vmax = scoreatpercentile(anat_data.flatten(), [1, 98])
+
+    # Load the RGB data. It was created by tortoise, but resampled into
+    # pngres space. This also converts it to a 3-vector data type.
+    rgb_img = nb.load(dec_file)
+    rgb_data = rgb_img.get_fdata().squeeze()
+    rgb_data = np.clip(0, 255, rgb_data * BRIGHTNESS_UPSCALE)
+
+    # Open FA image and turn it into alpha values
+    fa_img = nb.load(fa_file)
+    fa_data = fa_to_alpha(np.clip(0, 1, fa_img.get_fdata())) * 255
+
+    print(f"Setting grayscale vmax to {anat_vmax}")
+
+    def get_anat_rgba_slices(idx, axis):
+        # Select slice from axis and handle rotation
+        if axis == 0:
+            anat = anat_data[idx, :, :]
+            rgb = rgb_data[idx, :, :]
+            fa = fa_data[idx, :, :]
+        elif axis == 1:
+            anat = anat_data[:, idx, :]
+            rgb = rgb_data[:, idx, :]
+            fa = fa_data[:, idx, :]
+        else:
+            anat = anat_data[:, :, idx]
+            rgb = rgb_data[:, :, idx]
+            fa = fa_data[:, :, idx]
+        rgba = np.concatenate([rgb, fa[:, :, np.newaxis]], axis=-1)
+        return anat, rgba
+
+    # Make the gifs!
+    temp_image_files = []
+    for axis in [0, 1, 2]:
+        # Compute the indices of the slices
+        slice_indices = get_anchor_slices_from_mask(mask_file, axis)
+        axis_slice_names = slice_names[axis]
+        named_slices = zip(slice_indices, axis_slice_names)
+
+        for base_slice_idx, slice_name in named_slices:
+            output_gif_path = f"{prefix}{slice_name}.gif"
+            images = []
+
+            for offset_idx, slice_offset in enumerate(slice_gif_offsets):
+                slice_idx = base_slice_idx + slice_offset
+                slice_png_path = f"{prefix}{slice_name}_part-{offset_idx}_dec.png"
+                fig, ax = plt.subplots(1, 1, figsize=my_figsize)
+                slice_anat, slice_rgba = get_anat_rgba_slices(slice_idx, axis)
+
+                _ = ax.imshow(
+                    slice_anat,
+                    vmin=anat_vmin,
+                    vmax=anat_vmax,
+                    cmap=plt.cm.Greys_r,
+                )
+                _ = ax.imshow(slice_rgba.astype(np.uint8))
+                _ = ax.axis("off")
+
+                fig.savefig(slice_png_path, bbox_inches="tight")
+                plt.close(fig)
+                images.append(load_and_rotate_png(slice_png_path, axis))
+                temp_image_files.append(slice_png_path)
+
+            # Create a back and forth animation by appending the images to
+            # themselves, but reversed
+            images = images + images[-2:0:-1]
+
+            # Save the gif
+            imageio.mimsave(
+                output_gif_path,
+                images,
+                loop=0,
+                duration=(1 / fps) * 1000,
+                subrectangles=True,
+            )
