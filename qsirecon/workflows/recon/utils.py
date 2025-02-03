@@ -731,153 +731,47 @@ def get_anat_rgba_slices(anat_data, rgb_data, fa_data, idx, axis):
 
 
 def _plot_thing(anat, rgb, fa, slice_idx, axis):
+    import os
+
+    import matplotlib.pyplot as plt
+    import nibabel as nb
+    import numpy as np
+    from scipy.special import expit
+    from scipy.stats import scoreatpercentile
+
     from qsirecon.workflows.recon.utils import get_anat_rgba_slices
 
-    # Make the gifs!
-    temp_image_files = []
-    for axis in [0, 1, 2]:
-        # Compute the indices of the slices
-        slice_indices = get_anchor_slices_from_mask(mask_file, axis)
-        axis_slice_names = slice_names[axis]
-        named_slices = zip(slice_indices, axis_slice_names)
+    my_figsize = (7.2, 7.2)
+    FA_ALPHA_RANGE = 5  # Plus/minus range for epit
+    FA_ALPHA_OFFSET = 0.17  # Added to FA
+    FA_ALPHA_MULT = 4  # Steepness of expit
+    BRIGHTNESS_UPSCALE = 2.0
 
-        for base_slice_idx, slice_name in named_slices:
-            output_gif_path = f"{prefix}{slice_name}.gif"
-            images = []
-
-            for offset_idx, slice_offset in enumerate(slice_gif_offsets):
-                slice_idx = base_slice_idx + slice_offset
-                slice_png_path = f"{prefix}{slice_name}_part-{offset_idx}_dec.png"
-                fig, ax = plt.subplots(1, 1, figsize=my_figsize)
-                slice_anat, slice_rgba = get_anat_rgba_slices(slice_idx, axis)
-
-                _ = ax.imshow(
-                    slice_anat,
-                    vmin=anat_vmin,
-                    vmax=anat_vmax,
-                    cmap=plt.cm.Greys_r,
-                )
-                _ = ax.imshow(slice_rgba.astype(np.uint8))
-                _ = ax.axis("off")
-
-                fig.savefig(slice_png_path, bbox_inches="tight")
-                plt.close(fig)
-                images.append(load_and_rotate_png(slice_png_path, axis))
-                temp_image_files.append(slice_png_path)
-
-            # Create a back and forth animation by appending the images to
-            # themselves, but reversed
-            images = images + images[-2:0:-1]
-
-            # Save the gif
-            imageio.mimsave(
-                output_gif_path,
-                images,
-                loop=0,
-                duration=(1 / fps) * 1000,
-                subrectangles=True,
-            )
-
-def richie_fa_gifs(dec_file, fa_file, anat_file, mask_file, prefix):
-    """Create GIFs for Swipes using ARH's method from HBN-POD2.
-
-    Parameters
-    ----------
-
-    dec_file: str
-        Path to an RGB DEC NIFTI file resampled into pngres space
-
-    fa_file: str
-        Path to a NIFTI file of FA values in pngres space
-
-    anat_file: str
-        Path to anatomical file to display in grayscale behind the RBGA data.
-        Also must be in pngres space
-
-    mask_file: str
-        Path to the brainmask NIFTI file in pngres space
-
-    prefix: str
-        Stem of the gifs that will be written
-
-    Returns: None
-
-    """
-
-    anat_img = nb.load(anat_file)
-    anat_data = anat_img.get_fdata()
+    anat_data = nb.load(anat).get_fdata()
     anat_vmin, anat_vmax = scoreatpercentile(anat_data.flatten(), [1, 98])
 
     # Load the RGB data. It was created by tortoise, but resampled into
     # pngres space. This also converts it to a 3-vector data type.
-    rgb_img = nb.load(dec_file)
-    rgb_data = rgb_img.get_fdata().squeeze()
+    rgb_data = nb.load(rgb).get_fdata().squeeze()
     rgb_data = np.clip(0, 255, rgb_data * BRIGHTNESS_UPSCALE)
 
     # Open FA image and turn it into alpha values
-    fa_img = nb.load(fa_file)
-    fa_data = fa_to_alpha(np.clip(0, 1, fa_img.get_fdata())) * 255
+    fa_data = np.clip(0, 1, nb.load(fa).get_fdata())
+    fa_data = (
+        expit(-FA_ALPHA_RANGE + FA_ALPHA_MULT * FA_ALPHA_RANGE * (fa_data + FA_ALPHA_OFFSET)) * 255
+    )
 
-    print(f"Setting grayscale vmax to {anat_vmax}")
+    fig, ax = plt.subplots(1, 1, figsize=my_figsize)
+    slice_anat, slice_rgba = get_anat_rgba_slices(anat_data, rgb_data, fa_data, slice_idx, axis)
 
-    def get_anat_rgba_slices(idx, axis):
-        # Select slice from axis and handle rotation
-        if axis == 0:
-            anat = anat_data[idx, :, :]
-            rgb = rgb_data[idx, :, :]
-            fa = fa_data[idx, :, :]
-        elif axis == 1:
-            anat = anat_data[:, idx, :]
-            rgb = rgb_data[:, idx, :]
-            fa = fa_data[:, idx, :]
-        else:
-            anat = anat_data[:, :, idx]
-            rgb = rgb_data[:, :, idx]
-            fa = fa_data[:, :, idx]
-        rgba = np.concatenate([rgb, fa[:, :, np.newaxis]], axis=-1)
-        return anat, rgba
-
-    # Make the gifs!
-    temp_image_files = []
-    for axis in [0, 1, 2]:
-        # Compute the indices of the slices
-        slice_indices = get_anchor_slices_from_mask(mask_file, axis)
-        axis_slice_names = slice_names[axis]
-        named_slices = zip(slice_indices, axis_slice_names)
-
-        for base_slice_idx, slice_name in named_slices:
-            output_gif_path = f"{prefix}{slice_name}.gif"
-            images = []
-
-            for offset_idx, slice_offset in enumerate(slice_gif_offsets):
-                slice_idx = base_slice_idx + slice_offset
-                slice_png_path = f"{prefix}{slice_name}_part-{offset_idx}_dec.png"
-                fig, ax = plt.subplots(1, 1, figsize=my_figsize)
-                slice_anat, slice_rgba = get_anat_rgba_slices(slice_idx, axis)
-
-                _ = ax.imshow(
-                    slice_anat,
-                    vmin=anat_vmin,
-                    vmax=anat_vmax,
-                    cmap=plt.cm.Greys_r,
-                )
-                _ = ax.imshow(slice_rgba.astype(np.uint8))
-                _ = ax.axis("off")
-
-                fig.savefig(slice_png_path, bbox_inches="tight")
-                plt.close(fig)
-                images.append(load_and_rotate_png(slice_png_path, axis))
-                temp_image_files.append(slice_png_path)
-
-            # Create a back and forth animation by appending the images to
-            # themselves, but reversed
-            images = images + images[-2:0:-1]
-
-            # Save the gif
-            imageio.mimsave(
-                output_gif_path,
-                images,
-                loop=0,
-                duration=(1 / fps) * 1000,
-                subrectangles=True,
-            )
+    ax.imshow(
+        slice_anat,
+        vmin=anat_vmin,
+        vmax=anat_vmax,
+        cmap=plt.cm.Greys_r,
+    )
+    ax.imshow(slice_rgba.astype(np.uint8))
+    ax.axis("off")
+    fig.savefig(os.path.abspath("figure.png"), bbox_inches="tight")
+    plt.close(fig)
+    return os.path.abspath("figure.png")
