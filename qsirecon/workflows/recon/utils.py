@@ -229,3 +229,189 @@ def init_test_wf(inputs_dict, name="test_wf", qsirecon_suffix="test", params={})
     ])  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)
+
+
+def init_brainswipes_figures_wf(name="brainswipes_figures_wf"):
+    """Create figures for the BrainSwipes tool."""
+    from nipype.interfaces.ants.visualization import CreateTiledMosaic
+
+    inputnode = pe.Node(
+        niu.IdentityInterface(
+            fields=[
+                "anat_file",
+                "dec_file",
+                "mask_file",
+            ],
+        ),
+        name="inputnode",
+    )
+
+    workflow = Workflow(name=name)
+
+    slice_names = [
+        [
+            "LeftTemporalSagittal",
+            "LeftBrainStemSagittal",
+            "RightTemporalSagittal",
+        ],
+        [
+            "AnteriorCoronal",
+            "PosteriorCoronal",
+        ],
+        [
+            "CerebellumAxial",
+            "SemiovaleAxial",
+        ],
+    ]
+
+    # Loop is for individual slices in the gif image
+    for axis in [0, 1, 2]:
+        axis_slice_names = slice_names[axis]
+
+        # Compute the indices of the slices
+        get_anchor_slices = pe.Node(
+            niu.Function(
+                input_names=["mask_file", "axis"],
+                output_names=["slice_indices"],
+                function=_get_anchor_slices_from_mask,
+            ),
+            name=f"get_anchor_slices_axis-{axis}",
+        )
+        get_anchor_slices.inputs.axis = axis
+        workflow.connect([(inputnode, get_anchor_slices, [("mask_file", "mask_file")])])
+
+        loop_slice_indices = pe.MapNode(
+            niu.Function(
+                input_names=["base_slice_idx"],
+                output_names=["slice_idx", "duration"],
+                function=_loop_slice_indices,
+            ),
+            iterfield=["base_slice_idx"],
+            name=f"loop_slice_indices_axis-{axis}",
+        )
+        workflow.connect([
+            (get_anchor_slices, loop_slice_indices, [("slice_indices", "base_slice_idx")]),
+        ])  # fmt:skip
+
+        format_slice_indices = pe.MapNode(
+            niu.Function(
+                input_names=["slice_indices"],
+                output_names=["slice_idx"],
+                function=_format_slice_index,
+            ),
+            iterfield=["slice_indices"],
+            name=f"format_slice_indices_axis-{axis}",
+        )
+        workflow.connect([
+            (loop_slice_indices, format_slice_indices, [("slice_idx", "slice_indices")]),
+        ])  # fmt:skip
+
+        kwargs = {}
+        if axis in [0, 1]:
+            kwargs["flip_slice"] = "0x1"
+        create_tiled_mosaic = pe.MapNode(
+            CreateTiledMosaic(alpha_value=0.65, tile_geometry="1x1", direction=axis, **kwargs),
+            iterfield=["slice_idx", "slice_name"],
+        )
+        create_tiled_mosaic.inputs.slice_name = axis_slice_names
+        workflow.connect([
+            (inputnode, create_tiled_mosaic, [
+                ("anat_file", "input_image"),
+                ("dec_file", "rgb_image"),
+                ("mask_file", "mask_image"),
+            ]),
+            (format_slice_indices, create_tiled_mosaic, [("slice_idx", "slice_idx")]),
+        ])  # fmt:skip
+
+        create_gif = pe.Node(
+            niu.Function(
+                inputnames=["slice_png_paths", "duration"],
+                outputnames=["output_gif_path"],
+                function=_create_gif,
+            ),
+            name=f"create_gif_axis-{axis}",
+        )
+        workflow.connect([
+            (loop_slice_indices, create_gif, [("duration", "duration")]),
+            (create_tiled_mosaic, create_gif, [("output_image", "slice_png_paths")]),
+        ])  # fmt:skip
+
+        ds_gif = pe.MapNode(
+            DerivativesDataSink(),
+            name=f"ds_gif_axis-{axis}",
+            iterfield=["in_file", "desc"],
+        )
+        ds_gif.inputs.desc = axis_slice_names
+        workflow.connect([(create_gif, ds_gif, [("output_gif_path", "in_file")])])
+
+    return workflow
+
+
+def _get_anchor_slices_from_mask(mask_file, axis):
+    """Find the slice numbers for ``slice_ratios`` inside a mask."""
+    import nibabel as nb
+    import numpy as np
+
+    # Specify the slices that we would like to save as a fraction
+    # of the masked extent.
+    slice_ratios = [
+        np.array([0.2, 0.48, 0.8]),  # LR Slices
+        np.array([0.4, 0.6]),  # AP Slices
+        np.array([0.2, 0.7]),  # IS Slices
+    ]
+
+    mask_arr = nb.load(mask_file).get_fdata()
+    mask_coords = np.argwhere(mask_arr > 0)[:, axis]
+    min_slice = mask_coords.min()
+    max_slice = mask_coords.max()
+    covered_slices = max_slice - min_slice
+    return np.floor((covered_slices * slice_ratios[axis]) + min_slice).astype(np.int64)
+
+
+def _loop_slice_indices(base_slice_idx):
+    import numpy as np
+
+    # Specify that slice range for the animated gifs
+    slice_gif_offsets = np.arange(-5, 6)
+    # Calculate the frames-per-second for the animated gifs
+    fps = len(slice_gif_offsets) / 2.0
+
+    duration = (1 / fps) * 1000
+
+    return base_slice_idx + np.arange(-5, 6), duration
+
+
+def _format_slice_index(idx):
+    return f"{idx}x{idx}"
+
+
+def _create_gif(slice_png_paths, duration, output_gif_path=None):
+    import os
+
+    import imageio
+    from PIL import Image
+
+    if not output_gif_path:
+        output_gif_path = os.path.abspath("animated.gif")
+
+    images = []
+    for slice_png_path in slice_png_paths:
+        # Upsample the image ONCE
+        ants_png = Image.open(slice_png_path)
+        resized = ants_png.resize((512, 512), Image.NEAREST)
+        images.append(resized)
+
+    # Create a back and forth animation by appending the images to
+    # themselves, but reversed
+    images = images + images[-2:0:-1]
+
+    # Save the gif
+    imageio.mimsave(
+        output_gif_path,
+        images,
+        loop=0,
+        duration=duration,
+        subrectangles=True,
+    )
+
+    return output_gif_path
