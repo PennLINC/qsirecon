@@ -661,5 +661,5 @@ def _get_iterable_dwis_and_anats():
             best_anat_source = session_level_anats if session_level_anats else subject_level_anats
             anat_scan = best_anat_source[0]
             dwis_and_anats.append((dwi_scan, anat_scan))
-            
+
     return dwis_and_anats
