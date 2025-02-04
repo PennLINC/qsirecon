@@ -542,7 +542,7 @@ class execution(_Config):
             cls._processing_list.append(
                  (anat_relpath, cls.layout.get_file(dwi_relpath))
              )
-         cls.processing_list = cls._processing_list
+        cls.processing_list = cls._processing_list
 
         dataset_links = {
             "preprocessed": cls.bids_dir,
