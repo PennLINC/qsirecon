@@ -48,7 +48,9 @@ class ToDict(Action):
             if name in d:
                 raise parser.error(f"Received duplicate derivative name: {name}")
             elif name == "preprocessed":
-                raise parser.error("The 'preprocessed' derivative is reserved for internal use.")
+                raise parser.error(
+                    "The 'preprocessed' derivative is reserved for internal use."
+                )
 
             d[name] = loc
         setattr(namespace, self.dest, d)
@@ -75,7 +77,9 @@ def _build_parser(**kwargs):
         """Ensure a given path exists and it is a file."""
         path = _path_exists(path, parser)
         if not path.is_file():
-            raise parser.error(f"Path should point to a file (or symlink of file): <{path}>.")
+            raise parser.error(
+                f"Path should point to a file (or symlink of file): <{path}>."
+            )
         return path
 
     def _min_one(value, parser):
@@ -122,7 +126,9 @@ def _build_parser(**kwargs):
         if value:
             if Path(value).exists():
                 try:
-                    return loads(Path(value).read_text(), object_hook=_filter_pybids_none_any)
+                    return loads(
+                        Path(value).read_text(), object_hook=_filter_pybids_none_any
+                    )
                 except JSONDecodeError as e:
                     raise parser.error(f"JSON syntax error in: <{value}>.") from e
             else:
@@ -130,7 +136,9 @@ def _build_parser(**kwargs):
 
     verstr = f"QSIRecon v{config.environment.version}"
     currentv = Version(config.environment.version)
-    is_release = not any((currentv.is_devrelease, currentv.is_prerelease, currentv.is_postrelease))
+    is_release = not any(
+        (currentv.is_devrelease, currentv.is_prerelease, currentv.is_postrelease)
+    )
 
     parser = ArgumentParser(
         description=f"{verstr}: q-Space Image Reconstruction Workflows",
@@ -266,7 +274,9 @@ def _build_parser(**kwargs):
         help="Use low-quality tools for speed - TESTING ONLY",
     )
 
-    g_subset = parser.add_argument_group("Options for performing only a subset of the workflow")
+    g_subset = parser.add_argument_group(
+        "Options for performing only a subset of the workflow"
+    )
     g_subset.add_argument(
         "--boilerplate-only",
         "--boilerplate",
@@ -293,7 +303,9 @@ def _build_parser(**kwargs):
 
     g_conf = parser.add_argument_group("Workflow configuration")
     g_conf.add_argument(
-        "--infant", action="store_true", help="configure pipelines to process infant brains"
+        "--infant",
+        action="store_true",
+        help="configure pipelines to process infant brains",
     )
     g_conf.add_argument(
         "--b0-threshold",
@@ -454,7 +466,9 @@ def parse_args(args=None, namespace=None):
     if opts.config_file:
         skip = {} if opts.reports_only else {"execution": ("run_uuid",)}
         config.load(opts.config_file, skip=skip, init=False)
-        config.loggers.cli.info(f"Loaded previous configuration file {opts.config_file}")
+        config.loggers.cli.info(
+            f"Loaded previous configuration file {opts.config_file}"
+        )
 
     # Add internal atlas datasets to the list of datasets
     opts.datasets = opts.datasets or {}
@@ -478,7 +492,9 @@ def parse_args(args=None, namespace=None):
 
         if importlib.util.find_spec("sentry_sdk") is None:
             config.execution.notrack = True
-            config.loggers.cli.warning("Telemetry disabled because sentry_sdk is not installed.")
+            config.loggers.cli.warning(
+                "Telemetry disabled because sentry_sdk is not installed."
+            )
         else:
             config.loggers.cli.info(
                 "Telemetry system to collect crashes and errors is enabled "
@@ -588,7 +604,9 @@ def parse_args(args=None, namespace=None):
 
         # Change the participants label based on ingression renaming
         if config.execution.participant_label is not None:
-            config.execution.participant_label = [layout["subject"] for layout in layouts]
+            config.execution.participant_label = [
+                layout["subject"] for layout in layouts
+            ]
 
     else:
         config.execution.bids_dir = config.execution.input_dir
@@ -658,7 +676,9 @@ def _get_iterable_dwis_and_anats():
             anat_scan = None
             dwis_and_anats.append((dwi_scan))
         else:
-            best_anat_source = session_level_anats if session_level_anats else subject_level_anats
+            best_anat_source = (
+                session_level_anats if session_level_anats else subject_level_anats
+            )
             anat_scan = best_anat_source[0]
             dwis_and_anats.append((dwi_scan, anat_scan))
 
