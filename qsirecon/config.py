@@ -536,11 +536,13 @@ class execution(_Config):
                     cls.bids_filters[acq][k] = _process_value(v)
 
         cls._processing_list = []
-        for dwi_relpath, anat_relpath in cls.processing_list:
+        for anat_relpath, dwi_relpath in cls.processing_list:
+            if anat_relpath:
+                anat_relpath = cls.layout.get_file(anat_relpath)
             cls._processing_list.append(
-                (cls.layout.get_file(dwi_relpath), cls.layout.get_file(anat_relpath))
-            )
-        cls.processing_list = cls._processing_list
+                 (anat_relpath, cls.layout.get_file(dwi_relpath))
+             )
+         cls.processing_list = cls._processing_list
 
         dataset_links = {
             "preprocessed": cls.bids_dir,
