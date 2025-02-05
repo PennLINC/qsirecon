@@ -237,7 +237,9 @@ class _Config:
                 if k == "processing_list":
                     new_v = []
                     for el in v:
-                        new_v.append(el.split(":"))
+                        el_lst = el.split(":")
+                        el_lst = [val if val != "None" else None for val in el_lst]
+                        new_v.append(el_lst)
                     setattr(cls, k, new_v)
                 else:
                     setattr(cls, k, v)
@@ -270,7 +272,14 @@ class _Config:
             if isinstance(v, Reference):
                 v = str(v) or None
             if k == "processing_list":
-                v = [f"{el[0].relpath}:{el[1].relpath}" for el in v]
+                new_v = []
+                for el in v:
+                    dwi, anat = el[0], el[1]
+                    if anat:
+                        anat = anat.relpath
+
+                    new_v.append(f"{dwi.relpath}:{anat}")
+                v = new_v
             out[k] = v
         return out
 
@@ -536,12 +545,12 @@ class execution(_Config):
                     cls.bids_filters[acq][k] = _process_value(v)
 
         cls._processing_list = []
-        for anat_relpath, dwi_relpath in cls.processing_list:
+        for dwi_relpath, anat_relpath in cls.processing_list:
+            # Convert relative paths to full paths if possible
+            # If the path is None, just keep it as None
             if anat_relpath:
                 anat_relpath = cls.layout.get_file(anat_relpath)
-            cls._processing_list.append(
-                 (anat_relpath, cls.layout.get_file(dwi_relpath))
-             )
+            cls._processing_list.append((cls.layout.get_file(dwi_relpath), anat_relpath))
         cls.processing_list = cls._processing_list
 
         dataset_links = {
