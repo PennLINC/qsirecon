@@ -183,6 +183,8 @@ class DipyReconInterface(SimpleInterface):
 
         gtab_to_predict = self._get_gtab(external_bvals=bval_file, external_bvecs=bvec_file)
         new_data = fit_obj.predict(gtab_to_predict, S0=1)
+        # Clip negative values
+        new_data = np.clip(new_data, 0, None)
         nb.Nifti1Image(new_data, mask_img.affine, mask_img.header).to_filename(output_dwi_file)
         self._results["extrapolated_dwi"] = output_dwi_file
 
