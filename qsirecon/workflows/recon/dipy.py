@@ -158,7 +158,7 @@ def init_dipy_brainsuite_shore_recon_wf(
         name="recon_scalars",
         run_without_submitting=True,
     )
-    doing_extrapolation = params.get("extrapolate_scheme") in ("HCP", "ABCD")
+    doing_extrapolation = params.get("extrapolate_scheme") in ("HCP", "ABCD", "DSIQ5")
 
     workflow.connect([
         (inputnode, recon_shore, [
