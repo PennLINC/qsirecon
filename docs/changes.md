@@ -1,10 +1,27 @@
 # What's New
 
-## 1.0.0rc1
+## 1.0.1
 
-This is a prerelease for the version that will be used by the HBCD project for their first data release.
+### 🎉 Exciting New Features
 
-We plan to not introduce any backwards-incompatible changes for a while.
+* Add DSIQ5 extrapolation option by @tsalo in https://github.com/PennLINC/qsirecon/pull/214
+
+### 🐛 Bug Fixes
+
+* Clip negative values in extrapolation interfaces by @tsalo in https://github.com/PennLINC/qsirecon/pull/213
+
+### Other Changes
+
+* Fixes small docs typo: "scelar" => "scalar" by @arokem in https://github.com/PennLINC/qsirecon/pull/203
+* Fix FA description in DSIStudio outputs by @smeisler in https://github.com/PennLINC/qsirecon/pull/198
+
+### New Contributors
+
+* @arokem made their first contribution in https://github.com/PennLINC/qsirecon/pull/203
+
+**Full Changelog**: https://github.com/PennLINC/qsirecon/compare/1.0.0...1.0.1
+
+## 1.0.0
 
 ### 🛠 Breaking Changes
 
@@ -89,4 +106,4 @@ We plan to not introduce any backwards-incompatible changes for a while.
 * @ameliecr made their first contribution in https://github.com/PennLINC/qsirecon/pull/116
 * @chiuhoward made their first contribution in https://github.com/PennLINC/qsirecon/pull/150
 
-**Full Changelog**: https://github.com/PennLINC/qsirecon/commits/1.0.0rc1
+**Full Changelog**: https://github.com/PennLINC/qsirecon/commits/1.0.0
