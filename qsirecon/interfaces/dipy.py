@@ -182,7 +182,9 @@ class DipyReconInterface(SimpleInterface):
         self._results["extrapolated_b"] = output_b_file
 
         gtab_to_predict = self._get_gtab(external_bvals=bval_file, external_bvecs=bvec_file)
-        new_data = fit_obj.predict(gtab_to_predict, S0=1)
+        new_data = fit_obj.predict(gtab_to_predict, S0=1000)
+        # Clip negative values
+        new_data = np.clip(new_data, 0, None)
         nb.Nifti1Image(new_data, mask_img.affine, mask_img.header).to_filename(output_dwi_file)
         self._results["extrapolated_dwi"] = output_dwi_file
 
@@ -385,6 +387,8 @@ class BrainSuiteShoreReconstruction(DipyReconInterface):
         shore_array = fit_obj._shore_coef[mask_array]
         output_data = np.zeros(mask_array.shape + (len(prediction_gtab.bvals),))
         output_data[mask_array] = np.dot(shore_array, prediction_shore.T)
+        # Clip negative values
+        output_data = np.clip(output_data, 0, None)
 
         nb.Nifti1Image(output_data, mask_img.affine, mask_img.header).to_filename(output_dwi_file)
         self._results["extrapolated_dwi"] = output_dwi_file
