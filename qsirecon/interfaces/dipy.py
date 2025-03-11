@@ -54,7 +54,7 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
     write_fibgz = traits.Bool(True)
     write_mif = traits.Bool(True)
     # To extrapolate
-    extrapolate_scheme = traits.Enum("HCP", "ABCD")
+    extrapolate_scheme = traits.Enum("HCP", "ABCD", "DSIQ5")
 
 
 class DipyReconOutputSpec(TraitedSpec):
@@ -148,7 +148,7 @@ class DipyReconInterface(SimpleInterface):
             self._results["fod_sh_mif"] = output_mif_file
 
     def _extrapolate_scheme(self, scheme_name, runtime, fit_obj, mask_img):
-        if scheme_name not in ("ABCD", "HCP"):
+        if scheme_name not in ("ABCD", "HCP", "DSIQ5"):
             return
         output_dwi_file = fname_presuffix(
             self.inputs.dwi_file, suffix=scheme_name, newpath=runtime.cwd, use_ext=True
@@ -344,7 +344,7 @@ class BrainSuiteShoreReconstruction(DipyReconInterface):
     output_spec = BrainSuiteShoreReconstructionOutputSpec
 
     def _extrapolate_scheme(self, scheme_name, runtime, fit_obj, mask_array, mask_img):
-        if scheme_name not in ("ABCD", "HCP"):
+        if scheme_name not in ("ABCD", "HCP", "DSIQ5"):
             return
         output_dwi_file = fname_presuffix(
             self.inputs.dwi_file, suffix=scheme_name, newpath=runtime.cwd, use_ext=True
