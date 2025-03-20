@@ -143,8 +143,8 @@ were also computed (@parker2021not)"""
             ('icvf_image', 'icvf_file'),
             ('od_image', 'od_file'),
             ('isovf_image', 'isovf_file'),            
-            ('modulated_icvf_image', 'modulated_icvf_image'),
-            ('modulated_od_image', 'modulated_od_image'),
+            ('modulated_icvf_image', 'modulated_icvf_file'),
+            ('modulated_od_image', 'modulated_od_file'),
         ]),
         (inputnode, convert_to_fibgz, [('dwi_mask', 'mask_file')]),
         (convert_to_fibgz, outputnode, [('fibgz_file', 'fibgz')])

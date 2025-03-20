@@ -142,8 +142,8 @@ class NODDItoFIBGZInputSpec(BaseInterfaceInputSpec):
     icvf_file = File(exists=True)
     isovf_file = File(exists=True)
     od_file = File(exists=True)
-    modulated_icvf_image = File(exists=True)
-    modulated_od_image = File(exists=True)
+    modulated_icvf_file = File(exists=True)
+    modulated_od_file = File(exists=True)
     directions_file = File(exists=True)
     mask_file = File(exists=True)
 
