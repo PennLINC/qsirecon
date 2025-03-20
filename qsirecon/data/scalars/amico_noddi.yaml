@@ -8,33 +8,31 @@ directions_image:
 icvf_image:
     bids:
         model: noddi
-        param: icvf
+        param: ICVF
     metadata:
         Description: Intracellular volume fraction from NODDI
 isovf_image:
     bids:
         model: noddi
-        param: isovf
+        param: ISOVF
     metadata:
         Description: Isotropic volume fraction from NODDI
 od_image:
     bids:
         model: noddi
-        param: od
+        param: OD
     metadata:
         Description: Orientation dispersion index from NODDI
 modulated_icvf_image:
     bids:
         model: noddi
-        param: icvf
-        desc: modulated
+        param: ICVFmodulated
     metadata:
         Description: Tissue fraction modulated intracellular volume fraction from NODDI
 modulated_od_image:
     bids:
         model: noddi
-        param: od
-        desc: modulated
+        param: ODmodulated
     metadata:
         Description: Tissue fraction modulated intracellular volume fraction from NODDI
 rmse_image:
