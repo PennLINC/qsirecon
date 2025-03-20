@@ -429,7 +429,7 @@ def amplitudes_to_fibgz(
 
 
 def amico_directions_to_fibgz(
-    directions_img, od_img, icvf_img, isovf_img, odf_dirs, odf_faces, output_file, mask_img
+    directions_img, od_img, icvf_img, modulated_od_img, modulated_icvf_img, isovf_img, odf_dirs, odf_faces, output_file, mask_img
 ):
     """Convert a NiftiImage of ODF amplitudes to a DSI Studio fib file.
 
@@ -486,6 +486,8 @@ def amico_directions_to_fibgz(
     isovf_vec = isovf_img.get_fdata().flatten(order="F")
     icvf_vec = icvf_img.get_fdata().flatten(order="F")
     od_vec = od_img.get_fdata().flatten(order="F")
+    mod_icvf_vec = modulated_icvf_img.get_fdata().flatten(order="F")
+    mod_od_vec = modulated_od_img.get_fdata().flatten(order="F")
 
     # z0 = np.nanmax(isovf_vec)
     peak_indices = np.zeros(n_odfs)
@@ -507,6 +509,8 @@ def amico_directions_to_fibgz(
     dsi_mat["ICVF0"] = icvf_vec
     dsi_mat["ISOVF0"] = isovf_vec
     dsi_mat["OD0"] = od_vec
+    dsi_mat["mod_ICVF0"] = mod_icvf_vec
+    dsi_mat["mod_OD0"] = mod_od_vec
     dsi_mat["odf_vertices"] = odf_dirs.T
     dsi_mat["odf_faces"] = odf_faces.T
     savemat(output_file, dsi_mat, format="4", appendmat=False)
