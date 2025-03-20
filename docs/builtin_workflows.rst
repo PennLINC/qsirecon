@@ -191,6 +191,9 @@ Images with (modulated) intra-cellular volume fraction (ICVF), isotropic volume 
 Additionally, a DSI Studio fib file is created using the peak directions and ICVF as a stand-in for QA to be
 used for tractography.
 
+Please see Parker 2021 :footcite:p:`parker2021not` for a detailed description of use and application of the
+tissue fraction modulated outputs.
+
 Scalar Maps
 -----------
 .. csv-table::
