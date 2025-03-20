@@ -23,3 +23,29 @@ od_image:
         param: od
     metadata:
         Description: Orientation dispersion index from NODDI
+modulated_icvf_image:
+    bids:
+        model: noddi
+        param: icvf
+        desc: modulated
+    metadata:
+        Description: Tissue fraction modulated intracellular volume fraction from NODDI
+modulated_od_image:
+    bids:
+        model: noddi
+        param: od
+        desc: modulated
+    metadata:
+        Description: Tissue fraction modulated intracellular volume fraction from NODDI
+rmse_image:
+    bids:
+        model: noddi
+        param: rmse
+    metadata:
+        Description: RMSE between predicted and measured signal from NODDI
+nrmse_image:
+    bids:
+        model: noddi
+        param: nrmse
+    metadata:
+        Description: NRMSE between predicted and measured signal from NODDI

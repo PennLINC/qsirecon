@@ -177,12 +177,20 @@ class NODDI(AmicoReconInterface):
         )
         LOGGER.info("Fitting NODDI Model.")
         aeval.set_model("NODDI")
+
+        # Set global configuration
         aeval.set_config("BLAS_nthreads", 1)
         aeval.set_config("nthreads", self.inputs.num_threads)
-        # set the parameters
+        aeval.set_config("doSaveModulatedMaps", True)
+        aeval.set_config("doComputeRMSE", True)
+        aeval.set_config("doComputeNRMSE", True)
+
+        # Set model parameters
         aeval.model.dPar = self.inputs.dPar
         aeval.model.dIso = self.inputs.dIso
         aeval.model.isExvivo = self.inputs.isExvivo
+
+        # Generate kernels and fit
         aeval.generate_kernels()
         aeval.load_kernels()
         aeval.fit()
@@ -193,6 +201,10 @@ class NODDI(AmicoReconInterface):
         self._results["icvf_image"] = shim_dir + "/AMICO/NODDI/fit_NDI.nii.gz"
         self._results["od_image"] = shim_dir + "/AMICO/NODDI/fit_ODI.nii.gz"
         self._results["isovf_image"] = shim_dir + "/AMICO/NODDI/fit_FWF.nii.gz"
+        self._results["modulated_od_image"] = shim_dir + "/AMICO/NODDI/fit_ODI_modulated.nii.gz"
+        self._results["modulated_icvf_image"] = shim_dir + "/AMICO/NODDI/fit_NDI_modulated.nii.gz"
+        self._results["rmse_image"] = shim_dir + "/AMICO/NODDI/fit_RMSE.nii.gz"
+        self._results["nrmse_image"] = shim_dir + "/AMICO/NODDI/fit_NRMSE.nii.gz"
         self._results["config_file"] = shim_dir + "/AMICO/NODDI/config.pickle"
 
         return runtime

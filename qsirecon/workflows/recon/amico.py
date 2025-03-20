@@ -45,6 +45,14 @@ def init_amico_noddi_fit_wf(
             Voxelwise Orientation Dispersion
         isovf_image
             Voxelwise ISOVF
+        modulated_icvf_image
+            Voxelwise modulated ICVF (ICVF * (1 - ISOVF))
+        modulated_od_image
+            Voxelwise modulated Orientation Dispersion  (OD * (1 - ISOVF))
+        rmse_image
+            Voxelwise root mean square error between predicted and measured signal
+        nrmse_image
+            Voxelwise normalized root mean square error between predicted and measured signal
         config_file
             Pickle file with model configurations in it
         fibgz
@@ -61,6 +69,10 @@ def init_amico_noddi_fit_wf(
                 "icvf_image",
                 "od_image",
                 "isovf_image",
+                "modulated_icvf_image",
+                "modulated_od_image",
+                "rmse_image",
+                "nrmse_image",
                 "config_file",
                 "fibgz",
                 "recon_scalars",
@@ -85,6 +97,10 @@ diffusivity.""" % (
     if params.get("is_exvivo"):
         desc += " An additional component was added to the model foe ex-vivo data."
 
+    desc += """\
+Tissue fraction modulated ICVF and Orientation Dispersion maps"
+were also computed (@parker2021not)"""
+
     recon_scalars = pe.Node(
         AMICOReconScalars(qsirecon_suffix=qsirecon_suffix),
         name="recon_scalars",
@@ -104,21 +120,31 @@ diffusivity.""" % (
             ('directions_image', 'directions_image'),
             ('icvf_image', 'icvf_image'),
             ('od_image', 'od_image'),
-            ('isovf_image', 'isovf_image'),
+            ('isovf_image', 'isovf_image'),            
+            ('modulated_icvf_image', 'modulated_icvf_image'),
+            ('modulated_od_image', 'modulated_od_image'),
+            ('rmse_image', 'rmse_image'),
+            ('nrmse_image', 'nrmse_image'),
             ('config_file', 'config_file'),
         ]),
         (noddi_fit, recon_scalars, [
             ('icvf_image', 'icvf_image'),
             ('od_image', 'od_image'),
             ('isovf_image', 'isovf_image'),
-            ('directions_image', 'directions_image'),
+            ('directions_image', 'directions_image'),            
+            ('modulated_icvf_image', 'modulated_icvf_image'),
+            ('modulated_od_image', 'modulated_od_image'),
+            ('rmse_image', 'rmse_image'),
+            ('nrmse_image', 'nrmse_image'),
         ]),
         (recon_scalars, outputnode, [("scalar_info", "recon_scalars")]),
         (noddi_fit, convert_to_fibgz, [
             ('directions_image', 'directions_file'),
             ('icvf_image', 'icvf_file'),
             ('od_image', 'od_file'),
-            ('isovf_image', 'isovf_file'),
+            ('isovf_image', 'isovf_file'),            
+            ('modulated_icvf_image', 'modulated_icvf_image'),
+            ('modulated_od_image', 'modulated_od_image'),
         ]),
         (inputnode, convert_to_fibgz, [('dwi_mask', 'mask_file')]),
         (convert_to_fibgz, outputnode, [('fibgz_file', 'fibgz')])

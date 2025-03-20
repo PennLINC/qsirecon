@@ -185,9 +185,10 @@ PyAFQ Outputs
 ===============
 
 This workflow estimates the NODDI :footcite:p:`noddi` model using the implementation from
-AMICO :footcite:p:`amico`. Images with intra-cellular volume fraction (ICVF), isotropic volume
-fraction (ISOVF), orientation dispersion (OD) are written to outputs. Additionally, a DSI
-Studio fib file is created using the peak directions and ICVF as a stand-in for QA to be
+AMICO :footcite:p:`amico` and tissue fraction modulation described in :footcite:p:`parker2021not`. 
+Images with (modulated) intra-cellular volume fraction (ICVF), isotropic volume fraction (ISOVF), 
+(modulated) orientation dispersion (OD), root mean square error (RMSE) and normalized RMSE are written to outputs. 
+Additionally, a DSI Studio fib file is created using the peak directions and ICVF as a stand-in for QA to be
 used for tractography.
 
 Scalar Maps
