@@ -137,6 +137,10 @@ class NODDIOutputSpec(AmicoOutputSpec):
     icvf_image = File()
     od_image = File()
     isovf_image = File()
+    modulated_icvf_image = File()
+    modulated_od_image = File()
+    rmse_image = File()
+    nrmse_image = File()
     config_file = File()
 
 
