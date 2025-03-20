@@ -142,6 +142,8 @@ class NODDItoFIBGZInputSpec(BaseInterfaceInputSpec):
     icvf_file = File(exists=True)
     isovf_file = File(exists=True)
     od_file = File(exists=True)
+    modulated_icvf_image = File(exists=True)
+    modulated_od_image = File(exists=True)
     directions_file = File(exists=True)
     mask_file = File(exists=True)
 
@@ -163,6 +165,8 @@ class NODDItoFIBGZ(SimpleInterface):
             directions_img=nb.load(self.inputs.directions_file),
             od_img=nb.load(self.inputs.od_file),
             icvf_img=nb.load(self.inputs.icvf_file),
+            modulated_od_img=nb.load(self.inputs.modulated_od_image),
+            modulated_icvf_img=nb.load(self.inputs.modulated_icvf_image),
             isovf_img=nb.load(self.inputs.isovf_file),
             odf_dirs=verts,
             odf_faces=faces,
