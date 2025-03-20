@@ -85,7 +85,7 @@ def init_amico_noddi_fit_wf(
 
     plot_reports = params.pop("plot_reports", True)
     desc = """
-    #### NODDI Reconstruction
+### NODDI Reconstruction
 
 """
     desc += """\
@@ -96,7 +96,7 @@ diffusivity.""" % (
         params["dIso"],
     )
     if params.get("is_exvivo"):
-        desc += " An additional component was added to the model foe ex-vivo data."
+        desc += " An additional component was added to the model for ex-vivo data."
 
     desc += """\
  Tissue fraction modulated ICVF and Orientation Dispersion maps
