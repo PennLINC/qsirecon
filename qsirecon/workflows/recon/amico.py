@@ -84,9 +84,10 @@ def init_amico_noddi_fit_wf(
     workflow = Workflow(name=name)
 
     plot_reports = params.pop("plot_reports", True)
-    desc = """NODDI Reconstruction
+    desc = """
+    #### NODDI Reconstruction
 
-: """
+"""
     desc += """\
 The NODDI model (@noddi) was fit using the AMICO implementation (@amico).
 A value of %.1E was used for parallel diffusivity and %.1E for isotropic
@@ -98,7 +99,7 @@ diffusivity.""" % (
         desc += " An additional component was added to the model foe ex-vivo data."
 
     desc += """\
-Tissue fraction modulated ICVF and Orientation Dispersion maps"
+ Tissue fraction modulated ICVF and Orientation Dispersion maps
 were also computed (@parker2021not)"""
 
     recon_scalars = pe.Node(
