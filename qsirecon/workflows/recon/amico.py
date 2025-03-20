@@ -100,7 +100,7 @@ diffusivity.""" % (
 
     desc += """\
  Tissue fraction modulated ICVF and Orientation Dispersion maps
-were also computed (@parker2021not)"""
+were also computed (@parker2021not)."""
 
     recon_scalars = pe.Node(
         AMICOReconScalars(qsirecon_suffix=qsirecon_suffix),
