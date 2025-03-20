@@ -429,7 +429,7 @@ def amplitudes_to_fibgz(
 
 
 def amico_directions_to_fibgz(
-    directions_img, od_img, icvf_img, modulated_od_img, modulated_icvf_img, isovf_img, 
+    directions_img, od_img, icvf_img, modulated_od_img, modulated_icvf_img, isovf_img,
     odf_dirs, odf_faces, output_file, mask_img
 ):
     """Convert a NiftiImage of ODF amplitudes to a DSI Studio fib file.
