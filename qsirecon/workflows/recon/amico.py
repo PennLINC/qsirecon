@@ -99,7 +99,7 @@ diffusivity.""" % (
         desc += " An additional component was added to the model for ex-vivo data."
 
     desc += """\
- Tissue fraction modulated ICVF and Orientation Dispersion maps
+ Tissue fraction (1 - ISOVF) modulated ICVF and Orientation Dispersion maps
 were also computed (@parker2021not)."""
 
     recon_scalars = pe.Node(
@@ -121,7 +121,7 @@ were also computed (@parker2021not)."""
             ('directions_image', 'directions_image'),
             ('icvf_image', 'icvf_image'),
             ('od_image', 'od_image'),
-            ('isovf_image', 'isovf_image'),            
+            ('isovf_image', 'isovf_image'),
             ('modulated_icvf_image', 'modulated_icvf_image'),
             ('modulated_od_image', 'modulated_od_image'),
             ('rmse_image', 'rmse_image'),
@@ -132,7 +132,7 @@ were also computed (@parker2021not)."""
             ('icvf_image', 'icvf_image'),
             ('od_image', 'od_image'),
             ('isovf_image', 'isovf_image'),
-            ('directions_image', 'directions_image'),            
+            ('directions_image', 'directions_image'),
             ('modulated_icvf_image', 'modulated_icvf_image'),
             ('modulated_od_image', 'modulated_od_image'),
             ('rmse_image', 'rmse_image'),
@@ -143,7 +143,7 @@ were also computed (@parker2021not)."""
             ('directions_image', 'directions_file'),
             ('icvf_image', 'icvf_file'),
             ('od_image', 'od_file'),
-            ('isovf_image', 'isovf_file'),            
+            ('isovf_image', 'isovf_file'),
             ('modulated_icvf_image', 'modulated_icvf_file'),
             ('modulated_od_image', 'modulated_od_file'),
         ]),
