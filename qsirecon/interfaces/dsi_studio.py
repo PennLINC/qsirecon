@@ -722,6 +722,18 @@ class _AutoTrackInputSpec(DSIStudioCommandLineInputSpec):
     template = traits.Int(
         0, usedefault=True, argstr="--template=%d", desc="Must be 0 for autotrack"
     )
+    smoothing = traits.Float(
+        0,
+        usedefault=False,
+        argstr="--smoothing=%.10f",
+        desc="Smoothing",
+    )
+    otsu_threshold = traits.Float(
+        0.6,
+        usedefault=False,
+        argstr="--otsu_threshold=%.10f",
+        desc="The ratio of otsu threshold to derive default anisotropy threshold.",
+    )
     _boilerplate_traits = [
         "track_id",
         "track_voxel_ratio",
