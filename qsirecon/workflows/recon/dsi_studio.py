@@ -377,6 +377,20 @@ def init_dsi_studio_autotrack_wf(
             This rate will be used to terminate tracking early if DSI Studio finds that the
             fiber tracking is not generating results. (default: 0.00001)
 
+        smoothing: float
+            Smoothing serves like a “momentum”. For example, if smoothing is 0, the 
+            propagation direction is independent of the previous incoming direction. 
+            If the smoothing is 0.5, each moving direction remains 50% of the “momentum”,
+            which is the previous propagation vector. This function makes the tracks 
+            appear smoother. In implementation detail, there is a weighting sum on every
+            two consecutive moving directions. For smoothing value 0.2, each subsequent
+            direction has 0.2 weightings contributed from the previous moving direction 
+            and 0.8 contributed from the income direction. To disable smoothing set 
+            its value to 0. Assign 1.0 to do a random selection of the value from 0% to 95%.
+
+        otsu_threshold: float
+            The ratio of otsu threshold to derive default anisotropy threshold.
+
         model_name: str
             The name of the model used for ODFs (default "gqi")
     """
