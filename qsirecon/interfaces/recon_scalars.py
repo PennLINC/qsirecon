@@ -83,8 +83,6 @@ class ReconScalars(SimpleInterface):
         source_file_bids = parse_file_entities(self.inputs.source_file)
         dismiss_entities = self.inputs.dismiss_entities + ["extension", "suffix"]
         source_file_bids = {k: v for k, v in source_file_bids.items() if k not in dismiss_entities}
-        if "desc" in dismiss_entities:
-            raise ValueError(source_file_bids)
 
         file_traits = [
             name for name in self.inputs.editable_traits() if name not in self._ignore_traits
