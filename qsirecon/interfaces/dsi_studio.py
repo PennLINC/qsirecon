@@ -732,7 +732,7 @@ class _AutoTrackInputSpec(DSIStudioCommandLineInputSpec):
         0.6,
         usedefault=False,
         argstr="--otsu_threshold=%.10f",
-        desc="The ratio of otsu threshold to derive default anisotropy threshold."
+        desc="The ratio of otsu threshold to derive default anisotropy threshold.",
     )
     _boilerplate_traits = [
         "track_id",
