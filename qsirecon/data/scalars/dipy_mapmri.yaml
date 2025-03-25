@@ -8,7 +8,6 @@ mapcoeffs_file:
     bids:
         model: mapmri
         param: mapcoeffs
-        desc: test
     metadata:
         Description: MAPMRI coefficients
 msd_file:
