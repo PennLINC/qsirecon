@@ -273,6 +273,7 @@ class _OrganizeScalarDataOutputSpec(TraitedSpec):
     desc = traits.Either(
         traits.Str(),
         Undefined,
+        None,
     )
 
 
@@ -286,6 +287,6 @@ class OrganizeScalarData(SimpleInterface):
         self._results["metadata"] = scalar_config.get("metadata", {})
         self._results["model"] = scalar_config.get("bids", {}).get("model", Undefined)
         self._results["param"] = scalar_config.get("bids", {}).get("param", Undefined)
-        self._results["desc"] = scalar_config.get("bids", {}).get("desc", Undefined)
+        self._results["desc"] = scalar_config.get("bids", {}).get("desc", None)
 
         return runtime
