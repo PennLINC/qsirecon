@@ -726,7 +726,7 @@ class _AutoTrackInputSpec(DSIStudioCommandLineInputSpec):
         0,
         usedefault=False,
         argstr="--smoothing=%.10f",
-        desc="Smoothing"
+        desc="Smoothing",
     )
     otsu_threshold = traits.Float(
         0.6,
