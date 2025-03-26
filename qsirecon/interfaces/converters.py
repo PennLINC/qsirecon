@@ -515,11 +515,11 @@ def amico_directions_to_fibgz(
     dir0[flat_mask] = peak_indices
     dsi_mat["index0"] = dir0.astype("int16")
     dsi_mat["fa0"] = icvf_vec
-    dsi_mat["ICVF0"] = icvf_vec
-    dsi_mat["ISOVF0"] = isovf_vec
-    dsi_mat["OD0"] = od_vec
-    dsi_mat["mod_ICVF0"] = mod_icvf_vec
-    dsi_mat["mod_OD0"] = mod_od_vec
+    dsi_mat["icvf0"] = icvf_vec
+    dsi_mat["isovf0"] = isovf_vec
+    dsi_mat["od0"] = od_vec
+    dsi_mat["mod_icvf0"] = mod_icvf_vec
+    dsi_mat["mod_od0"] = mod_od_vec
     dsi_mat["odf_vertices"] = odf_dirs.T
     dsi_mat["odf_faces"] = odf_faces.T
     savemat(output_file, dsi_mat, format="4", appendmat=False)

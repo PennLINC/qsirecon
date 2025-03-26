@@ -177,7 +177,9 @@ were also computed (@parker2021not)."""
         derivatives_config = load_yaml(load_data("nonscalars/amico_noddi.yaml"))
         ds_fibgz = pe.Node(
             DerivativesDataSink(
-                dismiss_entities=("desc",), compress=True, **derivatives_config["fibgz"]["bids"]
+                dismiss_entities=["desc"],
+                compress=True,
+                **derivatives_config["fibgz"]["bids"]
             ),
             name=f"ds_{qsirecon_suffix}_fibgz",
             run_without_submitting=True,
@@ -192,7 +194,7 @@ were also computed (@parker2021not)."""
 
         ds_config = pe.Node(
             DerivativesDataSink(
-                dismiss_entities=("desc",),
+                dismiss_entities=["desc"],
                 compress=True,
                 **derivatives_config["config_file"]["bids"],
             ),

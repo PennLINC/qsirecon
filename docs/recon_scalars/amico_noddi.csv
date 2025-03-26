@@ -1,8 +1,8 @@
 noddi,direction,Peak directions from NODDI
-noddi,ICVF,Intracellular volume fraction from NODDI
-noddi,ISOVF,Isotropic volume fraction from NODDI
-noddi,OD,Orientation dispersion index from NODDI
-noddi,ICVFmodulated,Tissue fraction modulated intracellular volume fraction from NODDI
-noddi,ODmodulated,Tissue fraction modulated orientation dispersion from NODDI
+noddi,icvf,Intracellular volume fraction from NODDI
+noddi,isovf,Isotropic volume fraction from NODDI
+noddi,od,Orientation dispersion index from NODDI
+noddi,modulated icvf,Tissue fraction modulated intracellular volume fraction from NODDI
+noddi,modulated od,Tissue fraction modulated orientation dispersion from NODDI
 noddi,rmse,Root mean square error between predicted and observed signal from NODDI
 noddi,rmse,Normalized RMSE between predicted and observed signal from NODDI
