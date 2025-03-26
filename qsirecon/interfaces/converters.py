@@ -142,6 +142,8 @@ class NODDItoFIBGZInputSpec(BaseInterfaceInputSpec):
     icvf_file = File(exists=True)
     isovf_file = File(exists=True)
     od_file = File(exists=True)
+    modulated_icvf_file = File(exists=True)
+    modulated_od_file = File(exists=True)
     directions_file = File(exists=True)
     mask_file = File(exists=True)
 
@@ -163,6 +165,8 @@ class NODDItoFIBGZ(SimpleInterface):
             directions_img=nb.load(self.inputs.directions_file),
             od_img=nb.load(self.inputs.od_file),
             icvf_img=nb.load(self.inputs.icvf_file),
+            modulated_od_img=nb.load(self.inputs.modulated_od_file),
+            modulated_icvf_img=nb.load(self.inputs.modulated_icvf_file),
             isovf_img=nb.load(self.inputs.isovf_file),
             odf_dirs=verts,
             odf_faces=faces,
@@ -425,7 +429,16 @@ def amplitudes_to_fibgz(
 
 
 def amico_directions_to_fibgz(
-    directions_img, od_img, icvf_img, isovf_img, odf_dirs, odf_faces, output_file, mask_img
+    directions_img,
+    od_img,
+    icvf_img,
+    modulated_od_img,
+    modulated_icvf_img,
+    isovf_img,
+    odf_dirs,
+    odf_faces,
+    output_file,
+    mask_img,
 ):
     """Convert a NiftiImage of ODF amplitudes to a DSI Studio fib file.
 
@@ -482,6 +495,8 @@ def amico_directions_to_fibgz(
     isovf_vec = isovf_img.get_fdata().flatten(order="F")
     icvf_vec = icvf_img.get_fdata().flatten(order="F")
     od_vec = od_img.get_fdata().flatten(order="F")
+    mod_icvf_vec = modulated_icvf_img.get_fdata().flatten(order="F")
+    mod_od_vec = modulated_od_img.get_fdata().flatten(order="F")
 
     # z0 = np.nanmax(isovf_vec)
     peak_indices = np.zeros(n_odfs)
@@ -500,9 +515,11 @@ def amico_directions_to_fibgz(
     dir0[flat_mask] = peak_indices
     dsi_mat["index0"] = dir0.astype("int16")
     dsi_mat["fa0"] = icvf_vec
-    dsi_mat["ICVF0"] = icvf_vec
-    dsi_mat["ISOVF0"] = isovf_vec
-    dsi_mat["OD0"] = od_vec
+    dsi_mat["icvf0"] = icvf_vec
+    dsi_mat["isovf0"] = isovf_vec
+    dsi_mat["od0"] = od_vec
+    dsi_mat["mod_icvf0"] = mod_icvf_vec
+    dsi_mat["mod_od0"] = mod_od_vec
     dsi_mat["odf_vertices"] = odf_dirs.T
     dsi_mat["odf_faces"] = odf_faces.T
     savemat(output_file, dsi_mat, format="4", appendmat=False)

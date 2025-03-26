@@ -570,7 +570,7 @@ def init_dwi_recon_anatomical_workflow(
     # up to version 0.14.3
     if has_qsiprep_t1w and not prefer_dwi_mask:
         desc += (
-            f"Brainmasks from {skull_strip_method} were used in all subsequent reconstruction "
+            f"Brain masks from {skull_strip_method} were used in all subsequent reconstruction "
             "steps. "
         )
         # Resample anat mask
