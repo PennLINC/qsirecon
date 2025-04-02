@@ -103,7 +103,7 @@ diffusivity.""" % (
 were also computed (@parker2021not)."""
 
     recon_scalars = pe.Node(
-        AMICOReconScalars(qsirecon_suffix=qsirecon_suffix),
+        AMICOReconScalars(dismiss_entities=["desc"], qsirecon_suffix=qsirecon_suffix),
         name="recon_scalars",
         run_without_submitting=True,
     )
