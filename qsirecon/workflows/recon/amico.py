@@ -179,7 +179,7 @@ were also computed (@parker2021not)."""
             DerivativesDataSink(
                 dismiss_entities=["desc"],
                 compress=True,
-                **derivatives_config["fibgz"]["bids"]
+                **derivatives_config["fibgz"]["bids"],
             ),
             name=f"ds_{qsirecon_suffix}_fibgz",
             run_without_submitting=True,
