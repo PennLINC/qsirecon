@@ -49,3 +49,9 @@ nrmse_image:
         param: nrmse
     metadata:
         Description: NRMSE between predicted and measured signal from NODDI
+tf_image:
+    bids:
+        model: noddi
+        param: tf
+    metadata:
+        Description: Tissue fraction from NODDI

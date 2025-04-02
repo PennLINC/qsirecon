@@ -12,6 +12,7 @@ import os
 import os.path as op
 
 import nibabel as nb
+import nilearn.image as nim
 import numpy as np
 from dipy.core.gradients import gradient_table
 from dipy.core.sphere import HemiSphere
@@ -211,4 +212,26 @@ class NODDI(AmicoReconInterface):
         self._results["nrmse_image"] = shim_dir + "/AMICO/NODDI/fit_NRMSE.nii.gz"
         self._results["config_file"] = shim_dir + "/AMICO/NODDI/config.pickle"
 
+        return runtime
+
+
+class _NODDITissueFractionInputSpec(BaseInterfaceInputSpec):
+    isovf_image = File(exists=True, mandatory=True)
+    mask_image = File(exists=True, mandatory=True)
+
+class _NODDITissueFractionOutputSpec(TraitedSpec):
+    tf_image = File()
+
+class NODDITissueFraction(SimpleInterface):
+    input_spec = _NODDITissueFractionInputSpec
+    output_spec = _NODDITissueFractionOutputSpec
+
+    def _run_interface(self, runtime):
+        isovf_image = self.inputs.isovf_image
+        mask_image = self.inputs.mask_image
+
+        tf_image = nim.math_img("(1 - isovf) * mask", isovf=isovf_image, mask=mask_image)
+        out_file = fname_presuffix(isovf_image, suffix="_tf", newpath=runtime.cwd)
+        tf_image.to_filename(out_file)
+        self._results["tf_image"] = out_file
         return runtime

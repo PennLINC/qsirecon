@@ -11,7 +11,7 @@ from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ... import config
-from ...interfaces.amico import NODDI
+from ...interfaces.amico import NODDI, NODDITissueFraction
 from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.converters import NODDItoFIBGZ
 from ...interfaces.interchange import recon_workflow_input_fields
@@ -76,6 +76,7 @@ def init_amico_noddi_fit_wf(
                 "config_file",
                 "fibgz",
                 "recon_scalars",
+                "tf_image",
             ],
         ),
         name="outputnode",
@@ -108,6 +109,7 @@ were also computed (@parker2021not)."""
         run_without_submitting=True,
     )
     noddi_fit = pe.Node(NODDI(**params), name="recon_noddi", n_procs=omp_nthreads)
+    noddi_tissue_fraction = pe.Node(NODDITissueFraction(), name="noddi_tissue_fraction")
     convert_to_fibgz = pe.Node(NODDItoFIBGZ(), name="convert_to_fibgz")
 
     workflow.connect([
@@ -117,6 +119,12 @@ were also computed (@parker2021not)."""
             ('bvec_file', 'bvec_file'),
             ('dwi_mask', 'mask_file'),
         ]),
+        (inputnode, noddi_tissue_fraction, [('dwi_mask', 'mask_image')]),
+        (noddi_fit, noddi_tissue_fraction, [
+            ('isovf_image', 'isovf_image'),
+        ]),
+        (noddi_tissue_fraction, outputnode, [('tf_image', 'tf_image')]),
+        (noddi_tissue_fraction, recon_scalars, [('tf_image', 'tf_image')]),
         (noddi_fit, outputnode, [
             ('directions_image', 'directions_image'),
             ('icvf_image', 'icvf_image'),
