@@ -219,8 +219,10 @@ class _NODDITissueFractionInputSpec(BaseInterfaceInputSpec):
     isovf_image = File(exists=True, mandatory=True)
     mask_image = File(exists=True, mandatory=True)
 
+
 class _NODDITissueFractionOutputSpec(TraitedSpec):
     tf_image = File()
+
 
 class NODDITissueFraction(SimpleInterface):
     input_spec = _NODDITissueFractionInputSpec
