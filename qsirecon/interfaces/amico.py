@@ -12,6 +12,7 @@ import os
 import os.path as op
 
 import nibabel as nb
+import nilearn.image as nim
 import numpy as np
 from dipy.core.gradients import gradient_table
 from dipy.core.sphere import HemiSphere
@@ -137,6 +138,10 @@ class NODDIOutputSpec(AmicoOutputSpec):
     icvf_image = File()
     od_image = File()
     isovf_image = File()
+    modulated_icvf_image = File()
+    modulated_od_image = File()
+    rmse_image = File()
+    nrmse_image = File()
     config_file = File()
 
 
@@ -177,12 +182,20 @@ class NODDI(AmicoReconInterface):
         )
         LOGGER.info("Fitting NODDI Model.")
         aeval.set_model("NODDI")
+
+        # Set global configuration
         aeval.set_config("BLAS_nthreads", 1)
         aeval.set_config("nthreads", self.inputs.num_threads)
-        # set the parameters
+        aeval.set_config("doSaveModulatedMaps", True)
+        aeval.set_config("doComputeRMSE", True)
+        aeval.set_config("doComputeNRMSE", True)
+
+        # Set model parameters
         aeval.model.dPar = self.inputs.dPar
         aeval.model.dIso = self.inputs.dIso
         aeval.model.isExvivo = self.inputs.isExvivo
+
+        # Generate kernels and fit
         aeval.generate_kernels()
         aeval.load_kernels()
         aeval.fit()
@@ -193,6 +206,34 @@ class NODDI(AmicoReconInterface):
         self._results["icvf_image"] = shim_dir + "/AMICO/NODDI/fit_NDI.nii.gz"
         self._results["od_image"] = shim_dir + "/AMICO/NODDI/fit_ODI.nii.gz"
         self._results["isovf_image"] = shim_dir + "/AMICO/NODDI/fit_FWF.nii.gz"
+        self._results["modulated_od_image"] = shim_dir + "/AMICO/NODDI/fit_ODI_modulated.nii.gz"
+        self._results["modulated_icvf_image"] = shim_dir + "/AMICO/NODDI/fit_NDI_modulated.nii.gz"
+        self._results["rmse_image"] = shim_dir + "/AMICO/NODDI/fit_RMSE.nii.gz"
+        self._results["nrmse_image"] = shim_dir + "/AMICO/NODDI/fit_NRMSE.nii.gz"
         self._results["config_file"] = shim_dir + "/AMICO/NODDI/config.pickle"
 
+        return runtime
+
+
+class _NODDITissueFractionInputSpec(BaseInterfaceInputSpec):
+    isovf_image = File(exists=True, mandatory=True)
+    mask_image = File(exists=True, mandatory=True)
+
+
+class _NODDITissueFractionOutputSpec(TraitedSpec):
+    tf_image = File()
+
+
+class NODDITissueFraction(SimpleInterface):
+    input_spec = _NODDITissueFractionInputSpec
+    output_spec = _NODDITissueFractionOutputSpec
+
+    def _run_interface(self, runtime):
+        isovf_image = self.inputs.isovf_image
+        mask_image = self.inputs.mask_image
+
+        tf_image = nim.math_img("(1 - isovf) * mask", isovf=isovf_image, mask=mask_image)
+        out_file = fname_presuffix(isovf_image, suffix="_tf", newpath=runtime.cwd)
+        tf_image.to_filename(out_file)
+        self._results["tf_image"] = out_file
         return runtime

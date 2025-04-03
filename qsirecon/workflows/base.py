@@ -107,7 +107,7 @@ which is based on *Nipype* {nipype_ver}
 
 Many internal operations of *QSIRecon* use
 *Nilearn* {nilearn_ver} [@nilearn, RRID:SCR_001362] and
-*Dipy* {dipy_ver}[@dipy].
+*Dipy* {dipy_ver} [@dipy].
 For more details of the pipeline, see [the section corresponding
 to workflows in *QSIRecon*'s documentation]\
 (https://qsirecon.readthedocs.io/en/latest/workflows.html).
