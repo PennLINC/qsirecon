@@ -541,6 +541,8 @@ class _KurtosisReconstructionOutputSpec(DipyReconOutputSpec):
     ak = File()
     rk = File()
     mkt = File()
+    awf = File()
+    rde = File()
 
 
 class KurtosisReconstruction(DipyReconInterface):
@@ -565,8 +567,12 @@ class KurtosisReconstruction(DipyReconInterface):
         self._results["tensor"] = output_tensor_file
 
         # FA MD RD and AD
+        metric_attrs = {
+            "colorFA": "color_fa",
+            "rde": "hindered_rd",
+        }
         for metric in ["fa", "md", "rd", "ad", "colorFA", "kfa"]:
-            metric_attr = metric if metric != "colorFA" else "color_fa"
+            metric_attr = metric_attrs.get(metric, metric)
             data = np.nan_to_num(getattr(dkifit, metric_attr).astype("float32"), 0)
             out_name = fname_presuffix(
                 self.inputs.dwi_file, suffix="DKI" + metric, newpath=runtime.cwd, use_ext=True
@@ -582,6 +588,17 @@ class KurtosisReconstruction(DipyReconInterface):
                 ),
                 0,
             )
+            out_name = fname_presuffix(
+                self.inputs.dwi_file, suffix="DKI" + metric, newpath=runtime.cwd, use_ext=True
+            )
+            nb.Nifti1Image(data, dwi_img.affine).to_filename(out_name)
+            self._results[metric] = out_name
+
+        # Get the microstructural metrics
+        dki_micro = dki.KurtosisMicrostructuralFit(dkifit)
+        for metric in ["awf", "rde"]:
+            metric_attr = metric_attrs.get(metric, metric)
+            data = getattr(dki_micro, metric_attr)
             out_name = fname_presuffix(
                 self.inputs.dwi_file, suffix="DKI" + metric, newpath=runtime.cwd, use_ext=True
             )

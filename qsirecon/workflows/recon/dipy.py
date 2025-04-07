@@ -643,7 +643,10 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
             ('mk', 'dki_mk'),
             ('ak', 'dki_ak'),
             ('rk', 'dki_rk'),
-            ('mkt', 'dki_mkt')]),
+            ('mkt', 'dki_mkt'),
+            ('awf', 'dki_awf'),
+            ('rde', 'dki_rde'),
+        ]),
         (recon_scalars, outputnode, [("scalar_info", "recon_scalars")])
     ])  # fmt:skip
 

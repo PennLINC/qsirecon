@@ -3,52 +3,64 @@ dki_ad:
         model: dki
         param: ad
     metadata:
-        Description: DKI AD
+        Description: DKI axial diffusivity
 dki_ak:
     bids:
         model: dki
         param: ak
     metadata:
-        Description: DKI AK
+        Description: DKI axial kurtosis
+dwi_awf:
+    bids:
+        model: dki
+        param: awf
+    metadata:
+        Description: DKI axonal water fraction
 dki_fa:
     bids:
         model: tensor
         param: fa
     metadata:
-        Description: DKI FA
+        Description: DKI fractional anisotropy
 dki_kfa:
     bids:
         model: dki
         param: kfa
     metadata:
-        Description: DKI KFA
+        Description: DKI kurtosis fractional anisotropy
 dki_md:
     bids:
         model: dki
         param: md
     metadata:
-        Description: DKI MD
+        Description: DKI mean diffusivity
 dki_mk:
     bids:
         model: dki
         param: mk
     metadata:
-        Description: DKI MK
+        Description: DKI mean kurtosis
 dki_mkt:
     bids:
         model: dki
         param: mkt
     metadata:
-        Description: DKI MKT
+        Description: DKI mean of the kurtosis tensor
 dki_rd:
     bids:
         model: dki
         param: rd
     metadata:
-        Description: DKI RD
+        Description: DKI radial diffusivity
+dwi_rde:
+    bids:
+        model: dki
+        param: rde
+    metadata:
+        Description: DKI radial diffusivity of the extra-cellular compartment
 dki_rk:
     bids:
         model: dki
         param: rk
     metadata:
-        Description: DKI RK
+        Description: DKI radial kurtosis
