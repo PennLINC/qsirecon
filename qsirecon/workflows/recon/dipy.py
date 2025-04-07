@@ -638,8 +638,6 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
             ('ak', 'ak'),
             ('rk', 'rk'),
             ('mkt', 'mkt'),
-            ('awf', 'awf'),
-            ('rde', 'rde'),
             ('fibgz', 'fibgz'),
         ]),
         (recon_dki, recon_scalars, [
@@ -652,11 +650,22 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
             ('ak', 'dki_ak'),
             ('rk', 'dki_rk'),
             ('mkt', 'dki_mkt'),
-            ('awf', 'dki_awf'),
-            ('rde', 'dki_rde'),
         ]),
         (recon_scalars, outputnode, [("scalar_info", "recon_scalars")]),
     ])  # fmt:skip
+
+    if params.get("sloppy", False):
+        # Only produce microstructural metrics if sloppy is False
+        workflow.connect([
+            (recon_dki, outputnode, [
+                ('awf', 'awf'),
+                ('rde', 'rde'),
+            ]),
+            (recon_dki, recon_scalars, [
+                ('awf', 'dki_awf'),
+                ('rde', 'dki_rde'),
+            ]),
+        ])  # fmt:skip
 
     if plot_reports and False:
         plot_peaks = pe.Node(

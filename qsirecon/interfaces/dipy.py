@@ -55,6 +55,7 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
     write_mif = traits.Bool(True)
     # To extrapolate
     extrapolate_scheme = traits.Enum("HCP", "ABCD", "DSIQ5")
+    sloppy = traits.Bool(False, usedefault=True)
 
 
 class DipyReconOutputSpec(TraitedSpec):
@@ -595,18 +596,19 @@ class KurtosisReconstruction(DipyReconInterface):
             self._results[metric] = out_name
 
         # Get the microstructural metrics
-        kmmodel = dki_micro.KurtosisMicrostructureModel(gtab)
-        kmfit = kmmodel.fit(dwi_data, mask_array)
-        for metric in ["awf", "rde"]:
-            metric_attr = metric_attrs.get(metric, metric)
-            data = getattr(kmfit, metric_attr)
-            out_name = fname_presuffix(
-                self.inputs.dwi_file,
-                suffix="DKI" + metric,
-                newpath=runtime.cwd,
-                use_ext=True,
-            )
-            nb.Nifti1Image(data, dwi_img.affine).to_filename(out_name)
-            self._results[metric] = out_name
+        if not self.inputs.sloppy:
+            kmmodel = dki_micro.KurtosisMicrostructureModel(gtab)
+            kmfit = kmmodel.fit(dwi_data, mask_array)
+            for metric in ["awf", "rde"]:
+                metric_attr = metric_attrs.get(metric, metric)
+                data = getattr(kmfit, metric_attr)
+                out_name = fname_presuffix(
+                    self.inputs.dwi_file,
+                    suffix="DKI" + metric,
+                    newpath=runtime.cwd,
+                    use_ext=True,
+                )
+                nb.Nifti1Image(data, dwi_img.affine).to_filename(out_name)
+                self._results[metric] = out_name
 
         return runtime
