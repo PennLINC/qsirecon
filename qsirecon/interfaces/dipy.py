@@ -15,7 +15,7 @@ import numpy as np
 from dipy.core.gradients import gradient_table
 from dipy.core.sphere import HemiSphere
 from dipy.io.utils import nifti1_symmat
-from dipy.reconst import dki, dti, mapmri
+from dipy.reconst import dki, dki_micro, dti, mapmri
 from dipy.segment.mask import median_otsu
 from nipype import logging
 from nipype.interfaces.base import (
@@ -595,12 +595,15 @@ class KurtosisReconstruction(DipyReconInterface):
             self._results[metric] = out_name
 
         # Get the microstructural metrics
-        dki_micro = dki.KurtosisMicrostructuralFit(dkifit)
+        kurtosis_micro = dki_micro.KurtosisMicrostructuralFit(dkifit)
         for metric in ["awf", "rde"]:
             metric_attr = metric_attrs.get(metric, metric)
-            data = getattr(dki_micro, metric_attr)
+            data = getattr(kurtosis_micro, metric_attr)
             out_name = fname_presuffix(
-                self.inputs.dwi_file, suffix="DKI" + metric, newpath=runtime.cwd, use_ext=True
+                self.inputs.dwi_file,
+                suffix="DKI" + metric,
+                newpath=runtime.cwd,
+                use_ext=True,
             )
             nb.Nifti1Image(data, dwi_img.affine).to_filename(out_name)
             self._results[metric] = out_name
