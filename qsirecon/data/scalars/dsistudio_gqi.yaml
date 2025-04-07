@@ -42,13 +42,13 @@ qa_file:
         Description: Quantitative Anisotropy from a GQI fit
 rd1_file:
     bids:
-        model: rdi
+        model: tensor
         param: rd1
     metadata:
         Description: Lambda 2 (second eigenvalue) from a tensor fit.
 rd2_file:
     bids:
-        model: rdi
+        model: tensor
         param: rd2
     metadata:
         Description: Lambda 3 (third eigenvalue) from a tensor fit.
