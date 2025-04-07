@@ -55,7 +55,6 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
     write_mif = traits.Bool(True)
     # To extrapolate
     extrapolate_scheme = traits.Enum("HCP", "ABCD", "DSIQ5")
-    sloppy = traits.Bool(False, usedefault=True)
 
 
 class DipyReconOutputSpec(TraitedSpec):
@@ -526,6 +525,7 @@ class TensorReconstruction(DipyReconInterface):
 
 
 class _KurtosisReconstructionInputSpec(DipyReconInputSpec):
+    wmti = traits.Bool(False, usedefault=True)
     kurtosis_clip_min = traits.Float(-0.42857142857142855, usedefault=True)
     kurtosis_clip_max = traits.Float(10.0, usedefault=True)
 
@@ -542,6 +542,7 @@ class _KurtosisReconstructionOutputSpec(DipyReconOutputSpec):
     ak = File()
     rk = File()
     mkt = File()
+    # Microstructural metrics
     awf = File()
     rde = File()
 
@@ -596,7 +597,7 @@ class KurtosisReconstruction(DipyReconInterface):
             self._results[metric] = out_name
 
         # Get the microstructural metrics
-        if not self.inputs.sloppy:
+        if self.inputs.wmti:
             kmmodel = dki_micro.KurtosisMicrostructureModel(gtab)
             kmfit = kmmodel.fit(dwi_data, mask_array)
             for metric in ["awf", "rde"]:

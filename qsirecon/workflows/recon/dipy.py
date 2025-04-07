@@ -572,7 +572,9 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
         rk
         mkt
         awf
+            Only if wmti is True
         rde
+            Only if wmti is True
 
     Params
 
@@ -602,8 +604,10 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
                 "ak",
                 "rk",
                 "mkt",
+                # Only if wmti is True
                 "awf",
                 "rde",
+                # Aggregated scalars
                 "recon_scalars",
             ]
         ),
@@ -654,16 +658,16 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
         (recon_scalars, outputnode, [("scalar_info", "recon_scalars")]),
     ])  # fmt:skip
 
-    if params.get("sloppy", False):
-        # Only produce microstructural metrics if sloppy is False
+    if params.get("wmti", False):
+        # Only produce microstructural metrics if wmti is True
         workflow.connect([
             (recon_dki, outputnode, [
                 ('awf', 'awf'),
                 ('rde', 'rde'),
             ]),
             (recon_dki, recon_scalars, [
-                ('awf', 'dki_awf'),
-                ('rde', 'dki_rde'),
+                ('awf', 'dkimicro_awf'),
+                ('rde', 'dkimicro_rde'),
             ]),
         ])  # fmt:skip
 

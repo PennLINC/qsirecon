@@ -1,9 +1,16 @@
-dki,ad,DKI AD
-dki,ak,DKI AK
-dki,kfa,DKI KFA
-dki,md,DKI MD
-dki,mk,DKI MK
-dki,mkt,DKI MKT
-dki,rd,DKI RD
-dki,rk,DKI RK
-tensor,fa,DKI FA
+dki,ad,DKI Axial Diffusivity
+dki,ak,DKI Axial Kurtosis
+dki,kfa,DKI Kurtosis Fractional Anisotropy
+dki,md,DKI Mean Diffusivity
+dki,mk,DKI Mean Kurtosis
+dki,mkt,DKI Mean Kurtosis Tensor
+dki,rd,DKI Radial Diffusivity
+dki,rk,DKI Radial Kurtosis
+tensor,fa,DKI Fractional Anisotropy
+tensor,md,DKI Mean Diffusivity
+tensor,mk,DKI Mean Kurtosis
+tensor,mkt,DKI Mean Kurtosis Tensor
+tensor,rd,DKI Radial Diffusivity
+tensor,rk,DKI Radial Kurtosis
+dkimicro,awf,DKI Microstructural Axonal Water Fraction
+dkimicro,rde,DKI Microstructural Radial Diffusivity of the Extra-Cellular Compartment

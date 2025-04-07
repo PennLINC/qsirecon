@@ -58,6 +58,8 @@ nodes:
     input: qsirecon
     name: dki_recon
     parameters:
+        # Calculate microstructural metrics
+        wmti: true
         write_fibgz: false
         write_mif: false
     qsirecon_suffix: DKI

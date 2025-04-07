@@ -10,12 +10,6 @@ dki_ak:
         param: ak
     metadata:
         Description: DKI axial kurtosis
-dki_awf:
-    bids:
-        model: dki
-        param: awf
-    metadata:
-        Description: DKI axonal water fraction
 dki_fa:
     bids:
         model: tensor
@@ -52,15 +46,21 @@ dki_rd:
         param: rd
     metadata:
         Description: DKI radial diffusivity
-dki_rde:
-    bids:
-        model: dki
-        param: rde
-    metadata:
-        Description: DKI radial diffusivity of the extra-cellular compartment
 dki_rk:
     bids:
         model: dki
         param: rk
     metadata:
         Description: DKI radial kurtosis
+dkimicro_awf:
+    bids:
+        model: dkimicro
+        param: awf
+    metadata:
+        Description: DKI axonal water fraction
+dkimicro_rde:
+    bids:
+        model: dkimicro
+        param: rde
+    metadata:
+        Description: DKI radial diffusivity of the extra-cellular compartment
