@@ -185,9 +185,9 @@ PyAFQ Outputs
 ===============
 
 This workflow estimates the NODDI :footcite:p:`noddi` model using the implementation from
-AMICO :footcite:p:`amico` and tissue fraction modulation described in :footcite:p:`parker2021not`. 
-Images with (modulated) intra-cellular volume fraction (ICVF), isotropic volume fraction (ISOVF), 
-(modulated) orientation dispersion (OD), root mean square error (RMSE) and normalized RMSE are written to outputs. 
+AMICO :footcite:p:`amico` and tissue fraction modulation described in :footcite:p:`parker2021not`.
+Images with (modulated) intra-cellular volume fraction (ICVF), isotropic volume fraction (ISOVF),
+(modulated) orientation dispersion (OD), root mean square error (RMSE) and normalized RMSE are written to outputs.
 Additionally, a DSI Studio fib file is created using the peak directions and ICVF as a stand-in for QA to be
 used for tractography.
 
@@ -362,6 +362,11 @@ Other Outputs
 ===============
 
 A DKI model is fit to the dMRI signal and multiple scalar maps are produced.
+
+.. important::
+
+   In order to calculate microstructural metrics with the ``dkimicro`` model,
+   you must set the ``wmti`` flag to ``True``.
 
 Scalar Maps
 -----------

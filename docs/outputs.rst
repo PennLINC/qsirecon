@@ -68,8 +68,6 @@ DKI and TORTOISE::
                   <source_entities>_model-dki_param-ad_dwimap.nii.gz
                   <source_entities>_model-dki_param-ak_dwimap.json
                   <source_entities>_model-dki_param-ak_dwimap.nii.gz
-                  <source_entities>_model-dki_param-awf_dwimap.json
-                  <source_entities>_model-dki_param-awf_dwimap.nii.gz
                   <source_entities>_model-dki_param-kfa_dwimap.json
                   <source_entities>_model-dki_param-kfa_dwimap.nii.gz
                   <source_entities>_model-dki_param-md_dwimap.json
@@ -80,12 +78,15 @@ DKI and TORTOISE::
                   <source_entities>_model-dki_param-mkt_dwimap.nii.gz
                   <source_entities>_model-dki_param-rd_dwimap.json
                   <source_entities>_model-dki_param-rd_dwimap.nii.gz
-                  <source_entities>_model-dki_param-rde_dwimap.json
-                  <source_entities>_model-dki_param-rde_dwimap.nii.gz
                   <source_entities>_model-dki_param-rk_dwimap.json
                   <source_entities>_model-dki_param-rk_dwimap.nii.gz
                   <source_entities>_model-tensor_param-fa_dwimap.json
                   <source_entities>_model-tensor_param-fa_dwimap.nii.gz
+                  # Microstructural metrics calculated if wmti is True
+                  <source_entities>_model-dkimicro_param-awf_dwimap.json
+                  <source_entities>_model-dkimicro_param-awf_dwimap.nii.gz
+                  <source_entities>_model-dkimicro_param-rde_dwimap.json
+                  <source_entities>_model-dkimicro_param-rde_dwimap.nii.gz
 
          qsirecon-TORTOISE/
             dataset_description.json
