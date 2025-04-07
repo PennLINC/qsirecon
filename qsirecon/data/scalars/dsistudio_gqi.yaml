@@ -3,7 +3,7 @@ ad_file:
         model: tensor
         param: ad
     metadata:
-        Description: Apparent Diffusivity from a tensor fit
+        Description: Axial Diffusivity from a tensor fit. The first eigenvalue of the tensor.
 dti_fa_file:
     bids:
         model: tensor
@@ -33,7 +33,7 @@ md_file:
         model: tensor
         param: md
     metadata:
-        Description: Mean Diffusivity from a tensor fit
+        Description: Mean Diffusivity from a tensor fit. The mean of the three eigenvalues.
 qa_file:
     bids:
         model: gqi
@@ -45,19 +45,19 @@ rd1_file:
         model: rdi
         param: rd1
     metadata:
-        Description: RD1
+        Description: Lambda 2 (second eigenvalue) from a tensor fit.
 rd2_file:
     bids:
         model: rdi
         param: rd2
     metadata:
-        Description: RD2
+        Description: Lambda 3 (third eigenvalue) from a tensor fit.
 rd_file:
     bids:
         model: tensor
         param: rd
     metadata:
-        Description: Radial Diffusivity
+        Description: Radial Diffusivity from a tensor fit. The mean of the second and third eigenvalues (rd1 and rd2).
 txx_file:
     bids:
         model: tensor
