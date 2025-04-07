@@ -595,10 +595,11 @@ class KurtosisReconstruction(DipyReconInterface):
             self._results[metric] = out_name
 
         # Get the microstructural metrics
-        kurtosis_micro = dki_micro.KurtosisMicrostructuralFit(dkifit)
+        kmmodel = dki_micro.KurtosisMicrostructureModel(gtab)
+        kmfit = kmmodel.fit(dwi_data, mask_array)
         for metric in ["awf", "rde"]:
             metric_attr = metric_attrs.get(metric, metric)
-            data = getattr(kurtosis_micro, metric_attr)
+            data = getattr(kmfit, metric_attr)
             out_name = fname_presuffix(
                 self.inputs.dwi_file,
                 suffix="DKI" + metric,
