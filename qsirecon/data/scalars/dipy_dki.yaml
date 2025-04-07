@@ -10,7 +10,7 @@ dki_ak:
         param: ak
     metadata:
         Description: DKI axial kurtosis
-dwi_awf:
+dki_awf:
     bids:
         model: dki
         param: awf
@@ -52,7 +52,7 @@ dki_rd:
         param: rd
     metadata:
         Description: DKI radial diffusivity
-dwi_rde:
+dki_rde:
     bids:
         model: dki
         param: rde

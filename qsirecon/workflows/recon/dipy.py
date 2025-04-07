@@ -571,6 +571,8 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
         ak
         rk
         mkt
+        awf
+        rde
 
     Params
 
