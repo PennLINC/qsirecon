@@ -600,6 +600,8 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
                 "ak",
                 "rk",
                 "mkt",
+                "awf",
+                "rde",
                 "recon_scalars",
             ]
         ),
@@ -620,7 +622,8 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
             ('dwi_file', 'dwi_file'),
             ('bval_file', 'bval_file'),
             ('bvec_file', 'bvec_file'),
-            ('dwi_mask', 'mask_file')]),
+            ('dwi_mask', 'mask_file'),
+        ]),
         (recon_dki, outputnode, [
             ('tensor', 'tensor'),
             ('fa', 'fa'),
@@ -633,7 +636,10 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
             ('ak', 'ak'),
             ('rk', 'rk'),
             ('mkt', 'mkt'),
-            ('fibgz', 'fibgz')]),
+            ('awf', 'awf'),
+            ('rde', 'rde'),
+            ('fibgz', 'fibgz'),
+        ]),
         (recon_dki, recon_scalars, [
             ('fa', 'dki_fa'),
             ('md', 'dki_md'),
@@ -647,7 +653,7 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
             ('awf', 'dki_awf'),
             ('rde', 'dki_rde'),
         ]),
-        (recon_scalars, outputnode, [("scalar_info", "recon_scalars")])
+        (recon_scalars, outputnode, [("scalar_info", "recon_scalars")]),
     ])  # fmt:skip
 
     if plot_reports and False:
