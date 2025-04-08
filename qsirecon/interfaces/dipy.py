@@ -619,6 +619,7 @@ class _KurtosisReconstructionMicrostructureOutputSpec(DipyReconOutputSpec):
     ade = File()
     awf = File()
     axonald = File()
+    kfa = File()
     md = File()
     rd = File()
     rde = File()
@@ -651,6 +652,7 @@ class KurtosisReconstructionMicrostructure(DipyReconInterface):
             "ade",
             "awf",
             "axonald",
+            "kfa",
             "md",
             "rd",
             "rde",

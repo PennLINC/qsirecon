@@ -15,6 +15,7 @@ dkimicro,ade,DKI Microstructural Axial Diffusivity of the Extra-Cellular Compart
 dkimicro,ak,DKI Microstructural Axial Kurtosis
 dkimicro,awf,DKI Microstructural Axonal Water Fraction
 dkimicro,axonald,DKI Microstructural Axonal Diffusivity
+dkimicro,kfa,DKI Microstructural Kurtosis Fractional Anisotropy
 dkimicro,md,DKI Microstructural Mean Diffusivity
 dkimicro,rd,DKI Microstructural Radial Diffusivity
 dkimicro,rde,DKI Microstructural Radial Diffusivity of the Extra-Cellular Compartment

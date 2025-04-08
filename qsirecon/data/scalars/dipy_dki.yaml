@@ -100,6 +100,12 @@ dkimicro_axonald:
         param: axonald
     metadata:
         Description: DKI Microstructural Axonal Diffusivity
+dkimicro_kfa:
+    bids:
+        model: dkimicro
+        param: kfa
+    metadata:
+        Description: DKI Microstructural Kurtosis Fractional Anisotropy
 dkimicro_md:
     bids:
         model: dkimicro
