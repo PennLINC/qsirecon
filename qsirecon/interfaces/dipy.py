@@ -535,7 +535,6 @@ class _KurtosisReconstructionOutputSpec(DipyReconOutputSpec):
     ak = File()
     colorFA = File()
     fa = File()
-    ga = File()
     kfa = File()
     linearity = File()
     md = File()
@@ -576,7 +575,6 @@ class KurtosisReconstruction(DipyReconInterface):
             "ad",
             "colorFA",
             "fa",
-            "ga",
             "kfa",
             "linearity",
             "md",

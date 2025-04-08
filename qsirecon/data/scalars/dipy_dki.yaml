@@ -16,12 +16,6 @@ dki_fa:
         param: fa
     metadata:
         Description: DKI fractional anisotropy
-dki_ga:
-    bids:
-        model: dki
-        param: ga
-    metadata:
-        Description: DKI geodesic anisotropy
 dki_kfa:
     bids:
         model: dki
