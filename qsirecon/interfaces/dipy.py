@@ -531,16 +531,20 @@ class _KurtosisReconstructionInputSpec(DipyReconInputSpec):
 
 class _KurtosisReconstructionOutputSpec(DipyReconOutputSpec):
     tensor = File()
-    fa = File()
-    md = File()
-    rd = File()
     ad = File()
-    colorFA = File()
-    kfa = File()
-    mk = File()
     ak = File()
-    rk = File()
+    colorFA = File()
+    fa = File()
+    ga = File()
+    kfa = File()
+    linearity = File()
+    md = File()
+    mk = File()
     mkt = File()
+    planarity = File()
+    rd = File()
+    rk = File()
+    sphericity = File()
 
 
 class KurtosisReconstruction(DipyReconInterface):
@@ -568,7 +572,19 @@ class KurtosisReconstruction(DipyReconInterface):
         metric_attrs = {
             "colorFA": "color_fa",
         }
-        for metric in ["fa", "md", "rd", "ad", "colorFA", "kfa"]:
+        base_metrics = [
+            "ad",
+            "colorFA",
+            "fa",
+            "ga",
+            "kfa",
+            "linearity",
+            "md",
+            "planarity",
+            "rd",
+            "sphericity",
+        ]
+        for metric in base_metrics:
             metric_attr = metric_attrs.get(metric, metric)
             data = np.nan_to_num(getattr(dkifit, metric_attr).astype("float32"), 0)
             out_name = fname_presuffix(
@@ -578,7 +594,8 @@ class KurtosisReconstruction(DipyReconInterface):
             self._results[metric] = out_name
 
         # Get the kurtosis metrics
-        for metric in ["mk", "ak", "rk", "mkt"]:
+        kurtosis_metrics = ["ak", "mk", "mkt", "rk"]
+        for metric in kurtosis_metrics:
             data = np.nan_to_num(
                 getattr(dkifit, metric)(
                     float(self.inputs.kurtosis_clip_min), float(self.inputs.kurtosis_clip_max)
@@ -600,8 +617,15 @@ class _KurtosisReconstructionMicrostructureInputSpec(DipyReconInputSpec):
 
 
 class _KurtosisReconstructionMicrostructureOutputSpec(DipyReconOutputSpec):
+    ad = File()
+    ade = File()
     awf = File()
+    axonald = File()
+    md = File()
+    rd = File()
     rde = File()
+    tortuosity = File()
+    trace = File()
 
 
 class KurtosisReconstructionMicrostructure(DipyReconInterface):
@@ -620,9 +644,22 @@ class KurtosisReconstructionMicrostructure(DipyReconInterface):
 
         # FA MD RD and AD
         metric_attrs = {
+            "ade": "hindered_ad",
             "rde": "hindered_rd",
+            "axonald": "axonal_diffusivity",
         }
-        for metric in ["awf", "rde"]:
+        base_metrics = [
+            "ad",
+            "ade",
+            "awf",
+            "axonald",
+            "md",
+            "rd",
+            "rde",
+            "tortuosity",
+            "trace",
+        ]
+        for metric in base_metrics:
             metric_attr = metric_attrs.get(metric, metric)
             data = np.nan_to_num(getattr(dkifit, metric_attr).astype("float32"), 0)
             out_name = fname_presuffix(
