@@ -19,6 +19,7 @@ from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.dipy import (
     BrainSuiteShoreReconstruction,
     KurtosisReconstruction,
+    KurtosisReconstructionMicrostructure,
     MAPMRIReconstruction,
 )
 from ...interfaces.interchange import recon_workflow_input_fields
@@ -620,7 +621,10 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
     )
     workflow = Workflow(name=name)
     desc = "#### Dipy Reconstruction\n\n"
+
     plot_reports = not config.execution.skip_odf_reports
+    micro_metrics = params.pop("wmti", False)
+
     recon_dki = pe.Node(KurtosisReconstruction(**params), name="recon_dki")
 
     workflow.connect([
@@ -658,14 +662,24 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
         (recon_scalars, outputnode, [("scalar_info", "recon_scalars")]),
     ])  # fmt:skip
 
-    if params.get("wmti", False):
+    if micro_metrics:
+        recon_dkimicro = pe.Node(
+            KurtosisReconstructionMicrostructure(**params),
+            name="recon_dkimicro",
+        )
         # Only produce microstructural metrics if wmti is True
         workflow.connect([
-            (recon_dki, outputnode, [
+            (inputnode, recon_dkimicro, [
+                ('dwi_file', 'dwi_file'),
+                ('bval_file', 'bval_file'),
+                ('bvec_file', 'bvec_file'),
+                ('dwi_mask', 'mask_file'),
+            ]),
+            (recon_dkimicro, outputnode, [
                 ('awf', 'awf'),
                 ('rde', 'rde'),
             ]),
-            (recon_dki, recon_scalars, [
+            (recon_dkimicro, recon_scalars, [
                 ('awf', 'dkimicro_awf'),
                 ('rde', 'dkimicro_rde'),
             ]),

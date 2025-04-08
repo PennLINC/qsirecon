@@ -525,7 +525,6 @@ class TensorReconstruction(DipyReconInterface):
 
 
 class _KurtosisReconstructionInputSpec(DipyReconInputSpec):
-    wmti = traits.Bool(False, usedefault=True)
     kurtosis_clip_min = traits.Float(-0.42857142857142855, usedefault=True)
     kurtosis_clip_max = traits.Float(10.0, usedefault=True)
 
@@ -542,9 +541,6 @@ class _KurtosisReconstructionOutputSpec(DipyReconOutputSpec):
     ak = File()
     rk = File()
     mkt = File()
-    # Microstructural metrics
-    awf = File()
-    rde = File()
 
 
 class KurtosisReconstruction(DipyReconInterface):
@@ -571,7 +567,6 @@ class KurtosisReconstruction(DipyReconInterface):
         # FA MD RD and AD
         metric_attrs = {
             "colorFA": "color_fa",
-            "rde": "hindered_rd",
         }
         for metric in ["fa", "md", "rd", "ad", "colorFA", "kfa"]:
             metric_attr = metric_attrs.get(metric, metric)
@@ -596,20 +591,47 @@ class KurtosisReconstruction(DipyReconInterface):
             nb.Nifti1Image(data, dwi_img.affine).to_filename(out_name)
             self._results[metric] = out_name
 
-        # Get the microstructural metrics
-        if self.inputs.wmti:
-            kmmodel = dki_micro.KurtosisMicrostructureModel(gtab)
-            kmfit = kmmodel.fit(dwi_data, mask_array)
-            for metric in ["awf", "rde"]:
-                metric_attr = metric_attrs.get(metric, metric)
-                data = getattr(kmfit, metric_attr)
-                out_name = fname_presuffix(
-                    self.inputs.dwi_file,
-                    suffix="DKI" + metric,
-                    newpath=runtime.cwd,
-                    use_ext=True,
-                )
-                nb.Nifti1Image(data, dwi_img.affine).to_filename(out_name)
-                self._results[metric] = out_name
+        return runtime
+
+
+class _KurtosisReconstructionMicrostructureInputSpec(DipyReconInputSpec):
+    kurtosis_clip_min = traits.Float(-0.42857142857142855, usedefault=True)
+    kurtosis_clip_max = traits.Float(10.0, usedefault=True)
+
+
+class _KurtosisReconstructionMicrostructureOutputSpec(DipyReconOutputSpec):
+    awf = File()
+    rde = File()
+
+
+class KurtosisReconstructionMicrostructure(DipyReconInterface):
+    input_spec = _KurtosisReconstructionMicrostructureInputSpec
+    output_spec = _KurtosisReconstructionMicrostructureOutputSpec
+
+    def _run_interface(self, runtime):
+        gtab = self._get_gtab()
+        dwi_img = nb.load(self.inputs.dwi_file)
+        dwi_data = dwi_img.get_fdata(dtype="float32")
+        mask_img, mask_array = self._get_mask(dwi_img, gtab)
+
+        # Fit it
+        dkimodel = dki_micro.KurtosisMicrostructureModel(gtab)
+        dkifit = dkimodel.fit(dwi_data, mask_array)
+
+        # FA MD RD and AD
+        metric_attrs = {
+            "rde": "hindered_rd",
+        }
+        for metric in ["awf", "rde"]:
+            metric_attr = metric_attrs.get(metric, metric)
+            data = np.nan_to_num(getattr(dkifit, metric_attr).astype("float32"), 0)
+            out_name = fname_presuffix(
+                self.inputs.dwi_file,
+                suffix="DKIMicro" + metric,
+                newpath=runtime.cwd,
+                use_ext=True,
+            )
+            nb.Nifti1Image(data, dwi_img.affine).to_filename(out_name)
+            self._results[metric] = out_name
 
         return runtime
