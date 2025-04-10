@@ -15,7 +15,7 @@ import numpy as np
 from dipy.core.gradients import gradient_table
 from dipy.core.sphere import HemiSphere
 from dipy.io.utils import nifti1_symmat
-from dipy.reconst import dki, dti, mapmri
+from dipy.reconst import dki, dki_micro, dti, mapmri
 from dipy.segment.mask import median_otsu
 from nipype import logging
 from nipype.interfaces.base import (
@@ -531,16 +531,19 @@ class _KurtosisReconstructionInputSpec(DipyReconInputSpec):
 
 class _KurtosisReconstructionOutputSpec(DipyReconOutputSpec):
     tensor = File()
-    fa = File()
-    md = File()
-    rd = File()
     ad = File()
-    colorFA = File()
-    kfa = File()
-    mk = File()
     ak = File()
-    rk = File()
+    colorFA = File()
+    fa = File()
+    kfa = File()
+    linearity = File()
+    md = File()
+    mk = File()
     mkt = File()
+    planarity = File()
+    rd = File()
+    rk = File()
+    sphericity = File()
 
 
 class KurtosisReconstruction(DipyReconInterface):
@@ -565,8 +568,22 @@ class KurtosisReconstruction(DipyReconInterface):
         self._results["tensor"] = output_tensor_file
 
         # FA MD RD and AD
-        for metric in ["fa", "md", "rd", "ad", "colorFA", "kfa"]:
-            metric_attr = metric if metric != "colorFA" else "color_fa"
+        metric_attrs = {
+            "colorFA": "color_fa",
+        }
+        base_metrics = [
+            "ad",
+            "colorFA",
+            "fa",
+            "kfa",
+            "linearity",
+            "md",
+            "planarity",
+            "rd",
+            "sphericity",
+        ]
+        for metric in base_metrics:
+            metric_attr = metric_attrs.get(metric, metric)
             data = np.nan_to_num(getattr(dkifit, metric_attr).astype("float32"), 0)
             out_name = fname_presuffix(
                 self.inputs.dwi_file, suffix="DKI" + metric, newpath=runtime.cwd, use_ext=True
@@ -575,7 +592,8 @@ class KurtosisReconstruction(DipyReconInterface):
             self._results[metric] = out_name
 
         # Get the kurtosis metrics
-        for metric in ["mk", "ak", "rk", "mkt"]:
+        kurtosis_metrics = ["ak", "mk", "mkt", "rk"]
+        for metric in kurtosis_metrics:
             data = np.nan_to_num(
                 getattr(dkifit, metric)(
                     float(self.inputs.kurtosis_clip_min), float(self.inputs.kurtosis_clip_max)
@@ -584,6 +602,71 @@ class KurtosisReconstruction(DipyReconInterface):
             )
             out_name = fname_presuffix(
                 self.inputs.dwi_file, suffix="DKI" + metric, newpath=runtime.cwd, use_ext=True
+            )
+            nb.Nifti1Image(data, dwi_img.affine).to_filename(out_name)
+            self._results[metric] = out_name
+
+        return runtime
+
+
+class _KurtosisReconstructionMicrostructureInputSpec(DipyReconInputSpec):
+    kurtosis_clip_min = traits.Float(-0.42857142857142855, usedefault=True)
+    kurtosis_clip_max = traits.Float(10.0, usedefault=True)
+
+
+class _KurtosisReconstructionMicrostructureOutputSpec(DipyReconOutputSpec):
+    ad = File()
+    ade = File()
+    awf = File()
+    axonald = File()
+    kfa = File()
+    md = File()
+    rd = File()
+    rde = File()
+    tortuosity = File()
+    trace = File()
+
+
+class KurtosisReconstructionMicrostructure(DipyReconInterface):
+    input_spec = _KurtosisReconstructionMicrostructureInputSpec
+    output_spec = _KurtosisReconstructionMicrostructureOutputSpec
+
+    def _run_interface(self, runtime):
+        gtab = self._get_gtab()
+        dwi_img = nb.load(self.inputs.dwi_file)
+        dwi_data = dwi_img.get_fdata(dtype="float32")
+        mask_img, mask_array = self._get_mask(dwi_img, gtab)
+
+        # Fit it
+        dkimodel = dki_micro.KurtosisMicrostructureModel(gtab)
+        dkifit = dkimodel.fit(dwi_data, mask_array)
+
+        # FA MD RD and AD
+        metric_attrs = {
+            "ade": "hindered_ad",
+            "rde": "hindered_rd",
+            "axonald": "axonal_diffusivity",
+        }
+        base_metrics = [
+            "ad",
+            "ade",
+            "awf",
+            "axonald",
+            "kfa",
+            "md",
+            "rd",
+            "rde",
+            "tortuosity",
+            "trace",
+        ]
+        for metric in base_metrics:
+            metric_attr = metric_attrs.get(metric, metric)
+            data = np.nan_to_num(getattr(dkifit, metric_attr).astype("float32"), 0)
+            out_name = fname_presuffix(
+                self.inputs.dwi_file,
+                suffix="DKIMicro" + metric,
+                newpath=runtime.cwd,
+                use_ext=True,
             )
             nb.Nifti1Image(data, dwi_img.affine).to_filename(out_name)
             self._results[metric] = out_name
