@@ -43,6 +43,10 @@ authors:
     given-names: Michael
     affiliation: Max Planck Institute for Human Development, Berlin, Germany
     orcid: https://orcid.org/0000-0002-3878-6542
+  - family-names: Raikes
+    given-names: Adam
+    affiliation: Center for Innovation in Brain Science, University of Arizona
+    orcid: https://orcid.org/0000-0002-1609-6727
   - family-names: Sadil
     given-names: Patrick
     affiliation: Johns Hopkins Bloomberg School of Public Health
@@ -167,5 +171,5 @@ keywords:
   - BIDS
   - BIDS-App
 license: BSD-3-Clause
-version: 1.0.1
-date-released: '2025-03-11'
+version: 1.1.0
+date-released: '2025-04-14'
