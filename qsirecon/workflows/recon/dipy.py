@@ -19,6 +19,7 @@ from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.dipy import (
     BrainSuiteShoreReconstruction,
     KurtosisReconstruction,
+    KurtosisReconstructionMicrostructure,
     MAPMRIReconstruction,
 )
 from ...interfaces.interchange import recon_workflow_input_fields
@@ -571,6 +572,10 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
         ak
         rk
         mkt
+        awf
+            Only if wmti is True
+        rde
+            Only if wmti is True
 
     Params
 
@@ -590,16 +595,31 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
         niu.IdentityInterface(
             fields=[
                 "tensor",
-                "fa",
-                "md",
-                "rd",
-                "ad",
                 "colorFA",
-                "kfa",
-                "mk",
+                "ad",
                 "ak",
-                "rk",
+                "fa",
+                "kfa",
+                "linearity",
+                "md",
+                "mk",
                 "mkt",
+                "planarity",
+                "rd",
+                "rk",
+                "sphericity",
+                # Only if wmti is True
+                "dkimicro_ad",
+                "dkimicro_ade",
+                "dkimicro_awf",
+                "dkimicro_axonald",
+                "dkimicro_kfa",
+                "dkimicro_md",
+                "dkimicro_rd",
+                "dkimicro_rde",
+                "dkimicro_tortuosity",
+                "dkimicro_trace",
+                # Aggregated scalars
                 "recon_scalars",
             ]
         ),
@@ -612,7 +632,10 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
     )
     workflow = Workflow(name=name)
     desc = "#### Dipy Reconstruction\n\n"
+
     plot_reports = not config.execution.skip_odf_reports
+    micro_metrics = params.pop("wmti", False)
+
     recon_dki = pe.Node(KurtosisReconstruction(**params), name="recon_dki")
 
     workflow.connect([
@@ -620,32 +643,80 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
             ('dwi_file', 'dwi_file'),
             ('bval_file', 'bval_file'),
             ('bvec_file', 'bvec_file'),
-            ('dwi_mask', 'mask_file')]),
+            ('dwi_mask', 'mask_file'),
+        ]),
         (recon_dki, outputnode, [
             ('tensor', 'tensor'),
-            ('fa', 'fa'),
-            ('md', 'md'),
-            ('rd', 'rd'),
+            ('fibgz', 'fibgz'),
             ('ad', 'ad'),
-            ('colorFA', 'colorFA'),
-            ('kfa', 'kfa'),
-            ('mk', 'mk'),
             ('ak', 'ak'),
-            ('rk', 'rk'),
+            ('colorFA', 'colorFA'),
+            ('fa', 'fa'),
+            ('kfa', 'kfa'),
+            ('linearity', 'linearity'),
+            ('md', 'md'),
+            ('mk', 'mk'),
             ('mkt', 'mkt'),
-            ('fibgz', 'fibgz')]),
+            ('planarity', 'planarity'),
+            ('rd', 'rd'),
+            ('rk', 'rk'),
+            ('sphericity', 'sphericity'),
+        ]),
         (recon_dki, recon_scalars, [
-            ('fa', 'dki_fa'),
-            ('md', 'dki_md'),
-            ('rd', 'dki_rd'),
             ('ad', 'dki_ad'),
-            ('kfa', 'dki_kfa'),
-            ('mk', 'dki_mk'),
             ('ak', 'dki_ak'),
+            ('fa', 'dki_fa'),
+            ('kfa', 'dki_kfa'),
+            ('linearity', 'dki_linearity'),
+            ('md', 'dki_md'),
+            ('mk', 'dki_mk'),
+            ('mkt', 'dki_mkt'),
+            ('planarity', 'dki_planarity'),
+            ('rd', 'dki_rd'),
             ('rk', 'dki_rk'),
-            ('mkt', 'dki_mkt')]),
-        (recon_scalars, outputnode, [("scalar_info", "recon_scalars")])
+            ('sphericity', 'dki_sphericity'),
+        ]),
+        (recon_scalars, outputnode, [("scalar_info", "recon_scalars")]),
     ])  # fmt:skip
+
+    if micro_metrics:
+        recon_dkimicro = pe.Node(
+            KurtosisReconstructionMicrostructure(**params),
+            name="recon_dkimicro",
+        )
+        # Only produce microstructural metrics if wmti is True
+        workflow.connect([
+            (inputnode, recon_dkimicro, [
+                ('dwi_file', 'dwi_file'),
+                ('bval_file', 'bval_file'),
+                ('bvec_file', 'bvec_file'),
+                ('dwi_mask', 'mask_file'),
+            ]),
+            (recon_dkimicro, outputnode, [
+                ('ad', 'dkimicro_ad'),
+                ('ade', 'dkimicro_ade'),
+                ('awf', 'dkimicro_awf'),
+                ('axonald', 'dkimicro_axonald'),
+                ('kfa', 'dkimicro_kfa'),
+                ('md', 'dkimicro_md'),
+                ('rd', 'dkimicro_rd'),
+                ('rde', 'dkimicro_rde'),
+                ('tortuosity', 'dkimicro_tortuosity'),
+                ('trace', 'dkimicro_trace'),
+            ]),
+            (recon_dkimicro, recon_scalars, [
+                ('ad', 'dkimicro_ad'),
+                ('ade', 'dkimicro_ade'),
+                ('awf', 'dkimicro_awf'),
+                ('axonald', 'dkimicro_axonald'),
+                ('kfa', 'dkimicro_kfa'),
+                ('md', 'dkimicro_md'),
+                ('rd', 'dkimicro_rd'),
+                ('rde', 'dkimicro_rde'),
+                ('tortuosity', 'dkimicro_tortuosity'),
+                ('trace', 'dkimicro_trace'),
+            ]),
+        ])  # fmt:skip
 
     if plot_reports and False:
         plot_peaks = pe.Node(

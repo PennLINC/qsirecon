@@ -3,52 +3,136 @@ dki_ad:
         model: dki
         param: ad
     metadata:
-        Description: DKI AD
+        Description: DKI axial diffusivity
 dki_ak:
     bids:
         model: dki
         param: ak
     metadata:
-        Description: DKI AK
+        Description: DKI axial kurtosis
 dki_fa:
     bids:
         model: tensor
         param: fa
     metadata:
-        Description: DKI FA
+        Description: DKI fractional anisotropy
 dki_kfa:
     bids:
         model: dki
         param: kfa
     metadata:
-        Description: DKI KFA
+        Description: DKI kurtosis fractional anisotropy
+dki_linearity:
+    bids:
+        model: dki
+        param: linearity
+    metadata:
+        Description: DKI linearity
 dki_md:
     bids:
         model: dki
         param: md
     metadata:
-        Description: DKI MD
+        Description: DKI mean diffusivity
 dki_mk:
     bids:
         model: dki
         param: mk
     metadata:
-        Description: DKI MK
+        Description: DKI mean kurtosis
 dki_mkt:
     bids:
         model: dki
         param: mkt
     metadata:
-        Description: DKI MKT
+        Description: DKI mean of the kurtosis tensor
+dki_planarity:
+    bids:
+        model: dki
+        param: planarity
+    metadata:
+        Description: DKI planarity
 dki_rd:
     bids:
         model: dki
         param: rd
     metadata:
-        Description: DKI RD
+        Description: DKI radial diffusivity
 dki_rk:
     bids:
         model: dki
         param: rk
     metadata:
-        Description: DKI RK
+        Description: DKI radial kurtosis
+dki_sphericity:
+    bids:
+        model: dki
+        param: sphericity
+    metadata:
+        Description: DKI sphericity
+dkimicro_ad:
+    bids:
+        model: dkimicro
+        param: ad
+    metadata:
+        Description: DKI Microstructural Axial Diffusivity
+dkimicro_ade:
+    bids:
+        model: dkimicro
+        param: ade
+    metadata:
+        Description: DKI Microstructural Axial Diffusivity of the Extra-Cellular Compartment
+dkimicro_ak:
+    bids:
+        model: dkimicro
+        param: ak
+    metadata:
+        Description: DKI Microstructural Axial Kurtosis
+dkimicro_awf:
+    bids:
+        model: dkimicro
+        param: awf
+    metadata:
+        Description: DKI axonal water fraction
+dkimicro_axonald:
+    bids:
+        model: dkimicro
+        param: axonald
+    metadata:
+        Description: DKI Microstructural Axonal Diffusivity
+dkimicro_kfa:
+    bids:
+        model: dkimicro
+        param: kfa
+    metadata:
+        Description: DKI Microstructural Kurtosis Fractional Anisotropy
+dkimicro_md:
+    bids:
+        model: dkimicro
+        param: md
+    metadata:
+        Description: DKI Microstructural Mean Diffusivity
+dkimicro_rd:
+    bids:
+        model: dkimicro
+        param: rd
+    metadata:
+        Description: DKI Microstructural Radial Diffusivity
+dkimicro_rde:
+    bids:
+        model: dkimicro
+        param: rde
+    metadata:
+        Description: DKI radial diffusivity of the extra-cellular compartment
+dkimicro_tortuosity:
+    bids:
+        model: dkimicro
+        param: tortuosity
+    metadata:
+        Description: DKI Microstructural Tortuosity
+dkimicro_trace:
+    bids:
+        model: dkimicro
+        param: trace
+    metadata:
+        Description: DKI Microstructural Trace

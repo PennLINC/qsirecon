@@ -1,5 +1,23 @@
 # What's New
 
+## 1.1.0
+
+### 🎉 Exciting New Features
+
+* Tissue fraction modulated ICVF and OD maps by @araikes in https://github.com/PennLINC/qsirecon/pull/218
+* Calculate kurtosis microstructure scalars with new `DKI_reconstruction` parameter by @tsalo in https://github.com/PennLINC/qsirecon/pull/223
+
+### Other Changes
+
+* Add `smoothing` and `otsu_threshold` autotrack arguments by @smeisler in https://github.com/PennLINC/qsirecon/pull/219
+* Allow desc entity in recon scalar derivatives by @tsalo in https://github.com/PennLINC/qsirecon/pull/220
+
+## New Contributors
+
+* @araikes made their first contribution in https://github.com/PennLINC/qsirecon/pull/218
+
+**Full Changelog**: https://github.com/PennLINC/qsirecon/compare/1.0.1...1.1.0
+
 ## 1.0.1
 
 ### 🎉 Exciting New Features
