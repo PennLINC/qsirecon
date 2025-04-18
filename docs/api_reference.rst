@@ -5,4 +5,5 @@ API Documentation
 .. toctree::
     :glob:
 
-    api/qsirecon.*
+    api/qsirecon.workflows
+    api/qsirecon.interfaces
