@@ -44,21 +44,25 @@ needs_sphinx = "4.2.0"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "nbsphinx",
+    # "matplotlib.sphinxext.plot_directive",
+    # "nbsphinx",
     "nipype.sphinxext.apidoc",
     "nipype.sphinxext.plot_workflow",
     "recommonmark",
     "sphinx.ext.autodoc",
     "sphinx.ext.coverage",
     "sphinx.ext.doctest",
+    # "sphinx.ext.graphviz",
+    # "sphinx.ext.inheritance_diagram",
     "sphinx.ext.intersphinx",
     "sphinx.ext.linkcode",
     "sphinx.ext.mathjax",
-    "sphinx.ext.napoleon",
+    # "sphinx.ext.napoleon",
     "sphinx_markdown_tables",
     "sphinxarg.ext",  # argparse extension
     "sphinxcontrib.apidoc",
     "sphinxcontrib.bibtex",
+    "sphinx_design",
 ]
 
 # Mock modules in autodoc:
@@ -145,6 +149,38 @@ pygments_style = "default"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
+
+# -----------------------------------------------------------------------------
+# Napoleon settings
+# -----------------------------------------------------------------------------
+napoleon_google_docstring = False
+napoleon_numpy_docstring = True
+napoleon_include_init_with_doc = True
+napoleon_include_private_with_doc = False
+napoleon_include_special_with_doc = False
+napoleon_use_admonition_for_examples = True
+napoleon_use_admonition_for_notes = True
+napoleon_use_admonition_for_references = True
+napoleon_use_ivar = True
+napoleon_use_keyword = True
+napoleon_use_rtype = True
+napoleon_preprocess_types = False
+napoleon_type_aliases = None
+napoleon_attr_annotations = True
+
+# Accept custom section names to be parsed for numpy-style docstrings
+# of parameters.
+# Requires pinning sphinxcontrib-napoleon to a specific commit while
+# https://github.com/sphinx-contrib/napoleon/pull/10 is merged.
+napoleon_use_param = False
+napoleon_custom_sections = [
+    ("Inputs", "Parameters"),
+    ("Outputs", "Parameters"),
+    ("Attributes", "Parameters"),
+    ("Mandatory Inputs", "Parameters"),
+    ("Optional Inputs", "Parameters"),
+    ("License", "License"),
+]
 
 # -- Extension configuration -------------------------------------------------
 apidoc_module_dir = "../qsirecon"
@@ -375,32 +411,7 @@ bibtex_footbibliography_header = ""
 
 
 def setup(app):
-    """Add extra formatting files and configure extensions."""
+    """Add extra formatting files."""
     app.add_css_file("theme_overrides.css")
     # We need this for the boilerplate script
     app.add_js_file("https://cdn.rawgit.com/chrisfilo/zenodo.js/v0.1/zenodo.js")
-
-    # Napoleon settings moved here
-    app.config.napoleon_google_docstring = False  # Explicitly set google format off if needed
-    app.config.napoleon_numpy_docstring = True
-    app.config.napoleon_include_init_with_doc = True
-    app.config.napoleon_include_private_with_doc = False
-    app.config.napoleon_include_special_with_doc = False
-    app.config.napoleon_use_admonition_for_examples = True
-    app.config.napoleon_use_admonition_for_notes = True
-    app.config.napoleon_use_admonition_for_references = True
-    app.config.napoleon_use_ivar = True
-    app.config.napoleon_use_keyword = True
-    app.config.napoleon_use_rtype = True
-    app.config.napoleon_preprocess_types = False
-    app.config.napoleon_type_aliases = None
-    app.config.napoleon_attr_annotations = True
-    app.config.napoleon_use_param = False
-    app.config.napoleon_custom_sections = [
-        ("Inputs", "Parameters"),
-        ("Outputs", "Parameters"),
-        ("Attributes", "Parameters"),
-        ("Mandatory Inputs", "Parameters"),
-        ("Optional Inputs", "Parameters"),
-        ("License", "License"),
-    ]
