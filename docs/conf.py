@@ -44,20 +44,25 @@ needs_sphinx = "4.2.0"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "nbsphinx",
+    # "matplotlib.sphinxext.plot_directive",
+    # "nbsphinx",
     "nipype.sphinxext.apidoc",
     "nipype.sphinxext.plot_workflow",
     "recommonmark",
     "sphinx.ext.autodoc",
     "sphinx.ext.coverage",
     "sphinx.ext.doctest",
+    # "sphinx.ext.graphviz",
+    # "sphinx.ext.inheritance_diagram",
     "sphinx.ext.intersphinx",
     "sphinx.ext.linkcode",
     "sphinx.ext.mathjax",
+    # "sphinx.ext.napoleon",
     "sphinx_markdown_tables",
     "sphinxarg.ext",  # argparse extension
     "sphinxcontrib.apidoc",
     "sphinxcontrib.bibtex",
+    "sphinx_design",
 ]
 
 # Mock modules in autodoc:
