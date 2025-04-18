@@ -54,6 +54,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.linkcode",
     "sphinx.ext.mathjax",
+    "sphinx.ext.napoleon",
     "sphinx_markdown_tables",
     "sphinxarg.ext",  # argparse extension
     "sphinxcontrib.apidoc",
