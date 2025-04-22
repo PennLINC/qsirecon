@@ -17,7 +17,7 @@ classifiers = [
 license = {file = "LICENSE"}
 requires-python = ">=3.10"
 dependencies = [
-    "numpy >= 2.0",
+    "numpy <= 1.26.3",
     'importlib_resources; python_version < "3.11"',
     "dipy>=1.10.0,<1.11.0",
     "dmri-amico == 2.0.3",
