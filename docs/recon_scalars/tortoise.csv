@@ -6,7 +6,7 @@ mapmri,path,PAth from MAPMRI
 mapmri,rtap,Return to axis probability from MAPMRI
 mapmri,rtop,Return to origin probability from MAPMRI
 mapmri,rtpp,Return to plane probability from MAPMRI
-tensor,ad,Apparent Diffusivity from a tensor fit
+tensor,ad,Axial Diffusivity (first eigenvalue) from a tensor fit
 tensor,am,A0 from a tensor fit
 tensor,fa,Fractional Anisotropy from a tensor fit
 tensor,li,LI from a tensor fit
