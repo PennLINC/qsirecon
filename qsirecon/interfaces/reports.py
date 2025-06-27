@@ -425,7 +425,7 @@ def plot_scalar_map(
     dseg=None,
     vmin=None,
     vmax=None,
-    cmap='Reds',
+    cmap="Reds",
 ):
     """Plot a scalar map with a histogram of the voxel-wise values."""
     import seaborn as sns
@@ -435,13 +435,13 @@ def plot_scalar_map(
     overlay_masked = masking.unmask(masking.apply_mask(overlay, mask), mask)
 
     if dseg is not None:
-        tissue_types = ['GM', 'WM', 'CSF']
+        tissue_types = ["GM", "WM", "CSF"]
         tissue_values = [1, 2, 3]
-        tissue_colors = ['#1b60a5', '#2da467', '#9d8f25']
+        tissue_colors = ["#1b60a5", "#2da467", "#9d8f25"]
     else:
-        tissue_types = ['Brain']
+        tissue_types = ["Brain"]
         tissue_values = [1]
-        tissue_colors = ['#1b60a5']
+        tissue_colors = ["#1b60a5"]
         dseg = mask
 
     tissue_palette = dict(zip(tissue_types, tissue_colors))
@@ -451,24 +451,24 @@ def plot_scalar_map(
     for i_tissue_type, tissue_type in enumerate(tissue_types):
         tissue_type_val = tissue_values[i_tissue_type]
         mask_img = image.math_img(
-            f'(img == {tissue_type_val}).astype(int)',
+            f"(img == {tissue_type_val}).astype(int)",
             img=dseg,
         )
         tissue_type_vals = masking.apply_mask(overlay, mask_img)
         df = pd.DataFrame(
-            columns=['Data', 'Tissue Type'],
+            columns=["Data", "Tissue Type"],
             data=list(map(list, zip(*[tissue_type_vals, [tissue_type] * tissue_type_vals.size]))),
         )
         dfs.append(df)
 
     df = pd.concat(dfs, axis=0)
     ax0, ax1, ax2 = axes
-    with sns.axes_style('whitegrid'), sns.plotting_context(font_scale=3):
+    with sns.axes_style("whitegrid"), sns.plotting_context(font_scale=3):
         sns.kdeplot(
             data=df,
-            x='Data',
+            x="Data",
             palette=tissue_palette,
-            hue='Tissue Type',
+            hue="Tissue Type",
             fill=True,
             ax=ax0,
         )
@@ -496,15 +496,15 @@ def plot_scalar_map(
     # Plot the scalar map
     # The colormap is set to Reds, but we want to use the same colormap as the histogram.
     if xmin < 0:
-        kwargs = {'symmetric_cbar': True}
+        kwargs = {"symmetric_cbar": True}
     else:
-        kwargs = {'symmetric_cbar': False, 'vmin': xmin}
+        kwargs = {"symmetric_cbar": False, "vmin": xmin}
 
     plotting.plot_stat_map(
         stat_map_img=overlay_masked,
         bg_img=underlay,
-        resampling_interpolation='nearest',
-        display_mode='z',
+        resampling_interpolation="nearest",
+        display_mode="z",
         cut_coords=z_cuts,
         threshold=0.00001,
         draw_cross=False,
