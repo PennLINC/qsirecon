@@ -324,7 +324,7 @@ class _ConnectivityReportInputSpec(BaseInterfaceInputSpec):
 
 
 class _ConnectivityReportOutputSpec(reporting.ReportCapableOutputSpec):
-    odf_report = File(exists=True)
+    out_report = File(exists=True)
 
 
 class ConnectivityReport(SimpleInterface):
@@ -362,3 +362,148 @@ class ConnectivityReport(SimpleInterface):
         fig.savefig(conn_report)
         self._results["out_report"] = conn_report
         return runtime
+
+
+class _ScalarReportInputSpec(BaseInterfaceInputSpec):
+    underlay = File(mandatory=True, exists=True)
+    scalar_maps = InputMultiPath(File(exists=True), mandatory=True)
+    scalar_names = traits.List(Str, mandatory=True)
+    dseg = File(mandatory=False, exists=True)
+    mask_file = File(mandatory=True, exists=True)
+
+
+class _ScalarReportOutputSpec(reporting.ReportCapableOutputSpec):
+    out_report = File(exists=True)
+
+
+class ScalarReport(SimpleInterface):
+    """Plot scalar maps in a matrix of images."""
+
+    input_spec = _ScalarReportInputSpec
+    output_spec = _ScalarReportOutputSpec
+
+    def _run_interface(self, runtime):
+        """Generate a reportlet."""
+        import matplotlib.pyplot as plt
+        import nibabel as nb
+        from nireports.reportlets.utils import cuts_from_bbox
+
+        n_scalars = len(self.inputs.scalar_maps)
+        fig, axes = plt.subplots(
+            nrows=n_scalars,
+            ncols=3,
+            figsize=(43, 6 * n_scalars),
+            gridspec_kw=dict(width_ratios=[6, 36, 0.25], wspace=0),
+        )
+
+        cuts = cuts_from_bbox(nb.load(self.inputs.underlay), cuts=6)
+        z_cuts = cuts['z']
+        for i_scalar, scalar_map in enumerate(self.inputs.scalar_maps):
+            scalar_name = self.inputs.scalar_names[i_scalar]
+            plot_scalar_map(
+                underlay=self.inputs.underlay,
+                overlay=scalar_map,
+                title=scalar_name,
+                z_cuts=z_cuts,
+                axes=axes[i_scalar, :],
+                dseg=self.inputs.dseg if isdefined(self.inputs.dseg) else None,
+                mask=self.inputs.mask_file,
+            )
+
+        self._results["out_report"] = op.join(runtime.cwd, "scalar_report.svg")
+        fig.savefig(self._results["out_report"])
+        return runtime
+
+
+def plot_scalar_map(underlay, overlay, mask, title, z_cuts, axes, dseg=None, vmin=None, vmax=None, cmap='Reds'):
+    """Plot a scalar map with a histogram of the voxel-wise values."""
+    import seaborn as sns
+    from matplotlib import cm
+    from nilearn import image, masking, plotting
+
+    overlay_masked = masking.unmask(masking.apply_mask(overlay, mask), mask)
+
+    if dseg is not None:
+        tissue_types = ['GM', 'WM', 'CSF']
+        tissue_values = [1, 2, 3]
+        tissue_colors = ['#1b60a5', '#2da467', '#9d8f25']
+    else:
+        tissue_types = ['Brain']
+        tissue_values = [1]
+        tissue_colors = ['#1b60a5']
+        dseg = mask
+
+    tissue_palette = dict(zip(tissue_types, tissue_colors))
+
+    # Extract voxel-wise values for the histogram
+    dfs = []
+    for i_tissue_type, tissue_type in enumerate(tissue_types):
+        tissue_type_val = tissue_values[i_tissue_type]
+        mask_img = image.math_img(
+            f'(img == {tissue_type_val}).astype(int)',
+            img=dseg,
+        )
+        tissue_type_vals = masking.apply_mask(overlay, mask_img)
+        df = pd.DataFrame(
+            columns=['Data', 'Tissue Type'],
+            data=list(map(list, zip(*[tissue_type_vals, [tissue_type] * tissue_type_vals.size]))),
+        )
+        dfs.append(df)
+
+    df = pd.concat(dfs, axis=0)
+    ax0, ax1, ax2 = axes
+    with sns.axes_style('whitegrid'), sns.plotting_context(font_scale=3):
+        sns.kdeplot(
+            data=df,
+            x='Data',
+            palette=tissue_palette,
+            hue='Tissue Type',
+            fill=True,
+            ax=ax0,
+        )
+
+    # We want the x-ticks of the histogram to match the colorbar ticks for the map image
+    xticks = ax0.get_xticklabels()
+    xlim = list(ax0.get_xlim())
+    if vmin is not None:
+        xlim[0] = vmin
+
+    if vmax is not None:
+        xlim[1] = vmax
+
+    ax0.set_xlim(xlim)
+    ax0.set_title(title)
+
+    xticks = [i for i in xticks if i.get_position()[0] <= xlim[1] and i.get_position()[0] >= xlim[0]]
+    xticklabels = [xtick.get_text() for xtick in xticks]
+    xticks = [xtick.get_position()[0] for xtick in xticks]
+    xmin = xlim[0]
+    xmax = xlim[1]
+
+    # Plot the scalar map
+    # The colormap is set to Reds, but we want to use the same colormap as the histogram.
+    if xmin < 0:
+        kwargs = {'symmetric_cbar': True}
+    else:
+        kwargs = {'symmetric_cbar': False, 'vmin': xmin}
+
+    plotting.plot_stat_map(
+        stat_map_img=overlay_masked,
+        bg_img=underlay,
+        resampling_interpolation='nearest',
+        display_mode='z',
+        cut_coords=z_cuts,
+        threshold=0.00001,
+        draw_cross=False,
+        colorbar=False,
+        black_bg=False,
+        vmax=xmax,
+        axes=ax1,
+        cmap=cmap,
+        **kwargs,
+    )
+    mappable = cm.ScalarMappable(norm=plt.Normalize(vmin=xmin, vmax=xmax), cmap=cmap)
+    cbar = plt.colorbar(cax=ax2, mappable=mappable)
+    cbar.set_ticks(xticks)
+    cbar.set_ticklabels(xticklabels)
+    return
