@@ -231,6 +231,7 @@ were also computed (@parker2021not)."""
                 datatype="figures",
                 desc="scalars",
                 suffix="dwimap",
+                dismiss_entities=["dsistudiotemplate"],
             ),
             name="ds_report_scalars",
             run_without_submitting=True,
