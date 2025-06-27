@@ -524,7 +524,7 @@ def plot_scalar_map(
     if xmin < 0:
         kwargs = {"symmetric_cbar": True}
     else:
-        kwargs = {"symmetric_cbar": False, "vmin": xmin}
+        kwargs = {"symmetric_cbar": False}
 
     plotting.plot_stat_map(
         stat_map_img=overlay,
