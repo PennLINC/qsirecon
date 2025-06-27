@@ -385,7 +385,6 @@ class ScalarReport(SimpleInterface):
     def _run_interface(self, runtime):
         """Generate a reportlet."""
         import matplotlib.pyplot as plt
-        import nibabel as nb
         from nilearn import image
         from nireports.reportlets.utils import cuts_from_bbox
 
