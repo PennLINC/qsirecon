@@ -418,7 +418,7 @@ class ScalarReport(SimpleInterface):
                 interpolation="nearest",
             )
 
-        cuts = cuts_from_bbox(resampled_underlay, cuts=6)
+        cuts = cuts_from_bbox(underlay_masked, cuts=6)
         z_cuts = cuts["z"]
         for i_scalar, scalar_img in enumerate(scalar_imgs):
             scalar_name = scalar_metadata[i_scalar]["metadata"]["Description"]
