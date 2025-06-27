@@ -4,6 +4,7 @@ ad_file:
         param: ad
     metadata:
         Description: Axial Diffusivity from a tensor fit. The first eigenvalue of the tensor.
+        Units: mm^2/s
 dti_fa_file:
     bids:
         model: tensor

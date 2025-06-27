@@ -4,6 +4,7 @@ dki_ad:
         param: ad
     metadata:
         Description: DKI axial diffusivity
+        Units: μm^2/ms
 dki_ak:
     bids:
         model: dki
