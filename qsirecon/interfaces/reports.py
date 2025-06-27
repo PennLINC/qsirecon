@@ -386,6 +386,7 @@ class ScalarReport(SimpleInterface):
         """Generate a reportlet."""
         import matplotlib.pyplot as plt
         import nibabel as nb
+        from nilearn import image
         from nireports.reportlets.utils import cuts_from_bbox
 
         n_scalars = len(self.inputs.scalar_maps)
@@ -396,18 +397,30 @@ class ScalarReport(SimpleInterface):
             gridspec_kw=dict(width_ratios=[6, 36, 0.25], wspace=0),
         )
 
-        cuts = cuts_from_bbox(nb.load(self.inputs.underlay), cuts=6)
+        underlay = self.inputs.underlay
+        resampled_underlay = image.resample_to_img(underlay, self.inputs.scalar_maps[0])
+        resampled_mask = image.resample_to_img(self.inputs.mask_file, self.inputs.scalar_maps[0])
+
+        dseg = None
+        if isdefined(self.inputs.dseg):
+            dseg = image.resample_to_img(
+                self.inputs.dseg,
+                self.inputs.scalar_maps[0],
+                interpolation="nearest",
+            )
+
+        cuts = cuts_from_bbox(resampled_underlay, cuts=6)
         z_cuts = cuts["z"]
         for i_scalar, scalar_map in enumerate(self.inputs.scalar_maps):
             scalar_name = self.inputs.scalar_metadata[i_scalar]["metadata"]["Description"]
             plot_scalar_map(
-                underlay=self.inputs.underlay,
+                underlay=resampled_underlay,
                 overlay=scalar_map,
                 title=scalar_name,
                 z_cuts=z_cuts,
                 axes=axes[i_scalar, :],
-                dseg=self.inputs.dseg if isdefined(self.inputs.dseg) else None,
-                mask=self.inputs.mask_file,
+                dseg=dseg,
+                mask=resampled_mask,
             )
 
         self._results["out_report"] = op.join(runtime.cwd, "scalar_report.svg")
