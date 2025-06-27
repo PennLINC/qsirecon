@@ -3,7 +3,7 @@ ad_file:
         model: tensor
         param: ad
     metadata:
-        Description: Apparent Diffusivity from a tensor fit
+        Description: Axial Diffusivity from a tensor fit
 am_file:
     bids:
         model: tensor

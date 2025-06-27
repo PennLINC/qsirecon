@@ -1,11 +1,11 @@
-dki,ad,DKI AD
-dki,ak,DKI AK
-dki,kfa,DKI KFA
-dki,md,DKI MD
-dki,mk,DKI MK
-dki,mkt,DKI MKT
-dki,rd,DKI RD
-dki,rk,DKI RK
+dki,ad,DKI Axial Diffusivity
+dki,ak,DKI Axial Kurtosis
+dki,kfa,DKI Kurtosis Fractional Anisotropy
+dki,md,DKI Mean Diffusivity
+dki,mk,DKI Mean Kurtosis
+dki,mkt,DKI Mean Kurtosis Tensor
+dki,rd,DKI Radial Diffusivity
+dki,rk,DKI Radial Kurtosis
 gqi,gfa,Generalized Fractional Anisotropy
 gqi,iso,Isotropic Diffusion from GQI
 gqi,qa,Quantitative Anisotropy from a GQI fit
@@ -17,17 +17,15 @@ mapmri,path,PAth from MAPMRI
 mapmri,rtap,Return to axis probability from MAPMRI
 mapmri,rtop,Return to origin probability from MAPMRI
 mapmri,rtpp,Return to plane probability from MAPMRI
-rdi,rd1,RD1
-rdi,rd2,RD2
-tensor,ad,Apparent Diffusivity from a tensor fit
+tensor,ad,Axial Diffusivity (first eigenvalue) from a tensor fit
 tensor,am,A0 from a tensor fit
-tensor,fa,DKI FA
 tensor,fa,Fractional Anisotropy from a tensor fit
-tensor,fa,Radial Diffusivity from a tensor fit
 tensor,ha,Helix Angle from tensor fit
 tensor,li,LI from a tensor fit
 tensor,md,Mean Diffusivity from a tensor fit
-tensor,rd,Radial Diffusivity
+tensor,rd,Radial Diffusivity from a tensor fit
+tensor,rd1,Lambda 2 (second eigenvalue) from a tensor fit
+tesnor,rd2,Lambda 3 (third eigenvalue) from a tensor fit
 tensor,txx,Tensor fit txx
 tensor,txy,Tensor fit txy
 tensor,txz,Tensor fit txz
