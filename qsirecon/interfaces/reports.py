@@ -387,7 +387,7 @@ class ScalarReport(SimpleInterface):
         import matplotlib.pyplot as plt
         import nibabel as nb
         from nilearn import image
-        from nilearn.masking import unmask, apply_mask
+        from nilearn.masking import apply_mask, unmask
         from nireports.reportlets.utils import cuts_from_bbox
 
         scalar_imgs = [nb.load(scalar_map) for scalar_map in self.inputs.scalar_maps]
@@ -423,8 +423,8 @@ class ScalarReport(SimpleInterface):
         for i_scalar, scalar_img in enumerate(scalar_imgs):
             scalar_name = scalar_metadata[i_scalar]["metadata"]["Description"]
             kwargs = {}
-            if 'figure' in scalar_metadata[i_scalar].keys():
-                kwargs = scalar_metadata[i_scalar]['figure']
+            if "figure" in scalar_metadata[i_scalar].keys():
+                kwargs = scalar_metadata[i_scalar]["figure"]
 
             overlay_masked = unmask(apply_mask(scalar_img, resampled_mask), resampled_mask)
             plot_scalar_map(
