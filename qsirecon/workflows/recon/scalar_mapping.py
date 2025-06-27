@@ -19,7 +19,6 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import ReconScalarsTableSplitterDataSink
-from ...interfaces.reports import ScalarReport
 from ...interfaces.scalar_mapping import BundleMapper, TemplateMapper
 from ...utils.bids import clean_datasinks
 from .utils import init_scalar_output_wf
@@ -188,33 +187,6 @@ def init_scalar_to_template_wf(
         ]),
         (template_mapper, outputnode, [("template_space_scalars", "template_scalars")]),
     ])  # fmt:skip
-
-    # Create a reportlet for the scalar maps
-    scalar_report = pe.Node(
-        ScalarReport(),
-        name="scalar_report",
-    )
-    workflow.connect([
-        (inputnode, scalar_report, [
-            ("resampling_template", "underlay"),
-            ("dwi_mask", "mask_file"),
-            ("collected_scalars", "scalar_metadata"),
-        ]),
-        (outputnode, scalar_report, [("template_scalars", "scalar_maps")]),
-    ])  # fmt:skip
-
-    ds_scalars_figure = pe.Node(
-        DerivativesDataSink(
-            dismiss_entities=["desc"],
-            datatype="dwi",
-            desc="scalars",
-            suffix="dwimap",
-            extension="nii.gz",
-        ),
-        name="ds_scalars_figure",
-        run_without_submitting=True,
-    )
-    workflow.connect([(scalar_report, ds_scalars_figure, [("out_report", "in_file")])])
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
