@@ -366,8 +366,8 @@ class ConnectivityReport(SimpleInterface):
 
 class _ScalarReportInputSpec(BaseInterfaceInputSpec):
     underlay = File(mandatory=True, exists=True)
-    scalar_maps = InputMultiPath(File(exists=True), mandatory=True)
-    scalar_names = traits.List(Str, mandatory=True)
+    scalar_maps = traits.List(File(exists=True), mandatory=True)
+    scalar_metadata = traits.List(traits.Dict, mandatory=True)
     dseg = File(mandatory=False, exists=True)
     mask_file = File(mandatory=True, exists=True)
 
@@ -399,7 +399,7 @@ class ScalarReport(SimpleInterface):
         cuts = cuts_from_bbox(nb.load(self.inputs.underlay), cuts=6)
         z_cuts = cuts["z"]
         for i_scalar, scalar_map in enumerate(self.inputs.scalar_maps):
-            scalar_name = self.inputs.scalar_names[i_scalar]
+            scalar_name = self.inputs.scalar_metadata[i_scalar]["metadata"]["Description"]
             plot_scalar_map(
                 underlay=self.inputs.underlay,
                 overlay=scalar_map,
