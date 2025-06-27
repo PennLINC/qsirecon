@@ -198,7 +198,7 @@ def init_scalar_to_template_wf(
         (inputnode, scalar_report, [
             ("resampling_template", "underlay"),
             ("dwi_mask", "mask_file"),
-            ("collected_scalars", "scalar_names"),
+            ("collected_scalars", "scalar_metadata"),
         ]),
         (outputnode, scalar_report, [("template_scalars", "scalar_maps")]),
     ])  # fmt:skip
