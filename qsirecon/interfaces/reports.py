@@ -474,6 +474,7 @@ def plot_scalar_map(
         dfs.append(df)
 
     df = pd.concat(dfs, axis=0)
+    raise Exception(df)
     ax0, ax1, ax2 = axes
     with sns.axes_style("whitegrid"), sns.plotting_context(font_scale=3):
         sns.kdeplot(
