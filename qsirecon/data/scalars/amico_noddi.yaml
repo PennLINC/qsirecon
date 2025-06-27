@@ -11,12 +11,18 @@ icvf_image:
         param: icvf
     metadata:
         Description: Intracellular volume fraction from NODDI
+    figure:
+        vmin: 0
+        vmax: 1
 isovf_image:
     bids:
         model: noddi
         param: isovf
     metadata:
         Description: Isotropic volume fraction from NODDI
+    figure:
+        vmin: 0
+        vmax: 1
 od_image:
     bids:
         model: noddi
@@ -30,6 +36,9 @@ modulated_icvf_image:
         desc: modulated
     metadata:
         Description: Tissue fraction modulated intracellular volume fraction from NODDI
+    figure:
+        vmin: 0
+        vmax: 1
 modulated_od_image:
     bids:
         model: noddi
@@ -37,21 +46,31 @@ modulated_od_image:
         desc: modulated
     metadata:
         Description: Tissue fraction modulated intracellular volume fraction from NODDI
+    figure:
+        vmin: 0
+        vmax: 1
 rmse_image:
     bids:
         model: noddi
         param: rmse
     metadata:
         Description: RMSE between predicted and measured signal from NODDI
+    figure:
+        vmin: 0
 nrmse_image:
     bids:
         model: noddi
         param: nrmse
     metadata:
         Description: NRMSE between predicted and measured signal from NODDI
+    figure:
+        vmin: 0
 tf_image:
     bids:
         model: noddi
         param: tf
     metadata:
         Description: Tissue fraction from NODDI
+    figure:
+        vmin: 0
+        vmax: 1

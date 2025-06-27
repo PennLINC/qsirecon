@@ -387,6 +387,7 @@ class ScalarReport(SimpleInterface):
         import matplotlib.pyplot as plt
         import nibabel as nb
         from nilearn import image
+        from nilearn.masking import unmask, apply_mask
         from nireports.reportlets.utils import cuts_from_bbox
 
         scalar_imgs = [nb.load(scalar_map) for scalar_map in self.inputs.scalar_maps]
@@ -407,6 +408,7 @@ class ScalarReport(SimpleInterface):
         underlay = self.inputs.underlay
         resampled_underlay = image.resample_to_img(underlay, scalar_imgs[0])
         resampled_mask = image.resample_to_img(self.inputs.mask_file, scalar_imgs[0])
+        underlay_masked = unmask(apply_mask(resampled_underlay, resampled_mask), resampled_mask)
 
         dseg = None
         if isdefined(self.inputs.dseg):
@@ -420,14 +422,20 @@ class ScalarReport(SimpleInterface):
         z_cuts = cuts["z"]
         for i_scalar, scalar_img in enumerate(scalar_imgs):
             scalar_name = scalar_metadata[i_scalar]["metadata"]["Description"]
+            kwargs = {}
+            if 'figure' in scalar_metadata[i_scalar].keys():
+                kwargs = scalar_metadata[i_scalar]['figure']
+
+            overlay_masked = unmask(apply_mask(scalar_img, resampled_mask), resampled_mask)
             plot_scalar_map(
-                underlay=resampled_underlay,
-                overlay=scalar_img,
+                underlay=underlay_masked,
+                overlay=overlay_masked,
                 title=scalar_name,
                 z_cuts=z_cuts,
                 axes=axes[i_scalar, :],
                 dseg=dseg,
                 mask=resampled_mask,
+                **kwargs,
             )
 
         self._results["out_report"] = op.join(runtime.cwd, "scalar_report.svg")
@@ -451,8 +459,6 @@ def plot_scalar_map(
     import seaborn as sns
     from matplotlib import cm
     from nilearn import image, masking, plotting
-
-    overlay_masked = masking.unmask(masking.apply_mask(overlay, mask), mask)
 
     if dseg is not None:
         tissue_types = ["GM", "WM", "CSF"]
@@ -521,7 +527,7 @@ def plot_scalar_map(
         kwargs = {"symmetric_cbar": False, "vmin": xmin}
 
     plotting.plot_stat_map(
-        stat_map_img=overlay_masked,
+        stat_map_img=overlay,
         bg_img=underlay,
         resampling_interpolation="nearest",
         display_mode="z",
