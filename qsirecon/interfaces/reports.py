@@ -397,7 +397,7 @@ class ScalarReport(SimpleInterface):
         )
 
         cuts = cuts_from_bbox(nb.load(self.inputs.underlay), cuts=6)
-        z_cuts = cuts['z']
+        z_cuts = cuts["z"]
         for i_scalar, scalar_map in enumerate(self.inputs.scalar_maps):
             scalar_name = self.inputs.scalar_names[i_scalar]
             plot_scalar_map(
@@ -415,7 +415,18 @@ class ScalarReport(SimpleInterface):
         return runtime
 
 
-def plot_scalar_map(underlay, overlay, mask, title, z_cuts, axes, dseg=None, vmin=None, vmax=None, cmap='Reds'):
+def plot_scalar_map(
+    underlay,
+    overlay,
+    mask,
+    title,
+    z_cuts,
+    axes,
+    dseg=None,
+    vmin=None,
+    vmax=None,
+    cmap='Reds',
+):
     """Plot a scalar map with a histogram of the voxel-wise values."""
     import seaborn as sns
     from matplotlib import cm
@@ -474,7 +485,9 @@ def plot_scalar_map(underlay, overlay, mask, title, z_cuts, axes, dseg=None, vmi
     ax0.set_xlim(xlim)
     ax0.set_title(title)
 
-    xticks = [i for i in xticks if i.get_position()[0] <= xlim[1] and i.get_position()[0] >= xlim[0]]
+    xticks = [
+        i for i in xticks if i.get_position()[0] <= xlim[1] and i.get_position()[0] >= xlim[0]
+    ]
     xticklabels = [xtick.get_text() for xtick in xticks]
     xticks = [xtick.get_position()[0] for xtick in xticks]
     xmin = xlim[0]
