@@ -389,7 +389,13 @@ class ScalarReport(SimpleInterface):
         from nilearn import image
         from nireports.reportlets.utils import cuts_from_bbox
 
-        n_scalars = len(self.inputs.scalar_maps)
+        scalar_imgs = [nb.load(scalar_map) for scalar_map in self.inputs.scalar_maps]
+        scalar_metadata = [
+            dct for i_dct, dct in enumerate(self.inputs.scalar_metadata)
+            if scalar_imgs[i_dct].ndim == 3
+        ]
+        scalar_imgs = [scalar_img for scalar_img in scalar_imgs if scalar_img.ndim == 3]
+        n_scalars = len(scalar_imgs)
         fig, axes = plt.subplots(
             nrows=n_scalars,
             ncols=3,
@@ -398,26 +404,24 @@ class ScalarReport(SimpleInterface):
         )
 
         underlay = self.inputs.underlay
-        resampled_underlay = image.resample_to_img(underlay, self.inputs.scalar_maps[0])
-        resampled_mask = image.resample_to_img(self.inputs.mask_file, self.inputs.scalar_maps[0])
+        resampled_underlay = image.resample_to_img(underlay, scalar_imgs[0])
+        resampled_mask = image.resample_to_img(self.inputs.mask_file, scalar_imgs[0])
 
         dseg = None
         if isdefined(self.inputs.dseg):
             dseg = image.resample_to_img(
                 self.inputs.dseg,
-                self.inputs.scalar_maps[0],
+                scalar_imgs[0],
                 interpolation="nearest",
             )
 
         cuts = cuts_from_bbox(resampled_underlay, cuts=6)
         z_cuts = cuts["z"]
-        for i_scalar, scalar_map in enumerate(self.inputs.scalar_maps):
-            scalar_img = nb.load(scalar_map)
-            raise Exception(scalar_img.shape)
-            scalar_name = self.inputs.scalar_metadata[i_scalar]["metadata"]["Description"]
+        for i_scalar, scalar_img in enumerate(scalar_imgs):
+            scalar_name = scalar_metadata[i_scalar]["metadata"]["Description"]
             plot_scalar_map(
                 underlay=resampled_underlay,
-                overlay=scalar_map,
+                overlay=scalar_img,
                 title=scalar_name,
                 z_cuts=z_cuts,
                 axes=axes[i_scalar, :],
