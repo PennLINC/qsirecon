@@ -385,6 +385,7 @@ class ScalarReport(SimpleInterface):
     def _run_interface(self, runtime):
         """Generate a reportlet."""
         import matplotlib.pyplot as plt
+        import nibabel as nb
         from nilearn import image
         from nireports.reportlets.utils import cuts_from_bbox
 
@@ -411,8 +412,9 @@ class ScalarReport(SimpleInterface):
         cuts = cuts_from_bbox(resampled_underlay, cuts=6)
         z_cuts = cuts["z"]
         for i_scalar, scalar_map in enumerate(self.inputs.scalar_maps):
+            scalar_img = nb.load(scalar_map)
+            raise Exception(scalar_img.shape)
             scalar_name = self.inputs.scalar_metadata[i_scalar]["metadata"]["Description"]
-            raise Exception(scalar_map)
             plot_scalar_map(
                 underlay=resampled_underlay,
                 overlay=scalar_map,
