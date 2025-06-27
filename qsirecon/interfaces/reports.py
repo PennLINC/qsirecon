@@ -391,7 +391,8 @@ class ScalarReport(SimpleInterface):
 
         scalar_imgs = [nb.load(scalar_map) for scalar_map in self.inputs.scalar_maps]
         scalar_metadata = [
-            dct for i_dct, dct in enumerate(self.inputs.scalar_metadata)
+            dct
+            for i_dct, dct in enumerate(self.inputs.scalar_metadata)
             if scalar_imgs[i_dct].ndim == 3
         ]
         scalar_imgs = [scalar_img for scalar_img in scalar_imgs if scalar_img.ndim == 3]
