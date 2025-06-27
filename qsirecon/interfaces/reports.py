@@ -439,7 +439,7 @@ class ScalarReport(SimpleInterface):
             )
 
         self._results["out_report"] = op.join(runtime.cwd, "scalar_report.svg")
-        fig.savefig(self._results["out_report"], bbox_inches=0)
+        fig.savefig(self._results["out_report"], bbox_inches="tight")
         return runtime
 
 
