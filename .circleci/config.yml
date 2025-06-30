@@ -130,7 +130,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: custom_atlases-01
+          key: custom_atlases-02
       - run: *runinstall
       - run:
           name: Download custom atlases
@@ -138,7 +138,7 @@ jobs:
             cd /src/qsirecon/.circleci
             python get_data.py $PWD/data custom_atlases
       - save_cache:
-          key: custom_atlases-01
+          key: custom_atlases-02
           paths:
             - /src/qsirecon/.circleci/data/custom_atlases
 
@@ -196,6 +196,8 @@ jobs:
       - checkout
       - restore_cache:
           key: singleshell_output-01
+      - restore_cache:
+          key: custom_atlases-02
       - run: *runinstall
       - run:
           name: Test the 3Tissue recon workflows
