@@ -116,6 +116,10 @@ def init_scalar_to_atlas_wf(
     )
     workflow.connect([(inputnode, organize_scalar_data, [("collected_scalars", "scalar_config")])])
 
+    # We have two sets of parameters of different lengths: atlas-related ones and
+    # scalar-related ones.
+    # We want to parcellate each combination of scalar and atlas.
+
     ds_parcellated_scalars = pe.MapNode(
         DerivativesDataSink(
             dismiss_entities=("desc",),
