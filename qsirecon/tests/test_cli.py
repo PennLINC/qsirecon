@@ -149,11 +149,13 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
     Inputs
     ------
     - qsirecon multi shell results (data/DSDTI_fmap)
+    - custom atlases (data/custom_atlases)
     """
     TEST_NAME = "mrtrix_singleshell_ss3t_noact"
 
     dataset_dir = download_test_data("singleshell_output", data_dir)
     dataset_dir = os.path.join(dataset_dir, "qsiprep")
+    custom_atlases_dir = download_test_data("custom_atlases", data_dir)
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -166,7 +168,9 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
         "--recon-spec=mrtrix_singleshell_ss3t_noACT",
         "--atlases",
         "AAL116",
+        "carpet",
         "--report-output-level=subject",
+        f"--datasets={custom_atlases_dir}",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
