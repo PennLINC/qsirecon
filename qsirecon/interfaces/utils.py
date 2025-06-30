@@ -165,6 +165,8 @@ def label_convert(original_atlas, output_mif, orig_txt, mrtrix_txt, atlas_labels
 
     cmd = ["labelconvert", original_atlas, orig_txt, mrtrix_txt, output_mif]
     os.system(" ".join(cmd))
+    if not os.path.isfile(output_mif):
+        raise RuntimeError(f"Failed to create mrtrix label file from {original_atlas}")
 
 
 class _ConformAtlasInputSpec(BaseInterfaceInputSpec):
