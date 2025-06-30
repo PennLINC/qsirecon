@@ -147,6 +147,8 @@ def _resample_atlas(input_atlas, output_atlas, transform, ref_image):
 
 def label_convert(original_atlas, output_mif, orig_txt, mrtrix_txt, atlas_labels_file):
     """Create a mrtrix label file from an atlas."""
+    import subprocess
+
     import pandas as pd
 
     atlas_labels_df = pd.read_table(atlas_labels_file)
@@ -164,7 +166,7 @@ def label_convert(original_atlas, output_mif, orig_txt, mrtrix_txt, atlas_labels
         orig_f.write(orig_str)
 
     cmd = ["labelconvert", original_atlas, orig_txt, mrtrix_txt, output_mif]
-    os.system(" ".join(cmd))
+    subprocess.run(cmd, check=True)
     if not os.path.isfile(output_mif):
         raise RuntimeError(f"Failed to create mrtrix label file from {original_atlas}")
 
