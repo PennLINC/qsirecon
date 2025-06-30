@@ -3,6 +3,10 @@ atlases/atlas-AAL116
 atlases/atlas-AAL116/atlas-AAL116_dseg.tsv
 atlases/atlas-AAL116/atlas-AAL116_space-MNI152NLin2009cAsym_res-01_dseg.json
 atlases/atlas-AAL116/atlas-AAL116_space-MNI152NLin2009cAsym_res-01_dseg.nii.gz
+atlases/atlas-carpet
+atlases/atlas-carpet/atlas-carpet_dseg.tsv
+atlases/atlas-carpet/atlas-carpet_space-MNI152NLin2009cAsym_res-01_dseg.json
+atlases/atlas-carpet/atlas-carpet_space-MNI152NLin2009cAsym_res-01_dseg.nii.gz
 atlases/dataset_description.json
 dataset_description.json
 derivatives
