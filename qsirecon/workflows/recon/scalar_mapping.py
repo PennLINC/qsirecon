@@ -85,33 +85,55 @@ def init_scalar_to_bundle_wf(inputs_dict, name="scalar_to_bundle", qsirecon_suff
 
 def init_scalar_to_atlas_wf(
     inputs_dict,
-    name="scalar_to_template",
+    name="scalar_to_atlas_wf",
     qsirecon_suffix="",
     params={},
 ):
-    """Map scalar images to atlas regions
+    """Parcellate scalar images using atlases.
 
     Inputs
-        tck_files
-            MRtrix3 format tck files for each bundle
-        bundle_names
-            Names that describe which bundles are present in `tck_files`
         recon_scalars
             List of dictionaries containing scalar info
-
-    Outputs
-        bundle_summaries
-            summary statistics in tsv format
-
+        atlas_configs
+            Dictionary containing atlas configuration information.
     """
+    from ...interfaces.recon_scalars import OrganizeScalarData
+
+    input_fields = recon_workflow_input_fields + [
+        "recon_scalars",
+        "collected_scalars",
+    ]
     inputnode = pe.Node(
-        niu.IdentityInterface(
-            fields=recon_workflow_input_fields + ["recon_scalars", "collected_scalars"]
-        ),
+        niu.IdentityInterface(fields=input_fields),
         name="inputnode",
     )
-    # outputnode = pe.Node(niu.IdentityInterface(fields=["atlas_summaries"]), name="outputnode")
     workflow = Workflow(name=name)
+
+    organize_scalar_data = pe.MapNode(
+        OrganizeScalarData(),
+        iterfield=["scalar_config"],
+        name="organize_scalar_data",
+    )
+    workflow.connect([(inputnode, organize_scalar_data, [("collected_scalars", "scalar_config")])])
+
+    ds_parcellated_scalars = pe.MapNode(
+        DerivativesDataSink(
+            dismiss_entities=("desc",),
+            desc="parcellated",
+        ),
+        iterfield=["in_file", "meta_dict", "model", "param", "desc", "seg"],
+        name="ds_parcellated_scalars",
+    )
+    workflow.connect([
+        (organize_scalar_data, ds_parcellated_scalars, [
+            ("scalar_file", "in_file"),
+            ("metadata", "meta_dict"),
+            ("model", "model"),
+            ("param", "param"),
+            ("desc", "desc"),
+        ]),
+    ])
+
     bundle_mapper = pe.Node(BundleMapper(**params), name="bundle_mapper")
     workflow.connect([
         (inputnode, bundle_mapper, [
@@ -119,8 +141,8 @@ def init_scalar_to_atlas_wf(
             ("tck_files", "tck_files"),
             ("dwi_ref", "dwiref_image")])
     ])  # fmt:skip
-    if qsirecon_suffix:
 
+    if qsirecon_suffix:
         ds_bundle_summaries = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
@@ -132,6 +154,7 @@ def init_scalar_to_atlas_wf(
         workflow.connect([
             (bundle_mapper, ds_bundle_summaries, [("bundle_summaries", "in_file")])
         ])  # fmt:skip
+
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
