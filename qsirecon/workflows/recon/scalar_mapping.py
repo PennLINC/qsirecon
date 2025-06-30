@@ -102,6 +102,7 @@ def init_scalar_to_atlas_wf(
     input_fields = recon_workflow_input_fields + [
         "recon_scalars",
         "collected_scalars",
+        "atlas_configs",
     ]
     inputnode = pe.Node(
         niu.IdentityInterface(fields=input_fields),
@@ -119,44 +120,30 @@ def init_scalar_to_atlas_wf(
     # We have two sets of parameters of different lengths: atlas-related ones and
     # scalar-related ones.
     # We want to parcellate each combination of scalar and atlas.
-
-    ds_parcellated_scalars = pe.MapNode(
-        DerivativesDataSink(
-            dismiss_entities=("desc",),
-            desc="parcellated",
-        ),
-        iterfield=["in_file", "meta_dict", "model", "param", "desc", "seg"],
-        name="ds_parcellated_scalars",
+    parcellate_scalar = pe.MapNode(
+        ParcellateScalar(),
+        iterfield=["scalar_config", "atlas_config"],
+        name="parcellate_scalar",
     )
-    workflow.connect([
-        (organize_scalar_data, ds_parcellated_scalars, [
-            ("scalar_file", "in_file"),
-            ("metadata", "meta_dict"),
-            ("model", "model"),
-            ("param", "param"),
-            ("desc", "desc"),
-        ]),
-    ])
-
-    bundle_mapper = pe.Node(BundleMapper(**params), name="bundle_mapper")
-    workflow.connect([
-        (inputnode, bundle_mapper, [
-            ("collected_scalars", "recon_scalars"),
-            ("tck_files", "tck_files"),
-            ("dwi_ref", "dwiref_image")])
-    ])  # fmt:skip
 
     if qsirecon_suffix:
-        ds_bundle_summaries = pe.Node(
+        ds_parcellated_scalars = pe.MapNode(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
-                desc="bundlemap",
+                desc="parcellated",
             ),
-            name="ds_bundle_summaries",
-            run_without_submitting=True,
+            iterfield=["in_file", "meta_dict", "model", "param", "desc", "seg"],
+            name="ds_parcellated_scalars",
         )
         workflow.connect([
-            (bundle_mapper, ds_bundle_summaries, [("bundle_summaries", "in_file")])
+            (organize_scalar_data, ds_parcellated_scalars, [
+                ("metadata", "meta_dict"),
+                ("model", "model"),
+                ("param", "param"),
+                ("desc", "desc"),
+            ]),
+            (inputnode, ds_parcellated_scalars, [("atlas_configs", "seg")]),
+            (parcellate_scalar, ds_parcellated_scalars, [("parcellated_scalar", "in_file")]),
         ])  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)
