@@ -290,3 +290,68 @@ class OrganizeScalarData(SimpleInterface):
         self._results["desc"] = scalar_config.get("bids", {}).get("desc", None)
 
         return runtime
+
+
+class _ParcellateScalarsInputSpec(BaseInterfaceInputSpec):
+    atlas_config = traits.Dict()
+    scalars_config = traits.List(traits.Dict())
+
+
+class _ParcellateScalarsOutputSpec(TraitedSpec):
+    parcellated_scalar_tsv = File(exists=True)
+    metadata_list = traits.List(traits.Dict())
+    seg = traits.Str()
+
+
+class ParcellateScalars(SimpleInterface):
+    input_spec = _ParcellateScalarsInputSpec
+    output_spec = _ParcellateScalarsOutputSpec
+
+    def _run_interface(self, runtime):
+        atlas_file = self.inputs.atlas_config["path"]
+        atlas_labels_file = self.inputs.atlas_config["labels"]
+        self._results["seg"] = self.inputs.atlas_config["name"]
+
+        atlas_labels_df = pd.read_table(atlas_labels_file)
+        labels = atlas_labels_df["label"].tolist()
+
+        for i_scalar, scalar_config in enumerate(self.inputs.scalars_config):
+            scalar_file = scalar_config["path"]
+            scalar_img = nb.load(scalar_file)
+            scalar_data = scalar_img.get_fdata()
+            scalar_data[np.isnan(scalar_data)] = 0
+
+            # Use the union of non-zero, non-nan voxels across all scalars to define coverage.
+            if i_scalar == 0:
+                sum_data = scalar_data.astype(bool)
+            else:
+                sum_data += scalar_data.astype(bool)
+
+        coverage_data = sum_data.astype(bool).astype(int)
+        coverage_img = nb.Nifti1Image(coverage_data, affine=scalar_img.affine, header=scalar_img.header)
+        del sum_data
+
+        parcellated_data = {}
+        for scalar_config in self.inputs.scalars_config:
+            scalar_file = scalar_config["path"]
+            scalar_metadata = scalar_config["metadata"]
+            scalar_model = scalar_config["model"]
+            scalar_param = scalar_config["param"]
+            scalar_desc = scalar_config["desc"]
+
+            scalar_name = f"model-{scalar_model}_param-{scalar_param}_desc-{scalar_desc}"
+
+            # Parcellate the scalar file with the atlas
+            ...
+
+            # Prepare metadata dictionary
+            metadata = {
+                "Sources": [scalar_file, atlas_file],
+                "model": scalar_model,
+                "param": scalar_param,
+                "desc": scalar_desc,
+            }
+
+            self._results["metadata_list"].append(metadata)
+
+        return runtime

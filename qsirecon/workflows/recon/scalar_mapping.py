@@ -16,9 +16,8 @@ import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
-from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.recon_scalars import ReconScalarsTableSplitterDataSink
+from ...interfaces.recon_scalars import ParcellateScalars, ReconScalarsTableSplitterDataSink
 from ...interfaces.scalar_mapping import BundleMapper, TemplateMapper
 from ...utils.bids import clean_datasinks
 from .utils import init_scalar_output_wf
@@ -110,43 +109,38 @@ def init_scalar_to_atlas_wf(
     )
     workflow = Workflow(name=name)
 
-    organize_scalar_data = pe.MapNode(
-        OrganizeScalarData(),
-        iterfield=["scalar_config"],
-        name="organize_scalar_data",
+    # Parcellates all scalars with one atlas at a time.
+    # Outputs a tsv of parcellated scalar stats and atlas name ("seg").
+    # Also ingresses and outputs metadata.
+    scalar_parcellator = pe.MapNode(
+        ParcellateScalars(**params),
+        name="scalar_parcellator",
+        iterfield=["atlas_config"],
     )
-    workflow.connect([(inputnode, organize_scalar_data, [("collected_scalars", "scalar_config")])])
-
-    # We have two sets of parameters of different lengths: atlas-related ones and
-    # scalar-related ones.
-    # We want to parcellate each combination of scalar and atlas.
-    parcellate_scalar = pe.MapNode(
-        ParcellateScalar(),
-        iterfield=["scalar_config", "atlas_config"],
-        name="parcellate_scalar",
+    ds_parcellated_scalars = pe.MapNode(
+        ReconScalarsTableSplitterDataSink(
+            dismiss_entities=["desc"],
+            suffix="scalarstats",
+        ),
+        name="ds_parcellated_scalars",
+        run_without_submitting=True,
+        iterfield=["seg"],
     )
+    workflow.connect([
+        (inputnode, scalar_parcellator, [
+            ("atlas_configs", "atlas_config"),
+            ("collected_scalars", "scalars_config"),
+        ]),
+        (scalar_parcellator, ds_parcellated_scalars, [
+            ("parcellated_scalar_tsv", "in_file"),
+            ("metadata_list", "metadata_list"),
+            ("seg", "seg"),
+        ]),
+    ])  # fmt:skip
 
-    if qsirecon_suffix:
-        ds_parcellated_scalars = pe.MapNode(
-            DerivativesDataSink(
-                dismiss_entities=("desc",),
-                desc="parcellated",
-            ),
-            iterfield=["in_file", "meta_dict", "model", "param", "desc", "seg"],
-            name="ds_parcellated_scalars",
-        )
-        workflow.connect([
-            (organize_scalar_data, ds_parcellated_scalars, [
-                ("metadata", "meta_dict"),
-                ("model", "model"),
-                ("param", "param"),
-                ("desc", "desc"),
-            ]),
-            (inputnode, ds_parcellated_scalars, [("atlas_configs", "seg")]),
-            (parcellate_scalar, ds_parcellated_scalars, [("parcellated_scalar", "in_file")]),
-        ])  # fmt:skip
-
-    return clean_datasinks(workflow, qsirecon_suffix)
+    # NOTE: Don't add qsirecon_suffix with clean_datasinks here,
+    # as the qsirecon_suffix is determined within ReconScalarsTableSplitterDataSink.
+    return clean_datasinks(workflow, qsirecon_suffix=None)
 
 
 def init_scalar_to_template_wf(

@@ -269,22 +269,3 @@ class TemplateMapper(ScalarMapper):
         self._results["template_space_scalars"] = resampled_images
         self._results["template_space_scalar_info"] = resampled_image_metadata
         self._results["template_space"] = self.inputs.template_space
-
-
-class _ParcellateScalarsInputSpec(ScalarMapperInputSpec):
-    template_reference_image = File(exists=True, mandatory=True)
-    to_template_transform = File(exists=True, mandatory=True)
-    interpolation = traits.Str("NearestNeighbor", usedefault=True)
-    template_space = traits.Str(mandatory=True)
-
-
-class _ParcellateScalarsOutputSpec(ScalarMapperOutputSpec):
-    template_space = traits.Str(desc="Output space")
-    template_space_scalars = OutputMultiObject(traits.Any())
-    template_space_scalar_info = OutputMultiObject(traits.Any())
-
-
-class ParcellateScalars(ScalarMapper):
-    input_spec = _ParcellateScalarsInputSpec
-    output_spec = _ParcellateScalarsOutputSpec
-
