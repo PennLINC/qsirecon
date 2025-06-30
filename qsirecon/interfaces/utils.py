@@ -146,7 +146,24 @@ def _resample_atlas(input_atlas, output_atlas, transform, ref_image):
 
 
 def label_convert(original_atlas, output_mif, orig_txt, mrtrix_txt, atlas_labels_file):
-    """Create a mrtrix label file from an atlas."""
+    """Create a mrtrix label file from an atlas.
+
+    Parameters
+    ----------
+    original_atlas : str
+        Path to the original atlas file, in NIfTI format.
+    output_mif : str
+        Path to the output mrtrix label file (mif[.gz]) to be written out.
+    orig_txt : str
+        Path to the output original label file (txt) to be written out.
+    mrtrix_txt : str
+        Path to the output mrtrix label file (txt) to be written out.
+    atlas_labels_file : str
+        Path to the atlas labels file (txt) to be read in.
+        This file should have at least two columns: index and label.
+    """
+    import subprocess
+
     import pandas as pd
 
     atlas_labels_df = pd.read_table(atlas_labels_file)
@@ -154,8 +171,10 @@ def label_convert(original_atlas, output_mif, orig_txt, mrtrix_txt, atlas_labels
     orig_str = ""
     mrtrix_str = ""
     for i_row, (index, label) in enumerate(index_label_pairs):
-        orig_str += f"{index}\t{label}\n"
-        mrtrix_str += f"{i_row + 1}\t{label}\n"
+        # TODO: Consider using special delimiters that can be replaced with spaces before output
+        # files are written.
+        orig_str += f"{index}\t{label.replace(' ', '-')}\n"
+        mrtrix_str += f"{i_row + 1}\t{label.replace(' ', '-')}\n"
 
     with open(mrtrix_txt, "w") as mrtrix_f:
         mrtrix_f.write(mrtrix_str)
@@ -164,7 +183,9 @@ def label_convert(original_atlas, output_mif, orig_txt, mrtrix_txt, atlas_labels
         orig_f.write(orig_str)
 
     cmd = ["labelconvert", original_atlas, orig_txt, mrtrix_txt, output_mif]
-    os.system(" ".join(cmd))
+    subprocess.run(cmd, check=True)
+    if not os.path.isfile(output_mif):
+        raise RuntimeError(f"Failed to create mrtrix label file from {original_atlas}")
 
 
 class _ConformAtlasInputSpec(BaseInterfaceInputSpec):

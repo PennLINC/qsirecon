@@ -125,6 +125,23 @@ jobs:
           paths:
             - /src/qsirecon/.circleci/data/hsvs_data
 
+  download_custom_atlases:
+    <<: *dockersetup
+    steps:
+      - checkout
+      - restore_cache:
+          key: custom_atlases-02
+      - run: *runinstall
+      - run:
+          name: Download custom atlases
+          command: |
+            cd /src/qsirecon/.circleci
+            python get_data.py $PWD/data custom_atlases
+      - save_cache:
+          key: custom_atlases-02
+          paths:
+            - /src/qsirecon/.circleci/data/custom_atlases
+
   Recon_SS3T_FOD_AutoTrack:
     <<: *dockersetup
     steps:
@@ -179,6 +196,8 @@ jobs:
       - checkout
       - restore_cache:
           key: singleshell_output-01
+      - restore_cache:
+          key: custom_atlases-02
       - run: *runinstall
       - run:
           name: Test the 3Tissue recon workflows
@@ -633,6 +652,13 @@ workflows:
             tags:
               only: /.*/
 
+      - download_custom_atlases:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+
       - Recon_3Tissue_Singleshell_ACT:
           requires:
             - download_singleshell_output
@@ -671,6 +697,7 @@ workflows:
       - Recon_3Tissue_Singleshell_NoACT:
           requires:
             - download_singleshell_output
+            - download_custom_atlases
           filters:
             tags:
               only: /.*/
