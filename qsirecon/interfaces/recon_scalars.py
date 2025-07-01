@@ -11,9 +11,9 @@ Classes that collect scalar images and metadata from Recon Workflows
 import os
 import os.path as op
 
-import pandas as pd
 import nibabel as nb
 import numpy as np
+import pandas as pd
 from bids.layout import parse_file_entities
 from nilearn.maskers import NiftiLabelsMasker
 from nipype.interfaces.base import (
