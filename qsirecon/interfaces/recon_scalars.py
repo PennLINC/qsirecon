@@ -58,7 +58,6 @@ class ReconScalars(SimpleInterface):
     )
 
     def __init__(self, from_file=None, resource_monitor=None, **inputs):
-
         # Get self._results defined
         super().__init__(from_file=from_file, resource_monitor=resource_monitor, **inputs)
 
@@ -348,7 +347,7 @@ class ParcellateScalars(SimpleInterface):
             mask_img=self.inputs.brain_mask,
             smoothing_fwhm=None,
             standardize=False,
-            strategy='sum',
+            strategy="sum",
             resampling_target=None,  # they should be in the same space/resolution already
         )
         sum_masker_unmasked = NiftiLabelsMasker(
@@ -357,7 +356,7 @@ class ParcellateScalars(SimpleInterface):
             background_label=0,
             smoothing_fwhm=None,
             standardize=False,
-            strategy='sum',
+            strategy="sum",
             resampling_target=None,  # they should be in the same space/resolution already
         )
         n_voxels_in_masked_parcels = sum_masker_masked.fit_transform(atlas_img_bin)
@@ -367,7 +366,7 @@ class ParcellateScalars(SimpleInterface):
             data=parcel_coverage,
             index=node_labels,
         )
-        parcel_coverage_series['qsirecon_suffix'] = 'QSIRecon'
+        parcel_coverage_series["qsirecon_suffix"] = "QSIRecon"
         n_nodes = len(node_labels)
         n_found_nodes = parcel_coverage.size
 
@@ -398,7 +397,9 @@ class ParcellateScalars(SimpleInterface):
             scalar_arr = np.squeeze(masker.fit_transform(scalar_img))
 
             # Region indices in the atlas may not be sequential, so we map them to sequential ints.
-            seq_mapper = {idx: i for i, idx in enumerate(atlas_labels_df['sanitized_index'].tolist())}
+            seq_mapper = {
+                idx: i for i, idx in enumerate(atlas_labels_df["sanitized_index"].tolist())
+            }
 
             if n_found_nodes != n_nodes:  # parcels lost by warping/downsampling atlas
                 # Fill in any missing nodes in the timeseries array with NaNs.
@@ -418,7 +419,7 @@ class ParcellateScalars(SimpleInterface):
                 data=scalar_arr,
                 index=node_labels,
             )
-            scalar_series['qsirecon_suffix'] = source_suffix
+            scalar_series["qsirecon_suffix"] = source_suffix
             parcellated_data[scalar_name] = scalar_series
 
             # Prepare metadata dictionary
@@ -460,11 +461,11 @@ def _sanitize_nifti_atlas(atlas, df):
     found_values = np.unique(atlas_data)
     found_values = found_values[found_values != 0]  # drop the background value
     if not np.all(np.isin(found_values, expected_values)):
-        raise ValueError('Atlas file contains values that are not present in the DataFrame.')
+        raise ValueError("Atlas file contains values that are not present in the DataFrame.")
 
     # Map the labels in the DataFrame to sequential values.
     label_mapper = {value: i + 1 for i, value in enumerate(expected_values)}
-    df['sanitized_index'] = [label_mapper[i] for i in df.index.values]
+    df["sanitized_index"] = [label_mapper[i] for i in df.index.values]
 
     # Map the values in the atlas image to sequential values.
     new_atlas_data = np.zeros(atlas_data.shape, dtype=np.int16)
