@@ -96,8 +96,6 @@ def init_scalar_to_atlas_wf(
         atlas_configs
             Dictionary containing atlas configuration information.
     """
-    from ...interfaces.recon_scalars import OrganizeScalarData
-
     input_fields = recon_workflow_input_fields + [
         "recon_scalars",
         "collected_scalars",
