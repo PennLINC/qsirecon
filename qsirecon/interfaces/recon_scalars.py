@@ -12,7 +12,10 @@ import os
 import os.path as op
 
 import pandas as pd
+import nibabel as nb
+import numpy as np
 from bids.layout import parse_file_entities
+from nilearn.maskers import NiftiLabelsMasker
 from nipype.interfaces.base import (
     BaseInterfaceInputSpec,
     File,
@@ -295,6 +298,8 @@ class OrganizeScalarData(SimpleInterface):
 class _ParcellateScalarsInputSpec(BaseInterfaceInputSpec):
     atlas_config = traits.Dict()
     scalars_config = traits.List(traits.Dict())
+    brain_mask = File(exists=True)
+    mapping_metadata = traits.Dict()
 
 
 class _ParcellateScalarsOutputSpec(TraitedSpec):
@@ -308,33 +313,61 @@ class ParcellateScalars(SimpleInterface):
     output_spec = _ParcellateScalarsOutputSpec
 
     def _run_interface(self, runtime):
+        source_suffix = self.inputs.mapping_metadata.get("qsirecon_suffix", "QSIRecon")
+
         atlas_file = self.inputs.atlas_config["path"]
         atlas_labels_file = self.inputs.atlas_config["labels"]
         self._results["seg"] = self.inputs.atlas_config["name"]
 
         atlas_labels_df = pd.read_table(atlas_labels_file)
-        labels = atlas_labels_df["label"].tolist()
+        atlas_labels_df["index"] = atlas_labels_df["index"].astype(int)
+        if 0 in atlas_labels_df["index"].values:
+            atlas_labels_df = atlas_labels_df.loc[atlas_labels_df["index"] != 0]
 
-        for i_scalar, scalar_config in enumerate(self.inputs.scalars_config):
-            scalar_file = scalar_config["path"]
-            scalar_img = nb.load(scalar_file)
-            scalar_data = scalar_img.get_fdata()
-            scalar_data[np.isnan(scalar_data)] = 0
+        node_labels = atlas_labels_df["label"].tolist()
+        # prepend "background" to node labels to satisfy NiftiLabelsMasker
+        # The background "label" won't be present in the output file.
+        masker_labels = ["background"] + node_labels
 
-            # Use the union of non-zero, non-nan voxels across all scalars to define coverage.
-            if i_scalar == 0:
-                sum_data = scalar_data.astype(bool)
-            else:
-                sum_data += scalar_data.astype(bool)
+        # Before anything, we need to measure coverage
+        atlas_img = nb.load(atlas_file)
+        atlas_img_bin = nb.Nifti1Image(
+            (atlas_img.get_fdata() > 0).astype(np.uint8),
+            atlas_img.affine,
+            atlas_img.header,
+        )
 
-        coverage_data = sum_data.astype(bool).astype(int)
-        coverage_img = nb.Nifti1Image(coverage_data, affine=scalar_img.affine, header=scalar_img.header)
-        del sum_data
+        sum_masker_masked = NiftiLabelsMasker(
+            labels_img=atlas_img,
+            labels=masker_labels,
+            background_label=0,
+            mask_img=self.inputs.brain_mask,
+            smoothing_fwhm=None,
+            standardize=False,
+            strategy='sum',
+            resampling_target=None,  # they should be in the same space/resolution already
+        )
+        sum_masker_unmasked = NiftiLabelsMasker(
+            labels_img=atlas_img,
+            labels=masker_labels,
+            background_label=0,
+            smoothing_fwhm=None,
+            standardize=False,
+            strategy='sum',
+            resampling_target=None,  # they should be in the same space/resolution already
+        )
+        n_voxels_in_masked_parcels = sum_masker_masked.fit_transform(atlas_img_bin)
+        n_voxels_in_parcels = sum_masker_unmasked.fit_transform(atlas_img_bin)
+        parcel_coverage = np.squeeze(n_voxels_in_masked_parcels / n_voxels_in_parcels)
 
         parcellated_data = {}
         for scalar_config in self.inputs.scalars_config:
             scalar_file = scalar_config["path"]
-            scalar_metadata = scalar_config["metadata"]
+            scalar_img = nb.load(scalar_file)
+            if scalar_img.ndim != 3:
+                print(f"Scalar {scalar_file} is not 3D, skipping")
+                continue
+
             scalar_model = scalar_config["model"]
             scalar_param = scalar_config["param"]
             scalar_desc = scalar_config["desc"]
@@ -342,7 +375,16 @@ class ParcellateScalars(SimpleInterface):
             scalar_name = f"model-{scalar_model}_param-{scalar_param}_desc-{scalar_desc}"
 
             # Parcellate the scalar file with the atlas
-            ...
+            masker = NiftiLabelsMasker(
+                labels_img=atlas_img,
+                labels=masker_labels,
+                background_label=0,
+                mask_img=self.inputs.brain_mask,
+                smoothing_fwhm=None,
+                standardize=False,
+                resampling_target=None,  # they should be in the same space/resolution already
+            )
+            parcellated_data[scalar_name] = np.squeeze(masker.fit_transform(scalar_img))
 
             # Prepare metadata dictionary
             metadata = {
@@ -353,5 +395,11 @@ class ParcellateScalars(SimpleInterface):
             }
 
             self._results["metadata_list"].append(metadata)
+
+        parcellated_data["coverage"] = parcel_coverage
+
+        # Save the parcellated data to a tsv
+        parcellated_data_df = pd.DataFrame(parcellated_data)
+        parcellated_data_df.to_csv(self._results["parcellated_scalar_tsv"], index=False, sep="\t")
 
         return runtime

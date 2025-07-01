@@ -117,6 +117,14 @@ def init_scalar_to_atlas_wf(
         name="scalar_parcellator",
         iterfield=["atlas_config"],
     )
+    workflow.connect([
+        (inputnode, scalar_parcellator, [
+            ("atlas_configs", "atlas_config"),
+            ("collected_scalars", "scalars_config"),
+            ("mapping_metadata", "mapping_metadata"),
+        ]),
+    ])  # fmt:skip
+
     ds_parcellated_scalars = pe.MapNode(
         ReconScalarsTableSplitterDataSink(
             dismiss_entities=["desc"],
@@ -127,10 +135,6 @@ def init_scalar_to_atlas_wf(
         iterfield=["seg"],
     )
     workflow.connect([
-        (inputnode, scalar_parcellator, [
-            ("atlas_configs", "atlas_config"),
-            ("collected_scalars", "scalars_config"),
-        ]),
         (scalar_parcellator, ds_parcellated_scalars, [
             ("parcellated_scalar_tsv", "in_file"),
             ("metadata_list", "metadata_list"),
