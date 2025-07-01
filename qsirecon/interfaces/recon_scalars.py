@@ -301,6 +301,7 @@ class _ParcellateScalarsInputSpec(BaseInterfaceInputSpec):
     mapping_metadata = traits.Dict(
         desc="Info about the upstream workflow that created the anatomical mapping units",
     )
+    scalars_from = InputMultiObject(traits.Str())
 
 
 class _ParcellateScalarsOutputSpec(TraitedSpec):
