@@ -299,7 +299,9 @@ class _ParcellateScalarsInputSpec(BaseInterfaceInputSpec):
     atlas_config = traits.Dict()
     scalars_config = traits.List(traits.Dict())
     brain_mask = File(exists=True)
-    mapping_metadata = traits.Dict()
+    mapping_metadata = traits.Dict(
+        desc="Info about the upstream workflow that created the anatomical mapping units",
+    )
 
 
 class _ParcellateScalarsOutputSpec(TraitedSpec):
