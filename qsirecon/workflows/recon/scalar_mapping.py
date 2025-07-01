@@ -16,9 +16,11 @@ import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
-from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.recon_scalars import ReconScalarsTableSplitterDataSink
+from ...interfaces.recon_scalars import (
+    ParcellateScalars,
+    ReconScalarsTableSplitterDataSink,
+)
 from ...interfaces.scalar_mapping import BundleMapper, TemplateMapper
 from ...utils.bids import clean_datasinks
 from .utils import init_scalar_output_wf
@@ -85,54 +87,65 @@ def init_scalar_to_bundle_wf(inputs_dict, name="scalar_to_bundle", qsirecon_suff
 
 def init_scalar_to_atlas_wf(
     inputs_dict,
-    name="scalar_to_template",
+    name="scalar_to_atlas_wf",
     qsirecon_suffix="",
     params={},
 ):
-    """Map scalar images to atlas regions
+    """Parcellate scalar images using atlases.
 
     Inputs
-        tck_files
-            MRtrix3 format tck files for each bundle
-        bundle_names
-            Names that describe which bundles are present in `tck_files`
         recon_scalars
             List of dictionaries containing scalar info
-
-    Outputs
-        bundle_summaries
-            summary statistics in tsv format
-
+        atlas_configs
+            Dictionary containing atlas configuration information.
     """
+    input_fields = recon_workflow_input_fields + [
+        "recon_scalars",
+        "collected_scalars",
+        "atlas_configs",
+    ]
     inputnode = pe.Node(
-        niu.IdentityInterface(
-            fields=recon_workflow_input_fields + ["recon_scalars", "collected_scalars"]
-        ),
+        niu.IdentityInterface(fields=input_fields),
         name="inputnode",
     )
-    # outputnode = pe.Node(niu.IdentityInterface(fields=["atlas_summaries"]), name="outputnode")
     workflow = Workflow(name=name)
-    bundle_mapper = pe.Node(BundleMapper(**params), name="bundle_mapper")
-    workflow.connect([
-        (inputnode, bundle_mapper, [
-            ("collected_scalars", "recon_scalars"),
-            ("tck_files", "tck_files"),
-            ("dwi_ref", "dwiref_image")])
-    ])  # fmt:skip
-    if qsirecon_suffix:
 
-        ds_bundle_summaries = pe.Node(
-            DerivativesDataSink(
-                dismiss_entities=("desc",),
-                desc="bundlemap",
-            ),
-            name="ds_bundle_summaries",
-            run_without_submitting=True,
-        )
-        workflow.connect([
-            (bundle_mapper, ds_bundle_summaries, [("bundle_summaries", "in_file")])
-        ])  # fmt:skip
-    return clean_datasinks(workflow, qsirecon_suffix)
+    # Parcellates all scalars with one atlas at a time.
+    # Outputs a tsv of parcellated scalar stats and atlas name ("seg").
+    # Also ingresses and outputs metadata.
+    scalar_parcellator = pe.MapNode(
+        ParcellateScalars(**params),
+        name="scalar_parcellator",
+        iterfield=["atlas_config"],
+    )
+    workflow.connect([
+        (inputnode, scalar_parcellator, [
+            ("atlas_configs", "atlas_config"),
+            ("collected_scalars", "scalars_config"),
+            ("mapping_metadata", "mapping_metadata"),
+        ]),
+    ])  # fmt:skip
+
+    ds_parcellated_scalars = pe.MapNode(
+        ReconScalarsTableSplitterDataSink(
+            dismiss_entities=["desc"],
+            suffix="scalarstats",
+        ),
+        name="ds_parcellated_scalars",
+        run_without_submitting=True,
+        iterfield=["seg"],
+    )
+    workflow.connect([
+        (scalar_parcellator, ds_parcellated_scalars, [
+            ("parcellated_scalar_tsv", "in_file"),
+            ("metadata_list", "metadata_list"),
+            ("seg", "seg"),
+        ]),
+    ])  # fmt:skip
+
+    # NOTE: Don't add qsirecon_suffix with clean_datasinks here,
+    # as the qsirecon_suffix is determined within ReconScalarsTableSplitterDataSink.
+    return clean_datasinks(workflow, qsirecon_suffix=None)
 
 
 def init_scalar_to_template_wf(

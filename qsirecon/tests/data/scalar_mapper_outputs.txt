@@ -10,6 +10,10 @@ derivatives/qsirecon-DIPYDKI/logs/CITATION.tex
 derivatives/qsirecon-DIPYDKI/sub-ABCD
 derivatives/qsirecon-DIPYDKI/sub-ABCD.html
 derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi
+derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_seg-4S156Parcels_scalarstats.json
+derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_seg-4S156Parcels_scalarstats.tsv
+derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_seg-4S256Parcels_scalarstats.json
+derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_seg-4S256Parcels_scalarstats.tsv
 derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-dki_param-ad_dwimap.json
 derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-dki_param-ad_dwimap.nii.gz
 derivatives/qsirecon-DIPYDKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-dki_param-ak_dwimap.json
@@ -69,6 +73,10 @@ derivatives/qsirecon-DSIStudio/logs/CITATION.tex
 derivatives/qsirecon-DSIStudio/sub-ABCD
 derivatives/qsirecon-DSIStudio/sub-ABCD.html
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi
+derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_seg-4S156Parcels_scalarstats.json
+derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_seg-4S156Parcels_scalarstats.tsv
+derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_seg-4S256Parcels_scalarstats.json
+derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_seg-4S256Parcels_scalarstats.tsv
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-gqi_param-gfa_dwimap.json
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-gqi_param-gfa_dwimap.nii.gz
 derivatives/qsirecon-DSIStudio/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-MNI152NLin2009cAsym_model-gqi_param-iso_dwimap.json

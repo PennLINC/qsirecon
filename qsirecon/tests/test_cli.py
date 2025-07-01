@@ -513,6 +513,9 @@ def test_scalar_mapper(data_dir, output_dir, working_dir):
         "--recon-spec=test_scalar_maps",
         "--output-resolution=3.5",
         "--nthreads=1",
+        "--atlases",
+        "4S156Parcels",
+        "4S256Parcels",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
