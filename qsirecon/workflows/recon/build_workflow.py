@@ -264,7 +264,10 @@ def workflow_from_spec(inputs_dict, node_spec):
         "params": parameters,
     }
     if node_spec["action"] == "connectivity" and not config.execution.atlases:
-        raise ValueError("Connectivity requires atlases.")
+        raise ValueError(
+            "Connectivity estimation requires atlases. "
+            "Please set the `--atlases` flag in your qsirecon command."
+        )
 
     # DSI Studio operations
     if software == "DSI Studio":
