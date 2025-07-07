@@ -315,9 +315,15 @@ class ParcellateScalars(SimpleInterface):
     output_spec = _ParcellateScalarsOutputSpec
 
     def _run_interface(self, runtime):
-        source_suffix = self.inputs.mapping_metadata.get("qsirecon_suffix", "QSIRecon")
+        source_suffixes = set([cfg["qsirecon_suffix"] for cfg in self.inputs.scalars_config])
+        if len(source_suffixes) > 1:
+            raise ValueError(
+                "All scalars must have the same qsirecon_suffix. "
+                f"Found {source_suffixes} in {self.inputs.scalars_config}"
+            )
+        source_suffix = source_suffixes.pop()
 
-        atlas_file = self.inputs.atlas_config["path"]
+        atlas_file = self.inputs.atlas_config["dwi_resolution_file"]
         atlas_labels_file = self.inputs.atlas_config["labels"]
         self._results["seg"] = self.inputs.atlas_config["name"]
 
