@@ -323,6 +323,7 @@ class ParcellateScalars(SimpleInterface):
             )
         source_suffix = source_suffixes.pop()
 
+        raise Exception(self.inputs.atlas_config)
         atlas_file = self.inputs.atlas_config["dwi_resolution_file"]
         atlas_labels_file = self.inputs.atlas_config["labels"]
         self._results["seg"] = self.inputs.atlas_config["name"]
