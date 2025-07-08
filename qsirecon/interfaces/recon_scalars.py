@@ -332,12 +332,8 @@ class ParcellateScalars(SimpleInterface):
         self._results["seg"] = atlas_name
 
         # Fix any nonsequential values or mismatch between atlas and DataFrame.
-        atlas_labels_df = pd.read_table(atlas_labels_file)
+        atlas_labels_df = pd.read_table(atlas_labels_file, index_col="index")
         atlas_img, atlas_labels_df = _sanitize_nifti_atlas(atlas_file, atlas_labels_df)
-
-        atlas_labels_df["index"] = atlas_labels_df["index"].astype(int)
-        if 0 in atlas_labels_df["index"].values:
-            atlas_labels_df = atlas_labels_df.loc[atlas_labels_df["index"] != 0]
 
         node_labels = atlas_labels_df["label"].tolist()
         # prepend "background" to node labels to satisfy NiftiLabelsMasker
@@ -475,7 +471,7 @@ def _sanitize_nifti_atlas(atlas, df):
         missing_values = np.setdiff1d(found_values, expected_values)
         raise ValueError(
             f"Atlas file ({atlas}) contains values that are not present in the "
-            f"DataFrame: {missing_values}"
+            f"DataFrame: {missing_values}\n\n{df}"
         )
 
     # Map the labels in the DataFrame to sequential values.
