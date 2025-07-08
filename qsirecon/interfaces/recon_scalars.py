@@ -338,7 +338,7 @@ class ParcellateScalars(SimpleInterface):
         node_labels = atlas_labels_df["label"].tolist()
         # prepend "background" to node labels to satisfy NiftiLabelsMasker
         # The background "label" won't be present in the output file.
-        masker_labels = ["background"] + node_labels
+        masker_input_labels = ["background"] + node_labels
 
         # Before anything, we need to measure coverage
         atlas_img_bin = nb.Nifti1Image(
@@ -349,7 +349,7 @@ class ParcellateScalars(SimpleInterface):
 
         sum_masker_masked = NiftiLabelsMasker(
             labels_img=atlas_img,
-            labels=masker_labels,
+            labels=masker_input_labels,
             background_label=0,
             mask_img=self.inputs.brain_mask,
             smoothing_fwhm=None,
@@ -359,7 +359,7 @@ class ParcellateScalars(SimpleInterface):
         )
         sum_masker_unmasked = NiftiLabelsMasker(
             labels_img=atlas_img,
-            labels=masker_labels,
+            labels=masker_input_labels,
             background_label=0,
             smoothing_fwhm=None,
             standardize=False,
@@ -369,13 +369,16 @@ class ParcellateScalars(SimpleInterface):
         n_voxels_in_masked_parcels = sum_masker_masked.fit_transform(atlas_img_bin)
         n_voxels_in_parcels = sum_masker_unmasked.fit_transform(atlas_img_bin)
         parcel_coverage = np.squeeze(n_voxels_in_masked_parcels / n_voxels_in_parcels)
+
+        n_nodes = len(node_labels)
+        masker_labels = sum_masker_masked.labels_[:]
+        n_found_nodes = len(masker_labels)
+
         parcel_coverage_series = pd.Series(
             data=parcel_coverage,
-            index=node_labels,
+            index=masker_labels,
         )
         parcel_coverage_series["qsirecon_suffix"] = "QSIRecon"
-        n_nodes = len(node_labels)
-        n_found_nodes = parcel_coverage.size
 
         parcellated_data = {}
         for scalar_config in self.inputs.scalars_config:
@@ -394,7 +397,7 @@ class ParcellateScalars(SimpleInterface):
             # Parcellate the scalar file with the atlas
             masker = NiftiLabelsMasker(
                 labels_img=atlas_img,
-                labels=masker_labels,
+                labels=masker_input_labels,
                 background_label=0,
                 mask_img=self.inputs.brain_mask,
                 smoothing_fwhm=None,
