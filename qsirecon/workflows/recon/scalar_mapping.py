@@ -129,6 +129,7 @@ def init_scalar_to_atlas_wf(
         (inputnode, scalar_parcellator, [
             ("collected_scalars", "scalars_config"),
             ("mapping_metadata", "mapping_metadata"),
+            ("dwi_mask", "brain_mask"),
         ]),
         (split_atlas_configs, scalar_parcellator, [("atlas_configs", "atlas_config")]),
     ])  # fmt:skip
