@@ -472,7 +472,11 @@ def _sanitize_nifti_atlas(atlas, df):
     found_values = np.unique(atlas_data)
     found_values = found_values[found_values != 0]  # drop the background value
     if not np.all(np.isin(found_values, expected_values)):
-        raise ValueError("Atlas file contains values that are not present in the DataFrame.")
+        missing_values = np.setdiff1d(found_values, expected_values)
+        raise ValueError(
+            f"Atlas file ({atlas}) contains values that are not present in the "
+            f"DataFrame: {missing_values}"
+        )
 
     # Map the labels in the DataFrame to sequential values.
     label_mapper = {value: i + 1 for i, value in enumerate(expected_values)}
