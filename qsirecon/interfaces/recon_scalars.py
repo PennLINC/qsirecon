@@ -323,10 +323,13 @@ class ParcellateScalars(SimpleInterface):
             )
         source_suffix = source_suffixes.pop()
 
-        raise Exception(self.inputs.atlas_config)
-        atlas_file = self.inputs.atlas_config["dwi_resolution_file"]
-        atlas_labels_file = self.inputs.atlas_config["labels"]
-        self._results["seg"] = self.inputs.atlas_config["name"]
+        atlas_config = self.inputs.atlas_config
+        assert len(atlas_config) == 1, "Only one atlas config is supported"
+        atlas_name = atlas_config.keys()[0]
+        atlas_config = atlas_config[atlas_name]
+        atlas_file = atlas_config["dwi_resolution_file"]
+        atlas_labels_file = atlas_config["labels"]
+        self._results["seg"] = atlas_name
 
         # Fix any nonsequential values or mismatch between atlas and DataFrame.
         atlas_labels_df = pd.read_table(atlas_labels_file)
