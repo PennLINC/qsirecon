@@ -22,6 +22,7 @@ from ...interfaces.recon_scalars import (
     ReconScalarsTableSplitterDataSink,
 )
 from ...interfaces.scalar_mapping import BundleMapper, TemplateMapper
+from ...interfaces.utils import SplitAtlasConfigs
 from ...utils.bids import clean_datasinks
 from .utils import init_scalar_output_wf
 
@@ -110,6 +111,12 @@ def init_scalar_to_atlas_wf(
     )
     workflow = Workflow(name=name)
 
+    split_atlas_configs = pe.Node(
+        SplitAtlasConfigs(),
+        name="split_atlas_configs",
+    )
+    workflow.connect([(inputnode, split_atlas_configs, [("atlas_configs", "atlas_configs")])])
+
     # Parcellates all scalars with one atlas at a time.
     # Outputs a tsv of parcellated scalar stats and atlas name ("seg").
     # Also ingresses and outputs metadata.
@@ -120,10 +127,10 @@ def init_scalar_to_atlas_wf(
     )
     workflow.connect([
         (inputnode, scalar_parcellator, [
-            ("atlas_configs", "atlas_config"),
             ("collected_scalars", "scalars_config"),
             ("mapping_metadata", "mapping_metadata"),
         ]),
+        (split_atlas_configs, scalar_parcellator, [("atlas_configs", "atlas_config")]),
     ])  # fmt:skip
 
     ds_parcellated_scalars = pe.MapNode(

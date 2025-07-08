@@ -279,3 +279,42 @@ class TestReportPlot(SimpleInterface):
         )
         self._results["out_file"] = out_file
         return runtime
+
+
+class _SplitAtlasConfigsInputSpec(BaseInterfaceInputSpec):
+    atlas_configs = traits.Dict(
+        mandatory=True,
+        desc=(
+            "Dictionary of atlas configurations. "
+            "Keys are atlas names and values are dictionaries with the following keys: "
+            "'file', 'label', 'metadata'. "
+            "'file' is the path to the atlas file. "
+            "'label' is the path to the label file. "
+            "'metadata' is a dictionary with relevant metadata. "
+            "'xfm_to_anat' is the path to the transform to get the atlas into T1w space."
+        ),
+    )
+
+
+class _SplitAtlasConfigsOutputSpec(TraitedSpec):
+    atlas_configs = traits.List(
+        traits.Dict(),
+        desc=(
+            "Dictionary of atlas configurations. "
+            "This interface adds the following keys: "
+            "'dwi_resolution_file', 'dwi_resolution_mif', 'orig_lut', 'mrtrix_lut'. "
+            "The values are the paths to the transformed atlas files and the label files."
+        ),
+    )
+
+
+class SplitAtlasConfigs(SimpleInterface):
+    input_spec = _SplitAtlasConfigsInputSpec
+    output_spec = _SplitAtlasConfigsOutputSpec
+
+    def _run_interface(self, runtime):
+        atlas_configs = []
+        for atlas_name, atlas_config in self.inputs.atlas_configs.items():
+            atlas_configs.append({atlas_name: atlas_config})
+
+        self._results["atlas_configs"] = atlas_configs
