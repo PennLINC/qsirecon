@@ -141,12 +141,12 @@ def init_scalar_to_atlas_wf(
         ),
         name="ds_parcellated_scalars",
         run_without_submitting=True,
-        iterfield=["seg"],
+        iterfield=["seg", "summary_tsv", "metadata"],
     )
     workflow.connect([
         (scalar_parcellator, ds_parcellated_scalars, [
-            ("parcellated_scalar_tsv", "in_file"),
-            ("metadata_list", "metadata_list"),
+            ("parcellated_scalar_tsv", "summary_tsv"),
+            ("metadata_list", "metadata"),
             ("seg", "seg"),
         ]),
     ])  # fmt:skip

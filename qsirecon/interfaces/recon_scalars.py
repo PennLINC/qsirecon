@@ -125,6 +125,7 @@ class _ReconScalarsTableSplitterDataSinkInputSpec(BaseInterfaceInputSpec):
     dismiss_entities = traits.List([], usedefault=True)
     infer_suffix = traits.Bool(False, usedefault=True)
     summary_tsv = File(exists=True, mandatory=True, desc="tsv of combined scalar summaries")
+    metadata = traits.Dict(mandatory=False, desc="list of metadata dictionaries")
     suffix = traits.Str(mandatory=True)
 
 
