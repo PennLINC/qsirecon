@@ -95,6 +95,8 @@ def init_scalar_to_atlas_wf(
 ):
     """Parcellate scalar images using atlases.
 
+    The atlases will be in the T1w space of the DWI data, produced by WarpConnectivityAtlases.
+
     Inputs
         recon_scalars
             List of dictionaries containing scalar info
