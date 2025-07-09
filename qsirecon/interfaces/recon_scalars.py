@@ -10,6 +10,7 @@ Classes that collect scalar images and metadata from Recon Workflows
 """
 import os
 import os.path as op
+import json
 
 import nibabel as nb
 import numpy as np
@@ -20,6 +21,7 @@ from nipype.interfaces.base import (
     BaseInterfaceInputSpec,
     File,
     InputMultiObject,
+    OutputMultiObject,
     SimpleInterface,
     TraitedSpec,
     Undefined,
@@ -153,6 +155,66 @@ class ReconScalarsTableSplitterDataSink(SimpleInterface):
             output_dir = op.dirname(qsirecon_suffixed_tsv)
             os.makedirs(output_dir, exist_ok=True)
             group_df.to_csv(qsirecon_suffixed_tsv, index=False, sep="\t")
+
+        return runtime
+
+
+class _ParcellationTableSplitterDataSinkInputSpec(BaseInterfaceInputSpec):
+    base_directory = traits.Directory(
+        desc="Path to the base directory for storing data.",
+    )
+    compress = traits.Bool(False, usedefault=True)
+    dismiss_entities = traits.List([], usedefault=True)
+    in_file = File(exists=True, mandatory=True, desc="tsv of combined scalar summaries")
+    meta_dict = traits.Dict(mandatory=False, desc="metadata dictionary")
+    source_file = InputMultiObject(
+        File(exists=False),
+        mandatory=True,
+        desc="the source file(s) to extract entities from",
+    )
+    seg = traits.Str(mandatory=True, desc="the name of the segmentation")
+    suffix = traits.Str("dwimap", usedefault=True, desc="the suffix of the parcellated data")
+
+
+class _ParcellationTableSplitterDataSinkOutputSpec(TraitedSpec):
+    out_file = OutputMultiObject(File(exists=True, desc="written file path"))
+    out_meta = OutputMultiObject(File(exists=True, desc="written JSON sidecar path"))
+
+
+class ParcellationTableSplitterDataSink(SimpleInterface):
+    input_spec = _ParcellationTableSplitterDataSinkInputSpec
+    output_spec = _ParcellationTableSplitterDataSinkOutputSpec
+    _always_run = True
+
+    def _run_interface(self, runtime):
+        in_df = pd.read_table(self.inputs.in_file)
+        self._results["out_file"] = []
+        self._results["out_meta"] = []
+
+        for qsirecon_suffix, group_df in in_df.groupby("qsirecon_suffix"):
+            # reset the index for this df
+            group_df.reset_index(drop=True, inplace=True)
+
+            qsirecon_suffixed_tsv = get_recon_output_name(
+                base_dir=self.inputs.base_directory,
+                source_file=self.inputs.source_file,
+                derivative_file=self.inputs.in_file,
+                output_bids_entities={
+                    "seg": self.inputs.seg,
+                    "suffix": self.inputs.suffix,
+                },
+                qsirecon_suffix=qsirecon_suffix,
+                dismiss_entities=self.inputs.dismiss_entities,
+            )
+            output_dir = op.dirname(qsirecon_suffixed_tsv)
+            os.makedirs(output_dir, exist_ok=True)
+            group_df.to_csv(qsirecon_suffixed_tsv, index=False, sep="\t")
+            out_meta = qsirecon_suffixed_tsv.replace(".tsv", ".json")
+            with open(out_meta, "w") as fobj:
+                json.dump(self.inputs.meta_dict, fobj, indent=4, sort_keys=True)
+
+            self._results["out_file"].append(qsirecon_suffixed_tsv)
+            self._results["out_meta"].append(out_meta)
 
         return runtime
 

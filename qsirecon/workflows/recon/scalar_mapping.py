@@ -19,6 +19,7 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import (
     ParcellateScalars,
+    ParcellationTableSplitterDataSink,
     ReconScalarsTableSplitterDataSink,
 )
 from ...interfaces.scalar_mapping import BundleMapper, TemplateMapper
@@ -135,7 +136,7 @@ def init_scalar_to_atlas_wf(
     ])  # fmt:skip
 
     ds_parcellated_scalars = pe.MapNode(
-        ReconScalarsTableSplitterDataSink(
+        ParcellationTableSplitterDataSink(
             dismiss_entities=["desc"],
             suffix="scalarstats",
         ),
@@ -152,7 +153,7 @@ def init_scalar_to_atlas_wf(
     ])  # fmt:skip
 
     # NOTE: Don't add qsirecon_suffix with clean_datasinks here,
-    # as the qsirecon_suffix is determined within ReconScalarsTableSplitterDataSink.
+    # as the qsirecon_suffix is determined within ParcellationTableSplitterDataSink.
     return clean_datasinks(workflow, qsirecon_suffix=None)
 
 
