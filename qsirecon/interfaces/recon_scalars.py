@@ -458,7 +458,7 @@ class ParcellateScalars(SimpleInterface):
                 **scalar_metadata,
             }
 
-            self._results["metadata_list"][scalar_name] = metadata
+            self._results["metadata"][scalar_name] = metadata
 
         parcellated_data["coverage"] = parcel_coverage_series
 
