@@ -380,6 +380,7 @@ class ParcellateScalars(SimpleInterface):
         )
         parcel_coverage_series["qsirecon_suffix"] = "QSIRecon"
 
+        self._results["metadata_list"] = []
         parcellated_data = {}
         for scalar_config in self.inputs.scalars_config:
             scalar_file = scalar_config["path"]
