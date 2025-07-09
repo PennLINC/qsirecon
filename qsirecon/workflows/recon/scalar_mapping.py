@@ -141,7 +141,7 @@ def init_scalar_to_atlas_wf(
         ),
         name="ds_parcellated_scalars",
         run_without_submitting=True,
-        iterfield=["seg", "summary_tsv"],
+        iterfield=["seg", "summary_tsv", "metadata"],
     )
     workflow.connect([
         (scalar_parcellator, ds_parcellated_scalars, [
