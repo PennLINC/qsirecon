@@ -166,8 +166,8 @@ class _ParcellationTableSplitterDataSinkInputSpec(BaseInterfaceInputSpec):
     dismiss_entities = traits.List([], usedefault=True)
     in_file = File(exists=True, mandatory=True, desc="tsv of combined scalar summaries")
     meta_dict = traits.Dict(mandatory=False, desc="metadata dictionary")
-    source_file = InputMultiObject(
-        File(exists=False),
+    source_file = File(
+        exists=False,
         mandatory=True,
         desc="the source file(s) to extract entities from",
     )
