@@ -307,7 +307,7 @@ class _ParcellateScalarsInputSpec(BaseInterfaceInputSpec):
 
 class _ParcellateScalarsOutputSpec(TraitedSpec):
     parcellated_scalar_tsv = File(exists=True)
-    metadata_list = traits.List(traits.Dict())
+    metadata = traits.Dict()
     seg = traits.Str()
 
 
@@ -375,13 +375,32 @@ class ParcellateScalars(SimpleInterface):
         masker_labels = sum_masker_masked.labels_[:]
         n_found_nodes = len(masker_labels)
 
+        # Region indices in the atlas may not be sequential, so we map them to sequential ints.
+        seq_mapper = {
+            idx: i for i, idx in enumerate(atlas_labels_df["sanitized_index"].tolist())
+        }
+
+        if n_found_nodes != n_nodes:  # parcels lost by warping/downsampling atlas
+            # Fill in any missing nodes in the array with NaNs.
+            new_scalar_arr = np.full(
+                n_nodes,
+                fill_value=np.nan,
+                dtype=parcel_coverage.dtype,
+            )
+            for col in range(parcel_coverage.size):
+                label_col = seq_mapper[masker_labels[col]]
+                new_scalar_arr[label_col] = parcel_coverage[col]
+
+            parcel_coverage = new_scalar_arr
+            del new_scalar_arr
+
         parcel_coverage_series = pd.Series(
             data=parcel_coverage,
-            index=masker_labels,
+            index=node_labels,
         )
         parcel_coverage_series["qsirecon_suffix"] = "QSIRecon"
 
-        self._results["metadata_list"] = []
+        self._results["metadata"] = {}
         parcellated_data = {}
         for scalar_config in self.inputs.scalars_config:
             scalar_file = scalar_config["path"]
@@ -395,7 +414,9 @@ class ParcellateScalars(SimpleInterface):
             scalar_param = scalar_config.get("bids", {}).get("param", None)
             scalar_desc = scalar_config.get("bids", {}).get("desc", None)
 
-            scalar_name = f"model-{scalar_model}_param-{scalar_param}_desc-{scalar_desc}"
+            scalar_name = f"model-{scalar_model}_param-{scalar_param}"
+            if scalar_desc:
+                scalar_name += f"_desc-{scalar_desc}"
 
             # Parcellate the scalar file with the atlas
             masker = NiftiLabelsMasker(
@@ -408,11 +429,6 @@ class ParcellateScalars(SimpleInterface):
                 resampling_target=None,  # they should be in the same space/resolution already
             )
             scalar_arr = np.squeeze(masker.fit_transform(scalar_img))
-
-            # Region indices in the atlas may not be sequential, so we map them to sequential ints.
-            seq_mapper = {
-                idx: i for i, idx in enumerate(atlas_labels_df["sanitized_index"].tolist())
-            }
 
             if n_found_nodes != n_nodes:  # parcels lost by warping/downsampling atlas
                 # Fill in any missing nodes in the timeseries array with NaNs.
@@ -444,7 +460,7 @@ class ParcellateScalars(SimpleInterface):
                 **scalar_metadata,
             }
 
-            self._results["metadata_list"].append(metadata)
+            self._results["metadata_list"][scalar_name] = metadata
 
         parcellated_data["coverage"] = parcel_coverage_series
 
@@ -454,7 +470,7 @@ class ParcellateScalars(SimpleInterface):
         parcellated_data_df.to_csv(
             self._results["parcellated_scalar_tsv"],
             index=True,
-            index_label="scalar",
+            index_label="Node",
             sep="\t",
         )
 
