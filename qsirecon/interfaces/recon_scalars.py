@@ -448,6 +448,7 @@ class ParcellateScalars(SimpleInterface):
         parcellated_data["coverage"] = parcel_coverage_series
 
         # Save the parcellated data to a tsv
+        self._results["parcellated_scalar_tsv"] = os.path.abspath("parcellated_scalar_tsv.tsv")
         parcellated_data_df = pd.DataFrame(parcellated_data)
         parcellated_data_df.to_csv(
             self._results["parcellated_scalar_tsv"],
