@@ -18,7 +18,6 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import (
-    OrganizeScalarData,
     ParcellateScalars,
     ReconScalarsTableSplitterDataSink,
 )
@@ -118,13 +117,6 @@ def init_scalar_to_atlas_wf(
     )
     workflow.connect([(inputnode, split_atlas_configs, [("atlas_configs", "atlas_configs")])])
 
-    organize_scalar_data = pe.MapNode(
-        OrganizeScalarData(),
-        iterfield=["scalar_config"],
-        name="organize_scalar_data",
-    )
-    workflow.connect([(inputnode, organize_scalar_data, [("collected_scalars", "scalar_config")])])
-
     # Parcellates all scalars with one atlas at a time.
     # Outputs a tsv of parcellated scalar stats and atlas name ("seg").
     # Also ingresses and outputs metadata.
@@ -135,11 +127,11 @@ def init_scalar_to_atlas_wf(
     )
     workflow.connect([
         (inputnode, scalar_parcellator, [
+            ("collected_scalars", "scalars_config"),
             ("mapping_metadata", "mapping_metadata"),
             ("dwi_mask", "brain_mask"),
         ]),
         (split_atlas_configs, scalar_parcellator, [("atlas_configs", "atlas_config")]),
-        (organize_scalar_data, scalar_parcellator, [("scalar_config", "scalars_config")]),
     ])  # fmt:skip
 
     ds_parcellated_scalars = pe.MapNode(
