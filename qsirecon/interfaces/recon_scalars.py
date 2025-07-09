@@ -8,9 +8,8 @@ Classes that collect scalar images and metadata from Recon Workflows
 
 
 """
-import os
-import os.path as op
 import json
+import os
 
 import nibabel as nb
 import numpy as np
@@ -96,7 +95,7 @@ class ReconScalars(SimpleInterface):
             if not isdefined(inputs[input_name]):
                 continue
             result = self.scalar_metadata[input_name].copy()
-            result["path"] = op.abspath(inputs[input_name])
+            result["path"] = os.path.abspath(inputs[input_name])
             result["qsirecon_suffix"] = self.inputs.qsirecon_suffix
             result["variable_name"] = input_name
             result["source_file"] = self.inputs.source_file
@@ -152,7 +151,7 @@ class ReconScalarsTableSplitterDataSink(SimpleInterface):
                 qsirecon_suffix=qsirecon_suffix,
                 dismiss_entities=self.inputs.dismiss_entities,
             )
-            output_dir = op.dirname(qsirecon_suffixed_tsv)
+            output_dir = os.path.dirname(qsirecon_suffixed_tsv)
             os.makedirs(output_dir, exist_ok=True)
             group_df.to_csv(qsirecon_suffixed_tsv, index=False, sep="\t")
 
@@ -206,7 +205,7 @@ class ParcellationTableSplitterDataSink(SimpleInterface):
                 qsirecon_suffix=qsirecon_suffix,
                 dismiss_entities=self.inputs.dismiss_entities,
             )
-            output_dir = op.dirname(qsirecon_suffixed_tsv)
+            output_dir = os.path.dirname(qsirecon_suffixed_tsv)
             os.makedirs(output_dir, exist_ok=True)
             group_df.to_csv(qsirecon_suffixed_tsv, index=False, sep="\t")
             out_meta = qsirecon_suffixed_tsv.replace(".tsv", ".json")
