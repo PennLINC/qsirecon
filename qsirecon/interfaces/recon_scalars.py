@@ -388,9 +388,10 @@ class ParcellateScalars(SimpleInterface):
                 print(f"Scalar {scalar_file} is not 3D, skipping")
                 continue
 
-            scalar_model = scalar_config["model"]
-            scalar_param = scalar_config["param"]
-            scalar_desc = scalar_config["desc"]
+            scalar_metadata = scalar_config.get("metadata", {})
+            scalar_model = scalar_config.get("bids", {}).get("model", None)
+            scalar_param = scalar_config.get("bids", {}).get("param", None)
+            scalar_desc = scalar_config.get("bids", {}).get("desc", None)
 
             scalar_name = f"model-{scalar_model}_param-{scalar_param}_desc-{scalar_desc}"
 
@@ -438,6 +439,7 @@ class ParcellateScalars(SimpleInterface):
                 "model": scalar_model,
                 "param": scalar_param,
                 "desc": scalar_desc,
+                **scalar_metadata,
             }
 
             self._results["metadata_list"].append(metadata)
