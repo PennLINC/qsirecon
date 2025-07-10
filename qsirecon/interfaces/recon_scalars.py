@@ -208,7 +208,7 @@ class ParcellationTableSplitterDataSink(SimpleInterface):
             )
             output_dir = os.path.dirname(qsirecon_suffixed_tsv)
             os.makedirs(output_dir, exist_ok=True)
-            group_df.to_csv(qsirecon_suffixed_tsv, index=False, sep="\t")
+            group_df.to_csv(qsirecon_suffixed_tsv, index=False, sep="\t", na_rep="n/a")
             out_meta = qsirecon_suffixed_tsv.replace(".tsv", ".json")
             with open(out_meta, "w") as fobj:
                 json.dump(self.inputs.meta_dict, fobj, indent=4, sort_keys=True)
@@ -481,7 +481,34 @@ class ParcellateScalars(SimpleInterface):
                 "mean",
             ] = coverage
 
-        self._results["metadata"] = {}
+        self._results["metadata"] = {
+            "Sources": [atlas_file, self.inputs.brain_mask],
+            "scalar": {
+                "Description": "The scalar map from which values are extracted.",
+                "Levels": {
+                    "coverage": (
+                        "The percent (0 - 1) of voxels in the parcel that are "
+                        "within the brain mask. "
+                        "Only rendered in the 'mean' column."
+                    ),
+                },
+            },
+            "node": {
+                "Description": "The node label from the atlas.",
+            },
+            "qsirecon_suffix": {
+                "Description": "The QSIRecon sub-dataset from which the scalar was extracted.",
+            },
+            "mean": {
+                "Description": "The unweighted mean of the scalar values in the parcel.",
+            },
+            "stdev": {
+                "Description": "The standard deviation of the scalar values in the parcel.",
+            },
+            "median": {
+                "Description": "The median of the scalar values in the parcel.",
+            },
+        }
         for scalar_config in self.inputs.scalars_config:
             scalar_file = scalar_config["path"]
             scalar_img = nb.load(scalar_file)
@@ -489,8 +516,9 @@ class ParcellateScalars(SimpleInterface):
                 print(f"Scalar {scalar_file} is not 3D, skipping")
                 continue
 
-            scalar_metadata = scalar_config.get("metadata", {})
+            scalar_desc = scalar_config.get("metadata", {}).get("Description", "")
             scalar_param = scalar_config.get("bids", {}).get("param", None)
+            self._results["metadata"]["scalar"]["Levels"][scalar_param] = scalar_desc
 
             # Parcellate the scalar file with the atlas
             measures = {"mean": "mean", "stdev": "standard_deviation", "median": "median"}
@@ -528,14 +556,7 @@ class ParcellateScalars(SimpleInterface):
                         col,
                     ] = scalar
 
-            # Prepare metadata dictionary
-            metadata = {
-                "Sources": [scalar_file, atlas_file],
-                "param": scalar_param,
-                **scalar_metadata,
-            }
-
-            self._results["metadata"][scalar_param] = metadata
+            self._results["metadata"]["Sources"].append(scalar_file)
 
         # Save the parcellated data to a tsv
         self._results["parcellated_scalar_tsv"] = os.path.abspath("parcellated_scalar_tsv.tsv")
