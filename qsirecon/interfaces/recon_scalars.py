@@ -474,7 +474,10 @@ class ParcellateScalars(SimpleInterface):
         for i_node, coverage in enumerate(parcel_coverage):
             node_label = node_labels[i_node]
             parcellated_data.loc[
-                parcellated_data["node"] == node_label & parcellated_data["scalar"] == "coverage",
+                (
+                    (parcellated_data["node"] == node_label)
+                    & (parcellated_data["scalar"] == "coverage")
+                ),
                 "mean",
             ] = coverage
 
@@ -521,9 +524,8 @@ class ParcellateScalars(SimpleInterface):
                 for i_node, scalar in enumerate(scalar_arr):
                     node_label = node_labels[i_node]
                     parcellated_data.loc[
-                        parcellated_data["node"]
-                        == node_label & parcellated_data["scalar"]
-                        == scalar_param,
+                        (parcellated_data["node"] == node_label)
+                        & (parcellated_data["scalar"] == scalar_param),
                         col,
                     ] = scalar
 
