@@ -8,6 +8,7 @@ Classes that collect scalar images and metadata from Recon Workflows
 
 
 """
+import itertools
 import json
 import os
 
@@ -377,8 +378,6 @@ class ParcellateScalars(SimpleInterface):
     output_spec = _ParcellateScalarsOutputSpec
 
     def _run_interface(self, runtime):
-        import itertools
-
         # Measures to extract: mean, stdev, median
         source_suffixes = set([cfg["qsirecon_suffix"] for cfg in self.inputs.scalars_config])
         if len(source_suffixes) > 1:
@@ -403,12 +402,18 @@ class ParcellateScalars(SimpleInterface):
         node_labels = atlas_labels_df["label"].tolist()
 
         # Build empty DataFrame
-        columns = ['node', 'scalar', 'qsirecon_suffix', 'mean', 'stdev', 'median']
-        scalar_labels = [scalar_config['bids']['param'] for scalar_config in self.inputs.scalars_config]
-        scalar_labels.append('coverage')
+        columns = ["node", "scalar", "qsirecon_suffix", "mean", "stdev", "median"]
+        scalar_labels = [
+            scalar_config["bids"]["param"] for scalar_config in self.inputs.scalars_config
+        ]
+        scalar_labels.append("coverage")
         parcellated_data = pd.DataFrame(
             columns=columns,
-            data=list(itertools.product(*[node_labels, scalar_labels, [source_suffix], [np.nan], [np.nan], [np.nan]])),
+            data=list(
+                itertools.product(
+                    *[node_labels, scalar_labels, [source_suffix], [np.nan], [np.nan], [np.nan]]
+                )
+            ),
         )
 
         # prepend "background" to node labels to satisfy NiftiLabelsMasker
@@ -469,8 +474,8 @@ class ParcellateScalars(SimpleInterface):
         for i_node, coverage in enumerate(parcel_coverage):
             node_label = node_labels[i_node]
             parcellated_data.loc[
-                parcellated_data['node'] == node_label & parcellated_data['scalar'] == 'coverage',
-                'mean',
+                parcellated_data["node"] == node_label & parcellated_data["scalar"] == "coverage",
+                "mean",
             ] = coverage
 
         self._results["metadata"] = {}
@@ -486,7 +491,7 @@ class ParcellateScalars(SimpleInterface):
             scalar_param = scalar_config.get("bids", {}).get("param", None)
 
             # Parcellate the scalar file with the atlas
-            measures = {'mean': 'mean', 'stdev': 'standard_deviation', 'median': 'median'}
+            measures = {"mean": "mean", "stdev": "standard_deviation", "median": "median"}
             for col, metric in measures.items():
                 masker = NiftiLabelsMasker(
                     labels_img=atlas_img,
@@ -516,7 +521,9 @@ class ParcellateScalars(SimpleInterface):
                 for i_node, scalar in enumerate(scalar_arr):
                     node_label = node_labels[i_node]
                     parcellated_data.loc[
-                        parcellated_data['node'] == node_label & parcellated_data['scalar'] == scalar_param,
+                        parcellated_data["node"]
+                        == node_label & parcellated_data["scalar"]
+                        == scalar_param,
                         col,
                     ] = scalar
 
