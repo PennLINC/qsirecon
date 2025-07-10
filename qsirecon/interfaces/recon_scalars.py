@@ -482,7 +482,6 @@ class ParcellateScalars(SimpleInterface):
             ] = coverage
 
         self._results["metadata"] = {}
-        parcellated_data = {}
         for scalar_config in self.inputs.scalars_config:
             scalar_file = scalar_config["path"]
             scalar_img = nb.load(scalar_file)
