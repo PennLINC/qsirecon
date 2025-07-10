@@ -464,9 +464,9 @@ class ParcellateScalars(SimpleInterface):
                 fill_value=np.nan,
                 dtype=parcel_coverage.dtype,
             )
-            for col in range(parcel_coverage.size):
-                label_col = seq_mapper[masker_labels[col]]
-                new_scalar_arr[label_col] = parcel_coverage[col]
+            for j_col in range(parcel_coverage.size):
+                label_col = seq_mapper[masker_labels[j_col]]
+                new_scalar_arr[label_col] = parcel_coverage[j_col]
 
             parcel_coverage = new_scalar_arr
             del new_scalar_arr
@@ -513,9 +513,9 @@ class ParcellateScalars(SimpleInterface):
                         fill_value=np.nan,
                         dtype=scalar_arr.dtype,
                     )
-                    for col in range(scalar_arr.size):
-                        label_col = seq_mapper[masker_labels[col]]
-                        new_scalar_arr[label_col] = scalar_arr[col]
+                    for j_col in range(scalar_arr.size):
+                        label_col = seq_mapper[masker_labels[j_col]]
+                        new_scalar_arr[label_col] = scalar_arr[j_col]
 
                     scalar_arr = new_scalar_arr
                     del new_scalar_arr
