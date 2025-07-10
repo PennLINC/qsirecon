@@ -499,6 +499,20 @@ class ParcellateScalars(SimpleInterface):
                     strategy=metric,
                 )
                 scalar_arr = np.squeeze(masker.fit_transform(scalar_img))
+                if n_found_nodes != n_nodes:  # parcels lost by warping/downsampling atlas
+                    # Fill in any missing nodes in the array with NaNs.
+                    new_scalar_arr = np.full(
+                        n_nodes,
+                        fill_value=np.nan,
+                        dtype=scalar_arr.dtype,
+                    )
+                    for col in range(scalar_arr.size):
+                        label_col = seq_mapper[masker_labels[col]]
+                        new_scalar_arr[label_col] = scalar_arr[col]
+
+                    scalar_arr = new_scalar_arr
+                    del new_scalar_arr
+
                 for i_node, scalar in enumerate(scalar_arr):
                     node_label = node_labels[i_node]
                     parcellated_data.loc[
