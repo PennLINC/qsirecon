@@ -602,7 +602,7 @@ def _find_nearest_path(path_dict, input_path):
     'bids::sub-01/func/sub-01_task-rest_bold.nii.gz'
     """
     # Don't modify BIDS-URIs
-    if isinstance(input_path, str) and input_path.startswith('bids:'):
+    if isinstance(input_path, str) and input_path.startswith("bids:"):
         return input_path
 
     input_path = Path(input_path)
@@ -617,7 +617,7 @@ def _find_nearest_path(path_dict, input_path):
     if matching_path is None:
         matching_path = str(input_path.absolute())
     else:
-        matching_path = f'{matching_key}{matching_path}'
+        matching_path = f"{matching_key}{matching_path}"
 
     return matching_path
 
@@ -629,8 +629,8 @@ def _get_bidsuris(in_files, dataset_links, out_dir):
     # Remove undefined inputs
     in_files = [f for f in in_files if isdefined(f)]
     # Convert the dataset links to BIDS URI prefixes
-    updated_keys = {f'bids:{k}:': Path(v) for k, v in dataset_links.items()}
-    updated_keys['bids::'] = Path(out_dir)
+    updated_keys = {f"bids:{k}:": Path(v) for k, v in dataset_links.items()}
+    updated_keys["bids::"] = Path(out_dir)
     # Convert the paths to BIDS URIs
     out = [_find_nearest_path(updated_keys, f) for f in in_files]
     return out
