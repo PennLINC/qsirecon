@@ -624,6 +624,7 @@ def init_dwi_recon_anatomical_workflow(
             )
             workflow.connect([
                 (inputnode, prepare_atlases, [("dwi_file", "reference_image")]),
+                # TODO: Patch the output files into the atlas configs.
                 (prepare_atlases, buffernode, [("atlas_configs", "atlas_configs")]),
             ])  # fmt:skip
 

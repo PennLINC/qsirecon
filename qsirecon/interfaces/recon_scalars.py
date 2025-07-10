@@ -29,6 +29,7 @@ from nipype.interfaces.base import (
     traits,
 )
 
+from ..utils.bids import _get_bidsuris
 from ..utils.misc import load_yaml
 from .bids import get_recon_output_name
 from qsirecon.data import load as load_data
@@ -174,6 +175,7 @@ class _ParcellationTableSplitterDataSinkInputSpec(BaseInterfaceInputSpec):
     )
     seg = traits.Str(mandatory=True, desc="the name of the segmentation")
     suffix = traits.Str("dwimap", usedefault=True, desc="the suffix of the parcellated data")
+    dataset_links = traits.Dict(mandatory=False, desc="dataset links")
 
 
 class _ParcellationTableSplitterDataSinkOutputSpec(TraitedSpec):
@@ -190,6 +192,18 @@ class ParcellationTableSplitterDataSink(SimpleInterface):
         in_df = pd.read_table(self.inputs.in_file)
         self._results["out_file"] = []
         self._results["out_meta"] = []
+
+        meta_dict = self.inputs.meta_dict.copy()
+        if isdefined(self.inputs.dataset_links):
+            # Traverse dictionary, looking for any keys named "Sources".
+            # When found, replace the value with a BIDS URI.
+            for key, value in meta_dict.items():
+                if key == "Sources":
+                    meta_dict[key] = _get_bidsuris(
+                        value,
+                        self.inputs.dataset_links,
+                        self.inputs.base_directory,
+                    )
 
         for qsirecon_suffix, group_df in in_df.groupby("qsirecon_suffix"):
             # reset the index for this df
@@ -211,7 +225,7 @@ class ParcellationTableSplitterDataSink(SimpleInterface):
             group_df.to_csv(qsirecon_suffixed_tsv, index=False, sep="\t", na_rep="n/a")
             out_meta = qsirecon_suffixed_tsv.replace(".tsv", ".json")
             with open(out_meta, "w") as fobj:
-                json.dump(self.inputs.meta_dict, fobj, indent=4, sort_keys=True)
+                json.dump(meta_dict, fobj, indent=4, sort_keys=True)
 
             self._results["out_file"].append(qsirecon_suffixed_tsv)
             self._results["out_meta"].append(out_meta)
