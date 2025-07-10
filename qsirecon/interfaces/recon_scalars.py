@@ -377,6 +377,9 @@ class ParcellateScalars(SimpleInterface):
     output_spec = _ParcellateScalarsOutputSpec
 
     def _run_interface(self, runtime):
+        import itertools
+
+        # Measures to extract: mean, stdev, median
         source_suffixes = set([cfg["qsirecon_suffix"] for cfg in self.inputs.scalars_config])
         if len(source_suffixes) > 1:
             raise ValueError(
@@ -398,6 +401,16 @@ class ParcellateScalars(SimpleInterface):
         atlas_img, atlas_labels_df = _sanitize_nifti_atlas(atlas_file, atlas_labels_df)
 
         node_labels = atlas_labels_df["label"].tolist()
+
+        # Build empty DataFrame
+        columns = ['node', 'scalar', 'qsirecon_suffix', 'mean', 'stdev', 'median']
+        scalar_labels = [scalar_config['bids']['param'] for scalar_config in self.inputs.scalars_config]
+        scalar_labels.append('coverage')
+        parcellated_data = pd.DataFrame(
+            columns=columns,
+            data=list(itertools.product(*[node_labels, scalar_labels, [source_suffix], [np.nan], [np.nan], [np.nan]])),
+        )
+
         # prepend "background" to node labels to satisfy NiftiLabelsMasker
         # The background "label" won't be present in the output file.
         masker_input_labels = ["background"] + node_labels
@@ -453,11 +466,12 @@ class ParcellateScalars(SimpleInterface):
             parcel_coverage = new_scalar_arr
             del new_scalar_arr
 
-        parcel_coverage_series = pd.Series(
-            data=parcel_coverage,
-            index=node_labels,
-        )
-        parcel_coverage_series["qsirecon_suffix"] = "QSIRecon"
+        for i_node, coverage in enumerate(parcel_coverage):
+            node_label = node_labels[i_node]
+            parcellated_data.loc[
+                parcellated_data['node'] == node_label & parcellated_data['scalar'] == 'coverage',
+                'mean',
+            ] = coverage
 
         self._results["metadata"] = {}
         parcellated_data = {}
@@ -469,68 +483,45 @@ class ParcellateScalars(SimpleInterface):
                 continue
 
             scalar_metadata = scalar_config.get("metadata", {})
-            scalar_model = scalar_config.get("bids", {}).get("model", None)
             scalar_param = scalar_config.get("bids", {}).get("param", None)
-            scalar_desc = scalar_config.get("bids", {}).get("desc", None)
-
-            scalar_name = f"model-{scalar_model}_param-{scalar_param}"
-            if scalar_desc:
-                scalar_name += f"_desc-{scalar_desc}"
 
             # Parcellate the scalar file with the atlas
-            masker = NiftiLabelsMasker(
-                labels_img=atlas_img,
-                labels=masker_input_labels,
-                background_label=0,
-                mask_img=self.inputs.brain_mask,
-                smoothing_fwhm=None,
-                standardize=False,
-                resampling_target=None,  # they should be in the same space/resolution already
-            )
-            scalar_arr = np.squeeze(masker.fit_transform(scalar_img))
-
-            if n_found_nodes != n_nodes:  # parcels lost by warping/downsampling atlas
-                # Fill in any missing nodes in the timeseries array with NaNs.
-                new_scalar_arr = np.full(
-                    n_nodes,
-                    fill_value=np.nan,
-                    dtype=scalar_arr.dtype,
+            measures = {'mean': 'mean', 'stdev': 'standard_deviation', 'median': 'median'}
+            for col, metric in measures.items():
+                masker = NiftiLabelsMasker(
+                    labels_img=atlas_img,
+                    labels=masker_input_labels,
+                    background_label=0,
+                    mask_img=self.inputs.brain_mask,
+                    smoothing_fwhm=None,
+                    standardize=False,
+                    resampling_target=None,
+                    strategy=metric,
                 )
-                for col in range(scalar_arr.size):
-                    label_col = seq_mapper[masker_labels[col]]
-                    new_scalar_arr[label_col] = scalar_arr[col]
-
-                scalar_arr = new_scalar_arr
-                del new_scalar_arr
-
-            scalar_series = pd.Series(
-                data=scalar_arr,
-                index=node_labels,
-            )
-            scalar_series["qsirecon_suffix"] = source_suffix
-            parcellated_data[scalar_name] = scalar_series
+                scalar_arr = np.squeeze(masker.fit_transform(scalar_img))
+                for i_node, scalar in enumerate(scalar_arr):
+                    node_label = node_labels[i_node]
+                    parcellated_data.loc[
+                        parcellated_data['node'] == node_label & parcellated_data['scalar'] == scalar_param,
+                        col,
+                    ] = scalar
 
             # Prepare metadata dictionary
             metadata = {
                 "Sources": [scalar_file, atlas_file],
-                "model": scalar_model,
                 "param": scalar_param,
-                "desc": scalar_desc,
                 **scalar_metadata,
             }
 
-            self._results["metadata"][scalar_name] = metadata
-
-        parcellated_data["coverage"] = parcel_coverage_series
+            self._results["metadata"][scalar_param] = metadata
 
         # Save the parcellated data to a tsv
         self._results["parcellated_scalar_tsv"] = os.path.abspath("parcellated_scalar_tsv.tsv")
-        parcellated_data_df = pd.DataFrame(parcellated_data).T
-        parcellated_data_df.to_csv(
+        parcellated_data.to_csv(
             self._results["parcellated_scalar_tsv"],
-            index=True,
-            index_label="Node",
+            index=False,
             sep="\t",
+            na_rep="n/a",
         )
 
         return runtime
