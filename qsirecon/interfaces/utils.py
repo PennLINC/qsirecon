@@ -63,13 +63,9 @@ class WarpConnectivityAtlases(SimpleInterface):
 
     def _run_interface(self, runtime):
         if self.inputs.space == "T1w":
-            transforms = [
-                cfg["xfm_to_anat"] for cfg in self.inputs.atlas_configs.values()
-            ]
+            transforms = [cfg["xfm_to_anat"] for cfg in self.inputs.atlas_configs.values()]
             if not all(os.path.isfile(transform) for transform in transforms):
-                raise ValueError(
-                    "No standard to T1w transform found in anatomical directory."
-                )
+                raise ValueError("No standard to T1w transform found in anatomical directory.")
 
         else:
             transforms = ["identity"] * len(self.inputs.atlas_configs)
@@ -107,9 +103,7 @@ class WarpConnectivityAtlases(SimpleInterface):
             atlas_configs[atlas_name]["orig_lut"] = output_mif_txt
             atlas_configs[atlas_name]["mrtrix_lut"] = output_orig_txt
 
-            conform_atlas = ConformAtlas(
-                in_file=atlas_config["image"], orientation="LPS"
-            )
+            conform_atlas = ConformAtlas(in_file=atlas_config["image"], orientation="LPS")
             result = conform_atlas.run()
             lps_name = result.outputs.out_file
 
@@ -176,9 +170,7 @@ def label_convert(original_atlas, output_mif, orig_txt, mrtrix_txt, atlas_labels
 
     atlas_labels_df["index"] = atlas_labels_df["index"].astype(int)
     if 0 in atlas_labels_df["index"].values:
-        print(
-            f"WARNING: Atlas {atlas_labels_file} has a 0 index. This index will be dropped."
-        )
+        print(f"WARNING: Atlas {atlas_labels_file} has a 0 index. This index will be dropped.")
         atlas_labels_df = atlas_labels_df.loc[atlas_labels_df["index"] != 0]
 
     index_label_pairs = zip(atlas_labels_df["index"], atlas_labels_df["label"])
