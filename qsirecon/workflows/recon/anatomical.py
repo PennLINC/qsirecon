@@ -453,7 +453,8 @@ def init_dwi_recon_anatomical_workflow(
         ds_dwi_mask = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
-                space="ACPC",
+                datatype="dwi",
+                space="T1w",
                 desc="brain",
                 suffix="mask",
                 compress=True,
@@ -611,7 +612,8 @@ def init_dwi_recon_anatomical_workflow(
         ds_resampled_mask = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
-                space="ACPC",
+                datatype="dwi",
+                space="T1w",
                 desc="brain",
                 suffix="mask",
                 compress=True,
