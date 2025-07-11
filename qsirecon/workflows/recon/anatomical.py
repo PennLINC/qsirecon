@@ -447,8 +447,22 @@ def init_dwi_recon_anatomical_workflow(
                 ("bval_file", "bval_file"),
             ]),
             (extract_b0s, mask_b0s, [("b0_series", "in_file")]),
-            (mask_b0s, outputnode, [("out_file", "dwi_mask")]),
             (inputnode, outputnode, [(field, field) for field in connect_from_inputnode]),
+        ])  # fmt:skip
+
+        ds_dwi_mask = pe.Node(
+            DerivativesDataSink(
+                dismiss_entities=("desc",),
+                space="ACPC",
+                desc="brain",
+                suffix="mask",
+            ),
+            name="ds_dwi_mask",
+            run_without_submitting=True,
+        )
+        workflow.connect([
+            (mask_b0s, ds_dwi_mask, [("out_file", "in_file")]),
+            (ds_dwi_mask, outputnode, [("out_file", "dwi_mask")]),
         ])  # fmt:skip
 
         workflow = clean_datasinks(workflow, qsirecon_suffix)
@@ -606,7 +620,7 @@ def init_dwi_recon_anatomical_workflow(
         workflow.connect([
             (inputnode, ds_resampled_mask, [("dwi_file", "source_file")]),
             (resample_mask, ds_resampled_mask, [("output_image", "in_file")]),
-            (ds_resampled_mask, outputnode, [("out_file", "dwi_mask")]),
+            (ds_resampled_mask, buffernode, [("out_file", "dwi_mask")]),
         ])  # fmt:skip
 
     if has_qsiprep_t1w_transforms:
