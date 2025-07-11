@@ -26,7 +26,11 @@ from ...interfaces.interchange import (
     recon_workflow_input_fields,
 )
 from ...interfaces.mrtrix import GenerateMasked5tt, ITKTransformConvert, TransformHeader
-from ...interfaces.utils import ExtractAtlasFiles, RecombineAtlasConfigs, WarpConnectivityAtlases
+from ...interfaces.utils import (
+    ExtractAtlasFiles,
+    RecombineAtlasConfigs,
+    WarpConnectivityAtlases,
+)
 from ...utils.bids import clean_datasinks
 from ...utils.boilerplate import describe_atlases
 
