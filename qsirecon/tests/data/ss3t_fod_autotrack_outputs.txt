@@ -62,3 +62,5 @@ logs/CITATION.html
 logs/CITATION.md
 logs/CITATION.tex
 sub-PNC
+sub-PNC/dwi
+sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_desc-brain_mask.nii.gz
