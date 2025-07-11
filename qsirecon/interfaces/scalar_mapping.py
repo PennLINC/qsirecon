@@ -173,7 +173,6 @@ class BundleMapper(ScalarMapper):
 def calculate_mask_stats(
     masker, mask_name, mask_variable_name, recon_scalar, weighting_vector=None
 ):
-
     # Get the scalar data in the masked region
     voxel_data = masker.fit_transform(recon_scalar["image"]).squeeze()
     # Find out how much of this scalar is finite

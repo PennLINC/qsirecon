@@ -42,3 +42,4 @@ sub-01/dwi
 sub-01/dwi/sub-01_dir-AP_rec-downsampled_run-001_space-T1w_seg-AAL116_dseg.mif.gz
 sub-01/dwi/sub-01_dir-AP_rec-downsampled_run-001_space-T1w_seg-AAL116_dseg.nii.gz
 sub-01/dwi/sub-01_dir-AP_rec-downsampled_run-001_space-T1w_seg-AAL116_dseg.txt
+sub-01/dwi/sub-01_dir-AP_rec-downsampled_run-001_space-T1w_desc-brain_mask.nii.gz

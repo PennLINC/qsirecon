@@ -49,4 +49,11 @@ nodes:
     - dipy_dki
     - gqi_scalars
     software: qsirecon
+-   action: parcellate_scalars
+    input: qsirecon
+    name: parcellate_scalars
+    scalars_from:
+    - dipy_dki
+    - gqi_scalars
+    software: qsirecon
 space: T1w

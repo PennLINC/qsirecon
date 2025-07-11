@@ -8,15 +8,20 @@ Classes that collect scalar images and metadata from Recon Workflows
 
 
 """
+import itertools
+import json
 import os
-import os.path as op
 
+import nibabel as nb
+import numpy as np
 import pandas as pd
 from bids.layout import parse_file_entities
+from nilearn.maskers import NiftiLabelsMasker
 from nipype.interfaces.base import (
     BaseInterfaceInputSpec,
     File,
     InputMultiObject,
+    OutputMultiObject,
     SimpleInterface,
     TraitedSpec,
     Undefined,
@@ -24,6 +29,7 @@ from nipype.interfaces.base import (
     traits,
 )
 
+from ..utils.bids import _get_bidsuris
 from ..utils.misc import load_yaml
 from .bids import get_recon_output_name
 from qsirecon.data import load as load_data
@@ -55,7 +61,6 @@ class ReconScalars(SimpleInterface):
     )
 
     def __init__(self, from_file=None, resource_monitor=None, **inputs):
-
         # Get self._results defined
         super().__init__(from_file=from_file, resource_monitor=resource_monitor, **inputs)
 
@@ -92,7 +97,7 @@ class ReconScalars(SimpleInterface):
             if not isdefined(inputs[input_name]):
                 continue
             result = self.scalar_metadata[input_name].copy()
-            result["path"] = op.abspath(inputs[input_name])
+            result["path"] = os.path.abspath(inputs[input_name])
             result["qsirecon_suffix"] = self.inputs.qsirecon_suffix
             result["variable_name"] = input_name
             result["source_file"] = self.inputs.source_file
@@ -123,6 +128,7 @@ class _ReconScalarsTableSplitterDataSinkInputSpec(BaseInterfaceInputSpec):
     dismiss_entities = traits.List([], usedefault=True)
     infer_suffix = traits.Bool(False, usedefault=True)
     summary_tsv = File(exists=True, mandatory=True, desc="tsv of combined scalar summaries")
+    metadata = traits.Dict(mandatory=False, desc="list of metadata dictionaries")
     suffix = traits.Str(mandatory=True)
 
 
@@ -147,9 +153,97 @@ class ReconScalarsTableSplitterDataSink(SimpleInterface):
                 qsirecon_suffix=qsirecon_suffix,
                 dismiss_entities=self.inputs.dismiss_entities,
             )
-            output_dir = op.dirname(qsirecon_suffixed_tsv)
+            output_dir = os.path.dirname(qsirecon_suffixed_tsv)
             os.makedirs(output_dir, exist_ok=True)
             group_df.to_csv(qsirecon_suffixed_tsv, index=False, sep="\t")
+
+        return runtime
+
+
+class _ParcellationTableSplitterDataSinkInputSpec(BaseInterfaceInputSpec):
+    base_directory = traits.Directory(
+        desc="Path to the base directory for storing data.",
+    )
+    compress = traits.Bool(False, usedefault=True)
+    dismiss_entities = traits.List([], usedefault=True)
+    in_file = File(exists=True, mandatory=True, desc="tsv of combined scalar summaries")
+    meta_dict = traits.Dict(mandatory=False, desc="metadata dictionary")
+    source_file = File(
+        exists=False,
+        mandatory=True,
+        desc="the source file(s) to extract entities from",
+    )
+    seg = traits.Str(mandatory=True, desc="the name of the segmentation")
+    suffix = traits.Str("dwimap", usedefault=True, desc="the suffix of the parcellated data")
+    dataset_links = traits.Dict(mandatory=False, desc="dataset links")
+
+
+class _ParcellationTableSplitterDataSinkOutputSpec(TraitedSpec):
+    out_file = OutputMultiObject(File(exists=True, desc="written file path"))
+    out_meta = OutputMultiObject(File(exists=True, desc="written JSON sidecar path"))
+
+
+class ParcellationTableSplitterDataSink(SimpleInterface):
+    input_spec = _ParcellationTableSplitterDataSinkInputSpec
+    output_spec = _ParcellationTableSplitterDataSinkOutputSpec
+    _always_run = True
+
+    def _run_interface(self, runtime):
+        in_df = pd.read_table(self.inputs.in_file)
+        self._results["out_file"] = []
+        self._results["out_meta"] = []
+
+        for qsirecon_suffix, group_df in in_df.groupby("qsirecon_suffix"):
+            meta_dict = self.inputs.meta_dict.copy()
+            if isdefined(self.inputs.dataset_links):
+                dataset_links = self.inputs.dataset_links.copy()
+                if qsirecon_suffix and qsirecon_suffix.lower() != "qsirecon":
+                    out_path = os.path.join(
+                        self.inputs.base_directory,
+                        "derivatives",
+                        f"qsirecon-{qsirecon_suffix}",
+                    )
+                    # We only have access to the base QSIRecon dataset's dataset_links,
+                    # so we need to update the dictionary here.
+                    dataset_links["qsirecon"] = self.inputs.base_directory
+                    # XXX: This ignores other qsirecon_suffix datasets,
+                    # but hopefully there won't be any inputs to this node from other datasets.
+                else:
+                    out_path = self.inputs.base_directory
+
+                # Traverse dictionary, looking for any keys named "Sources".
+                # When found, replace the value with a BIDS URI.
+                for key, value in meta_dict.items():
+                    if key == "Sources":
+                        meta_dict[key] = _get_bidsuris(
+                            value,
+                            dataset_links,
+                            out_path,
+                        )
+
+            # reset the index for this df
+            group_df.reset_index(drop=True, inplace=True)
+
+            qsirecon_suffixed_tsv = get_recon_output_name(
+                base_dir=self.inputs.base_directory,
+                source_file=self.inputs.source_file,
+                derivative_file=self.inputs.in_file,
+                output_bids_entities={
+                    "seg": self.inputs.seg,
+                    "suffix": self.inputs.suffix,
+                },
+                qsirecon_suffix=qsirecon_suffix,
+                dismiss_entities=self.inputs.dismiss_entities,
+            )
+            output_dir = os.path.dirname(qsirecon_suffixed_tsv)
+            os.makedirs(output_dir, exist_ok=True)
+            group_df.to_csv(qsirecon_suffixed_tsv, index=False, sep="\t", na_rep="n/a")
+            out_meta = qsirecon_suffixed_tsv.replace(".tsv", ".json")
+            with open(out_meta, "w") as fobj:
+                json.dump(meta_dict, fobj, indent=4, sort_keys=True)
+
+            self._results["out_file"].append(qsirecon_suffixed_tsv)
+            self._results["out_meta"].append(out_meta)
 
         return runtime
 
@@ -290,3 +384,272 @@ class OrganizeScalarData(SimpleInterface):
         self._results["desc"] = scalar_config.get("bids", {}).get("desc", None)
 
         return runtime
+
+
+class _DisorganizeScalarDataInputSpec(BaseInterfaceInputSpec):
+    scalar_config = traits.Dict()
+    scalar_file = File(exists=True)
+
+
+class _DisorganizeScalarDataOutputSpec(TraitedSpec):
+    scalar_config = traits.Dict()
+
+
+class DisorganizeScalarData(SimpleInterface):
+    input_spec = _DisorganizeScalarDataInputSpec
+    output_spec = _DisorganizeScalarDataOutputSpec
+
+    def _run_interface(self, runtime):
+        scalar_config = self.inputs.scalar_config
+        scalar_config["path"] = self.inputs.scalar_file
+        self._results["scalar_config"] = scalar_config
+
+        return runtime
+
+
+class _ParcellateScalarsInputSpec(BaseInterfaceInputSpec):
+    atlas_config = traits.Dict()
+    scalars_config = traits.List(traits.Dict())
+    brain_mask = File(exists=True)
+    mapping_metadata = traits.Dict(
+        desc="Info about the upstream workflow that created the anatomical mapping units",
+    )
+    scalars_from = InputMultiObject(traits.Str())
+
+
+class _ParcellateScalarsOutputSpec(TraitedSpec):
+    parcellated_scalar_tsv = File(exists=True)
+    metadata = traits.Dict()
+    seg = traits.Str()
+
+
+class ParcellateScalars(SimpleInterface):
+    input_spec = _ParcellateScalarsInputSpec
+    output_spec = _ParcellateScalarsOutputSpec
+
+    def _run_interface(self, runtime):
+        # Measures to extract: mean, stdev, median
+        source_suffixes = set([cfg["qsirecon_suffix"] for cfg in self.inputs.scalars_config])
+        if len(source_suffixes) > 1:
+            raise ValueError(
+                "All scalars must have the same qsirecon_suffix. "
+                f"Found {source_suffixes} in {self.inputs.scalars_config}"
+            )
+        source_suffix = source_suffixes.pop()
+
+        atlas_config = self.inputs.atlas_config
+        assert len(atlas_config) == 1, "Only one atlas config is supported"
+        atlas_name = list(atlas_config.keys())[0]
+        atlas_config = atlas_config[atlas_name]
+        atlas_file = atlas_config["dwi_resolution_file"]
+        atlas_labels_file = atlas_config["labels"]
+        self._results["seg"] = atlas_name
+
+        # Fix any nonsequential values or mismatch between atlas and DataFrame.
+        atlas_labels_df = pd.read_table(atlas_labels_file, index_col="index")
+        atlas_img, atlas_labels_df = _sanitize_nifti_atlas(atlas_file, atlas_labels_df)
+
+        node_labels = atlas_labels_df["label"].tolist()
+
+        # Build empty DataFrame
+        columns = ["node", "scalar", "qsirecon_suffix", "mean", "stdev", "median"]
+        scalar_labels = [
+            scalar_config["bids"]["param"] for scalar_config in self.inputs.scalars_config
+        ]
+        scalar_labels.append("coverage")
+        parcellated_data = pd.DataFrame(
+            columns=columns,
+            data=list(
+                itertools.product(
+                    *[node_labels, scalar_labels, [source_suffix], [np.nan], [np.nan], [np.nan]]
+                )
+            ),
+        )
+
+        # prepend "background" to node labels to satisfy NiftiLabelsMasker
+        # The background "label" won't be present in the output file.
+        masker_input_labels = ["background"] + node_labels
+
+        # Before anything, we need to measure coverage
+        atlas_img_bin = nb.Nifti1Image(
+            (atlas_img.get_fdata() > 0).astype(np.uint8),
+            atlas_img.affine,
+            atlas_img.header,
+        )
+
+        sum_masker_masked = NiftiLabelsMasker(
+            labels_img=atlas_img,
+            labels=masker_input_labels,
+            background_label=0,
+            mask_img=self.inputs.brain_mask,
+            smoothing_fwhm=None,
+            standardize=False,
+            strategy="sum",
+            resampling_target=None,  # they should be in the same space/resolution already
+        )
+        sum_masker_unmasked = NiftiLabelsMasker(
+            labels_img=atlas_img,
+            labels=masker_input_labels,
+            background_label=0,
+            smoothing_fwhm=None,
+            standardize=False,
+            strategy="sum",
+            resampling_target=None,  # they should be in the same space/resolution already
+        )
+        n_voxels_in_masked_parcels = sum_masker_masked.fit_transform(atlas_img_bin)
+        n_voxels_in_parcels = sum_masker_unmasked.fit_transform(atlas_img_bin)
+        parcel_coverage = np.squeeze(n_voxels_in_masked_parcels / n_voxels_in_parcels)
+
+        n_nodes = len(node_labels)
+        masker_labels = sum_masker_masked.labels_[:]
+        n_found_nodes = len(masker_labels)
+
+        # Region indices in the atlas may not be sequential, so we map them to sequential ints.
+        seq_mapper = {idx: i for i, idx in enumerate(atlas_labels_df["sanitized_index"].tolist())}
+
+        if n_found_nodes != n_nodes:  # parcels lost by warping/downsampling atlas
+            # Fill in any missing nodes in the array with NaNs.
+            new_scalar_arr = np.full(
+                n_nodes,
+                fill_value=np.nan,
+                dtype=parcel_coverage.dtype,
+            )
+            for j_col in range(parcel_coverage.size):
+                label_col = seq_mapper[masker_labels[j_col]]
+                new_scalar_arr[label_col] = parcel_coverage[j_col]
+
+            parcel_coverage = new_scalar_arr
+            del new_scalar_arr
+
+        for i_node, coverage in enumerate(parcel_coverage):
+            node_label = node_labels[i_node]
+            parcellated_data.loc[
+                (
+                    (parcellated_data["node"] == node_label)
+                    & (parcellated_data["scalar"] == "coverage")
+                ),
+                "mean",
+            ] = coverage
+
+        self._results["metadata"] = {
+            "Sources": [atlas_file, self.inputs.brain_mask],
+            "scalar": {
+                "Description": "The scalar map from which values are extracted.",
+                "Levels": {
+                    "coverage": (
+                        "The percent (0 - 1) of voxels in the parcel that are "
+                        "within the brain mask. "
+                        "Only rendered in the 'mean' column."
+                    ),
+                },
+            },
+            "node": {
+                "Description": "The node label from the atlas.",
+            },
+            "qsirecon_suffix": {
+                "Description": "The QSIRecon sub-dataset from which the scalar was extracted.",
+            },
+            "mean": {
+                "Description": "The unweighted mean of the scalar values in the parcel.",
+            },
+            "stdev": {
+                "Description": "The standard deviation of the scalar values in the parcel.",
+            },
+            "median": {
+                "Description": "The median of the scalar values in the parcel.",
+            },
+        }
+        for scalar_config in self.inputs.scalars_config:
+            scalar_file = scalar_config["path"]
+            scalar_img = nb.load(scalar_file)
+            if scalar_img.ndim != 3:
+                print(f"Scalar {scalar_file} is not 3D, skipping")
+                continue
+
+            scalar_desc = scalar_config.get("metadata", {}).get("Description", "")
+            scalar_param = scalar_config.get("bids", {}).get("param", None)
+            self._results["metadata"]["scalar"]["Levels"][scalar_param] = scalar_desc
+
+            # Parcellate the scalar file with the atlas
+            measures = {"mean": "mean", "stdev": "standard_deviation", "median": "median"}
+            for col, metric in measures.items():
+                masker = NiftiLabelsMasker(
+                    labels_img=atlas_img,
+                    labels=masker_input_labels,
+                    background_label=0,
+                    mask_img=self.inputs.brain_mask,
+                    smoothing_fwhm=None,
+                    standardize=False,
+                    resampling_target=None,
+                    strategy=metric,
+                )
+                scalar_arr = np.squeeze(masker.fit_transform(scalar_img))
+                if n_found_nodes != n_nodes:  # parcels lost by warping/downsampling atlas
+                    # Fill in any missing nodes in the array with NaNs.
+                    new_scalar_arr = np.full(
+                        n_nodes,
+                        fill_value=np.nan,
+                        dtype=scalar_arr.dtype,
+                    )
+                    for j_col in range(scalar_arr.size):
+                        label_col = seq_mapper[masker_labels[j_col]]
+                        new_scalar_arr[label_col] = scalar_arr[j_col]
+
+                    scalar_arr = new_scalar_arr
+                    del new_scalar_arr
+
+                for i_node, scalar in enumerate(scalar_arr):
+                    node_label = node_labels[i_node]
+                    parcellated_data.loc[
+                        (parcellated_data["node"] == node_label)
+                        & (parcellated_data["scalar"] == scalar_param),
+                        col,
+                    ] = scalar
+
+            self._results["metadata"]["Sources"].append(scalar_file)
+
+        # Save the parcellated data to a tsv
+        self._results["parcellated_scalar_tsv"] = os.path.abspath("parcellated_scalar_tsv.tsv")
+        parcellated_data.to_csv(
+            self._results["parcellated_scalar_tsv"],
+            index=False,
+            sep="\t",
+            na_rep="n/a",
+        )
+
+        return runtime
+
+
+def _sanitize_nifti_atlas(atlas, df):
+    atlas_img = nb.load(atlas)
+    atlas_data = atlas_img.get_fdata()
+    atlas_data = atlas_data.astype(np.int16)
+
+    # Check that all labels in the DataFrame are present in the NIfTI file, and vice versa.
+    if 0 in df.index:
+        df = df.drop(index=[0])
+
+    df.sort_index(inplace=True)  # ensure index is in order
+    expected_values = df.index.values
+
+    found_values = np.unique(atlas_data)
+    found_values = found_values[found_values != 0]  # drop the background value
+    if not np.all(np.isin(found_values, expected_values)):
+        missing_values = np.setdiff1d(found_values, expected_values)
+        raise ValueError(
+            f"Atlas file ({atlas}) contains values that are not present in the "
+            f"DataFrame: {missing_values}\n\n{df}"
+        )
+
+    # Map the labels in the DataFrame to sequential values.
+    label_mapper = {value: i + 1 for i, value in enumerate(expected_values)}
+    df["sanitized_index"] = [label_mapper[i] for i in df.index.values]
+
+    # Map the values in the atlas image to sequential values.
+    new_atlas_data = np.zeros(atlas_data.shape, dtype=np.int16)
+    for old_value, new_value in label_mapper.items():
+        new_atlas_data[atlas_data == old_value] = new_value
+
+    new_atlas_img = nb.Nifti1Image(new_atlas_data, atlas_img.affine, atlas_img.header)
+
+    return new_atlas_img, df

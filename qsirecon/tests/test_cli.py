@@ -513,6 +513,9 @@ def test_scalar_mapper(data_dir, output_dir, working_dir):
         "--recon-spec=test_scalar_maps",
         "--output-resolution=3.5",
         "--nthreads=1",
+        "--atlases",
+        "4S156Parcels",
+        "4S256Parcels",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -693,7 +696,6 @@ def _run_and_generate(test_name, parameters, test_main=False):
         write_derivative_description(
             config.execution.bids_dir,
             config.execution.output_dir,
-            atlases=config.execution.atlases,
             dataset_links=config.execution.dataset_links,
         )
 
@@ -735,7 +737,6 @@ def _run_and_generate(test_name, parameters, test_main=False):
             write_derivative_description(
                 config.execution.bids_dir,
                 suffix_dir,
-                atlases=config.execution.atlases,
                 dataset_links=dataset_links,
             )
             write_bidsignore(suffix_dir)

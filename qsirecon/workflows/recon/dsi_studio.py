@@ -715,6 +715,7 @@ def init_dsi_studio_export_wf(
         workflow.connect([
             (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
             (recon_scalars, scalar_output_wf, [("scalar_info", "inputnode.scalar_configs")]),
+            (scalar_output_wf, outputnode, [("outputnode.scalar_configs", "recon_scalars")]),
         ])  # fmt:skip
 
         plot_scalars = pe.Node(
@@ -743,10 +744,10 @@ def init_dsi_studio_export_wf(
             run_without_submitting=True,
         )
         workflow.connect([(plot_scalars, ds_report_scalars, [("out_report", "in_file")])])
+    else:
+        # If not writing out scalar files, pass the working directory scalar configs
+        workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
 
-    workflow.connect([
-        (inputnode, export, [('fibgz', 'input_file')]),
-        (recon_scalars, outputnode, [("scalar_info", "recon_scalars")])
-    ])  # fmt:skip
+    workflow.connect([(inputnode, export, [("fibgz", "input_file")])])
 
     return clean_datasinks(workflow, qsirecon_suffix)
