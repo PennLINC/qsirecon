@@ -26,6 +26,7 @@ from ...interfaces.scalar_mapping import BundleMapper, TemplateMapper
 from ...interfaces.utils import SplitAtlasConfigs
 from ...utils.bids import clean_datasinks
 from .utils import init_scalar_output_wf
+from qsirecon import config
 
 LOGGER = logging.getLogger("nipype.workflow")
 
@@ -99,7 +100,9 @@ def init_scalar_to_atlas_wf(
 
     Inputs
         recon_scalars
-            List of dictionaries containing scalar info
+            List of dictionaries containing scalar info. Unused.
+        collected_scalars
+            List of dictionaries containing scalar info. Used.
         atlas_configs
             Dictionary containing atlas configuration information.
     """
@@ -139,6 +142,7 @@ def init_scalar_to_atlas_wf(
 
     ds_parcellated_scalars = pe.MapNode(
         ParcellationTableSplitterDataSink(
+            dataset_links=config.execution.dataset_links,
             dismiss_entities=["desc"],
             suffix="scalarstats",
         ),
