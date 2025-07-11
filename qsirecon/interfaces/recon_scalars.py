@@ -193,19 +193,28 @@ class ParcellationTableSplitterDataSink(SimpleInterface):
         self._results["out_file"] = []
         self._results["out_meta"] = []
 
-        meta_dict = self.inputs.meta_dict.copy()
-        if isdefined(self.inputs.dataset_links):
-            # Traverse dictionary, looking for any keys named "Sources".
-            # When found, replace the value with a BIDS URI.
-            for key, value in meta_dict.items():
-                if key == "Sources":
-                    meta_dict[key] = _get_bidsuris(
-                        value,
-                        self.inputs.dataset_links,
-                        self.inputs.base_directory,
-                    )
-
         for qsirecon_suffix, group_df in in_df.groupby("qsirecon_suffix"):
+            meta_dict = self.inputs.meta_dict.copy()
+            if isdefined(self.inputs.dataset_links):
+                if qsirecon_suffix and qsirecon_suffix.lower() != "qsirecon":
+                    out_path = os.path.join(
+                        self.inputs.base_directory,
+                        "derivatives",
+                        f"qsirecon-{qsirecon_suffix}",
+                    )
+                else:
+                    out_path = self.inputs.base_directory
+
+                # Traverse dictionary, looking for any keys named "Sources".
+                # When found, replace the value with a BIDS URI.
+                for key, value in meta_dict.items():
+                    if key == "Sources":
+                        meta_dict[key] = _get_bidsuris(
+                            value,
+                            self.inputs.dataset_links,
+                            out_path,
+                        )
+
             # reset the index for this df
             group_df.reset_index(drop=True, inplace=True)
 
