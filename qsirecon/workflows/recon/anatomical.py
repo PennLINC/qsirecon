@@ -582,13 +582,27 @@ def init_dwi_recon_anatomical_workflow(
             ),
             name="resample_mask",
         )
-
         workflow.connect([
             (inputnode, resample_mask, [
                 ("acpc_brain_mask", "input_image"),
                 ("dwi_ref", "reference_image"),
             ]),
-            (resample_mask, buffernode, [("output_image", "dwi_mask")]),
+        ])  # fmt:skip
+
+        ds_resampled_mask = pe.Node(
+            DerivativesDataSink(
+                dismiss_entities=("desc",),
+                space="ACPC",
+                desc="brain",
+                suffix="mask",
+            ),
+            name="ds_resampled_mask",
+            run_without_submitting=True,
+        )
+        workflow.connect([
+            (inputnode, ds_resampled_mask, [("dwi_file", "source_file")]),
+            (resample_mask, ds_resampled_mask, [("output_image", "in_file")]),
+            (ds_resampled_mask, outputnode, [("out_file", "dwi_mask")]),
         ])  # fmt:skip
 
     if has_qsiprep_t1w_transforms:
