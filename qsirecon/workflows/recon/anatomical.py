@@ -746,7 +746,7 @@ def init_dwi_recon_anatomical_workflow(
             # Fill in the atlas datasinks
             for node in workflow.list_node_names():
                 node_suffix = node.split(".")[-1]
-                if node_suffix.startswith("ds_atlas_"):
+                if node_suffix.startswith("ds_atlas"):
                     workflow.connect([
                         (inputnode, workflow.get_node(node), [("dwi_file", "source_file")]),
                     ])  # fmt:skip
