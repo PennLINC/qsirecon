@@ -185,14 +185,30 @@ def init_scalar_to_template_wf(
         name="inputnode",
     )
     outputnode = pe.Node(
-        niu.IdentityInterface(fields=["template_scalars", "template_scalar_sidecars"]),
+        niu.IdentityInterface(
+            fields=[
+                "template_scalars",
+                "template_scalar_sidecars",
+                # scalar configs for the template space
+                "template_recon_scalars",
+            ],
+        ),
         name="outputnode",
     )
     workflow = Workflow(name=name)
+
     template_mapper = pe.Node(
         TemplateMapper(template_space=inputs_dict["template_output_space"], **params),
         name="template_mapper",
     )
+    workflow.connect([
+        (inputnode, template_mapper, [
+            ("collected_scalars", "recon_scalars"),
+            ("acpc_to_template_xfm", "to_template_transform"),
+            ("resampling_template", "template_reference_image"),
+        ]),
+        (template_mapper, outputnode, [("template_space_scalars", "template_scalars")]),
+    ])  # fmt:skip
 
     scalar_output_wf = init_scalar_output_wf()
     workflow.connect([
@@ -201,15 +217,9 @@ def init_scalar_to_template_wf(
             ("template_space_scalar_info", "inputnode.scalar_configs"),
             ("template_space", "inputnode.space"),
         ]),
-    ])  # fmt:skip
-
-    workflow.connect([
-        (inputnode, template_mapper, [
-            ("collected_scalars", "recon_scalars"),
-            ("acpc_to_template_xfm", "to_template_transform"),
-            ("resampling_template", "template_reference_image"),
+        (scalar_output_wf, outputnode, [
+            ("outputnode.scalar_configs", "template_recon_scalars"),
         ]),
-        (template_mapper, outputnode, [("template_space_scalars", "template_scalars")]),
     ])  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)

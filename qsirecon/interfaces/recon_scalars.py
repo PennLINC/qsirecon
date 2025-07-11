@@ -371,6 +371,27 @@ class OrganizeScalarData(SimpleInterface):
         return runtime
 
 
+class _DisorganizeScalarDataInputSpec(BaseInterfaceInputSpec):
+    scalar_config = traits.Dict()
+    scalar_file = File(exists=True)
+
+
+class _DisorganizeScalarDataOutputSpec(TraitedSpec):
+    scalar_config = traits.Dict()
+
+
+class DisorganizeScalarData(SimpleInterface):
+    input_spec = _DisorganizeScalarDataInputSpec
+    output_spec = _DisorganizeScalarDataOutputSpec
+
+    def _run_interface(self, runtime):
+        scalar_config = self.inputs.scalar_config
+        scalar_config["path"] = self.inputs.scalar_file
+        self._results["scalar_config"] = scalar_config
+
+        return runtime
+
+
 class _ParcellateScalarsInputSpec(BaseInterfaceInputSpec):
     atlas_config = traits.Dict()
     scalars_config = traits.List(traits.Dict())
