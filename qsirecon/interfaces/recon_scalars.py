@@ -196,12 +196,18 @@ class ParcellationTableSplitterDataSink(SimpleInterface):
         for qsirecon_suffix, group_df in in_df.groupby("qsirecon_suffix"):
             meta_dict = self.inputs.meta_dict.copy()
             if isdefined(self.inputs.dataset_links):
+                dataset_links = self.inputs.dataset_links.copy()
                 if qsirecon_suffix and qsirecon_suffix.lower() != "qsirecon":
                     out_path = os.path.join(
                         self.inputs.base_directory,
                         "derivatives",
                         f"qsirecon-{qsirecon_suffix}",
                     )
+                    # We only have access to the base QSIRecon dataset's dataset_links,
+                    # so we need to update the dictionary here.
+                    dataset_links["qsirecon"] = self.inputs.base_directory
+                    # XXX: This ignores other qsirecon_suffix datasets,
+                    # but hopefully there won't be any inputs to this node from other datasets.
                 else:
                     out_path = self.inputs.base_directory
 
@@ -211,7 +217,7 @@ class ParcellationTableSplitterDataSink(SimpleInterface):
                     if key == "Sources":
                         meta_dict[key] = _get_bidsuris(
                             value,
-                            self.inputs.dataset_links,
+                            dataset_links,
                             out_path,
                         )
 
