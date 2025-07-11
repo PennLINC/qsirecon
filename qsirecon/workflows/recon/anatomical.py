@@ -654,10 +654,7 @@ def init_dwi_recon_anatomical_workflow(
                 name="prepare_atlases",
                 run_without_submitting=True,
             )
-            workflow.connect([
-                (inputnode, prepare_atlases, [("dwi_file", "reference_image")]),
-                (prepare_atlases, buffernode, [("atlas_configs", "atlas_configs")]),
-            ])  # fmt:skip
+            workflow.connect([(inputnode, prepare_atlases, [("dwi_file", "reference_image")])])
 
             # Split apart the atlas configs to write out individual files, then recombine them
             # with the written-out files in the configs.
