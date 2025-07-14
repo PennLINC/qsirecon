@@ -132,15 +132,20 @@ to workflows in *QSIRecon*'s documentation]\
     highres_anat_wfs = {}
     highres_anat_statuses = {}
     for anat_num, anat_input_file in enumerate(anat_input_files):
-        _session_filter = (
-            None
-            if anat_input_file is None
-            else anat_input_file.entities.get("session", Query.NONE)
-        )
+        # session_id should be None if no anatomical file is found,
+        # Query.NONE if there is a file but no session is specified,
+        # and [session_id, Query.NONE] if there is a file and a session is specified.
+        if anat_input_file is None:
+            _session_filter = None
+        elif "session" not in anat_input_file.entities:
+            _session_filter = Query.NONE
+        else:
+            _session_filter = [anat_input_file.entities["session"], Query.NONE]
 
         # We only need to process unique anat files that match dwis
         if anat_input_file.path in highres_anat_wfs:
             continue
+
         anat_data, highres_anat_statuses[anat_input_file.path] = collect_anatomical_data(
             layout=config.execution.layout,
             subject_id=subject_id,
