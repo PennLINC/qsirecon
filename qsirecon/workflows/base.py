@@ -137,7 +137,7 @@ to workflows in *QSIRecon*'s documentation]\
         # and [session_id, Query.NONE] if there is a file and a session is specified.
         if anat_input_file is None:
             _session_filter = None
-        elif anat_input_file.entities.get("session", Query.NONE) is None:
+        elif "session" not in anat_input_file.entities:
             _session_filter = Query.NONE
         else:
             _session_filter = [anat_input_file.entities["session"], Query.NONE]
