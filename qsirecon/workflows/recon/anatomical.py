@@ -139,7 +139,6 @@ def init_highres_recon_anatomical_wf(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
                 seg="hsvs",
-                space="ACPC",
                 suffix="probseg",
                 extension=".nii.gz",
                 compress=True,
@@ -454,7 +453,6 @@ def init_dwi_recon_anatomical_workflow(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
                 datatype="dwi",
-                space="T1w",
                 desc="brain",
                 suffix="mask",
                 compress=True,
@@ -613,7 +611,6 @@ def init_dwi_recon_anatomical_workflow(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
                 datatype="dwi",
-                space="T1w",
                 desc="brain",
                 suffix="mask",
                 compress=True,
