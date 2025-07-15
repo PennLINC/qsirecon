@@ -297,7 +297,7 @@ class _SplitAtlasConfigsInputSpec(BaseInterfaceInputSpec):
             "'file' is the path to the atlas file. "
             "'label' is the path to the label file. "
             "'metadata' is a dictionary with relevant metadata. "
-            "'xfm_to_anat' is the path to the transform to get the atlas into T1w space."
+            "'xfm_to_anat' is the path to the transform to get the atlas into ACPC space."
         ),
     )
 
@@ -336,7 +336,7 @@ class _ExtractAtlasFilesInputSpec(BaseInterfaceInputSpec):
             "'file' is the path to the atlas file. "
             "'label' is the path to the label file. "
             "'metadata' is a dictionary with relevant metadata. "
-            "'xfm_to_anat' is the path to the transform to get the atlas into T1w space."
+            "'xfm_to_anat' is the path to the transform to get the atlas into ACPC space."
         ),
     )
 
@@ -380,7 +380,7 @@ class _RecombineAtlasConfigsInputSpec(BaseInterfaceInputSpec):
             "'file' is the path to the atlas file. "
             "'label' is the path to the label file. "
             "'metadata' is a dictionary with relevant metadata. "
-            "'xfm_to_anat' is the path to the transform to get the atlas into T1w space."
+            "'xfm_to_anat' is the path to the transform to get the atlas into ACPC space."
         ),
     )
     atlases = traits.List(traits.Str(), desc="List of atlas names")
