@@ -32,7 +32,7 @@ dependencies = [
     "nilearn == 0.10.1",
     "nipype == 1.9.1",
     "nireports >= 24.0.3",
-    "niworkflows >=1.9,<= 1.10",
+    "niworkflows >= 1.13,< 1.14",
     "packaging",  # for version string parsing
     "pandas < 2.0.0",
     "psutil <= 5.9.8",
