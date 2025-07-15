@@ -1,8 +1,6 @@
 """Test utility functions."""
 
 import os
-from glob import glob
-from pprint import pprint
 
 from bids.layout import BIDSLayout, Query
 from niworkflows.utils.testing import generate_bids_skeleton
@@ -61,3 +59,20 @@ def test_collect_anatomical_data(tmp_path_factory):
     assert anat_data['acpc_wm_probseg'] is None
     # This should be collected, but is not because the file is in a session folder.
     assert anat_data['orig_to_acpc_xfm'] is None
+
+
+def test_get_iterable_dwis_and_anats(tmp_path_factory):
+    """Test get_iterable_dwis_and_anats."""
+    skeleton = load_data('tests/skeletons/longitudinal_anat.yml')
+    bids_dir = tmp_path_factory.mktemp('test_get_iterable_dwis_and_anats') / 'bids'
+    generate_bids_skeleton(str(bids_dir), str(skeleton))
+
+    layout = BIDSLayout(
+        bids_dir,
+        validate=False,
+        config=['bids', 'derivatives'],
+    )
+    dwis_and_anats = xbids.get_iterable_dwis_and_anats(layout=layout)
+    assert len(dwis_and_anats) == 1
+    assert dwis_and_anats[0][0] is not None
+    assert dwis_and_anats[0][1] is not None
