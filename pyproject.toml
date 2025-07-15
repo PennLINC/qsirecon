@@ -182,6 +182,11 @@ markers = [
     "mrtrix3_recon: test 20",
     "tortoise_recon: test 21",
     "autotrack: test 22",
+    "mrtrix_multishell_msmt_hsvs: test 23",
+    "ss3t_fod_autotrack: test 24",
+    "multises_post1_qsiprep: test 25",
+    "multises_pre1_qsiprep: test 26",
+    "interfaces: test 27",
 ]
 env = [
     "RUNNING_PYTEST = 1",

@@ -151,6 +151,7 @@ to workflows in *QSIRecon*'s documentation]\
             subject_id=subject_id,
             session_id=_session_filter,
             needs_t1w_transform=bool(config.execution.atlases),
+            infant_mode=config.workflow.infant,
             bids_filters=config.execution.bids_filters or {},
         )
 

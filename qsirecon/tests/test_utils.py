@@ -1,6 +1,7 @@
 """Test utility functions."""
 
 import os
+from pprint import pprint
 
 from bids.layout import BIDSLayout, Query
 from niworkflows.utils.testing import generate_bids_skeleton
@@ -40,8 +41,11 @@ def test_collect_anatomical_data(tmp_path_factory):
         subject_id='01',
         session_id=_session_filter,
         needs_t1w_transform=False,
+        infant_mode=False,
         bids_filters={},
     )
+    pprint(anat_data)
+    pprint(highres_anat_status)
     assert highres_anat_status['has_qsiprep_t1w'] is True
     assert highres_anat_status['has_qsiprep_t1w_transforms'] is False
     assert anat_data['acpc_preproc'] is not None
