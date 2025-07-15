@@ -138,6 +138,7 @@ def init_highres_recon_anatomical_wf(
         ds_qsiprep_5tt_hsvs = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
+                space="ACPC",
                 seg="hsvs",
                 suffix="probseg",
                 extension=".nii.gz",
