@@ -496,7 +496,6 @@ def init_dipy_mapmri_recon_wf(
             ('lapnorm', 'lapnorm_file'),
             ('mapmri_coeffs', 'mapcoeffs_file'),
         ]),
-        (recon_scalars, outputnode, [("scalar_info", "recon_scalars")])
     ])  # fmt:skip
 
     if plot_reports:
@@ -560,6 +559,7 @@ def init_dipy_mapmri_recon_wf(
             ]),
             (recon_scalars, plot_scalars, [("scalar_info", "scalar_metadata")]),
             (scalar_output_wf, plot_scalars, [("outputnode.scalar_files", "scalar_maps")]),
+            (scalar_output_wf, outputnode, [("outputnode.scalar_configs", "recon_scalars")]),
         ])  # fmt:skip
 
         ds_report_scalars = pe.Node(
@@ -573,6 +573,9 @@ def init_dipy_mapmri_recon_wf(
             run_without_submitting=True,
         )
         workflow.connect([(plot_scalars, ds_report_scalars, [("out_report", "in_file")])])
+    else:
+        # If not writing out scalar files, pass the working directory scalar configs
+        workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
 
     workflow.__desc__ = desc
 
@@ -703,7 +706,6 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
             ('rk', 'dki_rk'),
             ('sphericity', 'dki_sphericity'),
         ]),
-        (recon_scalars, outputnode, [("scalar_info", "recon_scalars")]),
     ])  # fmt:skip
 
     if micro_metrics:
@@ -795,6 +797,7 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
             ]),
             (recon_scalars, plot_scalars, [("scalar_info", "scalar_metadata")]),
             (scalar_output_wf, plot_scalars, [("outputnode.scalar_files", "scalar_maps")]),
+            (scalar_output_wf, outputnode, [("outputnode.scalar_configs", "recon_scalars")]),
         ])  # fmt:skip
 
         ds_report_scalars = pe.Node(
@@ -808,6 +811,9 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
             run_without_submitting=True,
         )
         workflow.connect([(plot_scalars, ds_report_scalars, [("out_report", "in_file")])])
+    else:
+        # If not writing out scalar files, pass the working directory scalar configs
+        workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
 
     workflow.__desc__ = desc
 

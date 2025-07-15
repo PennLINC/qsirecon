@@ -25,7 +25,11 @@ from .mrtrix import (
     init_mrtrix_csd_recon_wf,
     init_mrtrix_tractography_wf,
 )
-from .scalar_mapping import init_scalar_to_bundle_wf, init_scalar_to_template_wf
+from .scalar_mapping import (
+    init_scalar_to_atlas_wf,
+    init_scalar_to_bundle_wf,
+    init_scalar_to_template_wf,
+)
 from .steinhardt import init_steinhardt_order_param_wf
 from .tortoise import init_tortoise_estimator_wf
 from .utils import (
@@ -260,7 +264,10 @@ def workflow_from_spec(inputs_dict, node_spec):
         "params": parameters,
     }
     if node_spec["action"] == "connectivity" and not config.execution.atlases:
-        raise ValueError("Connectivity requires atlases.")
+        raise ValueError(
+            "Connectivity estimation requires atlases. "
+            "Please set the `--atlases` flag in your qsirecon command."
+        )
 
     # DSI Studio operations
     if software == "DSI Studio":
@@ -334,6 +341,8 @@ def workflow_from_spec(inputs_dict, node_spec):
             return init_test_wf(**kwargs)
         if node_spec["action"] == "fod_fib_merge":
             return init_fod_fib_wf(**kwargs)
+        if node_spec["action"] == "parcellate_scalars":
+            return init_scalar_to_atlas_wf(**kwargs)
 
     raise Exception("Unknown node %s" % node_spec)
 
