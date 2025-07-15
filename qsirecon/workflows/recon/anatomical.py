@@ -26,7 +26,11 @@ from ...interfaces.interchange import (
     recon_workflow_input_fields,
 )
 from ...interfaces.mrtrix import GenerateMasked5tt, ITKTransformConvert, TransformHeader
-from ...interfaces.utils import WarpConnectivityAtlases
+from ...interfaces.utils import (
+    ExtractAtlasFiles,
+    RecombineAtlasConfigs,
+    WarpConnectivityAtlases,
+)
 from ...utils.bids import clean_datasinks
 from ...utils.boilerplate import describe_atlases
 
@@ -134,8 +138,8 @@ def init_highres_recon_anatomical_wf(
         ds_qsiprep_5tt_hsvs = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
-                seg="hsvs",
                 space="ACPC",
+                seg="hsvs",
                 suffix="probseg",
                 extension=".nii.gz",
                 compress=True,
@@ -443,8 +447,23 @@ def init_dwi_recon_anatomical_workflow(
                 ("bval_file", "bval_file"),
             ]),
             (extract_b0s, mask_b0s, [("b0_series", "in_file")]),
-            (mask_b0s, outputnode, [("out_file", "dwi_mask")]),
             (inputnode, outputnode, [(field, field) for field in connect_from_inputnode]),
+        ])  # fmt:skip
+
+        ds_dwi_mask = pe.Node(
+            DerivativesDataSink(
+                dismiss_entities=("desc",),
+                datatype="dwi",
+                desc="brain",
+                suffix="mask",
+                compress=True,
+            ),
+            name="ds_dwi_mask",
+            run_without_submitting=True,
+        )
+        workflow.connect([
+            (mask_b0s, ds_dwi_mask, [("out_file", "in_file")]),
+            (ds_dwi_mask, outputnode, [("out_file", "dwi_mask")]),
         ])  # fmt:skip
 
         workflow = clean_datasinks(workflow, qsirecon_suffix)
@@ -582,13 +601,28 @@ def init_dwi_recon_anatomical_workflow(
             ),
             name="resample_mask",
         )
-
         workflow.connect([
             (inputnode, resample_mask, [
                 ("acpc_brain_mask", "input_image"),
                 ("dwi_ref", "reference_image"),
             ]),
-            (resample_mask, buffernode, [("output_image", "dwi_mask")]),
+        ])  # fmt:skip
+
+        ds_resampled_mask = pe.Node(
+            DerivativesDataSink(
+                dismiss_entities=("desc",),
+                datatype="dwi",
+                desc="brain",
+                suffix="mask",
+                compress=True,
+            ),
+            name="ds_resampled_mask",
+            run_without_submitting=True,
+        )
+        workflow.connect([
+            (inputnode, ds_resampled_mask, [("dwi_file", "source_file")]),
+            (resample_mask, ds_resampled_mask, [("output_image", "in_file")]),
+            (ds_resampled_mask, buffernode, [("out_file", "dwi_mask")]),
         ])  # fmt:skip
 
     if has_qsiprep_t1w_transforms:
@@ -622,75 +656,102 @@ def init_dwi_recon_anatomical_workflow(
                 name="prepare_atlases",
                 run_without_submitting=True,
             )
+            workflow.connect([(inputnode, prepare_atlases, [("dwi_file", "reference_image")])])
+
+            # Split apart the atlas configs to write out individual files, then recombine them
+            # with the written-out files in the configs.
+            # This lets us reference the output files in later nodes that use the atlas configs.
+            extract_atlas_files = pe.Node(
+                ExtractAtlasFiles(),
+                name="extract_atlas_files",
+                run_without_submitting=True,
+            )
             workflow.connect([
-                (inputnode, prepare_atlases, [("dwi_file", "reference_image")]),
-                (prepare_atlases, buffernode, [("atlas_configs", "atlas_configs")]),
+                (prepare_atlases, extract_atlas_files, [("atlas_configs", "atlas_configs")]),
             ])  # fmt:skip
 
-        for atlas in atlas_configs.keys():
-            ds_atlas = pe.Node(
+            ds_atlas = pe.MapNode(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
-                    seg=atlas,
                     suffix="dseg",
                     compress=True,
                 ),
-                name=f"ds_atlas_{atlas}",
+                iterfield=["in_file", "seg"],
+                name="ds_atlas",
                 run_without_submitting=True,
             )
-            ds_atlas_mifs = pe.Node(
+            ds_atlas_mifs = pe.MapNode(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
-                    seg=atlas,
                     suffix="dseg",
                     extension=".mif.gz",
                     compress=True,
                 ),
-                name=f"ds_atlas_mifs_{atlas}",
+                iterfield=["in_file", "seg"],
+                name="ds_atlas_mifs",
                 run_without_submitting=True,
             )
-            ds_atlas_mrtrix_lut = pe.Node(
+            ds_atlas_mrtrix_lut = pe.MapNode(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
-                    seg=atlas,
                     suffix="dseg",
                     extension=".txt",
                 ),
-                name=f"ds_atlas_mrtrix_lut_{atlas}",
+                iterfield=["in_file", "seg"],
+                name="ds_atlas_mrtrix_lut",
                 run_without_submitting=True,
             )
-            ds_atlas_orig_lut = pe.Node(
+            ds_atlas_orig_lut = pe.MapNode(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
-                    seg=atlas,
                     suffix="dseg",
                     extension=".txt",
                 ),
-                name=f"ds_atlas_orig_lut_{atlas}",
+                iterfield=["in_file", "seg"],
+                name="ds_atlas_orig_lut",
                 run_without_submitting=True,
             )
             workflow.connect([
-                (prepare_atlases, ds_atlas, [(
-                    ("atlas_configs", _get_resampled, atlas, "dwi_resolution_file"), "in_file"),
+                (extract_atlas_files, ds_atlas, [
+                    ("nifti_files", "in_file"),
+                    ("atlases", "seg"),
                 ]),
-                (prepare_atlases, ds_atlas_mifs, [(
-                    ("atlas_configs", _get_resampled, atlas, "dwi_resolution_mif"), "in_file"),
+                (extract_atlas_files, ds_atlas_mifs, [
+                    ("mif_files", "in_file"),
+                    ("atlases", "seg"),
                 ]),
-                (prepare_atlases, ds_atlas_mrtrix_lut, [(
-                    ("atlas_configs", _get_resampled, atlas, "mrtrix_lut"), "in_file"),
+                (extract_atlas_files, ds_atlas_mrtrix_lut, [
+                    ("mrtrix_lut_files", "in_file"),
+                    ("atlases", "seg"),
                 ]),
-                (prepare_atlases, ds_atlas_orig_lut, [(
-                    ("atlas_configs", _get_resampled, atlas, "orig_lut"), "in_file"),
+                (extract_atlas_files, ds_atlas_orig_lut, [
+                    ("orig_lut_files", "in_file"),
+                    ("atlases", "seg"),
                 ]),
             ])  # fmt:skip
 
-        # Fill in the atlas datasinks
-        for node in workflow.list_node_names():
-            node_suffix = node.split(".")[-1]
-            if node_suffix.startswith("ds_atlas_"):
-                workflow.connect([
-                    (inputnode, workflow.get_node(node), [("dwi_file", "source_file")]),
-                ])  # fmt:skip
+            recombine_atlas_configs = pe.Node(
+                RecombineAtlasConfigs(),
+                name="recombine_atlas_configs",
+                run_without_submitting=True,
+            )
+            workflow.connect([
+                (prepare_atlases, recombine_atlas_configs, [("atlas_configs", "atlas_configs")]),
+                (extract_atlas_files, recombine_atlas_configs, [("atlases", "atlases")]),
+                (ds_atlas, recombine_atlas_configs, [("out_file", "nifti_files")]),
+                (ds_atlas_mifs, recombine_atlas_configs, [("out_file", "mif_files")]),
+                (ds_atlas_mrtrix_lut, recombine_atlas_configs, [("out_file", "mrtrix_lut_files")]),
+                (ds_atlas_orig_lut, recombine_atlas_configs, [("out_file", "orig_lut_files")]),
+                (recombine_atlas_configs, buffernode, [("atlas_configs", "atlas_configs")]),
+            ])  # fmt:skip
+
+            # Fill in the atlas datasinks
+            for node in workflow.list_node_names():
+                node_suffix = node.split(".")[-1]
+                if node_suffix.startswith("ds_atlas"):
+                    workflow.connect([
+                        (inputnode, workflow.get_node(node), [("dwi_file", "source_file")]),
+                    ])  # fmt:skip
 
     if "mrtrix_5tt_hsvs" in extras_to_make and not has_qsiprep_5tt_hsvs:
         raise Exception("Unable to create a 5tt HSV image given input data.")

@@ -17,7 +17,7 @@ from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.gradients import GradientSelect, RemoveDuplicates
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.mrtrix import MRTrixGradientTable
-from ...interfaces.recon_scalars import OrganizeScalarData
+from ...interfaces.recon_scalars import DisorganizeScalarData, OrganizeScalarData
 from ...interfaces.utils import TestReportPlot, WriteSidecar
 from ...utils.bids import clean_datasinks
 
@@ -155,7 +155,7 @@ def init_scalar_output_wf(
         name="inputnode",
     )
     outputnode = pe.Node(
-        niu.IdentityInterface(fields=["scalar_files"]),
+        niu.IdentityInterface(fields=["scalar_files", "scalar_configs"]),
         name="outputnode",
     )
     workflow = Workflow(name=name)
@@ -191,6 +191,17 @@ def init_scalar_output_wf(
             ("desc", "desc"),
         ]),
         (ds_scalar, outputnode, [("out_file", "scalar_files")]),
+    ])  # fmt:skip
+
+    disorganize_scalar_data = pe.MapNode(
+        DisorganizeScalarData(),
+        iterfield=["scalar_config", "scalar_file"],
+        name="disorganize_scalar_data",
+    )
+    workflow.connect([
+        (inputnode, disorganize_scalar_data, [("scalar_configs", "scalar_config")]),
+        (ds_scalar, disorganize_scalar_data, [("out_file", "scalar_file")]),
+        (disorganize_scalar_data, outputnode, [("scalar_config", "scalar_configs")]),
     ])  # fmt:skip
 
     return workflow

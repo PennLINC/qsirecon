@@ -285,3 +285,135 @@ class TestReportPlot(SimpleInterface):
         )
         self._results["out_file"] = out_file
         return runtime
+
+
+class _SplitAtlasConfigsInputSpec(BaseInterfaceInputSpec):
+    atlas_configs = traits.Dict(
+        mandatory=True,
+        desc=(
+            "Dictionary of atlas configurations. "
+            "Keys are atlas names and values are dictionaries with the following keys: "
+            "'file', 'label', 'metadata'. "
+            "'file' is the path to the atlas file. "
+            "'label' is the path to the label file. "
+            "'metadata' is a dictionary with relevant metadata. "
+            "'xfm_to_anat' is the path to the transform to get the atlas into ACPC space."
+        ),
+    )
+
+
+class _SplitAtlasConfigsOutputSpec(TraitedSpec):
+    atlas_configs = traits.List(
+        traits.Dict(),
+        desc=(
+            "Dictionary of atlas configurations. "
+            "This interface adds the following keys: "
+            "'dwi_resolution_file', 'dwi_resolution_mif', 'orig_lut', 'mrtrix_lut'. "
+            "The values are the paths to the transformed atlas files and the label files."
+        ),
+    )
+
+
+class SplitAtlasConfigs(SimpleInterface):
+    input_spec = _SplitAtlasConfigsInputSpec
+    output_spec = _SplitAtlasConfigsOutputSpec
+
+    def _run_interface(self, runtime):
+        atlas_configs = []
+        for atlas_name, atlas_config in self.inputs.atlas_configs.items():
+            atlas_configs.append({atlas_name: atlas_config})
+
+        self._results["atlas_configs"] = atlas_configs
+
+
+class _ExtractAtlasFilesInputSpec(BaseInterfaceInputSpec):
+    atlas_configs = traits.Dict(
+        mandatory=True,
+        desc=(
+            "Dictionary of atlas configurations. "
+            "Keys are atlas names and values are dictionaries with the following keys: "
+            "'file', 'label', 'metadata'. "
+            "'file' is the path to the atlas file. "
+            "'label' is the path to the label file. "
+            "'metadata' is a dictionary with relevant metadata. "
+            "'xfm_to_anat' is the path to the transform to get the atlas into ACPC space."
+        ),
+    )
+
+
+class _ExtractAtlasFilesOutputSpec(TraitedSpec):
+    atlases = traits.List(traits.Str(), desc="List of atlas names")
+    nifti_files = traits.List(File(), desc="List of nifti files")
+    mif_files = traits.List(File(), desc="List of mif files")
+    mrtrix_lut_files = traits.List(File(), desc="List of mrtrix lut files")
+    orig_lut_files = traits.List(File(), desc="List of orig lut files")
+
+
+class ExtractAtlasFiles(SimpleInterface):
+    input_spec = _ExtractAtlasFilesInputSpec
+    output_spec = _ExtractAtlasFilesOutputSpec
+
+    def _run_interface(self, runtime):
+        self._results["atlases"] = []
+        self._results["nifti_files"] = []
+        self._results["mif_files"] = []
+        self._results["mrtrix_lut_files"] = []
+        self._results["orig_lut_files"] = []
+
+        for atlas_name, atlas_config in self.inputs.atlas_configs.items():
+            self._results["atlases"].append(atlas_name)
+            self._results["nifti_files"].append(atlas_config["dwi_resolution_file"])
+            self._results["mif_files"].append(atlas_config["dwi_resolution_mif"])
+            self._results["mrtrix_lut_files"].append(atlas_config["mrtrix_lut"])
+            self._results["orig_lut_files"].append(atlas_config["orig_lut"])
+
+        return runtime
+
+
+class _RecombineAtlasConfigsInputSpec(BaseInterfaceInputSpec):
+    atlas_configs = traits.Dict(
+        mandatory=True,
+        desc=(
+            "Dictionary of atlas configurations. "
+            "Keys are atlas names and values are dictionaries with the following keys: "
+            "'file', 'label', 'metadata'. "
+            "'file' is the path to the atlas file. "
+            "'label' is the path to the label file. "
+            "'metadata' is a dictionary with relevant metadata. "
+            "'xfm_to_anat' is the path to the transform to get the atlas into ACPC space."
+        ),
+    )
+    atlases = traits.List(traits.Str(), desc="List of atlas names")
+    nifti_files = traits.List(File(), desc="List of nifti files")
+    mif_files = traits.List(File(), desc="List of mif files")
+    mrtrix_lut_files = traits.List(File(), desc="List of mrtrix lut files")
+    orig_lut_files = traits.List(File(), desc="List of orig lut files")
+
+
+class _RecombineAtlasConfigsOutputSpec(TraitedSpec):
+    atlas_configs = traits.Dict(
+        mandatory=True,
+        desc=(
+            "Dictionary of atlas configurations. "
+            "Keys are atlas names and values are dictionaries with the following keys: "
+            "'file', 'label', 'metadata'. "
+        ),
+    )
+
+
+class RecombineAtlasConfigs(SimpleInterface):
+    input_spec = _RecombineAtlasConfigsInputSpec
+    output_spec = _RecombineAtlasConfigsOutputSpec
+
+    def _run_interface(self, runtime):
+        atlas_configs = self.inputs.atlas_configs.copy()
+
+        for i_atlas, atlas_name in enumerate(self.inputs.atlases):
+            atlas_configs[atlas_name]["dwi_resolution_file"] = self.inputs.nifti_files[i_atlas]
+            atlas_configs[atlas_name]["dwi_resolution_mif"] = self.inputs.mif_files[i_atlas]
+            atlas_configs[atlas_name]["mrtrix_lut"] = self.inputs.mrtrix_lut_files[i_atlas]
+            atlas_configs[atlas_name]["orig_lut"] = self.inputs.orig_lut_files[i_atlas]
+
+        self._results["atlas_configs"] = atlas_configs
+
+        return runtime

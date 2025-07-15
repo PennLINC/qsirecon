@@ -130,9 +130,8 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
             ('dwi_file', 'dwi_file'),
             ('bval_file', 'bval_file'),
             ('bvec_file', 'bvec_file'),
-            ('dwi_mask', 'mask_file')]),
-        (recon_scalars, outputnode, [
-            ("scalar_info", "recon_scalars")])
+            ('dwi_mask', 'mask_file'),
+        ]),
     ])  # fmt:skip
 
     # EstimateTensor
@@ -258,6 +257,7 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
             ]),
             (recon_scalars, plot_scalars, [("scalar_info", "scalar_metadata")]),
             (scalar_output_wf, plot_scalars, [("outputnode.scalar_files", "scalar_maps")]),
+            (scalar_output_wf, outputnode, [("outputnode.scalar_configs", "recon_scalars")]),
         ])  # fmt:skip
 
         ds_report_scalars = pe.Node(
@@ -271,6 +271,9 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
             run_without_submitting=True,
         )
         workflow.connect([(plot_scalars, ds_report_scalars, [("out_report", "in_file")])])
+    else:
+        # If not writing out scalar files, pass the working directory scalar configs
+        workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
 
     workflow.__desc__ = desc
 
