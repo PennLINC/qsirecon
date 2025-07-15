@@ -1,6 +1,7 @@
 """Test utility functions."""
 
 import os
+from glob import glob
 from pprint import pprint
 
 from bids.layout import BIDSLayout, Query
@@ -34,6 +35,7 @@ def test_collect_anatomical_data(tmp_path_factory):
     elif "session" not in anat_input_file.entities:
         _session_filter = Query.NONE
     else:
+        # Session-wise anatomical processing
         _session_filter = [anat_input_file.entities["session"], Query.NONE]
 
     anat_data, highres_anat_status = xbids.collect_anatomical_data(
@@ -44,14 +46,18 @@ def test_collect_anatomical_data(tmp_path_factory):
         infant_mode=False,
         bids_filters={},
     )
-    pprint(anat_data)
-    pprint(highres_anat_status)
     assert highres_anat_status['has_qsiprep_t1w'] is True
-    assert highres_anat_status['has_qsiprep_t1w_transforms'] is False
+    assert highres_anat_status['has_qsiprep_t1w_transforms'] is True
+    # These are collected
     assert anat_data['acpc_preproc'] is not None
     assert anat_data['acpc_brain_mask'] is not None
     assert anat_data['acpc_to_template_xfm'] is not None
     assert anat_data['template_to_acpc_xfm'] is not None
     assert anat_data['acpc_aseg'] is not None
-    assert anat_data['acpc_brain'] is not None
-    assert anat_data['acpc_preproc_xfm'] is not None
+    # A number of inputs are not collected
+    assert anat_data['acpc_aparc'] is None
+    assert anat_data['acpc_csf_probseg'] is None
+    assert anat_data['acpc_gm_probseg'] is None
+    assert anat_data['acpc_wm_probseg'] is None
+    # This should be collected, but is not because the file is in a session folder.
+    assert anat_data['orig_to_acpc_xfm'] is None

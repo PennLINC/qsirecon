@@ -243,7 +243,7 @@ def collect_anatomical_data(
     if not anat_data["acpc_to_template_xfm"] or not anat_data["template_to_acpc_xfm"]:
         if needs_t1w_transform:
             raise ValueError(
-                "Reconstruction workflow requires a T1wACPC-to-template transform. "
+                "Reconstruction workflow requires a T1w/ACPC-to-template transform. "
                 "None were found."
             )
 

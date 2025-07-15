@@ -18,7 +18,7 @@
       suffix: xfm
       extension: .mat
     - from: MNI152NLin2009cAsym
-      to: anat
+      to: ACPC
       mode: image
       suffix: xfm
       extension: .h5
@@ -30,10 +30,6 @@
       desc: brain
       suffix: mask
       extension: .nii.gz
-    - space: ACPC
-      desc: preproc
-      suffix: T1w
-      extension: .json
     - space: ACPC
       desc: preproc
       suffix: T1w
@@ -96,19 +92,7 @@
       space: ACPC
       desc: preproc
       suffix: dwi
-      extension: .json
-    - acq: abcdPA
-      run: 01
-      space: ACPC
-      desc: preproc
-      suffix: dwi
       extension: .nii.gz
-    - acq: abcdPA
-      run: 01
-      space: ACPC
-      desc: slice
-      suffix: qc
-      extension: .json
     - acq: abcdPA
       run: 01
       space: ACPC
@@ -121,10 +105,3 @@
       stat: cnr
       suffix: dwimap
       extension: .nii.gz
-    - acq: abcdPA
-      run: 01
-      space: ACPC
-      model: eddy
-      stat: cnr
-      suffix: dwimap
-      extension: .json
