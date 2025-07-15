@@ -560,3 +560,49 @@ def get_entity(filename, entity):
             raise ValueError(f"Unknown space for {filename}")
 
     return entity_value
+
+
+def get_iterable_dwis_and_anats(layout):
+    """Look through the BIDS Layout for DWIs and their corresponding anats.
+
+    Returns
+    -------
+    dwis_and_anats : list of tuple
+        List of two-element tuples where the first element is a DWI scan and the second is
+        the corresponding anatomical scan.
+    """
+    from bids.layout import Query
+
+    dwis_and_anats = []
+    dwi_files = layout.get(
+        suffix="dwi",
+        session=Query.OPTIONAL,
+        space=["T1w", "ACPC"],
+        extension=["nii", "nii.gz"],
+    )
+
+    for dwi_scan in dwi_files:
+        subject_level_anats = layout.get(
+            suffix=["T1w", "T2w"],
+            session=Query.NONE,
+            space=[Query.NONE, "ACPC"],
+            extension=["nii", "nii.gz"],
+        )
+
+        session_level_anats = []
+        if dwi_session := dwi_scan.entities.get("session"):
+            session_level_anats = layout.get(
+                suffix=["T1w", "T2w"],
+                session=dwi_session,
+                space=[Query.NONE, "ACPC"],
+                extension=["nii", "nii.gz"],
+            )
+
+        if not (session_level_anats or subject_level_anats):
+            anat_scan = None
+        else:
+            best_anat_source = session_level_anats if session_level_anats else subject_level_anats
+            anat_scan = best_anat_source[0]
+
+        dwis_and_anats.append((dwi_scan, anat_scan))
+    return dwis_and_anats
