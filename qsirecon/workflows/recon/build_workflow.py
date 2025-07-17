@@ -317,7 +317,6 @@ def workflow_from_spec(inputs_dict, node_spec):
 
     elif software == "TORTOISE":
         if node_spec["action"] == "estimate":
-            print(f"Setting up tortoise estimator workflow: {kwargs['name']}")
             return init_tortoise_estimator_wf(**kwargs)
 
     # qsirecon operations

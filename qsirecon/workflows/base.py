@@ -142,8 +142,8 @@ to workflows in *QSIRecon*'s documentation]\
         else:
             _session_filter = [anat_input_file.entities["session"], Query.NONE]
 
-        # We only need to process unique anat files that match dwis
         if anat_input_file.path in highres_anat_wfs:
+            # Skip if we've already processed this anatomical file
             continue
 
         anat_data, highres_anat_statuses[anat_input_file.path] = collect_anatomical_data(
@@ -230,6 +230,7 @@ to workflows in *QSIRecon*'s documentation]\
                     name=f"datasink_atlas_labels_orig_{atlas_name}_{anat_num}",
                 )
                 workflow.add_nodes([ds_atlas_labels_orig])
+
     config.loggers.workflow.info(f"Found {len(anat_input_files)} high-res anatomicals to process")
 
     # create a processing pipeline for the dwis in each session
