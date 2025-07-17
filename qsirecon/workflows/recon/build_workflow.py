@@ -111,6 +111,7 @@ def init_dwi_recon_workflow(
             for in_node_spec in workflow_spec["nodes"]:
                 if in_node_spec["name"] == scalar_source:
                     in_node = workflow.get_node(in_node_spec["name"])
+                    print(f"Connecting {in_node_spec['name']} to {node_name}")
                     workflow.connect([
                         (in_node, node, [
                             ("outputnode.recon_scalars", "inputnode.collected_scalars"),
