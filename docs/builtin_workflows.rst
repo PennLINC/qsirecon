@@ -179,6 +179,7 @@ PyAFQ Outputs
 | sub-* (directory)      | PyAFQ results direcrory for each subject  |
 +------------------------+-------------------------------------------+
 
+
 .. _amico_noddi:
 
 ``amico_noddi``
@@ -207,6 +208,7 @@ Other Outputs
    :header: "File Name", "Description"
    :file: nonscalars/amico_noddi.csv
    :widths: 15, 30
+
 
 .. _dsi_studio_gqi:
 
@@ -238,6 +240,7 @@ Other Outputs
    :header: "File Name", "Description"
    :file: nonscalars/dsistudio_gqi.csv
    :widths: 15, 30
+
 
 .. _dsi_studio_autotrack:
 
@@ -308,6 +311,7 @@ Other Outputs
    :file: nonscalars/ss3t_fod_autotrack.csv
    :widths: 15, 30
 
+
 .. _tortoise:
 
 ``TORTOISE``
@@ -329,6 +333,7 @@ Other Outputs
    :header: "File Name", "Description"
    :file: nonscalars/tortoise.csv
    :widths: 15, 30
+
 
 .. _dipy_mapmri:
 
@@ -381,6 +386,7 @@ Other Outputs
    :header: "File Name", "Description"
    :file: nonscalars/dipy_dki.csv
    :widths: 15, 30
+
 
 .. _dipy_3dshore:
 
@@ -471,8 +477,31 @@ Other Outputs
 -------------
 .. csv-table::
    :header: "File Name", "Description"
-   :file: nonscalars/dsistudio_gqi.csv
+   :file: nonscalars/hbcd_scalar_maps.csv
    :widths: 15, 30
+
+
+.. _multishell_scalarfest:
+
+``multishell_scalarfest``
+=========================
+
+TODO: Fill in.
+
+Scalar Maps
+-----------
+.. csv-table::
+   :header: "Model", "Parameter", "Description"
+   :file: recon_scalars/multishell_scalarfest.csv
+   :widths: 15, 10, 30
+
+Other Outputs
+-------------
+.. csv-table::
+   :header: "File Name", "Description"
+   :file: nonscalars/multishell_scalarfest.csv
+   :widths: 15, 30
+
 
 .. _appropriate_schemes:
 
