@@ -449,13 +449,12 @@ Other Outputs
 ``hbcd_scalar_maps``
 ====================
 
-Designed to run on [HBCD](https://hbcdstudy.org/) data, this is also a general-purpose
+Designed to run on `HBCD <https://hbcdstudy.org/>`_ data, this is also a general-purpose
 way to get many multishell-supported fitting methods, including
 
   * :ref:`dipy_dki`
   * :ref:`TORTOISE` (model-MAPMRI)
   * :ref:`TORTOISE` (model-tensor using only b<4000)
-  * :ref:`amico_noddi`
   * :ref:`dsi_studio_gqi`
 
 Bundles are generated using :ref:`dsi_studio_autotrack`.
@@ -486,7 +485,13 @@ Other Outputs
 ``multishell_scalarfest``
 =========================
 
-TODO: Fill in.
+This is a general-purpose way to get scalar maps from many multishell-supported fitting methods,
+including:
+
+  * :ref:`dipy_dki`
+  * :ref:`TORTOISE` (model-MAPMRI)
+  * :ref:`TORTOISE` (model-tensor using only b<4000)
+  * :ref:`dsi_studio_gqi`
 
 Scalar Maps
 -----------
@@ -497,11 +502,8 @@ Scalar Maps
 
 Other Outputs
 -------------
-.. csv-table::
-   :header: "File Name", "Description"
-   :file: nonscalars/multishell_scalarfest.csv
-   :widths: 15, 30
 
+No other outputs are produced.
 
 .. _appropriate_schemes:
 
