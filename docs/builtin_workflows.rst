@@ -492,6 +492,7 @@ including:
   * :ref:`TORTOISE` (model-MAPMRI)
   * :ref:`TORTOISE` (model-tensor using only b<4000)
   * :ref:`dsi_studio_gqi`
+  * :ref:`amico_noddi`
 
 Scalar Maps
 -----------
