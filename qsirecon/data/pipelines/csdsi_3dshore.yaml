@@ -6,11 +6,13 @@ nodes:
     input: qsirecon
     name: csdsi_3dshore
     parameters:
+        big_delta: null
         extrapolate_scheme: HCP
         lambdaL: 1.0e-08
         lambdaN: 1.0e-08
         radial_order: 8
         regularization: L2
+        small_delta: null
         write_fibgz: true
         write_mif: true
     qsirecon_suffix: 3dSHORE
