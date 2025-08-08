@@ -48,7 +48,7 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
     mask_file = File(exists=True)
     local_bvec_file = File(exists=True)
     big_delta = traits.Either(None, traits.Float(), usedefault=True)
-    little_delta = traits.Either(None, traits.Float(), usedefault=True)
+    small_delta = traits.Either(None, traits.Float(), usedefault=True)
     b0_threshold = traits.CFloat(50, usedefault=True)
     # Outputs
     write_fibgz = traits.Bool(True)
@@ -73,7 +73,7 @@ class DipyReconInterface(SimpleInterface):
     output_spec = DipyReconOutputSpec
 
     def _get_gtab(self, external_bvals=None, external_bvecs=None):
-        little_delta = self.inputs.little_delta if isdefined(self.inputs.little_delta) else None
+        small_delta = self.inputs.small_delta if isdefined(self.inputs.small_delta) else None
         big_delta = self.inputs.big_delta if isdefined(self.inputs.big_delta) else None
         bval_file = self.inputs.bval_file if external_bvals is None else external_bvals
         bvec_file = self.inputs.bvec_file if external_bvecs is None else external_bvecs
@@ -82,7 +82,7 @@ class DipyReconInterface(SimpleInterface):
             bvecs=np.loadtxt(bvec_file).T,
             b0_threshold=self.inputs.b0_threshold,
             big_delta=big_delta,
-            small_delta=little_delta,
+            small_delta=small_delta,
         )
         return gtab
 
@@ -413,7 +413,7 @@ class BrainSuiteShoreReconstruction(DipyReconInterface):
             bvecs=final_bvecs,
             b0_threshold=50,
             big_delta=self.inputs.big_delta,
-            small_delta=self.inputs.little_delta,
+            small_delta=self.inputs.small_delta,
         )
 
         # Cleanup
