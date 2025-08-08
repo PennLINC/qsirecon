@@ -20,17 +20,17 @@ def download_test_data(dset, data_dir=None):
     """Download test data."""
     URLS = {
         "multishell_output": (
-            "https://upenn.box.com/shared/static/hr7xnxicbx9iqndv1yl35bhtd61fpalp.xz"
+            "https://upenn.box.com/shared/static/q066t33ojqk1phljr6064ilcrrqip87q.gz"
         ),
         "singleshell_output": (
-            "https://upenn.box.com/shared/static/9jhf0eo3ml6ojrlxlz6lej09ny12efgg.gz"
+            "https://upenn.box.com/shared/static/rc4oh9tqf20f2xu2p8587q44vwr1i7uf.gz"
         ),
-        "hsvs_data": ("https://upenn.box.com/shared/static/8ggsyfhldqzckh1qbywlnbm9x0tin3yr.xz"),
+        "hsvs_data": ("https://upenn.box.com/shared/static/kic35jscwqhtezi6t398k4nfuo09ppty.xz"),
         "multises_pre1_output": (
-            "https://upenn.box.com/shared/static/i2g8m0d026g46kew5g82yc50a8m0jez7.xz"
+            "https://upenn.box.com/shared/static/g6hb4ylraejqn8sjz2xodj6fog4lp6sb.xz"
         ),
         "multises_post1_output": (
-            "https://upenn.box.com/shared/static/ifwzc3izdo72wx2syqcx74h3hqzulh7a.xz"
+            "https://upenn.box.com/shared/static/ipqhy6a9p0pl7q1tw4zejj47mro4dtfh.xz"
         ),
         "custom_atlases": (
             "https://upenn.box.com/shared/static/2x5jqj7he20lminc3v4jtwhyiq7pyr8i.gz"
