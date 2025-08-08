@@ -17,8 +17,6 @@ for the various steps in that workflow. Workflows can be customized
 (see :ref:`building_workflows`).
 
 
-
-
 *********
 Workflows
 *********
@@ -49,6 +47,7 @@ structural connectivity matrix.
   enough. We strongly recommend the ``hsvs`` segmentation if you're going to
   use ACT. Note that this requires ``--fs-subjects-dir``
 
+
 .. _mrtrix_dwi_outputs:
 
 MRtrix3 DWI Outputs
@@ -59,6 +58,7 @@ These files are located in the ``dwi/`` directories.
    :header: "File Name", "Description"
    :file: nonscalars/mrtrix_dwi.csv
    :widths: 15, 30
+
 
 .. _mrtrix_anatomical_outputs:
 
@@ -71,8 +71,8 @@ These files are located ``anat/`` directories.
    :file: nonscalars/mrtrix_anat.csv
    :widths: 15, 30
 
-.. _mrtrix_multishell_msmt_ACT-hsvs:
 
+.. _mrtrix_multishell_msmt_ACT-hsvs:
 
 ``mrtrix_multishell_msmt_ACT-hsvs``
 ===================================
@@ -159,7 +159,7 @@ PyAFQ Outputs
 +------------------------+-------------------------------------------+
 
 
-.. _pyafq_input_trk:
+.. _mrtrix_multishell_msmt_pyafq_tractometry:
 
 ``mrtrix_multishell_msmt_pyafq_tractometry``
 ============================================
@@ -508,7 +508,7 @@ the model-fitting workflows and which sampling schemes work with them.
 +------------------------------------------------+-------------+------------+-----------------+
 |:ref:`mrtrix_multishell_msmt_noACT`             |     Yes     |    No      |      No         |
 +------------------------------------------------+-------------+------------+-----------------+
-|:ref:`mrtrix_multishell_msmt_pyafq_tractometry` |     ???     |    ??      |      ??         |
+|:ref:`mrtrix_multishell_msmt_pyafq_tractometry` |     Yes     |    No      |      Yes        |
 +------------------------------------------------+-------------+------------+-----------------+
 |:ref:`mrtrix_singleshell_ss3t_ACT-fast`\*       |     No      |    No      |      Yes        |
 +------------------------------------------------+-------------+------------+-----------------+
