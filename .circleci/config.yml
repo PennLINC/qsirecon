@@ -62,7 +62,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-02
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Download multishell_output test data
@@ -70,7 +70,7 @@ jobs:
             cd /src/qsirecon/.circleci
             python get_data.py $PWD/data multishell_output
       - save_cache:
-          key: multishell_output-02
+          key: multishell_output-03
           paths:
             - /src/qsirecon/.circleci/data/multishell_output
 
@@ -297,7 +297,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-02
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Pytest the recon interfaces
@@ -316,7 +316,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-02
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the CSD recon workflows
@@ -340,7 +340,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-02
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the AutoTrack workflow
@@ -364,7 +364,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-02
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the TORTOISE recon workflow
@@ -388,7 +388,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-02
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the DIPY recon workflows
@@ -412,7 +412,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-02
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the DIPY recon workflows
@@ -436,7 +436,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-02
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the PYAFQ standalone recon workflow
@@ -460,7 +460,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-02
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the PYAFQ workflow with mrtrix tractography
@@ -484,7 +484,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-02
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test scalar_mapping workflow
