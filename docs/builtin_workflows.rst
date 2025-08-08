@@ -363,11 +363,6 @@ Other Outputs
 
 A DKI model is fit to the dMRI signal and multiple scalar maps are produced.
 
-.. important::
-
-   In order to calculate microstructural metrics with the ``dkimicro`` model,
-   you must set the ``wmti`` flag to ``True``.
-
 Scalar Maps
 -----------
 .. csv-table::
