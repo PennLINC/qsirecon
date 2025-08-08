@@ -153,6 +153,24 @@ def init_dipy_brainsuite_shore_recon_wf(
     plot_reports = not config.execution.skip_odf_reports
     workflow = Workflow(name=name)
     desc = "#### Dipy Reconstruction\n\n"
+
+    # Do we have deltas?
+    deltas = (params.get("big_delta", None), params.get("small_delta", None))
+    approximate_deltas = None in deltas
+    dwi_metadata = inputs_dict.get("dwi_metadata", {})
+    if approximate_deltas:
+        deltas = (
+            dwi_metadata.get("LargeDelta", None),
+            dwi_metadata.get("SmallDelta", None),
+        )
+        approximate_deltas = None in deltas
+
+    # Set deltas if we have them. Prevent only one from being defined
+    if approximate_deltas:
+        LOGGER.warning('Both "big_delta" and "small_delta" are required for precise 3dSHORE')
+    else:
+        params["big_delta"], params["small_delta"] = deltas
+
     recon_shore = pe.Node(BrainSuiteShoreReconstruction(**params), name="recon_shore")
     recon_scalars = pe.Node(
         BrainSuite3dSHOREReconScalars(qsirecon_suffix="name"),
@@ -457,6 +475,24 @@ def init_dipy_mapmri_recon_wf(
 
     workflow = Workflow(name=name)
     desc = "#### Dipy Reconstruction\n\n"
+
+    # Do we have deltas?
+    deltas = (params.get("big_delta", None), params.get("small_delta", None))
+    approximate_deltas = None in deltas
+    dwi_metadata = inputs_dict.get("dwi_metadata", {})
+    if approximate_deltas:
+        deltas = (
+            dwi_metadata.get("LargeDelta", None),
+            dwi_metadata.get("SmallDelta", None),
+        )
+        approximate_deltas = None in deltas
+
+    # Set deltas if we have them. Prevent only one from being defined
+    if approximate_deltas:
+        LOGGER.warning('Both "big_delta" and "small_delta" are required for precise MAPMRI')
+    else:
+        params["big_delta"], params["small_delta"] = deltas
+
     plot_reports = not config.execution.skip_odf_reports
     omp_nthreads = config.nipype.omp_nthreads
     recon_map = pe.Node(MAPMRIReconstruction(**params), name="recon_map")
