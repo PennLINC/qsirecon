@@ -527,6 +527,7 @@ class TensorReconstruction(DipyReconInterface):
 class _KurtosisReconstructionInputSpec(DipyReconInputSpec):
     kurtosis_clip_min = traits.Float(-0.42857142857142855, usedefault=True)
     kurtosis_clip_max = traits.Float(10.0, usedefault=True)
+    plot_reports = traits.Bool(True, usedefault=True)
 
 
 class _KurtosisReconstructionOutputSpec(DipyReconOutputSpec):
@@ -554,7 +555,7 @@ class KurtosisReconstruction(DipyReconInterface):
         gtab = self._get_gtab()
         dwi_img = nb.load(self.inputs.dwi_file)
         dwi_data = dwi_img.get_fdata(dtype="float32")
-        mask_img, mask_array = self._get_mask(dwi_img, gtab)
+        _, mask_array = self._get_mask(dwi_img, gtab)
 
         # Fit it
         dkimodel = dki.DiffusionKurtosisModel(gtab)
