@@ -5,7 +5,8 @@
 This release fixes a major bug in QSIRecon's handling of multi-session and multi-run datasets.
 When processing multiple sessions or runs in a single QSIRecon call, the reconstruction workflow was being modified in place,
 such that the first session/run was processed correctly, but subsequent sessions/runs were processed with global default values.
-This bug affected all QSIRecon releases prior to 1.1.1, as well as all QSIPrep releases prior to 0.24.0.
+This bug primarily affected custom reconstruction workflows.
+The built-in workflows should be largely unaffected.
 
 ### 🎉 Exciting New Features
 
