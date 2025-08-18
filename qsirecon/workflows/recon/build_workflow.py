@@ -1,3 +1,7 @@
+"""This module contains the functions that build the nipype workflows from the workflow specs."""
+
+from copy import deepcopy
+
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
@@ -70,6 +74,8 @@ def init_dwi_recon_workflow(
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
     )
+    # We don't want to modify the original workflow spec
+    workflow_spec = deepcopy(workflow_spec)
     # Read nodes from workflow spec, make sure we can implement them
     nodes_to_add = []
     workflow_metadata_nodes = {}
