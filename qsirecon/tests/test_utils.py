@@ -93,7 +93,7 @@ def test_find_fs_path(tmp_path_factory):
 
     # If you pass in a valid path with subject ID that exists, you get the path
     fs_path = find_fs_path(freesurfer_dir=fs_subjects_dir, subject_id="01", session_id=None)
-    assert fs_path.basename == "sub-01"
+    assert fs_path.name == "sub-01"
 
     # If you pass in a valid path with subject ID that exists and session ID, you get the path
     (fs_subjects_dir / "sub-01_ses-01").mkdir(parents=True)
@@ -102,14 +102,14 @@ def test_find_fs_path(tmp_path_factory):
         subject_id="01",
         session_id="01",
     )
-    assert fs_path.basename == "sub-01_ses-01"
+    assert fs_path.name == "sub-01_ses-01"
 
     fs_path = find_fs_path(
         freesurfer_dir=fs_subjects_dir,
         subject_id="01",
         session_id="02",
     )
-    assert fs_path.basename == "sub-01"
+    assert fs_path.name == "sub-01"
 
     # If you pass in a valid path with subject ID that exists and session ID, you get the path
     fs_path = find_fs_path(
@@ -117,14 +117,14 @@ def test_find_fs_path(tmp_path_factory):
         subject_id="01",
         session_id=["01", Query.NONE],
     )
-    assert fs_path.basename == "sub-01_ses-01"
+    assert fs_path.name == "sub-01_ses-01"
 
     fs_path = find_fs_path(
         freesurfer_dir=fs_subjects_dir,
         subject_id="01",
         session_id=["02", Query.NONE],
     )
-    assert fs_path.basename == "sub-01"
+    assert fs_path.name == "sub-01"
 
     (fs_subjects_dir / "sub-01_ses-01.long.sub-01").mkdir(parents=True)
     fs_path = find_fs_path(
@@ -132,14 +132,14 @@ def test_find_fs_path(tmp_path_factory):
         subject_id="01",
         session_id="01",
     )
-    assert fs_path.basename == "sub-01_ses-01.long.sub-01"
+    assert fs_path.name == "sub-01_ses-01.long.sub-01"
 
     fs_path = find_fs_path(
         freesurfer_dir=fs_subjects_dir,
         subject_id="01",
         session_id=["01", Query.NONE],
     )
-    assert fs_path.basename == "sub-01_ses-01.long.sub-01"
+    assert fs_path.name == "sub-01_ses-01.long.sub-01"
 
     # Now without sub- and ses- prefixes.
     fs_subjects_dir = tmp_path_factory.mktemp("freesurfer_02")
@@ -150,21 +150,21 @@ def test_find_fs_path(tmp_path_factory):
         subject_id="01",
         session_id=None,
     )
-    assert fs_path.basename == "01"
+    assert fs_path.name == "01"
 
     fs_path = find_fs_path(
         freesurfer_dir=fs_subjects_dir,
         subject_id="01",
         session_id="01",
     )
-    assert fs_path.basename == "01"
+    assert fs_path.name == "01"
 
     fs_path = find_fs_path(
         freesurfer_dir=fs_subjects_dir,
         subject_id="01",
         session_id=["01", Query.NONE],
     )
-    assert fs_path.basename == "01"
+    assert fs_path.name == "01"
 
     (fs_subjects_dir / "01_01").mkdir(parents=True)
     fs_path = find_fs_path(
@@ -172,14 +172,14 @@ def test_find_fs_path(tmp_path_factory):
         subject_id="01",
         session_id="01",
     )
-    assert fs_path.basename == "01_01"
+    assert fs_path.name == "01_01"
 
     fs_path = find_fs_path(
         freesurfer_dir=fs_subjects_dir,
         subject_id="01",
         session_id=["01", Query.NONE],
     )
-    assert fs_path.basename == "01_01"
+    assert fs_path.name == "01_01"
 
     (fs_subjects_dir / "01_01.long.01").mkdir(parents=True)
     fs_path = find_fs_path(
@@ -187,11 +187,11 @@ def test_find_fs_path(tmp_path_factory):
         subject_id="01",
         session_id="01",
     )
-    assert fs_path.basename == "01_01.long.01"
+    assert fs_path.name == "01_01.long.01"
 
     fs_path = find_fs_path(
         freesurfer_dir=fs_subjects_dir,
         subject_id="01",
         session_id=["01", Query.NONE],
     )
-    assert fs_path.basename == "01_01.long.01"
+    assert fs_path.name == "01_01.long.01"
