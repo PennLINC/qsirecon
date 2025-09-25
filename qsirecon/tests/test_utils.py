@@ -76,3 +76,122 @@ def test_get_iterable_dwis_and_anats(tmp_path_factory):
     assert len(dwis_and_anats) == 1
     assert dwis_and_anats[0][0] is not None
     assert dwis_and_anats[0][1] is not None
+
+
+def test_find_fs_path(tmp_path_factory):
+    """Test find_fs_path."""
+    from qsirecon.interfaces.freesurfer import find_fs_path
+
+    fs_subjects_dir = tmp_path_factory.mktemp("freesurfer_01")
+    (fs_subjects_dir / "sub-01").mkdir(parents=True)
+
+    # If you pass in None, you get None
+    assert find_fs_path(freesurfer_dir=None, subject_id="01", session_id=None) is None
+
+    # If you pass in a valid path with subject ID that doesn't exist, you get None
+    assert find_fs_path(freesurfer_dir=fs_subjects_dir, subject_id="fail", session_id=None) is None
+
+    # If you pass in a valid path with subject ID that exists, you get the path
+    fs_path = find_fs_path(freesurfer_dir=fs_subjects_dir, subject_id="01", session_id=None)
+    assert fs_path.basename == "sub-01"
+
+    # If you pass in a valid path with subject ID that exists and session ID, you get the path
+    (fs_subjects_dir / "sub-01_ses-01").mkdir(parents=True)
+    fs_path = find_fs_path(
+        freesurfer_dir=fs_subjects_dir,
+        subject_id="01",
+        session_id="01",
+    )
+    assert fs_path.basename == "sub-01_ses-01"
+
+    fs_path = find_fs_path(
+        freesurfer_dir=fs_subjects_dir,
+        subject_id="01",
+        session_id="02",
+    )
+    assert fs_path.basename == "sub-01"
+
+    # If you pass in a valid path with subject ID that exists and session ID, you get the path
+    fs_path = find_fs_path(
+        freesurfer_dir=fs_subjects_dir,
+        subject_id="01",
+        session_id=["01", Query.NONE],
+    )
+    assert fs_path.basename == "sub-01_ses-01"
+
+    fs_path = find_fs_path(
+        freesurfer_dir=fs_subjects_dir,
+        subject_id="01",
+        session_id=["02", Query.NONE],
+    )
+    assert fs_path.basename == "sub-01"
+
+    (fs_subjects_dir / "sub-01_ses-01.long.sub-01").mkdir(parents=True)
+    fs_path = find_fs_path(
+        freesurfer_dir=fs_subjects_dir,
+        subject_id="01",
+        session_id="01",
+    )
+    assert fs_path.basename == "sub-01_ses-01.long.sub-01"
+
+    fs_path = find_fs_path(
+        freesurfer_dir=fs_subjects_dir,
+        subject_id="01",
+        session_id=["01", Query.NONE],
+    )
+    assert fs_path.basename == "sub-01_ses-01.long.sub-01"
+
+    # Now without sub- and ses- prefixes.
+    fs_subjects_dir = tmp_path_factory.mktemp("freesurfer_02")
+    (fs_subjects_dir / "01").mkdir(parents=True)
+
+    fs_path = find_fs_path(
+        freesurfer_dir=fs_subjects_dir,
+        subject_id="01",
+        session_id=None,
+    )
+    assert fs_path.basename == "01"
+
+    fs_path = find_fs_path(
+        freesurfer_dir=fs_subjects_dir,
+        subject_id="01",
+        session_id="01",
+    )
+    assert fs_path.basename == "01"
+
+    fs_path = find_fs_path(
+        freesurfer_dir=fs_subjects_dir,
+        subject_id="01",
+        session_id=["01", Query.NONE],
+    )
+    assert fs_path.basename == "01"
+
+    (fs_subjects_dir / "01_01").mkdir(parents=True)
+    fs_path = find_fs_path(
+        freesurfer_dir=fs_subjects_dir,
+        subject_id="01",
+        session_id="01",
+    )
+    assert fs_path.basename == "01_01"
+
+    fs_path = find_fs_path(
+        freesurfer_dir=fs_subjects_dir,
+        subject_id="01",
+        session_id=["01", Query.NONE],
+    )
+    assert fs_path.basename == "01_01"
+
+    (fs_subjects_dir / "01_01.long.01").mkdir(parents=True)
+    fs_path = find_fs_path(
+        freesurfer_dir=fs_subjects_dir,
+        subject_id="01",
+        session_id="01",
+    )
+    assert fs_path.basename == "01_01.long.01"
+
+    fs_path = find_fs_path(
+        freesurfer_dir=fs_subjects_dir,
+        subject_id="01",
+        session_id=["01", Query.NONE],
+    )
+    assert fs_path.basename == "01_01.long.01"
