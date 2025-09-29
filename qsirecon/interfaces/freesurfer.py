@@ -22,7 +22,7 @@ Disable warnings:
 import os.path as op
 from pathlib import Path
 
-from bids.utils import listify
+from qsirecon.utils.misc import listify
 
 
 def find_fs_path(freesurfer_dir, subject_id, session_id=None):
