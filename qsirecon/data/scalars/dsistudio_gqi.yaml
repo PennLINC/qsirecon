@@ -40,7 +40,6 @@ md_file:
         param: md
     metadata:
         Description: Mean Diffusivity from a tensor fit. The mean of the three eigenvalues.
-        Units: 10^-3 mm^2/s
 nrdi02L_file:
     bids:
         model: gqi
