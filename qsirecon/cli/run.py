@@ -180,7 +180,6 @@ def main():
         write_derivative_description(
             config.execution.bids_dir,
             config.execution.output_dir,
-            atlases=config.execution.atlases,
             dataset_links=config.execution.dataset_links,
         )
 
@@ -224,7 +223,6 @@ def main():
             write_derivative_description(
                 config.execution.bids_dir,
                 suffix_dir,
-                atlases=config.execution.atlases,
                 dataset_links=dataset_links,
             )
             write_bidsignore(suffix_dir)

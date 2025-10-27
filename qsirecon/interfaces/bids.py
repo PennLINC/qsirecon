@@ -266,7 +266,7 @@ def get_recon_output_name(
         source_entities = {k: v for k, v in source_entities.items() if k not in dismiss_entities}
 
     out_path = base_dir
-    if qsirecon_suffix:
+    if qsirecon_suffix and qsirecon_suffix.lower() != "qsirecon":
         out_path = op.join(out_path, "derivatives", f"qsirecon-{qsirecon_suffix}")
 
     # Infer the appropriate extension

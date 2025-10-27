@@ -1,0 +1,107 @@
+# Skeleton based on Nibabies derivatives
+# There is only a T1w anatomical image, so it should only collect T1w files.
+"01":
+  - anat:
+    - from: ACPC
+      to: anat
+      mode: image
+      suffix: xfm
+      extension: .mat
+    - from: ACPC
+      to: MNI152NLin2009cAsym
+      mode: image
+      suffix: xfm
+      extension: .h5
+    - from: anat
+      to: ACPC
+      mode: image
+      suffix: xfm
+      extension: .mat
+    - from: MNI152NLin2009cAsym
+      to: ACPC
+      mode: image
+      suffix: xfm
+      extension: .h5
+    - space: ACPC
+      desc: aseg
+      suffix: dseg
+      extension: .nii.gz
+    - space: ACPC
+      desc: brain
+      suffix: mask
+      extension: .nii.gz
+    - space: ACPC
+      desc: preproc
+      suffix: T1w
+      extension: .nii.gz
+    - space: ACPC
+      suffix: dseg
+      extension: .nii.gz
+  - session: pre
+    anat:
+    - acq: MPRAGE
+      run: 01
+      from: orig
+      to: anat
+      mode: image
+      suffix: xfm
+      extension: .txt
+    dwi:
+    - acq: abcdPA
+      run: 01
+      desc: confounds
+      suffix: timeseries
+      extension: .tsv
+    - acq: abcdPA
+      run: 01
+      desc: pepolar
+      suffix: qc
+      extension: .tsv
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: brain
+      suffix: mask
+      extension: .nii.gz
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: preproc
+      suffix: dwi
+      extension: .b
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: preproc
+      suffix: dwi
+      extension: .b_table.txt
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: preproc
+      suffix: dwi
+      extension: .bval
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: preproc
+      suffix: dwi
+      extension: .bvec
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: preproc
+      suffix: dwi
+      extension: .nii.gz
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      suffix: dwiref
+      extension: .nii.gz
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      model: eddy
+      stat: cnr
+      suffix: dwimap
+      extension: .nii.gz

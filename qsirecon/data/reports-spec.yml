@@ -151,6 +151,14 @@ sections:
       Voxels are grouped into cortical (blue), and subcortical (orange) gray matter,
       cerebellum (green) and white matter and CSF (red), indicated by the color map on the left-hand side.
 
+- name: Scalar Maps
+  ordering: session,task,acquisition,ceagent,reconstruction,direction,run,echo
+  reportlets:
+  - bids: {datatype: figures, desc: scalars, suffix: dwimap}
+    subtitle: Scalar Maps
+    caption: |
+      Scalar maps are plotted in a matrix of images.
+
 - name: About
   nested: true
   reportlets:

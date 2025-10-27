@@ -28,7 +28,7 @@ from ...interfaces.recon_scalars import (
     DIPYDKIReconScalars,
     DIPYMAPMRIReconScalars,
 )
-from ...interfaces.reports import CLIReconPeaksReport
+from ...interfaces.reports import CLIReconPeaksReport, ScalarReport
 from ...utils.bids import clean_datasinks
 from .utils import init_scalar_output_wf
 
@@ -153,6 +153,24 @@ def init_dipy_brainsuite_shore_recon_wf(
     plot_reports = not config.execution.skip_odf_reports
     workflow = Workflow(name=name)
     desc = "#### Dipy Reconstruction\n\n"
+
+    # Do we have deltas?
+    deltas = (params.get("big_delta", None), params.get("small_delta", None))
+    approximate_deltas = None in deltas
+    dwi_metadata = inputs_dict.get("dwi_metadata", {})
+    if approximate_deltas:
+        deltas = (
+            dwi_metadata.get("LargeDelta", None),
+            dwi_metadata.get("SmallDelta", None),
+        )
+        approximate_deltas = None in deltas
+
+    # Set deltas if we have them. Prevent only one from being defined
+    if approximate_deltas:
+        LOGGER.warning('Both "big_delta" and "small_delta" are required for precise 3dSHORE')
+    else:
+        params["big_delta"], params["small_delta"] = deltas
+
     recon_shore = pe.Node(BrainSuiteShoreReconstruction(**params), name="recon_shore")
     recon_scalars = pe.Node(
         BrainSuite3dSHOREReconScalars(qsirecon_suffix="name"),
@@ -457,6 +475,24 @@ def init_dipy_mapmri_recon_wf(
 
     workflow = Workflow(name=name)
     desc = "#### Dipy Reconstruction\n\n"
+
+    # Do we have deltas?
+    deltas = (params.get("big_delta", None), params.get("small_delta", None))
+    approximate_deltas = None in deltas
+    dwi_metadata = inputs_dict.get("dwi_metadata", {})
+    if approximate_deltas:
+        deltas = (
+            dwi_metadata.get("LargeDelta", None),
+            dwi_metadata.get("SmallDelta", None),
+        )
+        approximate_deltas = None in deltas
+
+    # Set deltas if we have them. Prevent only one from being defined
+    if approximate_deltas:
+        LOGGER.warning('Both "big_delta" and "small_delta" are required for precise MAPMRI')
+    else:
+        params["big_delta"], params["small_delta"] = deltas
+
     plot_reports = not config.execution.skip_odf_reports
     omp_nthreads = config.nipype.omp_nthreads
     recon_map = pe.Node(MAPMRIReconstruction(**params), name="recon_map")
@@ -496,7 +532,6 @@ def init_dipy_mapmri_recon_wf(
             ('lapnorm', 'lapnorm_file'),
             ('mapmri_coeffs', 'mapcoeffs_file'),
         ]),
-        (recon_scalars, outputnode, [("scalar_info", "recon_scalars")])
     ])  # fmt:skip
 
     if plot_reports:
@@ -546,6 +581,37 @@ def init_dipy_mapmri_recon_wf(
             (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
             (recon_scalars, scalar_output_wf, [("scalar_info", "inputnode.scalar_configs")]),
         ])  # fmt:skip
+
+        plot_scalars = pe.Node(
+            ScalarReport(),
+            name="plot_scalars",
+            n_procs=omp_nthreads,
+        )
+        workflow.connect([
+            (inputnode, plot_scalars, [
+                ("acpc_preproc", "underlay"),
+                ("acpc_seg", "dseg"),
+                ("dwi_mask", "mask_file"),
+            ]),
+            (recon_scalars, plot_scalars, [("scalar_info", "scalar_metadata")]),
+            (scalar_output_wf, plot_scalars, [("outputnode.scalar_files", "scalar_maps")]),
+            (scalar_output_wf, outputnode, [("outputnode.scalar_configs", "recon_scalars")]),
+        ])  # fmt:skip
+
+        ds_report_scalars = pe.Node(
+            DerivativesDataSink(
+                datatype="figures",
+                desc="scalars",
+                suffix="dwimap",
+                dismiss_entities=["dsistudiotemplate"],
+            ),
+            name="ds_report_scalars",
+            run_without_submitting=True,
+        )
+        workflow.connect([(plot_scalars, ds_report_scalars, [("out_report", "in_file")])])
+    else:
+        # If not writing out scalar files, pass the working directory scalar configs
+        workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
 
     workflow.__desc__ = desc
 
@@ -676,7 +742,6 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
             ('rk', 'dki_rk'),
             ('sphericity', 'dki_sphericity'),
         ]),
-        (recon_scalars, outputnode, [("scalar_info", "recon_scalars")]),
     ])  # fmt:skip
 
     if micro_metrics:
@@ -754,6 +819,37 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
             (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
             (recon_scalars, scalar_output_wf, [("scalar_info", "inputnode.scalar_configs")]),
         ])  # fmt:skip
+
+        plot_scalars = pe.Node(
+            ScalarReport(),
+            name="plot_scalars",
+            n_procs=1,
+        )
+        workflow.connect([
+            (inputnode, plot_scalars, [
+                ("acpc_preproc", "underlay"),
+                ("acpc_seg", "dseg"),
+                ("dwi_mask", "mask_file"),
+            ]),
+            (recon_scalars, plot_scalars, [("scalar_info", "scalar_metadata")]),
+            (scalar_output_wf, plot_scalars, [("outputnode.scalar_files", "scalar_maps")]),
+            (scalar_output_wf, outputnode, [("outputnode.scalar_configs", "recon_scalars")]),
+        ])  # fmt:skip
+
+        ds_report_scalars = pe.Node(
+            DerivativesDataSink(
+                datatype="figures",
+                desc="scalars",
+                suffix="dwimap",
+                dismiss_entities=["dsistudiotemplate"],
+            ),
+            name="ds_report_scalars",
+            run_without_submitting=True,
+        )
+        workflow.connect([(plot_scalars, ds_report_scalars, [("out_report", "in_file")])])
+    else:
+        # If not writing out scalar files, pass the working directory scalar configs
+        workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
 
     workflow.__desc__ = desc
 
