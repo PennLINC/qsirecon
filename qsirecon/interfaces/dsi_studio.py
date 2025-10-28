@@ -357,7 +357,10 @@ class DSIStudioConnectivityMatrix(CommandLine):
         for matfile in matfiles:
             measure = "_".join(matfile.split(".")[-4:-2])
             connectivity_data[f"atlas_{atlas_name}_{measure}_connectivity"] = (
-                _sanitized_connectivity_matrix(matfile, official_labels, official_label_names)
+                _sanitized_connectivity_matrix(
+                    matfile,
+                    official_labels,
+                    official_label_names)
             )
 
         # Gather the network measure files
@@ -365,7 +368,12 @@ class DSIStudioConnectivityMatrix(CommandLine):
         for network_result in network_results:
             measure = "_".join(network_result.split(".")[-4:-2])
             connectivity_data.update(
-                _sanitized_network_measures(network_result, official_labels, official_label_names, atlas_name, measure)
+                _sanitized_network_measures(
+                    network_result,
+                    official_labels,
+                    official_label_names,
+                    atlas_name,
+                    measure)
             )
         merged_matfile = op.join(runtime.cwd, f"{atlas_name}_connectivity.mat")
         savemat(merged_matfile, connectivity_data, long_field_names=True)
