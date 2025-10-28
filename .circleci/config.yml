@@ -754,6 +754,13 @@ workflows:
             tags:
               only: /.*/
 
+      - Recon_DSI_Studio_GQI:
+          requires:
+            - download_multishell_output
+          filters:
+            tags:
+              only: /.*/
+
       - Recon_DIPY_MAPMRI:
           requires:
             - download_multishell_output
@@ -805,6 +812,7 @@ workflows:
             - Recon_Interfaces
             - Recon_AutoTrack
             - Recon_Tortoise
+            - Recon_DSI_Studio_GQI
             - Recon_DIPY_MAPMRI
             - Recon_DIPY_DKI
             - Recon_AMICO
@@ -832,6 +840,7 @@ workflows:
             - Recon_msmt_Multishell_HSVS
             - Recon_AutoTrack
             - Recon_Tortoise
+            - Recon_DSI_Studio_GQI
             - Recon_DIPY_MAPMRI
             - Recon_DIPY_DKI
             - Recon_AMICO
