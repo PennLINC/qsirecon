@@ -365,7 +365,7 @@ class DSIStudioConnectivityMatrix(CommandLine):
         for network_result in network_results:
             measure = "_".join(network_result.split(".")[-4:-2])
             connectivity_data.update(
-                _sanitized_network_measures(network_result, official_labels, 
+                _sanitized_network_measures(network_result, official_labels,
                                             official_label_names, atlas_name, measure)
             )
         merged_matfile = op.join(runtime.cwd, f"{atlas_name}_connectivity.mat")
@@ -685,9 +685,10 @@ def _sanitized_network_measures(network_txt, official_labels,
                 # fallback: trust the order, ignore mask
                 truncated_labels = official_label_names
                 in_this_mask = np.ones_like(official_label_names, dtype=bool)
-                # Because DSI Studio will create bogus region names for ROI indices not in the TSV, 
-                # replace the region ids for the output file with the official label names if and only if
-                # the number of region ids matches the number of official labels.
+                # Because DSI Studio will create bogus region names for ROI
+                # indices not in the TSV, replace the region ids for the output
+                # file with the official label names if and only if the number
+                # of region ids matches the number of official labels.
                 network_data["region_ids"] = official_label_names
             else:
                 raise AssertionError("Atlas and matfile label names mismatch and lengths differ.")
