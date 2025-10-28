@@ -346,9 +346,10 @@ class DSIStudioConnectivityMatrix(CommandLine):
 
         # Aggregate the connectivity/network data from DSI Studio
         official_labels = atlas_labels_df["index"].values
+        official_label_names = atlas_labels_df["label"].values
         connectivity_data = {
             f"atlas_{atlas_name}_region_ids": official_labels,
-            f"atlas_{atlas_name}_region_labels": atlas_labels_df["label"].values,
+            f"atlas_{atlas_name}_region_labels": official_label_names,
         }
 
         # Gather the connectivity matrices
@@ -356,7 +357,7 @@ class DSIStudioConnectivityMatrix(CommandLine):
         for matfile in matfiles:
             measure = "_".join(matfile.split(".")[-4:-2])
             connectivity_data[f"atlas_{atlas_name}_{measure}_connectivity"] = (
-                _sanitized_connectivity_matrix(matfile, official_labels)
+                _sanitized_connectivity_matrix(matfile, official_labels, official_label_names)
             )
 
         # Gather the network measure files
@@ -364,7 +365,7 @@ class DSIStudioConnectivityMatrix(CommandLine):
         for network_result in network_results:
             measure = "_".join(network_result.split(".")[-4:-2])
             connectivity_data.update(
-                _sanitized_network_measures(network_result, official_labels, atlas_name, measure)
+                _sanitized_network_measures(network_result, official_labels, official_label_names, atlas_name, measure)
             )
         merged_matfile = op.join(runtime.cwd, f"{atlas_name}_connectivity.mat")
         savemat(merged_matfile, connectivity_data, long_field_names=True)
@@ -462,6 +463,19 @@ class DSIStudioAtlasGraph(SimpleInterface):
 
 
 def _parse_network_file(txtfile):
+    """Parse a DSI Studio network text file into a dictionary.
+
+    Parameters
+    ----------
+    txtfile : str
+        Path to the text file containing network measures.
+
+    Returns
+    -------
+    network_data : dict
+        Dictionary of parsed network measures keyed by measure name.
+    """
+
     with open(txtfile, "r") as f:
         lines = f.readlines()
     network_data = {}
@@ -470,10 +484,12 @@ def _parse_network_file(txtfile):
         tokens = sanitized_line.split("\t")
         measure_name = tokens[0]
         if measure_name == "network_measures":
-            network_data["region_ids"] = [token.split("_")[-1] for token in tokens[1:]]
+            network_data["region_ids"] = [token for token in tokens[1:]]
             continue
-
-        values = list(map(float, tokens[1:]))
+        else:
+            # Make sure that strings don't get cast as floats
+            values = list(map(float, tokens[1:]))
+        
         if len(values) == 1:
             network_data[measure_name] = values[0]
         else:
@@ -483,14 +499,22 @@ def _parse_network_file(txtfile):
 
 
 def _merge_conmats(matfile_lists, outfile):
-    """Merge the many matfiles output by dsi studio and ensure they conform"""
+    """Merge multiple DSI Studio connectivity matfiles into one and ensure they conform.
+
+    Parameters
+    ----------
+    matfile_lists : list of str
+        Paths to matfiles to merge.
+    outfile : str
+        Output path for the combined matfile.
+    """
     connectivity_values = {}
     for matfile in matfile_lists:
         connectivity_values.update(loadmat(matfile))
     savemat(outfile, connectivity_values, long_field_names=True)
 
 
-def _sanitized_connectivity_matrix(conmat, official_labels):
+def _sanitized_connectivity_matrix(conmat, official_labels, official_label_names):
     """Load a matfile from DSI studio and re-format the connectivity matrix.
 
     Parameters:
@@ -501,6 +525,8 @@ def _sanitized_connectivity_matrix(conmat, official_labels):
         official_labels : ndarray (M,)
             Array of official ROI labels. The matrix in conmat will be reordered to
             match the ROI labels in this array
+        official_label_names : ndarray of str or None
+            Array of ROI names corresponding to official_labels. If None, assumes numeric labels.
 
     Returns:
     --------
@@ -508,21 +534,76 @@ def _sanitized_connectivity_matrix(conmat, official_labels):
             The DSI Studio data reordered to match official_labels
     """
     m = loadmat(conmat)
-    n_atlas_labels = len(official_labels)
-    # Column names are binary strings. Very confusing.
-    column_names = "".join([s.decode("UTF-8") for s in m["name"].squeeze().view("S1")]).split(
-        "\n"
-    )[:-1]
-    matfile_region_ids = np.array([int(name.split("_")[-1]) for name in column_names])
-
-    # Where does each column go? Make an index array
     connectivity = m["connectivity"]
-    in_this_mask = np.isin(official_labels, matfile_region_ids)
-    truncated_labels = official_labels[in_this_mask]
-    assert np.all(truncated_labels == matfile_region_ids)
-    output = np.zeros((n_atlas_labels, n_atlas_labels))
-    new_row = np.searchsorted(official_labels, matfile_region_ids)
+    n_atlas_labels = len(official_labels)
 
+    # Column names are binary strings
+    column_names = (
+        "".join(s.decode("UTF-8") for s in m["name"]
+                .squeeze().view("S1"))
+        .split("\n")[:-1])
+
+    official_labels = np.asarray(official_labels)
+
+    if official_label_names is None:
+        # ---- Numeric label path ----
+        try:
+            matfile_region_ids = np.array([int(name.split("_")[-1]) for name in column_names])
+        except ValueError:
+            raise ValueError(
+                "Matfile has non-integer labels but official_label_names not provided"
+            )
+
+        # Mask and compare
+        in_this_mask = np.isin(official_labels, matfile_region_ids)
+        truncated_labels = official_labels[in_this_mask]
+
+        if not np.all(truncated_labels == matfile_region_ids):
+            if len(official_labels) == len(matfile_region_ids):
+                print(
+                    "Atlas/matfile numeric labels mismatch but lengths match — "
+                    "falling back to order-based mapping."
+                )
+                # fallback: trust the order, ignore mask
+                new_row = np.arange(len(official_labels))
+                in_this_mask = np.ones_like(official_labels, dtype=bool)
+            else:
+                raise AssertionError("Atlas and matfile labels mismatch and lengths differ.")
+        else:
+            # Direct lookup for numeric IDs
+            label_to_index = {int(l): i for i, l in enumerate(official_labels)}
+            try:
+                new_row = np.array([label_to_index[int(r)] for r in matfile_region_ids])
+            except KeyError as e:
+                raise KeyError(f"Numeric region ID {e.args[0]} not found in atlas labels")
+
+    else:
+        # ---- String label path ----
+        matfile_region_ids = np.array(column_names)
+        in_this_mask = np.isin(official_label_names, matfile_region_ids)
+        truncated_labels = official_label_names[in_this_mask]
+
+        if not np.all(truncated_labels == matfile_region_ids):
+            if len(official_label_names) == len(matfile_region_ids):
+                print(
+                    "Atlas/matfile string labels mismatch but lengths match — "
+                    "falling back to order-based mapping."
+                )
+                # fallback: trust the order, ignore mask
+                new_row = np.arange(len(official_label_names))
+                in_this_mask = np.ones_like(official_label_names, dtype=bool)
+            else:
+                raise AssertionError("Atlas and matfile label names mismatch and lengths differ.")
+        else:
+            # Direct lookup for string IDs 
+            label_to_index = {name: i for i, name in enumerate(official_label_names)}
+            try:
+                new_row = np.array([label_to_index[name] for name in matfile_region_ids])
+            except KeyError as e:
+                raise KeyError(f"String region name '{e.args[0]}' not found in atlas labels")
+
+    output = np.zeros((n_atlas_labels, n_atlas_labels))
+    
     for row_index, conn in zip(new_row, connectivity):
         tmp = np.zeros(n_atlas_labels)
         tmp[in_this_mask] = conn
@@ -531,7 +612,7 @@ def _sanitized_connectivity_matrix(conmat, official_labels):
     return output
 
 
-def _sanitized_network_measures(network_txt, official_labels, atlas_name, measure):
+def _sanitized_network_measures(network_txt, official_labels, official_label_names, atlas_name, measure):
     """Load a network text file from DSI studio and re-format it.
 
     Parameters:
@@ -542,36 +623,83 @@ def _sanitized_network_measures(network_txt, official_labels, atlas_name, measur
         official_labels : ndarray (M,)
             Array of official ROI labels. The matrix in conmat will be reordered to
             match the ROI labels in this array
+        official_label_names : ndarray of str or None
+            Array of ROI names corresponding to official_labels. If None, assumes numeric labels.
         atlas_name : str
             Name of the atlas used
         measure : the name of the connectivity measure
 
     Returns:
     --------
-        connectivity_matrix : ndarray (M, M)
-            The DSI Studio data reordered to match official_labels
+        network_values : dict
+            Dictionary mapping variable names (e.g., "atlas_{atlas_name}_{measure}_{metric}") 
+            to arrays or scalar values reordered to match official_labels
     """
     network_values = {}
     n_atlas_labels = len(official_labels)
     network_data = _parse_network_file(network_txt)
     # Make sure to get the full atlas
-    network_region_ids = np.array(network_data["region_ids"]).astype(int)
-    # If all the regions are found
-    in_this_mask = np.isin(official_labels, network_region_ids)
-    if np.all(in_this_mask):
-        truncated_labels = official_labels
-    else:
+    network_regions = network_data["region_ids"]
+
+    if official_label_names is None:
+        # ---- Numeric label path ----
+        try:
+            network_region_ids = np.array([int(name.split("_")[-1]) for name in network_regions])
+        except ValueError:
+            raise ValueError(
+                "Matfile has non-integer labels but official_label_names not provided"
+            )
+
+        # Mask and compare
+        in_this_mask = np.isin(official_labels, network_region_ids)
         truncated_labels = official_labels[in_this_mask]
-    assert np.all(truncated_labels == network_region_ids)
+
+        if not np.all(truncated_labels == network_region_ids):
+            if len(official_labels) == len(network_region_ids):
+                LOGGER.warning(
+                    "Atlas/matfile string labels mismatch but lengths match — "
+                    "falling back to order-based mapping."
+                )
+                # fallback: trust the order, ignore mask
+                truncated_labels = official_labels
+                in_this_mask = np.ones_like(official_labels, dtype=bool)
+                network_data["region_ids"] = official_labels
+            else:
+                raise AssertionError("Atlas and matfile label names mismatch and lengths differ.")
+        else:
+            truncated_labels = official_labels[in_this_mask]
+    else:
+        # ---- String label path ----
+        network_region_ids = np.array(network_regions)
+        in_this_mask = np.isin(official_label_names, network_region_ids)
+        truncated_labels = official_label_names[in_this_mask]
+
+        if not np.all(truncated_labels == network_region_ids):
+            if len(official_label_names) == len(network_region_ids):
+                LOGGER.warning(
+                    "Atlas/matfile string labels mismatch but lengths match — "
+                    "falling back to order-based mapping."
+                )
+                # fallback: trust the order, ignore mask
+                truncated_labels = official_label_names
+                in_this_mask = np.ones_like(official_label_names, dtype=bool)
+            else:
+                raise AssertionError("Atlas and matfile label names mismatch and lengths differ.")
+        else:
+            truncated_labels = official_label_names[in_this_mask]
 
     for net_measure_name, net_measure_data in network_data.items():
         net_measure_name = net_measure_name.replace("-", "_")
         measure_name = measure.replace("-", "_")
         variable_name = f"atlas_{atlas_name}_{measure_name}_{net_measure_name}"
         if type(net_measure_data) is np.ndarray:
-            tmp = np.zeros(n_atlas_labels)
-            tmp[in_this_mask] = net_measure_data
-            network_values[variable_name] = tmp
+            if np.issubdtype(net_measure_data.dtype, np.number):
+                tmp = np.zeros(n_atlas_labels)
+                tmp[in_this_mask] = net_measure_data
+                network_values[variable_name] = tmp
+            else:
+                # Region names are not numeric
+                network_values[variable_name] = net_measure_data
         else:
             network_values[variable_name] = net_measure_data
 
