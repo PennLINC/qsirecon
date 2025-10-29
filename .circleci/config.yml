@@ -383,6 +383,30 @@ jobs:
       - store_artifacts:
           path: /src/qsirecon/.circleci/out/tortoise_recon/
 
+  Recon_DSI_Studio_GQI:
+    <<: *dockersetup
+    steps:
+      - checkout
+      - restore_cache:
+          key: multishell_output-03
+      - run: *runinstall
+      - run:
+          name: Test the DSI Studio GQI recon workflow
+          no_output_timeout: 1h
+          command: |
+            pytest -rP -o log_cli=true -m "dsi_studio_gqi_recon" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
+            mkdir /src/coverage
+            mv /src/qsirecon/.coverage /src/coverage/.coverage.dsi_studio_gqi_recon
+            # remove nifti files before uploading artifacts
+            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
+            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
+      - persist_to_workspace:
+          root: /src/coverage/
+          paths:
+            - .coverage.dsi_studio_gqi_recon
+      - store_artifacts:
+          path: /src/qsirecon/.circleci/out/dsi_studio_gqi_recon/
+
   Recon_DIPY_MAPMRI:
     <<: *dockersetup
     steps:
@@ -730,6 +754,13 @@ workflows:
             tags:
               only: /.*/
 
+      - Recon_DSI_Studio_GQI:
+          requires:
+            - download_multishell_output
+          filters:
+            tags:
+              only: /.*/
+
       - Recon_DIPY_MAPMRI:
           requires:
             - download_multishell_output
@@ -781,6 +812,7 @@ workflows:
             - Recon_Interfaces
             - Recon_AutoTrack
             - Recon_Tortoise
+            - Recon_DSI_Studio_GQI
             - Recon_DIPY_MAPMRI
             - Recon_DIPY_DKI
             - Recon_AMICO
@@ -808,6 +840,7 @@ workflows:
             - Recon_msmt_Multishell_HSVS
             - Recon_AutoTrack
             - Recon_Tortoise
+            - Recon_DSI_Studio_GQI
             - Recon_DIPY_MAPMRI
             - Recon_DIPY_DKI
             - Recon_AMICO
