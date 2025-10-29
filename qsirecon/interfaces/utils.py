@@ -100,8 +100,8 @@ class WarpConnectivityAtlases(SimpleInterface):
 
             atlas_configs[atlas_name]["dwi_resolution_file"] = output_name
             atlas_configs[atlas_name]["dwi_resolution_mif"] = output_mif
-            atlas_configs[atlas_name]["orig_lut"] = output_mif_txt
-            atlas_configs[atlas_name]["mrtrix_lut"] = output_orig_txt
+            atlas_configs[atlas_name]["orig_lut"] = output_orig_txt
+            atlas_configs[atlas_name]["mrtrix_lut"] = output_mif_txt
 
             conform_atlas = ConformAtlas(in_file=atlas_config["image"], orientation="LPS")
             result = conform_atlas.run()
