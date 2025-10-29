@@ -116,11 +116,11 @@ class WarpConnectivityAtlases(SimpleInterface):
                 )
             )
             label_convert(
-                output_name,
-                output_mif,
-                output_orig_txt,
-                output_mif_txt,
-                atlas_config["labels"],
+                original_atlas=atlas_config["image"],
+                output_mif=output_mif,
+                orig_txt=output_orig_txt,
+                mrtrix_txt=output_mif_txt,
+                atlas_labels_file=atlas_config["labels"],
             )
 
         self._results["atlas_configs"] = atlas_configs

@@ -595,7 +595,7 @@ If you use one of them please be sure to cite the relevant publication.
  * ``AAL116``: :footcite:t:`tzourio2002automated`
 
 The *QSIRecon* atlas set can be downloaded directly from
-`box  <https://upenn.box.com/shared/static/8k17yt2rfeqm3emzol5sa0j9fh3dhs0i.xz>`_.
+`box <https://upenn.box.com/shared/static/5k1tvg6soelxdhi9nvrkry6w0z49ctne.xz>`_.
 
 The 4S atlas combines the Schaefer 2018 cortical atlas (version v0143) :footcite:p:`Schaefer_2017`
 at 10 different resolutions (100, 200, 300, 400, 500, 600, 700, 800, 900, and 1000 parcels) with
