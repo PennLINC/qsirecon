@@ -364,12 +364,7 @@ class DSIStudioConnectivityMatrix(CommandLine):
         for network_result in network_results:
             measure = "_".join(network_result.split(".")[-4:-2])
             connectivity_data.update(
-                _sanitized_network_measures(
-                    network_result,
-                    official_labels,
-                    official_label_names,
-                    atlas_name,
-                    measure)
+                _sanitized_network_measures(network_result, official_labels, atlas_name, measure)
             )
         merged_matfile = op.join(runtime.cwd, f"{atlas_name}_connectivity.mat")
         savemat(merged_matfile, connectivity_data, long_field_names=True)
@@ -578,8 +573,7 @@ def _sanitized_connectivity_matrix(conmat, official_labels):
     return output
 
 
-def _sanitized_network_measures(network_txt, official_labels,
-                                official_label_names, atlas_name, measure):
+def _sanitized_network_measures(network_txt, official_labels, atlas_name, measure):
     """Load a network text file from DSI studio and re-format it.
 
     Parameters:
@@ -588,11 +582,8 @@ def _sanitized_network_measures(network_txt, official_labels,
         network_txt : str
             Path to a network text file from DSI Studio
         official_labels : ndarray (M,)
-            Array of official ROI labels. The matrix in conmat will be
+            Array of official ROI labels (i.e., parcel names). The matrix in conmat will be
             reordered to match the ROI labels in this array
-        official_label_names : ndarray of str or None
-            Array of ROI names corresponding to official_labels.
-            If None, assumes numeric labels.
         atlas_name : str
             Name of the atlas used
         measure : the name of the connectivity measure
@@ -609,56 +600,28 @@ def _sanitized_network_measures(network_txt, official_labels,
     # Make sure to get the full atlas
     network_regions = network_data["region_ids"]
 
-    if official_label_names is None:
-        # ---- Numeric label path ----
-        try:
-            network_region_ids = np.array([int(name.split("_")[-1]) for name in network_regions])
-        except ValueError:
-            raise ValueError(
-                "Network file has non-integer labels but official_label_names not provided"
+    network_region_ids = np.array(network_regions)
+    in_this_mask = np.isin(official_label_names, network_region_ids)
+    truncated_labels = official_label_names[in_this_mask]
+
+    if not np.all(truncated_labels == network_region_ids):
+        if len(official_label_names) == len(network_region_ids):
+            LOGGER.warning(
+                "Atlas/matfile string labels mismatch but lengths match — "
+                "falling back to order-based mapping."
             )
-
-        # Mask and compare
-        in_this_mask = np.isin(official_labels, network_region_ids)
-        truncated_labels = official_labels[in_this_mask]
-
-        if not np.all(truncated_labels == network_region_ids):
-            if len(official_labels) == len(network_region_ids):
-                LOGGER.warning(
-                    "Atlas/matfile string labels mismatch but lengths match — "
-                    "falling back to order-based mapping."
-                )
-                # fallback: trust the order, ignore mask
-                truncated_labels = official_labels
-                in_this_mask = np.ones_like(official_labels, dtype=bool)
-            else:
-                raise AssertionError("Atlas and matfile label names mismatch and lengths differ.")
+            # fallback: trust the order, ignore mask
+            truncated_labels = official_label_names
+            in_this_mask = np.ones_like(official_label_names, dtype=bool)
+            # Because DSI Studio will create bogus region names for ROI
+            # indices not in the TSV, replace the region ids for the output
+            # file with the official label names if and only if the number
+            # of region ids matches the number of official labels.
+            network_data["region_ids"] = official_label_names
         else:
-            truncated_labels = official_labels[in_this_mask]
+            raise AssertionError("Atlas and matfile label names mismatch and lengths differ.")
     else:
-        # ---- String label path ----
-        network_region_ids = np.array(network_regions)
-        in_this_mask = np.isin(official_label_names, network_region_ids)
         truncated_labels = official_label_names[in_this_mask]
-
-        if not np.all(truncated_labels == network_region_ids):
-            if len(official_label_names) == len(network_region_ids):
-                LOGGER.warning(
-                    "Atlas/matfile string labels mismatch but lengths match — "
-                    "falling back to order-based mapping."
-                )
-                # fallback: trust the order, ignore mask
-                truncated_labels = official_label_names
-                in_this_mask = np.ones_like(official_label_names, dtype=bool)
-                # Because DSI Studio will create bogus region names for ROI
-                # indices not in the TSV, replace the region ids for the output
-                # file with the official label names if and only if the number
-                # of region ids matches the number of official labels.
-                network_data["region_ids"] = official_label_names
-            else:
-                raise AssertionError("Atlas and matfile label names mismatch and lengths differ.")
-        else:
-            truncated_labels = official_label_names[in_this_mask]
 
     for net_measure_name, net_measure_data in network_data.items():
         net_measure_name = net_measure_name.replace("-", "_")
