@@ -57,3 +57,13 @@ sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_seg-4S156Parcels_dseg.txt
 sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_seg-Brainnetome246Ext_dseg.mif.gz
 sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_seg-Brainnetome246Ext_dseg.nii.gz
 sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_seg-Brainnetome246Ext_dseg.txt
+derivatives/qsirecon-DSIStudio/logs
+derivatives/qsirecon-DSIStudio/logs/CITATION.bib
+derivatives/qsirecon-DSIStudio/logs/CITATION.html
+derivatives/qsirecon-DSIStudio/logs/CITATION.md
+derivatives/qsirecon-DSIStudio/logs/CITATION.tex
+logs
+logs/CITATION.bib
+logs/CITATION.html
+logs/CITATION.md
+logs/CITATION.tex
