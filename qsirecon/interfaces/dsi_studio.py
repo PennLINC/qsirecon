@@ -345,11 +345,10 @@ class DSIStudioConnectivityMatrix(CommandLine):
             atlas_labels_df = atlas_labels_df.loc[atlas_labels_df["index"] != 0]
 
         # Aggregate the connectivity/network data from DSI Studio
-        official_labels = atlas_labels_df["index"].values
-        official_label_names = atlas_labels_df["label"].values
+        official_labels = atlas_labels_df["label"].values
         connectivity_data = {
-            f"atlas_{atlas_name}_region_ids": official_labels,
-            f"atlas_{atlas_name}_region_labels": official_label_names,
+            f"atlas_{atlas_name}_region_ids": atlas_labels_df["index"].values,
+            f"atlas_{atlas_name}_region_labels": official_labels,
         }
 
         # Gather the connectivity matrices
@@ -357,10 +356,7 @@ class DSIStudioConnectivityMatrix(CommandLine):
         for matfile in matfiles:
             measure = "_".join(matfile.split(".")[-4:-2])
             connectivity_data[f"atlas_{atlas_name}_{measure}_connectivity"] = (
-                _sanitized_connectivity_matrix(
-                    matfile,
-                    official_labels,
-                    official_label_names)
+                _sanitized_connectivity_matrix(matfile, official_labels)
             )
 
         # Gather the network measure files
@@ -522,7 +518,7 @@ def _merge_conmats(matfile_lists, outfile):
     savemat(outfile, connectivity_values, long_field_names=True)
 
 
-def _sanitized_connectivity_matrix(conmat, official_labels, official_label_names):
+def _sanitized_connectivity_matrix(conmat, official_labels):
     """Load a matfile from DSI studio and re-format the connectivity matrix.
 
     Parameters:
@@ -531,10 +527,8 @@ def _sanitized_connectivity_matrix(conmat, official_labels, official_label_names
         conmat : str
             Path to a connectivity matfile from DSI Studio
         official_labels : ndarray (M,)
-            Array of official ROI labels. The matrix in conmat will be reordered to
+            Array of official ROI labels (i.e., the names of the ROIs). The matrix in conmat will be reordered to
             match the ROI labels in this array
-        official_label_names : ndarray of str or None
-            Array of ROI names corresponding to official_labels. If None, assumes numeric labels.
 
     Returns:
     --------
@@ -551,64 +545,28 @@ def _sanitized_connectivity_matrix(conmat, official_labels, official_label_names
                 .squeeze().view("S1"))
         .split("\n")[:-1])
 
-    official_labels = np.asarray(official_labels)
+    matfile_region_ids = np.array(column_names)
+    in_this_mask = np.isin(official_label_names, matfile_region_ids)
+    truncated_labels = official_label_names[in_this_mask]
 
-    if official_label_names is None:
-        # ---- Numeric label path ----
-        try:
-            matfile_region_ids = np.array([int(name.split("_")[-1]) for name in column_names])
-        except ValueError:
-            raise ValueError(
-                "Matfile has non-integer labels but official_label_names not provided"
+    if not np.all(truncated_labels == matfile_region_ids):
+        if len(official_label_names) == len(matfile_region_ids):
+            print(
+                "Atlas/matfile string labels mismatch but lengths match — "
+                "falling back to order-based mapping."
             )
-
-        # Mask and compare
-        in_this_mask = np.isin(official_labels, matfile_region_ids)
-        truncated_labels = official_labels[in_this_mask]
-
-        if not np.all(truncated_labels == matfile_region_ids):
-            if len(official_labels) == len(matfile_region_ids):
-                print(
-                    "Atlas/matfile numeric labels mismatch but lengths match —"
-                    "falling back to order-based mapping."
-                )
-                # fallback: trust the order, ignore mask
-                new_row = np.arange(len(official_labels))
-                in_this_mask = np.ones_like(official_labels, dtype=bool)
-            else:
-                raise AssertionError("Atlas and matfile labels mismatch and lengths differ.")
+            # fallback: trust the order, ignore mask
+            new_row = np.arange(len(official_label_names))
+            in_this_mask = np.ones_like(official_label_names, dtype=bool)
         else:
-            # Direct lookup for numeric IDs
-            label_to_index = {int(l): i for i, l in enumerate(official_labels)}
-            try:
-                new_row = np.array([label_to_index[int(r)] for r in matfile_region_ids])
-            except KeyError as e:
-                raise KeyError(f"Numeric region ID {e.args[0]} not found in atlas labels")
-
+            raise AssertionError("Atlas and matfile label names mismatch and lengths differ.")
     else:
-        # ---- String label path ----
-        matfile_region_ids = np.array(column_names)
-        in_this_mask = np.isin(official_label_names, matfile_region_ids)
-        truncated_labels = official_label_names[in_this_mask]
-
-        if not np.all(truncated_labels == matfile_region_ids):
-            if len(official_label_names) == len(matfile_region_ids):
-                print(
-                    "Atlas/matfile string labels mismatch but lengths match — "
-                    "falling back to order-based mapping."
-                )
-                # fallback: trust the order, ignore mask
-                new_row = np.arange(len(official_label_names))
-                in_this_mask = np.ones_like(official_label_names, dtype=bool)
-            else:
-                raise AssertionError("Atlas and matfile label names mismatch and lengths differ.")
-        else:
-            # Direct lookup for string IDs
-            label_to_index = {name: i for i, name in enumerate(official_label_names)}
-            try:
-                new_row = np.array([label_to_index[name] for name in matfile_region_ids])
-            except KeyError as e:
-                raise KeyError(f"String region name '{e.args[0]}' not found in atlas labels")
+        # Direct lookup for string IDs
+        label_to_index = {name: i for i, name in enumerate(official_label_names)}
+        try:
+            new_row = np.array([label_to_index[name] for name in matfile_region_ids])
+        except KeyError as e:
+            raise KeyError(f"String region name '{e.args[0]}' not found in atlas labels")
 
     output = np.zeros((n_atlas_labels, n_atlas_labels))
 
