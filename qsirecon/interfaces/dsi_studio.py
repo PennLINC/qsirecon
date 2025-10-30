@@ -541,23 +541,23 @@ def _sanitized_connectivity_matrix(conmat, official_labels):
         .split("\n")[:-1])
 
     matfile_region_ids = np.array(column_names)
-    in_this_mask = np.isin(official_label_names, matfile_region_ids)
-    truncated_labels = official_label_names[in_this_mask]
+    in_this_mask = np.isin(official_labels, matfile_region_ids)
+    truncated_labels = official_labels[in_this_mask]
 
     if not np.all(truncated_labels == matfile_region_ids):
-        if len(official_label_names) == len(matfile_region_ids):
+        if len(official_labels) == len(matfile_region_ids):
             print(
                 "Atlas/matfile string labels mismatch but lengths match — "
                 "falling back to order-based mapping."
             )
             # fallback: trust the order, ignore mask
-            new_row = np.arange(len(official_label_names))
-            in_this_mask = np.ones_like(official_label_names, dtype=bool)
+            new_row = np.arange(len(official_labels))
+            in_this_mask = np.ones_like(official_labels, dtype=bool)
         else:
             raise AssertionError("Atlas and matfile label names mismatch and lengths differ.")
     else:
         # Direct lookup for string IDs
-        label_to_index = {name: i for i, name in enumerate(official_label_names)}
+        label_to_index = {name: i for i, name in enumerate(official_labels)}
         try:
             new_row = np.array([label_to_index[name] for name in matfile_region_ids])
         except KeyError as e:
@@ -601,27 +601,27 @@ def _sanitized_network_measures(network_txt, official_labels, atlas_name, measur
     network_regions = network_data["region_ids"]
 
     network_region_ids = np.array(network_regions)
-    in_this_mask = np.isin(official_label_names, network_region_ids)
-    truncated_labels = official_label_names[in_this_mask]
+    in_this_mask = np.isin(official_labels, network_region_ids)
+    truncated_labels = official_labels[in_this_mask]
 
     if not np.all(truncated_labels == network_region_ids):
-        if len(official_label_names) == len(network_region_ids):
+        if len(official_labels) == len(network_region_ids):
             LOGGER.warning(
                 "Atlas/matfile string labels mismatch but lengths match — "
                 "falling back to order-based mapping."
             )
             # fallback: trust the order, ignore mask
-            truncated_labels = official_label_names
-            in_this_mask = np.ones_like(official_label_names, dtype=bool)
+            truncated_labels = official_labels
+            in_this_mask = np.ones_like(official_labels, dtype=bool)
             # Because DSI Studio will create bogus region names for ROI
             # indices not in the TSV, replace the region ids for the output
             # file with the official label names if and only if the number
             # of region ids matches the number of official labels.
-            network_data["region_ids"] = official_label_names
+            network_data["region_ids"] = official_labels
         else:
             raise AssertionError("Atlas and matfile label names mismatch and lengths differ.")
     else:
-        truncated_labels = official_label_names[in_this_mask]
+        truncated_labels = official_labels[in_this_mask]
 
     for net_measure_name, net_measure_data in network_data.items():
         net_measure_name = net_measure_name.replace("-", "_")
