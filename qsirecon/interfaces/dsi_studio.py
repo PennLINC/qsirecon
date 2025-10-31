@@ -41,11 +41,7 @@ DSI_STUDIO_TEMPLATES = [
 ]
 
 
-class DSIStudioCommandLineInputSpec(CommandLineInputSpec):
-    num_threads = traits.Int(1, usedefault=True, argstr="--thread_count=%d", nohash=True)
-
-
-class DSIStudioCreateSrcInputSpec(DSIStudioCommandLineInputSpec):
+class DSIStudioCreateSrcInputSpec(CommandLineInputSpec):
     test_trait = traits.Bool()
     input_nifti_file = File(desc="DWI Nifti file", argstr="--source=%s")
     input_dicom_dir = File(
@@ -130,7 +126,7 @@ class DSIStudioCreateSrc(CommandLine):
 
 
 # Step 2 reonstruct ODFs
-class DSIStudioReconstructionInputSpec(DSIStudioCommandLineInputSpec):
+class DSIStudioReconstructionInputSpec(CommandLineInputSpec):
     input_src_file = File(
         desc="DSI Studio src file",
         mandatory=True,
@@ -144,8 +140,7 @@ class DSIStudioReconstructionInputSpec(DSIStudioCommandLineInputSpec):
     grad_dev = File(
         desc="Gradient deviation file", exists=True, copyfile=True, position=-1, argstr="#%s"
     )
-    thread_count = traits.Int(1, usedefault=True, argstr="--thread_count=%d", nohash=True)
-
+    num_threads = traits.Int(1, usedefault=True, argstr="--thread_count=%d", nohash=True)
     dti_no_high_b = traits.Bool(
         True,
         usedefault=True,
@@ -183,13 +178,6 @@ class DSIStudioReconstructionInputSpec(DSIStudioCommandLineInputSpec):
         desc="Check if btable matches nifti orientation (not foolproof)",
     )
 
-    num_fibers = traits.Int(
-        3,
-        usedefault=True,
-        argstr="--num_fiber=%d",
-        desc="number of fiber populations estimated at each voxel",
-    )
-
 
 class DSIStudioReconstructionOutputSpec(TraitedSpec):
     output_fib = File(desc="Output File", exists=True)
@@ -209,9 +197,10 @@ class DSIStudioReconstruction(CommandLine):
     _cmd = "dsi_studio --action=rec "
 
 
-class DSIStudioGQIReconstruction(DSIStudioReconstruction):
-    _cmd = "dsi_studio --action=rec --method=4"
+class DSIStudioGQIReconstruction(CommandLine):
     input_spec = DSIStudioGQIReconstructionInputSpec
+    output_spec = DSIStudioReconstructionOutputSpec
+    _cmd = "dsi_studio --action=rec --method=4"
 
     def _list_outputs(self):
         outputs = self.output_spec().get()
@@ -228,12 +217,12 @@ class DSIStudioGQIReconstruction(DSIStudioReconstruction):
         return outputs
 
 
-class DSIStudioExportInputSpec(DSIStudioCommandLineInputSpec):
+class DSIStudioExportInputSpec(CommandLineInputSpec):
     input_file = File(exists=True, argstr="--source=%s", mandatory=True, copyfile=False)
     to_export = traits.Str(mandatory=True, argstr="--export=%s")
 
 
-class DSIStudioExportOutputSpec(DSIStudioCommandLineInputSpec):
+class DSIStudioExportOutputSpec(TraitedSpec):
     qa_file = File(desc="Exported scalar nifti")
     color_file = File(desc="Exported scalar nifti")
     dti_fa_file = File(desc="Exported scalar nifti")
@@ -284,7 +273,7 @@ class DSIStudioExport(CommandLine):
         return outputs
 
 
-class DSIStudioConnectivityMatrixInputSpec(DSIStudioCommandLineInputSpec):
+class DSIStudioConnectivityMatrixInputSpec(CommandLineInputSpec):
     trk_file = File(exists=True, argstr="--tract=%s", copyfile=False)
     input_fib = File(exists=True, argstr="--source=%s", mandatory=True, copyfile=False)
     fiber_count = traits.Int(xor=["seed_count"], argstr="--fiber_count=%d")
@@ -317,7 +306,7 @@ class DSIStudioConnectivityMatrixInputSpec(DSIStudioCommandLineInputSpec):
     smoothing = traits.CFloat(argstr="--smoothing=%.2f")
     min_length = traits.CInt(argstr="--min_length=%d")
     max_length = traits.CInt(argstr="--max_length=%d")
-    thread_count = traits.Int(1, argstr="--thread_count=%d", usedefault=True, nohash=True)
+    num_threads = traits.Int(1, argstr="--thread_count=%d", usedefault=True, nohash=True)
 
     # Non-command-line arguments
     atlas_name = traits.Str()
@@ -406,11 +395,15 @@ class DSIStudioAtlasGraph(SimpleInterface):
         ifargs.pop("connectivity")
         ifargs.pop("atlas_name")
         ifargs.pop("atlas_labels_file")
-        ifargs["thread_count"] = 1
-
+        
         # Get number of parallel jobs
         num_threads = ifargs.pop("num_threads")
+
+        # Get atlas configs
         atlas_configs = ifargs.pop("atlas_configs")
+
+        # Get number of threads to pass to each job
+        threads_per_atlas = max(1, num_threads // len(atlas_configs))
         workflow = pe.Workflow(name="dsistudio_atlasgraph")
         nodes = []
         merge_mats = pe.Node(niu.Merge(len(atlas_configs)), name="merge_mats")
@@ -425,6 +418,7 @@ class DSIStudioAtlasGraph(SimpleInterface):
                         atlas_name=atlas_name,
                         atlas_labels_file=atlas_config["labels"],
                         connectivity=atlas_config["dwi_resolution_file"],
+                        num_threads=threads_per_atlas,
                         **node_args,
                     ),
                     name=atlas_name,
@@ -735,7 +729,7 @@ class FixDSIStudioExportHeader(SimpleInterface):
         return runtime
 
 
-class _AutoTrackInputSpec(DSIStudioCommandLineInputSpec):
+class _AutoTrackInputSpec(CommandLineInputSpec):
     fib_file = File(exists=True, mandatory=True, copyfile=False, argstr="--source=%s")
     map_file = File(exists=True, copyfile=False)
     track_id = traits.Str(
@@ -804,6 +798,7 @@ class _AutoTrackInputSpec(DSIStudioCommandLineInputSpec):
         argstr="--otsu_threshold=%.10f",
         desc="The ratio of otsu threshold to derive default anisotropy threshold.",
     )
+    num_threads = traits.Int(1, usedefault=True, argstr="--thread_count=%d", nohash=True)
     _boilerplate_traits = [
         "track_id",
         "track_voxel_ratio",
