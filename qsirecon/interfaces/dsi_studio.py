@@ -395,7 +395,7 @@ class DSIStudioAtlasGraph(SimpleInterface):
         ifargs.pop("connectivity")
         ifargs.pop("atlas_name")
         ifargs.pop("atlas_labels_file")
-        
+
         # Get number of parallel jobs
         num_threads = ifargs.pop("num_threads")
 
@@ -518,8 +518,9 @@ def _sanitized_connectivity_matrix(conmat, official_labels):
         conmat : str
             Path to a connectivity matfile from DSI Studio
         official_labels : ndarray (M,)
-            Array of official ROI labels (i.e., the names of the ROIs). The matrix in conmat will be reordered to
-            match the ROI labels in this array
+            Array of official ROI labels (i.e., the names of the ROIs).
+            The matrix in conmat will be reordered to match the ROI labels
+            in this array.
 
     Returns:
     --------
