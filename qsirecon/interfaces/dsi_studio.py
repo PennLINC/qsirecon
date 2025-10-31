@@ -483,7 +483,9 @@ def _parse_network_file(txtfile):
         tokens = sanitized_line.split("\t")
         measure_name = tokens[0]
         if measure_name == "network_measures":
-            network_data["region_ids"] = [token for token in tokens[1:]]
+            # Ensure cellstr output type for MATLAB compatibility
+            network_data["region_ids"] = np.array(
+                [[token] for token in tokens[1:]], dtype=object)
             continue
         else:
             # Make sure that strings don't get cast as floats
