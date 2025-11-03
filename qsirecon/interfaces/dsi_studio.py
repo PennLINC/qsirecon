@@ -530,10 +530,9 @@ def _sanitized_connectivity_matrix(conmat, official_labels):
     n_atlas_labels = len(official_labels)
 
     # Column names are binary strings
-    column_names = (
-        "".join(s.decode("UTF-8") for s in m["name"]
-                .squeeze().view("S1"))
-        .split("\n")[:-1])
+    column_names = "".join(s.decode("UTF-8") for s in m["name"].squeeze().view("S1")).split("\n")[
+        :-1
+    ]
 
     matfile_region_ids = np.array(column_names)
     in_this_mask = np.isin(official_labels, matfile_region_ids)
@@ -631,7 +630,8 @@ def _sanitized_network_measures(network_txt, official_labels, atlas_name, measur
                 # Region names are not numeric
                 # Ensure cellstr output type for MATLAB compatibility
                 network_values[variable_name] = np.array(
-                [[t] for t in net_measure_data], dtype=object)
+                    [[t] for t in net_measure_data], dtype=object
+                )
         else:
             network_values[variable_name] = net_measure_data
 
