@@ -396,6 +396,7 @@ def test_autotrack(data_dir, output_dir, working_dir):
         "participant",
         f"-w={work_dir}",
         "--sloppy",
+        "--skip-odf-reports",
         "--recon-spec=dsi_studio_autotrack",
     ]
 
