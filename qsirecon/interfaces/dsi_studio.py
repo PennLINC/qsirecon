@@ -591,6 +591,8 @@ class DSIStudioTrackingInputSpec(DSIStudioConnectivityMatrixInputSpec):
         argstr="--output=%s",
         name_source="input_fib",
     )
+    # Unused for now, but could be used to plot reports
+    plot_reports = traits.Bool(False, usedefault=True)
 
 
 class DSIStudioTrackingOutputSpec(TraitedSpec):
@@ -739,6 +741,8 @@ class _AutoTrackInputSpec(DSIStudioCommandLineInputSpec):
         argstr="--otsu_threshold=%.10f",
         desc="The ratio of otsu threshold to derive default anisotropy threshold.",
     )
+    # Unused for now, but could be used to plot reports
+    plot_reports = traits.Bool(False, usedefault=True)
     _boilerplate_traits = [
         "track_id",
         "track_voxel_ratio",
