@@ -1,11 +1,11 @@
-directions_image:
+directions_file:
     bids:
         model: noddi
         param: direction
     metadata:
         Description: Peak directions from NODDI
     reorient_on_resample: true
-icvf_image:
+icvf_file:
     bids:
         model: noddi
         param: icvf
@@ -14,7 +14,7 @@ icvf_image:
     figure:
         vmin: 0
         vmax: 1
-isovf_image:
+isovf_file:
     bids:
         model: noddi
         param: isovf
@@ -23,13 +23,13 @@ isovf_image:
     figure:
         vmin: 0
         vmax: 1
-od_image:
+od_file:
     bids:
         model: noddi
         param: od
     metadata:
         Description: Orientation dispersion index from NODDI
-modulated_icvf_image:
+modulated_icvf_file:
     bids:
         model: noddi
         param: icvf
@@ -39,7 +39,7 @@ modulated_icvf_image:
     figure:
         vmin: 0
         vmax: 1
-modulated_od_image:
+modulated_od_file:
     bids:
         model: noddi
         param: od
@@ -49,7 +49,7 @@ modulated_od_image:
     figure:
         vmin: 0
         vmax: 1
-rmse_image:
+rmse_file:
     bids:
         model: noddi
         param: rmse
@@ -57,7 +57,7 @@ rmse_image:
         Description: RMSE between predicted and measured signal from NODDI
     figure:
         vmin: 0
-nrmse_image:
+nrmse_file:
     bids:
         model: noddi
         param: nrmse
