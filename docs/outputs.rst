@@ -105,7 +105,25 @@ parameters (Δ and δ) for each scan.
 Generalized q-Sampling Imaging (GQI)
 ************************************
 
+A key feature of the post-processing in the HBCD pipeline is the use of generalized 
+q-sampling imaging (GQI). GQI is another model-free approach that estimates water
+diffusion orientation distribution functions (dODFs) using an analytic transform of 
+the diffusion signal :cite:p:`yeh2010`. Like the other models, GQI produces a number 
+of parametric microstructure maps such as generalized fractional anisotropy (GFA), 
+quantitative anisotropy (QA), and isotropic component (ISO) :cite:p:`yeh2013`.
 
+We chose to use the peak directions of dODFs estimated via GQI as the basis for 
+tractography instead of the popular constrained spherical deconvolution (CSD) method 
+for a number of practical reasons. Although the HBCD dMRI acquisition meets the 
+criteria to use the multi-shell multi-tissue (MSMT) CSD method, the age range sampled 
+by HBCD makes it difficult to apply the method consistently and optimally. 
+For instance, MSMT-CSD works optimally on two tissue types in neonates 
+:cite:p:`pietsch2019,grotheer2022`, but typically three tissues are 
+included when analyzing images from adults :cite:p:`jeurissen2014`. Also, GQI does 
+not require a response function and is applied identically regardless of age. 
+Finally, while GQI has been used extensively with adult data over the last 15 years, 
+it has also been used successfully for tractography in infants :cite:p:`borchers2020,dennis2019,lee2021,barnesdavis2024` including data 
+from dHCP :cite:p:`sun2024`.
 
 ********************
 Dataset Organization
