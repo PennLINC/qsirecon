@@ -43,23 +43,23 @@ TODO: add Restriction Spectrum Imaging (RSI; :cite:p:`white2013rsi`) and Neurite
 Diffusion tensor imaging (DTI)
 ******************************
 
-The diffusion tensor model :footcite:p:`basser1994a` provides a simple way to describe 
+The diffusion tensor model :cite:p:`basser1994a` provides a simple way to describe 
 Gaussian diffusion in a voxel. 
-The tensor model has been used extensively in the human brain :footcite:p:`pierpaoli1996` 
+The tensor model has been used extensively in the human brain :cite:p:`pierpaoli1996` 
 including developmental neuroscience, with large known effects of increasing FA and 
-decreasing MD with age :footcite:p:`qiu2015`. 
+decreasing MD with age :cite:p:`qiu2015`. 
 The eigenvectors and eigenvalues from the fitted tensor are used to calculate widely used 
 scalar maps such as fractional anisotropy (FA), mean diffusivity (MD), axial diffusivity (AD) 
 and radial diffusivity (RD). 
 When fitting tensors, we adopt the approach from the 
 `Adolescent Brain and Cognitive Development <https://abcdstudy.org/>`_ 
-study :footcite:p:`hagler2019` and perform multiple separate fits. 
+study :cite:p:`hagler2019` and perform multiple separate fits. 
 One fit used only the low-b (b≤1000) inner shells, where the assumptions of the tensor 
-model are most valid :footcite:p:`desantis2011` and the results will be more similar to legacy 
+model are most valid :cite:p:`desantis2011` and the results will be more similar to legacy 
 single shell studies. The second fit used all available data (e.g., "full shell") as in 
-:footcite:p:`pines2020`. The inner shell tensor fit is computed twice: once in DSI Studio 
+:cite:p:`pines2020`. The inner shell tensor fit is computed twice: once in DSI Studio 
 using ordinary least squares and again in TORTOISE using weighted linear least 
-squares :footcite:p:`basser1994b`, where tensor parameter estimation weights observations 
+squares :cite:p:`basser1994b`, where tensor parameter estimation weights observations 
 by values proportional to their estimated SNR. 
 The full shell fit is only done in TORTOISE with weighted linear least squares. 
 Comparisons between full and inner shells should be done using the maps estimated by TORTOISE, 
@@ -72,7 +72,7 @@ Diffusion kurtosis imaging (DKI)
 
 Water diffusion in the brain is affected by the physical structures that make up neurons and organelles.
 Instead of freely diffusing through space, water encounters barriers from myelin, cell membranes and other structures that introduce non-Gaussian features into the water diffusion distribution.
-The Diffusion Kurtosis Imaging (DKI; :footcite:p:`jensen2005dki`) model extends the of the DTI model by adding an additional 15 parameters that capture the deviations from Gaussianity missed when fitting the simple 6 parameter DTI model.
+The Diffusion Kurtosis Imaging (DKI; :cite:p:`jensen2005dki`) model extends the of the DTI model by adding an additional 15 parameters that capture the deviations from Gaussianity missed when fitting the simple 6 parameter DTI model.
 The DKI model incorporates data from all shells, potentially estimating the same scalar maps from DTI (FA, MD, etc) more accurately than a traditional tensor fit :cite:p:`henriques2021dki`.
 In addition to the measures from DTI, the DKI model also allows one to compute additional scalars derived from the kurtosis tensor such as mean kurtosis (MK), radial kurtosis (RK), and axial kurtosis (AK) :cite:p:`jensen2010dki`.
 DKI’s sensitivity to non-Gaussian diffusion makes it useful for capturing the interaction of water with more complex tissue features.
@@ -82,12 +82,12 @@ DKI’s sensitivity to non-Gaussian diffusion makes it useful for capturing the 
 Mean Apparent Propagator MRI (MAPMRI)
 *************************************
 
-The Mean Apparent Propagator (MAPMRI) method :footcite:p:`ozarslan2013` is a model-free 
+The Mean Apparent Propagator (MAPMRI) method :cite:p:`ozarslan2013` is a model-free 
 approach that captures complex water diffusion. As a matter of practice, a diffusion tensor 
 is first computed (using just the inner shells (b<1250), saved as an output) to determine the 
 coordinate framework in which the ensemble average diffusion propagator (EAP) is to be estimated 
 in three dimensions by a combination of Hermite and Legendre polynomials. MAPMRI is estimated in 
-TORTOISE :footcite:p:`irfanoglu2025` and maps are derived for multiple EAP-related properties. 
+TORTOISE :cite:p:`irfanoglu2025` and maps are derived for multiple EAP-related properties. 
 One set of maps captures the probability of a water molecule returning to its origin (RTOP) 
 (which is inversely proportional to the pore size), to its principal axis (RTAP), or the plane 
 perpendicular to the principal axis (RTPP) (which is inversely proportional to the analog of 
@@ -95,9 +95,9 @@ radial diffusivity). Furthermore, non-Gaussianity (NG) is calculated for the ent
 the principal direction of diffusion (NGPar) and perpendicular to it (NGPer). 
 The anisotropy of the EAP, or “propagator anisotropy” (PA). We calculate the angular difference,
 𝜃, as the angular distance between the fitted MAPMRI coefficients and the coefficients 
-corresponding to its isotropic version :footcite:p:`ozarslan2013`. Prior work in adolescents
+corresponding to its isotropic version :cite:p:`ozarslan2013`. Prior work in adolescents
 and young adults has shown that MAPMRI scalars are robust to head motion and among the most 
-sensitive to age effects :footcite:p:`pines2020`. Critically, our estimation of MAPMRI uses 
+sensitive to age effects :cite:p:`pines2020`. Critically, our estimation of MAPMRI uses 
 the metadata present in BIDS to define the Large and Small delta diffusion-gradient timing 
 parameters (Δ and δ) for each scan.
 
@@ -209,7 +209,5 @@ See :ref:`connectivity_atlases` for more information on this output directory.
 **********
 References
 **********
-
-.. footbibliography::
 
 .. bibliography::
