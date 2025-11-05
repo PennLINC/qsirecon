@@ -67,11 +67,14 @@ def build_documentation(interface):
     input_traits = interface.inputs.class_editable_traits()
     for _trait in input_traits:
         _trait_obj = interface.inputs.class_traits()[_trait]
-
-        if hasattr(_trait_obj, "doc"):
-            conditional_doc = _trait_obj.doc
+        conditional_doc = _trait_obj.doc
+        if isinstance(conditional_doc, ConditionalDoc):
             value = getattr(interface.inputs, _trait)
             doc.append(conditional_doc.get_doc(value))
+        elif conditional_doc is None:
+            continue
+        else:
+            raise ValueError(f"Conditional doc is not a ConditionalDoc: {conditional_doc}")
 
     return " ".join(doc)
 
@@ -87,8 +90,8 @@ class ConditionalDoc:
 
     def get_doc(self, value):
         if isdefined(value):
-            if value:
-                return self.if_true.format(value = value)
-            return self.if_false.format(value = value)
+            if isinstance(value, bool):
+                return self.if_true.format(value = value) if value else self.if_false.format(value = value)
+            return self.if_true.format(value = value)
         return self.if_undefined.format(value = value)
 
