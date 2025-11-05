@@ -72,6 +72,7 @@ doc = [
     "sphinx_rtd_theme",
     "sphinxcontrib-apidoc",
     "sphinxcontrib-bibtex",
+    "sphinxcontrib-bibtex>=2.5",
 ]
 tests = [
     "coverage",

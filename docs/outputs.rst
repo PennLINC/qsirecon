@@ -37,32 +37,32 @@ The multi-shell dMRI acquisition lends itself to a wide range of such dMRI model
 As each model often estimates several diffusion properties, at present these models yield over 40 whole-brain parametric microstructure maps per dMRI imaging session.
 Below we describe the four models that are fit as part of the qsirecon workflow and their associated scalar maps.
 
-TODO: add Restriction Spectrum Imaging (RSI; :cite:`white2013rsi`) and Neurite Orientation Dispersion and Density Imaging (NODDI; :cite:`noddi`) below?
+TODO: add Restriction Spectrum Imaging (RSI; :cite:p:`white2013rsi`) and Neurite Orientation Dispersion and Density Imaging (NODDI; :cite:p:`noddi`) below?
 
 ******************************
 Diffusion tensor imaging (DTI)
 ******************************
 
-The diffusion tensor model :footcite:p:`basser1994a` provides a simple way to describe 
-Gaussian diffusion in a voxel. 
-The tensor model has been used extensively in the human brain :footcite:p:`pierpaoli1996` 
-including developmental neuroscience, with large known effects of increasing FA and 
-decreasing MD with age :footcite:p:`qiu2015`. 
-The eigenvectors and eigenvalues from the fitted tensor are used to calculate widely used 
-scalar maps such as fractional anisotropy (FA), mean diffusivity (MD), axial diffusivity (AD) 
-and radial diffusivity (RD). 
-When fitting tensors, we adopt the approach from the 
-`Adolescent Brain and Cognitive Development <https://abcdstudy.org/>`_ study :footcite:p:`hagler2019` 
-and perform multiple separate fits. 
-One fit used only the low-b (b≤1000) inner shells, where the assumptions of the tensor 
-model are most valid :footcite:p:`desantis2011` and the results will be more similar to legacy 
-single shell studies. The second fit used all available data (e.g., "full shell") as in 
-:footcite:p:`pines2020`. The inner shell tensor fit is computed twice: once in DSI Studio 
-using ordinary least squares and again in TORTOISE using weighted linear least 
-squares :footcite:p:`basser1994b`, where tensor parameter estimation weights observations 
-by values proportional to their estimated SNR. 
-The full shell fit is only done in TORTOISE with weighted linear least squares. 
-Comparisons between full and inner shells should be done using the maps estimated by TORTOISE, 
+The diffusion tensor model :cite:p:`basser1994a` provides a simple way to describe
+Gaussian diffusion in a voxel.
+The tensor model has been used extensively in the human brain :footcite:p:`pierpaoli1996`
+including developmental neuroscience, with large known effects of increasing FA and
+decreasing MD with age :footcite:p:`qiu2015`.
+The eigenvectors and eigenvalues from the fitted tensor are used to calculate widely used
+scalar maps such as fractional anisotropy (FA), mean diffusivity (MD), axial diffusivity (AD)
+and radial diffusivity (RD).
+When fitting tensors, we adopt the approach from the
+`Adolescent Brain and Cognitive Development <https://abcdstudy.org/>`_ study :footcite:p:`hagler2019`
+and perform multiple separate fits.
+One fit used only the low-b (b≤1000) inner shells, where the assumptions of the tensor
+model are most valid :footcite:p:`desantis2011` and the results will be more similar to legacy
+single shell studies. The second fit used all available data (e.g., "full shell") as in
+:footcite:p:`pines2020`. The inner shell tensor fit is computed twice: once in DSI Studio
+using ordinary least squares and again in TORTOISE using weighted linear least
+squares :footcite:p:`basser1994b`, where tensor parameter estimation weights observations
+by values proportional to their estimated SNR.
+The full shell fit is only done in TORTOISE with weighted linear least squares.
+Comparisons between full and inner shells should be done using the maps estimated by TORTOISE,
 while comparisons of tensor fitting methods can be done with DSI Studio and TORTOISE inner shell fits.
 
 ********************************
@@ -71,9 +71,9 @@ Diffusion kurtosis imaging (DKI)
 
 Water diffusion in the brain is affected by the physical structures that make up neurons and organelles.
 Instead of freely diffusing through space, water encounters barriers from myelin, cell membranes and other structures that introduce non-Gaussian features into the water diffusion distribution.
-The Diffusion Kurtosis Imaging (DKI; :cite:`jensen2005dki`) model extends the of the DTI model by adding an additional 15 parameters that capture the deviations from Gaussianity missed when fitting the simple 6 parameter DTI model.
-The DKI model incorporates data from all shells, potentially estimating the same scalar maps from DTI (FA, MD, etc) more accurately than a traditional tensor fit :cite:`henriques2021dki`.
-In addition to the measures from DTI, the DKI model also allows one to compute additional scalars derived from the kurtosis tensor such as mean kurtosis (MK), radial kurtosis (RK), and axial kurtosis (AK) :cite:`jensen2010dki`.
+The Diffusion Kurtosis Imaging (DKI; :footcite:p:`jensen2005dki`) model extends the of the DTI model by adding an additional 15 parameters that capture the deviations from Gaussianity missed when fitting the simple 6 parameter DTI model.
+The DKI model incorporates data from all shells, potentially estimating the same scalar maps from DTI (FA, MD, etc) more accurately than a traditional tensor fit :cite:p:`henriques2021dki`.
+In addition to the measures from DTI, the DKI model also allows one to compute additional scalars derived from the kurtosis tensor such as mean kurtosis (MK), radial kurtosis (RK), and axial kurtosis (AK) :cite:p:`jensen2010dki`.
 DKI’s sensitivity to non-Gaussian diffusion makes it useful for capturing the interaction of water with more complex tissue features.
 
 
@@ -193,3 +193,5 @@ References
 **********
 
 .. footbibliography::
+
+.. bibliography::
