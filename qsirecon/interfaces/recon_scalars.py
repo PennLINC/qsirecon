@@ -8,12 +8,9 @@ Classes that collect scalar images and metadata from Recon Workflows
 
 
 """
-import copyreg
 import itertools
 import json
 import os
-import sys
-import types
 
 import nibabel as nb
 import numpy as np
@@ -36,43 +33,6 @@ from ..utils.bids import _get_bidsuris
 from ..utils.misc import load_yaml
 from .bids import get_recon_output_name
 from qsirecon.data import load as load_data
-
-
-def _unpickle_dynamic_input_spec(name, module_name):
-    """Unpickle function for dynamically created input spec classes."""
-    mod = __import__(module_name, fromlist=[name])
-    try:
-        return getattr(mod, name)
-    except AttributeError:
-        # If the class doesn't exist in this process, it will be created
-        # when the ReconScalars node is instantiated. For now, return a
-        # placeholder that will be replaced during node initialization.
-        # This prevents the worker process from crashing during unpickling.
-        # The actual class will be created when __init__ is called with scalar_config.
-        return ReconScalarsInputSpec
-
-
-class _DynamicInputSpecPickler:
-    """Pickler for dynamically created input spec classes."""
-
-    def __init__(self, class_name, module_name):
-        self.class_name = class_name
-        self.module_name = module_name
-
-    def __call__(self, cls):
-        return (_unpickle_dynamic_input_spec, (self.class_name, self.module_name))
-
-
-class ReconScalarsInputSpec(BaseInterfaceInputSpec):
-    source_file = File(exists=True, mandatory=True)
-    qsirecon_suffix = traits.Str(mandatory=True)
-    model_info = traits.Dict()
-    model_name = traits.Str()
-    dismiss_entities = traits.List([], usedefault=True)
-
-
-class ReconScalarsOutputSpec(TraitedSpec):
-    scalar_info = traits.List()
 
 
 class ReconScalarsInputSpec(BaseInterfaceInputSpec):
