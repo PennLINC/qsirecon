@@ -91,16 +91,17 @@ class ReconScalars(SimpleInterface):
 
     def _validate_scalar_metadata(self):
         for input_key in self.inputs.editable_traits():
-            if input_key in self._ignore_traits:
+            if (input_key in self._ignore_traits) or input_key.endswith("_metadata"):
                 continue
-            if input_key not in self.scalar_metadata and not input_key.endswith("_metadata"):
+
+            if input_key not in self.scalar_metadata:
                 raise Exception(
                     f"No entry found for {input_key} in ``scalar_metadata`` in this class."
                 )
 
             # Check that BIDS attributes are defined
             if "bids" not in self.scalar_metadata[input_key]:
-                raise Exception(f"Missing BIDS metadata for {input_key}")
+                raise Exception(f"Missing BIDS entities for {input_key}")
 
     def _run_interface(self, runtime):
         results = []
@@ -112,11 +113,10 @@ class ReconScalars(SimpleInterface):
         source_file_bids = {k: v for k, v in source_file_bids.items() if k not in dismiss_entities}
 
         # Get list of scalar file inputs
+        inputs = self.inputs.editable_traits()
         file_traits = [
-            name for name in self.inputs.editable_traits() if name not in self._ignore_traits
+            n for n in inputs if n not in self._ignore_traits and not n.endswith("_metadata")
         ]
-        # Ignore metadata input names
-        file_traits = [name for name in file_traits if not name.endswith("_metadata")]
 
         for input_name in file_traits:
             # Get the scalar file
