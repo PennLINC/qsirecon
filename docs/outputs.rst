@@ -28,6 +28,36 @@ Outputs of *QSIRecon*
    please open an issue in the *QSIRecon* repository.
 
 
+******************************************
+Whole-brain parametric microstructure maps
+******************************************
+
+
+
+******************************
+Diffusion tensor imaging (DTI)
+******************************
+
+
+
+********************************
+Diffusion kurtosis imaging (DKI)
+********************************
+
+
+
+*************************************
+Mean Apparent Propagator MRI (MAPMRI)
+*************************************
+
+
+
+************************************
+Generalized q-Sampling Imaging (GQI)
+************************************
+
+
+
 ********************
 Dataset Organization
 ********************
