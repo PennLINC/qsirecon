@@ -36,7 +36,7 @@ from ...interfaces.dsi_studio import (
 )
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import DSIStudioReconScalars
-from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport
+from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport, ScalarReport
 from ...utils.bids import clean_datasinks
 from ...utils.misc import remove_non_alphanumeric
 from .utils import init_scalar_output_wf
@@ -715,11 +715,39 @@ def init_dsi_studio_export_wf(
         workflow.connect([
             (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
             (recon_scalars, scalar_output_wf, [("scalar_info", "inputnode.scalar_configs")]),
+            (scalar_output_wf, outputnode, [("outputnode.scalar_configs", "recon_scalars")]),
         ])  # fmt:skip
 
-    workflow.connect([
-        (inputnode, export, [('fibgz', 'input_file')]),
-        (recon_scalars, outputnode, [("scalar_info", "recon_scalars")])
-    ])  # fmt:skip
+        plot_scalars = pe.Node(
+            ScalarReport(),
+            name="plot_scalars",
+            n_procs=1,
+        )
+        workflow.connect([
+            (inputnode, plot_scalars, [
+                ("acpc_preproc", "underlay"),
+                ("acpc_seg", "dseg"),
+                ("dwi_mask", "mask_file"),
+            ]),
+            (recon_scalars, plot_scalars, [("scalar_info", "scalar_metadata")]),
+            (scalar_output_wf, plot_scalars, [("outputnode.scalar_files", "scalar_maps")]),
+        ])  # fmt:skip
+
+        ds_report_scalars = pe.Node(
+            DerivativesDataSink(
+                datatype="figures",
+                desc="scalars",
+                suffix="dwimap",
+                dismiss_entities=["dsistudiotemplate"],
+            ),
+            name="ds_report_scalars",
+            run_without_submitting=True,
+        )
+        workflow.connect([(plot_scalars, ds_report_scalars, [("out_report", "in_file")])])
+    else:
+        # If not writing out scalar files, pass the working directory scalar configs
+        workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
+
+    workflow.connect([(inputnode, export, [("fibgz", "input_file")])])
 
     return clean_datasinks(workflow, qsirecon_suffix)

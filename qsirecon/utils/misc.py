@@ -28,3 +28,13 @@ def remove_non_alphanumeric(input_string: str) -> str:
 
     cleaned_string = re.sub(r"[^a-zA-Z0-9]", "", input_string)
     return cleaned_string
+
+
+def listify(obj):
+    """Wrap all non-list or tuple objects in a list.
+
+    This provides a simple way to accept flexible arguments.
+    """
+    import numpy as np
+
+    return obj if isinstance(obj, (list, tuple, np.ndarray)) else [obj]

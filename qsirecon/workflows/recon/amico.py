@@ -16,7 +16,7 @@ from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.converters import NODDItoFIBGZ
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import AMICOReconScalars
-from ...interfaces.reports import CLIReconPeaksReport
+from ...interfaces.reports import CLIReconPeaksReport, ScalarReport
 from ...utils.bids import clean_datasinks
 from ...utils.misc import load_yaml
 from .utils import init_scalar_output_wf
@@ -146,7 +146,6 @@ were also computed (@parker2021not)."""
             ('rmse_image', 'rmse_image'),
             ('nrmse_image', 'nrmse_image'),
         ]),
-        (recon_scalars, outputnode, [("scalar_info", "recon_scalars")]),
         (noddi_fit, convert_to_fibgz, [
             ('directions_image', 'directions_file'),
             ('icvf_image', 'icvf_file'),
@@ -210,6 +209,37 @@ were also computed (@parker2021not)."""
             run_without_submitting=True,
         )
         workflow.connect([(outputnode, ds_config, [("config_file", "in_file")])])
+
+        plot_scalars = pe.Node(
+            ScalarReport(),
+            name="plot_scalars",
+            n_procs=omp_nthreads,
+        )
+        workflow.connect([
+            (inputnode, plot_scalars, [
+                ("acpc_preproc", "underlay"),
+                ("acpc_seg", "dseg"),
+                ("dwi_mask", "mask_file"),
+            ]),
+            (recon_scalars, plot_scalars, [("scalar_info", "scalar_metadata")]),
+            (scalar_output_wf, plot_scalars, [("outputnode.scalar_files", "scalar_maps")]),
+            (scalar_output_wf, outputnode, [("outputnode.scalar_configs", "recon_scalars")]),
+        ])  # fmt:skip
+
+        ds_report_scalars = pe.Node(
+            DerivativesDataSink(
+                datatype="figures",
+                desc="scalars",
+                suffix="dwimap",
+                dismiss_entities=["dsistudiotemplate"],
+            ),
+            name="ds_report_scalars",
+            run_without_submitting=True,
+        )
+        workflow.connect([(plot_scalars, ds_report_scalars, [("out_report", "in_file")])])
+    else:
+        # If not writing out scalar files, pass the working directory scalar configs
+        workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
 
     workflow.__desc__ = desc
 

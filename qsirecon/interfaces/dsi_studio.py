@@ -339,8 +339,13 @@ class DSIStudioConnectivityMatrix(CommandLine):
         atlas_name = self.inputs.atlas_name
         atlas_labels_df = pd.read_table(self.inputs.atlas_labels_file)
 
+        atlas_labels_df["index"] = atlas_labels_df["index"].astype(int)
+        if 0 in atlas_labels_df["index"].values:
+            print(f"WARNING: Atlas {atlas_name} has a 0 index. This index will be dropped.")
+            atlas_labels_df = atlas_labels_df.loc[atlas_labels_df["index"] != 0]
+
         # Aggregate the connectivity/network data from DSI Studio
-        official_labels = atlas_labels_df["index"].values.astype(int)
+        official_labels = atlas_labels_df["index"].values
         connectivity_data = {
             f"atlas_{atlas_name}_region_ids": official_labels,
             f"atlas_{atlas_name}_region_labels": atlas_labels_df["label"].values,
@@ -586,6 +591,8 @@ class DSIStudioTrackingInputSpec(DSIStudioConnectivityMatrixInputSpec):
         argstr="--output=%s",
         name_source="input_fib",
     )
+    # Unused for now, but could be used to plot reports
+    plot_reports = traits.Bool(False, usedefault=True)
 
 
 class DSIStudioTrackingOutputSpec(TraitedSpec):
@@ -734,6 +741,8 @@ class _AutoTrackInputSpec(DSIStudioCommandLineInputSpec):
         argstr="--otsu_threshold=%.10f",
         desc="The ratio of otsu threshold to derive default anisotropy threshold.",
     )
+    # Unused for now, but could be used to plot reports
+    plot_reports = traits.Bool(False, usedefault=True)
     _boilerplate_traits = [
         "track_id",
         "track_voxel_ratio",

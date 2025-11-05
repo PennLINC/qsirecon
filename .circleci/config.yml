@@ -45,7 +45,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: singleshell_output-01
+          key: singleshell_output-02
       - run: *runinstall
       - run:
           name: Download singleshell_output test data
@@ -53,7 +53,7 @@ jobs:
             cd /src/qsirecon/.circleci
             python get_data.py $PWD/data singleshell_output
       - save_cache:
-          key: singleshell_output-01
+          key: singleshell_output-02
           paths:
             - /src/qsirecon/.circleci/data/singleshell_output
 
@@ -62,7 +62,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Download multishell_output test data
@@ -70,7 +70,7 @@ jobs:
             cd /src/qsirecon/.circleci
             python get_data.py $PWD/data multishell_output
       - save_cache:
-          key: multishell_output-01
+          key: multishell_output-03
           paths:
             - /src/qsirecon/.circleci/data/multishell_output
 
@@ -79,7 +79,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multises_pre1_output-01
+          key: multises_pre1_output-02
       - run: *runinstall
       - run:
           name: Download multises pre-1.0 test data
@@ -87,7 +87,7 @@ jobs:
             cd /src/qsirecon/.circleci
             python get_data.py $PWD/data multises_pre1_output
       - save_cache:
-          key: multises_pre1_output-01
+          key: multises_pre1_output-02
           paths:
             - /src/qsirecon/.circleci/data/multises_pre1_output
 
@@ -96,7 +96,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multises_post1_output-01
+          key: multises_post1_output-02
       - run: *runinstall
       - run:
           name: Download multises post-1.0 test data
@@ -104,7 +104,7 @@ jobs:
             cd /src/qsirecon/.circleci
             python get_data.py $PWD/data multises_post1_output
       - save_cache:
-          key: multises_post1_output-01
+          key: multises_post1_output-02
           paths:
             - /src/qsirecon/.circleci/data/multises_post1_output
 
@@ -113,7 +113,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: hsvs_data-01
+          key: hsvs_data-02
       - run: *runinstall
       - run:
           name: Download HSVS test input data
@@ -121,16 +121,33 @@ jobs:
             cd /src/qsirecon/.circleci
             python get_data.py $PWD/data hsvs_data
       - save_cache:
-          key: hsvs_data-01
+          key: hsvs_data-02
           paths:
             - /src/qsirecon/.circleci/data/hsvs_data
+
+  download_custom_atlases:
+    <<: *dockersetup
+    steps:
+      - checkout
+      - restore_cache:
+          key: custom_atlases-02
+      - run: *runinstall
+      - run:
+          name: Download custom atlases
+          command: |
+            cd /src/qsirecon/.circleci
+            python get_data.py $PWD/data custom_atlases
+      - save_cache:
+          key: custom_atlases-02
+          paths:
+            - /src/qsirecon/.circleci/data/custom_atlases
 
   Recon_SS3T_FOD_AutoTrack:
     <<: *dockersetup
     steps:
       - checkout
       - restore_cache:
-          key: singleshell_output-01
+          key: singleshell_output-02
       - run: *runinstall
       - run:
           name: Test the SS3T AutoTrack workflow
@@ -154,7 +171,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: singleshell_output-01
+          key: singleshell_output-02
       - run: *runinstall
       - run:
           name: Test the 3Tissue recon workflows
@@ -178,7 +195,9 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: singleshell_output-01
+          key: singleshell_output-02
+      - restore_cache:
+          key: custom_atlases-02
       - run: *runinstall
       - run:
           name: Test the 3Tissue recon workflows
@@ -202,7 +221,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: hsvs_data-01
+          key: hsvs_data-02
       - run: *runinstall
       - run:
           name: Test the HSVS recon workflows
@@ -226,7 +245,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multises_pre1_output-01
+          key: multises_pre1_output-02
       - run: *runinstall
       - run:
           name: Test reading multi-ses data
@@ -252,7 +271,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multises_post1_output-01
+          key: multises_post1_output-02
       - run: *runinstall
       - run:
           name: Test reading multi-ses data (post 1.0.0rc0)
@@ -278,13 +297,13 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Pytest the recon interfaces
           no_output_timeout: 1h
           command: |
-            pytest -rP -o log_cli=true -m "interfaces" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
+            pytest -rP -o log_cli=true --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
             mkdir /src/coverage
             mv /src/qsirecon/.coverage /src/coverage/.coverage.recon_interfaces
       - persist_to_workspace:
@@ -297,7 +316,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the CSD recon workflows
@@ -321,7 +340,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the AutoTrack workflow
@@ -345,7 +364,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the TORTOISE recon workflow
@@ -369,7 +388,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the DIPY recon workflows
@@ -393,7 +412,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the DIPY recon workflows
@@ -417,7 +436,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the PYAFQ standalone recon workflow
@@ -441,7 +460,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the PYAFQ workflow with mrtrix tractography
@@ -465,7 +484,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test scalar_mapping workflow
@@ -492,7 +511,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: singleshell_output-01
+          key: singleshell_output-02
       - run: *runinstall
       - run:
           name: Test the DIPY recon workflows
@@ -633,6 +652,13 @@ workflows:
             tags:
               only: /.*/
 
+      - download_custom_atlases:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+
       - Recon_3Tissue_Singleshell_ACT:
           requires:
             - download_singleshell_output
@@ -671,6 +697,7 @@ workflows:
       - Recon_3Tissue_Singleshell_NoACT:
           requires:
             - download_singleshell_output
+            - download_custom_atlases
           filters:
             tags:
               only: /.*/
