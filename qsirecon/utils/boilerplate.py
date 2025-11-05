@@ -64,6 +64,7 @@ def describe_atlases(atlases):
 def build_documentation(interface):
     """Build documentation for a given interface."""
     doc = ""
+    formatted_doc = ""
     input_traits = interface.inputs.class_editable_traits()
     for _trait in input_traits:
         _trait_obj = interface.inputs.class_traits()[_trait]
@@ -73,7 +74,7 @@ def build_documentation(interface):
             if isinstance(_trait_obj, traits.Bool) and not value:
                 continue
 
-            doc += interface.inputs.class_traits()[_trait].doc + "\n"
+            doc += interface.inputs.class_traits()[_trait].doc
             formatted_doc = doc.format(value=value)
 
     return formatted_doc
