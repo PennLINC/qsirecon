@@ -666,7 +666,7 @@ def _run_and_generate(test_name, parameters, test_main=False):
     # TODO: Add --clean-workdir param to CLI
     parameters.append("--stop-on-first-crash")
     parameters.append("--notrack")
-    parameters.append("-vv")
+    parameters.append("-vvvv")
 
     if test_main:
         # This runs, but for some reason doesn't count toward coverage.
