@@ -32,7 +32,12 @@ Outputs of *QSIRecon*
 Whole-brain parametric microstructure maps
 ******************************************
 
+Voxelwise models fits of dMRI data can be used to produce spatial maps where each voxel’s value reflects a specific property of the diffusion process.
+The multi-shell dMRI acquisition lends itself to a wide range of such dMRI models, which have different strengths and challenges in measuring specific aspects of the diffusion process.
+As each model often estimates several diffusion properties, at present these models yield over 40 whole-brain parametric microstructure maps per dMRI imaging session.
+Below we describe the four models that are fit as part of the qsirecon workflow and their associated scalar maps.
 
+TODO: add Restriction Spectrum Imaging (RSI; White et al., 2013) and Neurite Orientation Dispersion and Density Imaging (NODDI; Zhang et al., 2012) below?
 
 ******************************
 Diffusion tensor imaging (DTI)
