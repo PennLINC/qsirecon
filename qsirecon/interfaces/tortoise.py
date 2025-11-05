@@ -299,7 +299,7 @@ class _TORTOISEEstimatorInputSpec(TORTOISEInputSpec):
     bval_cutoff = traits.CInt(
         argstr="--bval_cutoff %d",
         desc="Maximum b-value volumes to use for tensor fitting. (Default: use all volumes)",
-        doc="A maximum b-value cutoff of b={value} was used."
+        doc="A maximum b-value cutoff of b={value} was used.",
     )
     inclusion_file = File(exists=True, argstr="--inclusion %s")
     voxelwise_bmat_file = File(
@@ -336,7 +336,7 @@ class _EstimateTensorInputSpec(_TORTOISEEstimatorInputSpec):
         usedefault=True,
         argstr="--write_CS %d",
         desc="Write the Chi-squred image?",
-        doc="The Chi-squared image was written."
+        doc="The Chi-squared image was written.",
     )
     noise_file = File(
         exists=True,
@@ -380,14 +380,15 @@ class _TensorMapCmdline(TORTOISEReconCommandLine):
 
 class _ComputeFAMapInputSpec(_TensorMapInputSpec):
     filter_outliers = traits.Bool(
-        True, 
-        usedefault=True, 
-        argstr="%d", 
+        True,
+        usedefault=True,
+        argstr="%d",
         position=2,
         doc="When calculating FA, negative eigenvalues were replaced with "
         "best estimate positive values. Affected voxels had their "
         "FA set to the median FA value of spatial neighbors. This imputation "
-        "was not performed when calculating other tensor maps.")
+        "was not performed when calculating other tensor maps.",
+    )
 
 
 class _ComputeFAMapOutputSpec(TraitedSpec):
@@ -440,11 +441,11 @@ class _EstimateMAPMRIInputSpec(_TORTOISEEstimatorInputSpec):
     )
     a0_file = File(exists=True, argstr="--A0 %s", desc="A0 image computed externally")
     map_order = traits.Int(
-        default_value=4, 
-        usedefault=True, 
-        argstr="--map_order %d", 
+        default_value=4,
+        usedefault=True,
+        argstr="--map_order %d",
         desc="MAPMRI order",
-        doc="MAPMRI order was set to {value}."
+        doc="MAPMRI order was set to {value}.",
     )
     big_delta = traits.CFloat(argstr="--big_delta %.7f", desc="Big Delta in seconds")
     small_delta = traits.CFloat(argstr="--small_delta %.7f", desc="Small Delta in seconds")

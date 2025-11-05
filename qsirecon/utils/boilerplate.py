@@ -1,5 +1,7 @@
 """Functions to generate boilerplate text for reports."""
+
 from nipype.interfaces.base import traits
+
 
 def list_to_str(lst):
     """Convert a list to a pretty string."""
@@ -65,11 +67,12 @@ def build_documentation(interface):
     input_traits = interface.inputs.class_editable_traits()
     for _trait in input_traits:
         _trait_obj = interface.inputs.class_traits()[_trait]
-        
-        if hasattr(interface.inputs.class_traits()[_trait], "doc"):
+
+        if hasattr(interface.inputs.class_traits()[_trait], "doc") and _trait_obj.doc is not None:
             value = getattr(interface.inputs, _trait)
             if isinstance(_trait_obj, traits.Bool) and not value:
                 continue
+
             doc += interface.inputs.class_traits()[_trait].doc + "\n"
             formatted_doc = doc.format(value=value)
 
