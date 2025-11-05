@@ -155,3 +155,10 @@ DKI and TORTOISE::
 If parcellation is enabled,
 the output directory will also contain an "atlases" directory containing a BIDS-Atlas dataset.
 See :ref:`connectivity_atlases` for more information on this output directory.
+
+
+**********
+References
+**********
+
+.. footbibliography::
