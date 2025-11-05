@@ -75,6 +75,18 @@ class ReconScalarsOutputSpec(TraitedSpec):
     scalar_info = traits.List()
 
 
+class ReconScalarsInputSpec(BaseInterfaceInputSpec):
+    source_file = File(exists=True, mandatory=True)
+    qsirecon_suffix = traits.Str(mandatory=True)
+    model_info = traits.Dict()
+    model_name = traits.Str()
+    dismiss_entities = traits.List([], usedefault=True)
+
+
+class ReconScalarsOutputSpec(TraitedSpec):
+    scalar_info = traits.List()
+
+
 class ReconScalars(SimpleInterface):
     input_spec = ReconScalarsInputSpec
     output_spec = ReconScalarsOutputSpec
@@ -88,97 +100,12 @@ class ReconScalars(SimpleInterface):
         "dismiss_entities",
     )
 
-    @staticmethod
-    def _create_dynamic_input_spec(scalar_config):
-        """Create a dynamic input spec class from a scalar config dictionary."""
-        # Create a unique class name based on the scalar config keys
-        # This ensures each unique config gets its own class name for better pickling
-        config_hash = hash(tuple(sorted(scalar_config.keys())))
-        class_name = f"DynamicReconScalarsInputSpec_{abs(config_hash)}"
-
-        # Check if we've already created this class (for caching and pickling)
-        module = sys.modules[__name__]
-        if not hasattr(module, class_name):
-            # Create namespace dict with __module__ set correctly
-            namespace = {"__module__": __name__}
-
-            # Create a dynamic input spec class with traits for each scalar
-            # Use types.new_class to ensure proper module handling
-            input_spec_class = types.new_class(
-                class_name,
-                (ReconScalarsInputSpec,),
-                {},
-                lambda ns: ns.update(namespace),
-            )
-
-            # Register in module namespace BEFORE adding traits
-            # This ensures pickle can find it even if Traits changes __module__
-            setattr(module, class_name, input_spec_class)
-
-            # Add traits for each scalar in the config
-            for input_name in scalar_config:
-                input_spec_class.add_class_trait(input_name, File(exists=True))
-
-                if input_name.endswith("_file"):
-                    metadata_input_name = input_name + "_metadata"
-                    input_spec_class.add_class_trait(metadata_input_name, traits.Dict())
-
-            # Force module to be correct after adding traits (Traits may override it)
-            type.__setattr__(input_spec_class, "__module__", __name__)
-            # Also ensure it's in the module's __dict__ for pickle
-            if class_name not in module.__dict__:
-                module.__dict__[class_name] = input_spec_class
-
-            # Register a custom pickling function for this class
-            # This ensures pickle can find it even if Traits changes __module__
-            # Use a callable class (which is picklable) instead of a closure
-            pickle_func = _DynamicInputSpecPickler(class_name, __name__)
-            copyreg.pickle(input_spec_class, pickle_func)
-        else:
-            # Use the existing class
-            input_spec_class = getattr(module, class_name)
-
-        return input_spec_class
-
-    def __init__(self, from_file=None, resource_monitor=None, scalar_config=None, **inputs):
-        # Extract scalar_config from inputs if provided
-        if scalar_config is None:
-            # Try to get from inputs dict (for backward compatibility)
-            scalar_config = inputs.pop("scalar_config", None)
-
-        # If scalar_config is provided, dynamically create input_spec and set scalar_metadata
-        if scalar_config is not None:
-            input_spec_class = self._create_dynamic_input_spec(scalar_config)
-            # Set input_spec and scalar_metadata as instance attributes
-            # These will override the class-level attributes
-            self.input_spec = input_spec_class
-            self.scalar_metadata = scalar_config
-
+    def __init__(self, from_file=None, resource_monitor=None, **inputs):
         # Get self._results defined
         super().__init__(from_file=from_file, resource_monitor=resource_monitor, **inputs)
 
         # Check that the input_spec matches the scalar_metadata
         self._validate_scalar_metadata()
-
-    def __setstate__(self, state):
-        """Recreate dynamic input_spec from scalar_metadata when unpickling."""
-        # Restore the instance state
-        self.__dict__.update(state)
-
-        # If we have scalar_metadata but the input_spec might be wrong (from placeholder),
-        # recreate the dynamic class
-        if hasattr(self, "scalar_metadata") and self.scalar_metadata:
-            # Check if the current input_spec is the placeholder or doesn't match
-            config_hash = hash(tuple(sorted(self.scalar_metadata.keys())))
-            expected_class_name = f"DynamicReconScalarsInputSpec_{abs(config_hash)}"
-
-            # If input_spec is the base class or doesn't match, recreate it
-            if (
-                self.input_spec is ReconScalarsInputSpec
-                or not hasattr(self.input_spec, "__name__")
-                or self.input_spec.__name__ != expected_class_name
-            ):
-                self.input_spec = self._create_dynamic_input_spec(self.scalar_metadata)
 
     def _validate_scalar_metadata(self):
         for input_key in self.inputs.editable_traits():
@@ -203,14 +130,12 @@ class ReconScalars(SimpleInterface):
         dismiss_entities = self.inputs.dismiss_entities + ["extension", "suffix"]
         source_file_bids = {k: v for k, v in source_file_bids.items() if k not in dismiss_entities}
 
-        # Get list of scalar file inputs
-        input_fields = self.inputs.editable_traits()
         file_traits = [
-            n for n in input_fields if n not in self._ignore_traits and not n.endswith("_metadata")
+            name for name in self.inputs.editable_traits() if name not in self._ignore_traits
         ]
+        file_traits = [name for name in file_traits if not name.endswith("_metadata")]
 
         for input_name in file_traits:
-            # Get the scalar file
             if not isdefined(inputs[input_name]):
                 continue
 
@@ -377,26 +302,135 @@ class ParcellationTableSplitterDataSink(SimpleInterface):
         return runtime
 
 
-# Scalar configuration dictionaries for different reconstruction methods
-# These can be passed to ReconScalars via the scalar_config parameter
-
 # Scalars produced in the TORTOISE recon workflow
 tortoise_scalars = load_yaml(load_data("scalars/tortoise.yaml"))
+
+
+class _TORTOISEReconScalarInputSpec(ReconScalarsInputSpec):
+    pass
+
+
+for input_name in tortoise_scalars:
+    _TORTOISEReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    if input_name.endswith("_file"):
+        _TORTOISEReconScalarInputSpec.add_class_trait(
+            input_name + "_metadata",
+            traits.Dict(),
+        )
+
+
+class TORTOISEReconScalars(ReconScalars):
+    input_spec = _TORTOISEReconScalarInputSpec
+    scalar_metadata = tortoise_scalars
+
 
 # Scalars produced in the AMICO recon workflow
 amico_scalars = load_yaml(load_data("scalars/amico_noddi.yaml"))
 
+
+class _AMICOReconScalarInputSpec(ReconScalarsInputSpec):
+    pass
+
+
+for input_name in amico_scalars:
+    _AMICOReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    if input_name.endswith("_file"):
+        _AMICOReconScalarInputSpec.add_class_trait(
+            input_name + "_metadata",
+            traits.Dict(),
+        )
+
+
+class AMICOReconScalars(ReconScalars):
+    input_spec = _AMICOReconScalarInputSpec
+    scalar_metadata = amico_scalars
+
+
 # Scalars produced by DSI Studio
 dsistudio_scalars = load_yaml(load_data("scalars/dsistudio_gqi.yaml"))
 
-# DIPY DKI scalars
+
+class _DSIStudioReconScalarInputSpec(ReconScalarsInputSpec):
+    pass
+
+
+for input_name in dsistudio_scalars:
+    _DSIStudioReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    if input_name.endswith("_file"):
+        _DSIStudioReconScalarInputSpec.add_class_trait(
+            input_name + "_metadata",
+            traits.Dict(),
+        )
+
+
+class DSIStudioReconScalars(ReconScalars):
+    input_spec = _DSIStudioReconScalarInputSpec
+    scalar_metadata = dsistudio_scalars
+
+
 dipy_dki_scalars = load_yaml(load_data("scalars/dipy_dki.yaml"))
+
+
+class _DIPYDKIReconScalarInputSpec(ReconScalarsInputSpec):
+    pass
+
+
+for input_name in dipy_dki_scalars:
+    _DIPYDKIReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    if input_name.endswith("_file"):
+        _DIPYDKIReconScalarInputSpec.add_class_trait(
+            input_name + "_metadata",
+            traits.Dict(),
+        )
+
+
+class DIPYDKIReconScalars(ReconScalars):
+    input_spec = _DIPYDKIReconScalarInputSpec
+    scalar_metadata = dipy_dki_scalars
+
 
 # DIPY implementation of MAPMRI
 dipy_mapmri_scalars = load_yaml(load_data("scalars/dipy_mapmri.yaml"))
 
+
+class _DIPYMAPMRIReconScalarInputSpec(ReconScalarsInputSpec):
+    pass
+
+
+for input_name in dipy_mapmri_scalars:
+    _DIPYMAPMRIReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    if input_name.endswith("_file"):
+        _DIPYMAPMRIReconScalarInputSpec.add_class_trait(
+            input_name + "_metadata",
+            traits.Dict(),
+        )
+
+
+class DIPYMAPMRIReconScalars(ReconScalars):
+    input_spec = _DIPYMAPMRIReconScalarInputSpec
+    scalar_metadata = dipy_mapmri_scalars
+
+
 # Same as DIPY implementation of 3dSHORE, but with brainsuite bases
 brainsuite_3dshore_scalars = load_yaml(load_data("scalars/brainsuite_3dshore.yaml"))
+
+
+class _BrainSuite3dSHOREReconScalarInputSpec(ReconScalarsInputSpec):
+    pass
+
+
+for input_name in brainsuite_3dshore_scalars:
+    _BrainSuite3dSHOREReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    if input_name.endswith("_file"):
+        _BrainSuite3dSHOREReconScalarInputSpec.add_class_trait(
+            input_name + "_metadata",
+            traits.Dict(),
+        )
+
+
+class BrainSuite3dSHOREReconScalars(ReconScalars):
+    input_spec = _BrainSuite3dSHOREReconScalarInputSpec
+    scalar_metadata = brainsuite_3dshore_scalars
 
 
 class _OrganizeScalarDataInputSpec(BaseInterfaceInputSpec):

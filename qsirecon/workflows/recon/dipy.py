@@ -24,10 +24,9 @@ from ...interfaces.dipy import (
 )
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import (
-    ReconScalars,
-    brainsuite_3dshore_scalars,
-    dipy_dki_scalars,
-    dipy_mapmri_scalars,
+    BrainSuite3dSHOREReconScalars,
+    DIPYDKIReconScalars,
+    DIPYMAPMRIReconScalars,
 )
 from ...interfaces.reports import CLIReconPeaksReport, ScalarReport
 from ...utils.bids import clean_datasinks
@@ -174,7 +173,7 @@ def init_dipy_brainsuite_shore_recon_wf(
 
     recon_shore = pe.Node(BrainSuiteShoreReconstruction(**params), name="recon_shore")
     recon_scalars = pe.Node(
-        ReconScalars(scalar_config=brainsuite_3dshore_scalars, qsirecon_suffix="name"),
+        BrainSuite3dSHOREReconScalars(qsirecon_suffix="name"),
         name="recon_scalars",
         run_without_submitting=True,
     )
@@ -498,9 +497,7 @@ def init_dipy_mapmri_recon_wf(
     omp_nthreads = config.nipype.omp_nthreads
     recon_map = pe.Node(MAPMRIReconstruction(**params), name="recon_map")
     recon_scalars = pe.Node(
-        ReconScalars(
-            scalar_config=dipy_mapmri_scalars, dismiss_entities=["desc"], qsirecon_suffix=name
-        ),
+        DIPYMAPMRIReconScalars(dismiss_entities=["desc"], qsirecon_suffix=name),
         name="recon_scalars",
         run_without_submitting=True,
     )
@@ -695,7 +692,7 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
         name="outputnode",
     )
     recon_scalars = pe.Node(
-        ReconScalars(scalar_config=dipy_dki_scalars, qsirecon_suffix=qsirecon_suffix),
+        DIPYDKIReconScalars(qsirecon_suffix=qsirecon_suffix),
         run_without_submitting=True,
         name="recon_scalars",
     )

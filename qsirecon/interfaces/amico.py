@@ -127,9 +127,9 @@ class AmicoReconInterface(SimpleInterface):
 
 
 class NODDIInputSpec(AmicoInputSpec):
-    dPar = traits.Float(mandatory=True)
-    dIso = traits.Float(mandatory=True)
-    isExvivo = traits.Bool(False, usedefault=True)
+    dPar = traits.Float(mandatory=True, desc="Parallel diffusivity")
+    dIso = traits.Float(mandatory=True, desc="Isotropic diffusivity")
+    isExvivo = traits.Bool(False, usedefault=True, desc="Whether the data is ex vivo")
     num_threads = traits.Int(1, usedefault=True, nohash=True)
 
 
@@ -233,9 +233,9 @@ class NODDI(AmicoReconInterface):
                     "Model": {
                         "Description": "AMICO NODDI",
                         "Parameters": {
-                            "dPar": self.inputs.dPar,
-                            "dIso": self.inputs.dIso,
-                            "isExvivo": self.inputs.isExvivo,
+                            "ParallelDiffusivity": self.inputs.dPar,
+                            "IsotropicDiffusivity": self.inputs.dIso,
+                            "IsExVivo": self.inputs.isExvivo,
                         },
                     },
                 }
