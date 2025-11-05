@@ -211,3 +211,4 @@ References
 **********
 
 .. bibliography::
+   :style: unsrt
