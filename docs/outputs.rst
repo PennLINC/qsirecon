@@ -43,7 +43,27 @@ TODO: add Restriction Spectrum Imaging (RSI; :cite:`white2013rsi`) and Neurite O
 Diffusion tensor imaging (DTI)
 ******************************
 
-
+The diffusion tensor model :footcite:p:`basser1994a` provides a simple way to describe 
+Gaussian diffusion in a voxel. 
+The tensor model has been used extensively in the human brain :footcite:p:`pierpaoli1996` 
+including developmental neuroscience, with large known effects of increasing FA and 
+decreasing MD with age :footcite:p:`qiu2015`. 
+The eigenvectors and eigenvalues from the fitted tensor are used to calculate widely used 
+scalar maps such as fractional anisotropy (FA), mean diffusivity (MD), axial diffusivity (AD) 
+and radial diffusivity (RD). 
+When fitting tensors, we adopt the approach from the 
+`Adolescent Brain and Cognitive Development <https://abcdstudy.org/>`_ study :footcite:p:`hagler2019` 
+and perform multiple separate fits. 
+One fit used only the low-b (b≤1000) inner shells, where the assumptions of the tensor 
+model are most valid :footcite:p:`desantis2011` and the results will be more similar to legacy 
+single shell studies. The second fit used all available data (e.g., "full shell") as in 
+:footcite:p:`pines2020`. The inner shell tensor fit is computed twice: once in DSI Studio 
+using ordinary least squares and again in TORTOISE using weighted linear least 
+squares :footcite:p:`basser1994b`, where tensor parameter estimation weights observations 
+by values proportional to their estimated SNR. 
+The full shell fit is only done in TORTOISE with weighted linear least squares. 
+Comparisons between full and inner shells should be done using the maps estimated by TORTOISE, 
+while comparisons of tensor fitting methods can be done with DSI Studio and TORTOISE inner shell fits.
 
 ********************************
 Diffusion kurtosis imaging (DKI)
