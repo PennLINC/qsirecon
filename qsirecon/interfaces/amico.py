@@ -228,7 +228,7 @@ class NODDI(AmicoReconInterface):
         for file_output in file_outputs:
             # Patch in model and parameter information to metadata dictionaries
             metadata_output = file_output + "_metadata"
-            if metadata_output in self._results:
+            if metadata_output in self.output_spec().get():
                 outputs[metadata_output] = {
                     "Model": {
                         "Description": "AMICO NODDI",
