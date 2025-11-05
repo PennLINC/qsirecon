@@ -399,7 +399,11 @@ suppress_warnings = ["image.nonlocal_uri"]
 # -----------------------------------------------------------------------------
 # sphinxcontrib-bibtex
 # -----------------------------------------------------------------------------
-bibtex_bibfiles = ["../qsirecon/data/boilerplate.bib"]
+bibtex_bibfiles = [
+    "../qsirecon/data/boilerplate.bib",
+    "../qsirecon/data/parker.bib",
+    "../qsirecon/data/tien.bib",
+]
 bibtex_style = "unsrt"
 bibtex_reference_style = "author_year"
 bibtex_footbibliography_header = ""
