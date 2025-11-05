@@ -8,9 +8,13 @@ Classes that collect scalar images and metadata from Recon Workflows
 
 
 """
+import copyreg
 import itertools
 import json
 import os
+import sys
+import types
+import warnings
 
 import nibabel as nb
 import numpy as np
@@ -33,6 +37,22 @@ from ..utils.bids import _get_bidsuris
 from ..utils.misc import load_yaml
 from .bids import get_recon_output_name
 from qsirecon.data import load as load_data
+
+
+def _unpickle_dynamic_input_spec(name, module_name):
+    """Unpickle function for dynamically created input spec classes."""
+    mod = __import__(module_name, fromlist=[name])
+    return getattr(mod, name)
+
+
+class _DynamicInputSpecPickler:
+    """Pickler for dynamically created input spec classes."""
+    def __init__(self, class_name, module_name):
+        self.class_name = class_name
+        self.module_name = module_name
+
+    def __call__(self, cls):
+        return (_unpickle_dynamic_input_spec, (self.class_name, self.module_name))
 
 
 class ReconScalarsInputSpec(BaseInterfaceInputSpec):
@@ -68,15 +88,52 @@ class ReconScalars(SimpleInterface):
 
         # If scalar_config is provided, dynamically create input_spec and set scalar_metadata
         if scalar_config is not None:
-            # Create a dynamic input spec class with traits for each scalar
-            input_spec_class = type("DynamicReconScalarsInputSpec", (ReconScalarsInputSpec,), {})
-            # Add traits for each scalar in the config
-            for input_name in scalar_config:
-                input_spec_class.add_class_trait(input_name, File(exists=True))
+            # Create a unique class name based on the scalar config keys
+            # This ensures each unique config gets its own class name for better pickling
+            config_hash = hash(tuple(sorted(scalar_config.keys())))
+            class_name = f"DynamicReconScalarsInputSpec_{abs(config_hash)}"
 
-                if input_name.endswith("_file"):
-                    metadata_input_name = input_name + "_metadata"
-                    input_spec_class.add_class_trait(metadata_input_name, traits.Dict())
+            # Check if we've already created this class (for caching and pickling)
+            module = sys.modules[__name__]
+            if not hasattr(module, class_name):
+                # Create namespace dict with __module__ set correctly
+                namespace = {"__module__": __name__}
+
+                # Create a dynamic input spec class with traits for each scalar
+                # Use types.new_class to ensure proper module handling
+                input_spec_class = types.new_class(
+                    class_name,
+                    (ReconScalarsInputSpec,),
+                    {},
+                    lambda ns: ns.update(namespace),
+                )
+
+                # Register in module namespace BEFORE adding traits
+                # This ensures pickle can find it even if Traits changes __module__
+                setattr(module, class_name, input_spec_class)
+
+                # Add traits for each scalar in the config
+                for input_name in scalar_config:
+                    input_spec_class.add_class_trait(input_name, File(exists=True))
+
+                    if input_name.endswith("_file"):
+                        metadata_input_name = input_name + "_metadata"
+                        input_spec_class.add_class_trait(metadata_input_name, traits.Dict())
+
+                # Force module to be correct after adding traits (Traits may override it)
+                type.__setattr__(input_spec_class, "__module__", __name__)
+                # Also ensure it's in the module's __dict__ for pickle
+                if class_name not in module.__dict__:
+                    module.__dict__[class_name] = input_spec_class
+
+                # Register a custom pickling function for this class
+                # This ensures pickle can find it even if Traits changes __module__
+                # Use a callable class (which is picklable) instead of a closure
+                pickle_func = _DynamicInputSpecPickler(class_name, __name__)
+                copyreg.pickle(input_spec_class, pickle_func)
+            else:
+                # Use the existing class
+                input_spec_class = getattr(module, class_name)
 
             # Set input_spec and scalar_metadata as instance attributes
             # These will override the class-level attributes
@@ -113,9 +170,9 @@ class ReconScalars(SimpleInterface):
         source_file_bids = {k: v for k, v in source_file_bids.items() if k not in dismiss_entities}
 
         # Get list of scalar file inputs
-        inputs = self.inputs.editable_traits()
+        input_fields = self.inputs.editable_traits()
         file_traits = [
-            n for n in inputs if n not in self._ignore_traits and not n.endswith("_metadata")
+            n for n in input_fields if n not in self._ignore_traits and not n.endswith("_metadata")
         ]
 
         for input_name in file_traits:
