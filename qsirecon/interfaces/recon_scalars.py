@@ -41,7 +41,15 @@ from qsirecon.data import load as load_data
 def _unpickle_dynamic_input_spec(name, module_name):
     """Unpickle function for dynamically created input spec classes."""
     mod = __import__(module_name, fromlist=[name])
-    return getattr(mod, name)
+    try:
+        return getattr(mod, name)
+    except AttributeError:
+        # If the class doesn't exist in this process, it will be created
+        # when the ReconScalars node is instantiated. For now, return a
+        # placeholder that will be replaced during node initialization.
+        # This prevents the worker process from crashing during unpickling.
+        # The actual class will be created when __init__ is called with scalar_config.
+        return ReconScalarsInputSpec
 
 
 class _DynamicInputSpecPickler:
@@ -80,6 +88,58 @@ class ReconScalars(SimpleInterface):
         "dismiss_entities",
     )
 
+    @staticmethod
+    def _create_dynamic_input_spec(scalar_config):
+        """Create a dynamic input spec class from a scalar config dictionary."""
+        # Create a unique class name based on the scalar config keys
+        # This ensures each unique config gets its own class name for better pickling
+        config_hash = hash(tuple(sorted(scalar_config.keys())))
+        class_name = f"DynamicReconScalarsInputSpec_{abs(config_hash)}"
+
+        # Check if we've already created this class (for caching and pickling)
+        module = sys.modules[__name__]
+        if not hasattr(module, class_name):
+            # Create namespace dict with __module__ set correctly
+            namespace = {"__module__": __name__}
+
+            # Create a dynamic input spec class with traits for each scalar
+            # Use types.new_class to ensure proper module handling
+            input_spec_class = types.new_class(
+                class_name,
+                (ReconScalarsInputSpec,),
+                {},
+                lambda ns: ns.update(namespace),
+            )
+
+            # Register in module namespace BEFORE adding traits
+            # This ensures pickle can find it even if Traits changes __module__
+            setattr(module, class_name, input_spec_class)
+
+            # Add traits for each scalar in the config
+            for input_name in scalar_config:
+                input_spec_class.add_class_trait(input_name, File(exists=True))
+
+                if input_name.endswith("_file"):
+                    metadata_input_name = input_name + "_metadata"
+                    input_spec_class.add_class_trait(metadata_input_name, traits.Dict())
+
+            # Force module to be correct after adding traits (Traits may override it)
+            type.__setattr__(input_spec_class, "__module__", __name__)
+            # Also ensure it's in the module's __dict__ for pickle
+            if class_name not in module.__dict__:
+                module.__dict__[class_name] = input_spec_class
+
+            # Register a custom pickling function for this class
+            # This ensures pickle can find it even if Traits changes __module__
+            # Use a callable class (which is picklable) instead of a closure
+            pickle_func = _DynamicInputSpecPickler(class_name, __name__)
+            copyreg.pickle(input_spec_class, pickle_func)
+        else:
+            # Use the existing class
+            input_spec_class = getattr(module, class_name)
+
+        return input_spec_class
+
     def __init__(self, from_file=None, resource_monitor=None, scalar_config=None, **inputs):
         # Extract scalar_config from inputs if provided
         if scalar_config is None:
@@ -88,53 +148,7 @@ class ReconScalars(SimpleInterface):
 
         # If scalar_config is provided, dynamically create input_spec and set scalar_metadata
         if scalar_config is not None:
-            # Create a unique class name based on the scalar config keys
-            # This ensures each unique config gets its own class name for better pickling
-            config_hash = hash(tuple(sorted(scalar_config.keys())))
-            class_name = f"DynamicReconScalarsInputSpec_{abs(config_hash)}"
-
-            # Check if we've already created this class (for caching and pickling)
-            module = sys.modules[__name__]
-            if not hasattr(module, class_name):
-                # Create namespace dict with __module__ set correctly
-                namespace = {"__module__": __name__}
-
-                # Create a dynamic input spec class with traits for each scalar
-                # Use types.new_class to ensure proper module handling
-                input_spec_class = types.new_class(
-                    class_name,
-                    (ReconScalarsInputSpec,),
-                    {},
-                    lambda ns: ns.update(namespace),
-                )
-
-                # Register in module namespace BEFORE adding traits
-                # This ensures pickle can find it even if Traits changes __module__
-                setattr(module, class_name, input_spec_class)
-
-                # Add traits for each scalar in the config
-                for input_name in scalar_config:
-                    input_spec_class.add_class_trait(input_name, File(exists=True))
-
-                    if input_name.endswith("_file"):
-                        metadata_input_name = input_name + "_metadata"
-                        input_spec_class.add_class_trait(metadata_input_name, traits.Dict())
-
-                # Force module to be correct after adding traits (Traits may override it)
-                type.__setattr__(input_spec_class, "__module__", __name__)
-                # Also ensure it's in the module's __dict__ for pickle
-                if class_name not in module.__dict__:
-                    module.__dict__[class_name] = input_spec_class
-
-                # Register a custom pickling function for this class
-                # This ensures pickle can find it even if Traits changes __module__
-                # Use a callable class (which is picklable) instead of a closure
-                pickle_func = _DynamicInputSpecPickler(class_name, __name__)
-                copyreg.pickle(input_spec_class, pickle_func)
-            else:
-                # Use the existing class
-                input_spec_class = getattr(module, class_name)
-
+            input_spec_class = self._create_dynamic_input_spec(scalar_config)
             # Set input_spec and scalar_metadata as instance attributes
             # These will override the class-level attributes
             self.input_spec = input_spec_class
@@ -145,6 +159,24 @@ class ReconScalars(SimpleInterface):
 
         # Check that the input_spec matches the scalar_metadata
         self._validate_scalar_metadata()
+
+    def __setstate__(self, state):
+        """Recreate dynamic input_spec from scalar_metadata when unpickling."""
+        # Restore the instance state
+        self.__dict__.update(state)
+
+        # If we have scalar_metadata but the input_spec might be wrong (from placeholder),
+        # recreate the dynamic class
+        if hasattr(self, 'scalar_metadata') and self.scalar_metadata:
+            # Check if the current input_spec is the placeholder or doesn't match
+            config_hash = hash(tuple(sorted(self.scalar_metadata.keys())))
+            expected_class_name = f"DynamicReconScalarsInputSpec_{abs(config_hash)}"
+
+            # If input_spec is the base class or doesn't match, recreate it
+            if (self.input_spec is ReconScalarsInputSpec or
+                not hasattr(self.input_spec, '__name__') or
+                self.input_spec.__name__ != expected_class_name):
+                self.input_spec = self._create_dynamic_input_spec(self.scalar_metadata)
 
     def _validate_scalar_metadata(self):
         for input_key in self.inputs.editable_traits():
