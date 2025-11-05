@@ -60,7 +60,33 @@ class ReconScalars(SimpleInterface):
         "dismiss_entities",
     )
 
-    def __init__(self, from_file=None, resource_monitor=None, **inputs):
+    def __init__(self, from_file=None, resource_monitor=None, scalar_config=None, **inputs):
+        # Extract scalar_config from inputs if provided
+        if scalar_config is None:
+            # Try to get from inputs dict (for backward compatibility)
+            scalar_config = inputs.pop("scalar_config", None)
+
+        # If scalar_config is provided, dynamically create input_spec and set scalar_metadata
+        if scalar_config is not None:
+            # Create a dynamic input spec class with traits for each scalar
+            input_spec_class = type(
+                "DynamicReconScalarsInputSpec",
+                (ReconScalarsInputSpec,),
+                {}
+            )
+            # Add traits for each scalar in the config
+            for input_name in scalar_config:
+                input_spec_class.add_class_trait(input_name, File(exists=True))
+
+                if input_name.endswith("_file"):
+                    metadata_input_name = input_name + "_metadata"
+                    input_spec_class.add_class_trait(metadata_input_name, traits.Dict())
+
+            # Set input_spec and scalar_metadata as instance attributes
+            # These will override the class-level attributes
+            self.input_spec = input_spec_class
+            self.scalar_metadata = scalar_config
+
         # Get self._results defined
         super().__init__(from_file=from_file, resource_monitor=resource_monitor, **inputs)
 
@@ -71,7 +97,7 @@ class ReconScalars(SimpleInterface):
         for input_key in self.inputs.editable_traits():
             if input_key in self._ignore_traits:
                 continue
-            if input_key not in self.scalar_metadata:
+            if input_key not in self.scalar_metadata and not input_key.endswith("_metadata"):
                 raise Exception(
                     f"No entry found for {input_key} in ``scalar_metadata`` in this class."
                 )
@@ -89,13 +115,24 @@ class ReconScalars(SimpleInterface):
         dismiss_entities = self.inputs.dismiss_entities + ["extension", "suffix"]
         source_file_bids = {k: v for k, v in source_file_bids.items() if k not in dismiss_entities}
 
+        # Get list of scalar file inputs
         file_traits = [
             name for name in self.inputs.editable_traits() if name not in self._ignore_traits
         ]
+        # Ignore metadata input names
+        file_traits = [name for name in file_traits if not name.endswith("_metadata")]
 
         for input_name in file_traits:
+            # Get the scalar file
             if not isdefined(inputs[input_name]):
                 continue
+
+            # Get the run-specific metadata for the scalar file
+            if isdefined(inputs[input_name + "_metadata"]):
+                metadata = inputs[input_name + "_metadata"]
+            else:
+                metadata = {}
+
             result = self.scalar_metadata[input_name].copy()
             result["path"] = os.path.abspath(inputs[input_name])
             result["qsirecon_suffix"] = self.inputs.qsirecon_suffix
@@ -107,7 +144,12 @@ class ReconScalars(SimpleInterface):
                 raise Exception(
                     f"BIDS fields for {input_name} conflict with source file BIDS {bids_overlap}"
                 )
+
+            # Update the metadata with the run-specific metadata
+            result["metadata"].update(metadata)
+
             results.append(result)
+
         self._results["scalar_info"] = results
         return runtime
 
@@ -248,105 +290,26 @@ class ParcellationTableSplitterDataSink(SimpleInterface):
         return runtime
 
 
+# Scalar configuration dictionaries for different reconstruction methods
+# These can be passed to ReconScalars via the scalar_config parameter
+
 # Scalars produced in the TORTOISE recon workflow
 tortoise_scalars = load_yaml(load_data("scalars/tortoise.yaml"))
-
-
-class _TORTOISEReconScalarInputSpec(ReconScalarsInputSpec):
-    pass
-
-
-for input_name in tortoise_scalars:
-    _TORTOISEReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
-
-
-class TORTOISEReconScalars(ReconScalars):
-    input_spec = _TORTOISEReconScalarInputSpec
-    scalar_metadata = tortoise_scalars
-
 
 # Scalars produced in the AMICO recon workflow
 amico_scalars = load_yaml(load_data("scalars/amico_noddi.yaml"))
 
-
-class _AMICOReconScalarInputSpec(ReconScalarsInputSpec):
-    pass
-
-
-for input_name in amico_scalars:
-    _AMICOReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
-
-
-class AMICOReconScalars(ReconScalars):
-    input_spec = _AMICOReconScalarInputSpec
-    scalar_metadata = amico_scalars
-
-
 # Scalars produced by DSI Studio
 dsistudio_scalars = load_yaml(load_data("scalars/dsistudio_gqi.yaml"))
 
-
-class _DSIStudioReconScalarInputSpec(ReconScalarsInputSpec):
-    pass
-
-
-for input_name in dsistudio_scalars:
-    _DSIStudioReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
-
-
-class DSIStudioReconScalars(ReconScalars):
-    input_spec = _DSIStudioReconScalarInputSpec
-    scalar_metadata = dsistudio_scalars
-
-
+# DIPY DKI scalars
 dipy_dki_scalars = load_yaml(load_data("scalars/dipy_dki.yaml"))
-
-
-class _DIPYDKIReconScalarInputSpec(ReconScalarsInputSpec):
-    pass
-
-
-for input_name in dipy_dki_scalars:
-    _DIPYDKIReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
-
-
-class DIPYDKIReconScalars(ReconScalars):
-    input_spec = _DIPYDKIReconScalarInputSpec
-    scalar_metadata = dipy_dki_scalars
-
 
 # DIPY implementation of MAPMRI
 dipy_mapmri_scalars = load_yaml(load_data("scalars/dipy_mapmri.yaml"))
 
-
-class _DIPYMAPMRIReconScalarInputSpec(ReconScalarsInputSpec):
-    pass
-
-
-for input_name in dipy_mapmri_scalars:
-    _DIPYMAPMRIReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
-
-
-class DIPYMAPMRIReconScalars(ReconScalars):
-    input_spec = _DIPYMAPMRIReconScalarInputSpec
-    scalar_metadata = dipy_mapmri_scalars
-
-
 # Same as DIPY implementation of 3dSHORE, but with brainsuite bases
 brainsuite_3dshore_scalars = load_yaml(load_data("scalars/brainsuite_3dshore.yaml"))
-
-
-class _BrainSuite3dSHOREReconScalarInputSpec(ReconScalarsInputSpec):
-    pass
-
-
-for input_name in brainsuite_3dshore_scalars:
-    _BrainSuite3dSHOREReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
-
-
-class BrainSuite3dSHOREReconScalars(ReconScalars):
-    input_spec = _BrainSuite3dSHOREReconScalarInputSpec
-    scalar_metadata = brainsuite_3dshore_scalars
 
 
 class _OrganizeScalarDataInputSpec(BaseInterfaceInputSpec):

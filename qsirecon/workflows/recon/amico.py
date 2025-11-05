@@ -15,7 +15,7 @@ from ...interfaces.amico import NODDI, NODDITissueFraction
 from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.converters import NODDItoFIBGZ
 from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.recon_scalars import AMICOReconScalars
+from ...interfaces.recon_scalars import ReconScalars, amico_scalars
 from ...interfaces.reports import CLIReconPeaksReport, ScalarReport
 from ...utils.bids import clean_datasinks
 from ...utils.misc import load_yaml
@@ -104,7 +104,7 @@ diffusivity.""" % (
 were also computed (@parker2021not)."""
 
     recon_scalars = pe.Node(
-        AMICOReconScalars(dismiss_entities=["desc"], qsirecon_suffix=qsirecon_suffix),
+        ReconScalars(scalar_config=amico_scalars, dismiss_entities=["desc"], qsirecon_suffix=qsirecon_suffix),
         name="recon_scalars",
         run_without_submitting=True,
     )

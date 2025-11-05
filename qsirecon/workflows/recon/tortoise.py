@@ -16,7 +16,7 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ... import config
 from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.recon_scalars import TORTOISEReconScalars
+from ...interfaces.recon_scalars import ReconScalars, tortoise_scalars
 from ...interfaces.reports import ScalarReport
 from ...utils.bids import clean_datasinks
 from .utils import init_scalar_output_wf
@@ -96,7 +96,7 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
     )
     workflow = Workflow(name=name)
     recon_scalars = pe.Node(
-        TORTOISEReconScalars(qsirecon_suffix=qsirecon_suffix), name="recon_scalars"
+        ReconScalars(scalar_config=tortoise_scalars, qsirecon_suffix=qsirecon_suffix), name="recon_scalars"
     )
     omp_nthreads = config.nipype.omp_nthreads
     desc = (

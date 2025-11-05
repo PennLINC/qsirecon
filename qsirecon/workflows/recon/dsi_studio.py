@@ -35,7 +35,7 @@ from ...interfaces.dsi_studio import (
     _get_dsi_studio_bundles,
 )
 from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.recon_scalars import DSIStudioReconScalars
+from ...interfaces.recon_scalars import ReconScalars, dsistudio_scalars
 from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport, ScalarReport
 from ...utils.bids import clean_datasinks
 from ...utils.misc import remove_non_alphanumeric
@@ -696,7 +696,7 @@ def init_dsi_studio_export_wf(
     workflow = pe.Workflow(name=name)
     export = pe.Node(DSIStudioExport(to_export=",".join(scalar_names)), name="export")
     recon_scalars = pe.Node(
-        DSIStudioReconScalars(qsirecon_suffix=qsirecon_suffix), name="recon_scalars", n_procs=1
+        ReconScalars(scalar_config=dsistudio_scalars, qsirecon_suffix=qsirecon_suffix), name="recon_scalars", n_procs=1
     )
     fixhdr_nodes = {}
     for scalar_name in scalar_names:
