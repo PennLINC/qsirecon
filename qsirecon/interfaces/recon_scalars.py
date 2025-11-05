@@ -14,7 +14,6 @@ import json
 import os
 import sys
 import types
-import warnings
 
 import nibabel as nb
 import numpy as np
@@ -47,6 +46,7 @@ def _unpickle_dynamic_input_spec(name, module_name):
 
 class _DynamicInputSpecPickler:
     """Pickler for dynamically created input spec classes."""
+
     def __init__(self, class_name, module_name):
         self.class_name = class_name
         self.module_name = module_name
@@ -181,10 +181,10 @@ class ReconScalars(SimpleInterface):
                 continue
 
             # Get the run-specific metadata for the scalar file
-            if isdefined(inputs[input_name + "_metadata"]):
-                metadata = inputs[input_name + "_metadata"]
-            else:
-                metadata = {}
+            metadata_name = input_name + "_metadata"
+            metadata = inputs.get(metadata_name, {})
+            # account for Undefined or None values
+            metadata = metadata or {}
 
             result = self.scalar_metadata[input_name].copy()
             result["path"] = os.path.abspath(inputs[input_name])
