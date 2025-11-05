@@ -22,6 +22,8 @@ from nipype.interfaces.base import (
 )
 from nipype.utils.filemanip import fname_presuffix
 
+from ..utils.boilerplate import ConditionalDoc
+
 LOGGER = logging.getLogger("nipype.interface")
 
 SLOPPY_DRBUDDI = (
@@ -299,7 +301,9 @@ class _TORTOISEEstimatorInputSpec(TORTOISEInputSpec):
     bval_cutoff = traits.CInt(
         argstr="--bval_cutoff %d",
         desc="Maximum b-value volumes to use for tensor fitting. (Default: use all volumes)",
-        doc="A maximum b-value cutoff of b={value} was used.",
+        doc=ConditionalDoc(
+            "A maximum b-value cutoff of b={value} was used.",
+            if_false="All b-values were used for tensor fitting."),
     )
     inclusion_file = File(exists=True, argstr="--inclusion %s")
     voxelwise_bmat_file = File(
@@ -323,20 +327,22 @@ class _EstimateTensorInputSpec(_TORTOISEEstimatorInputSpec):
         "DIAG: Diagonal Only NLLS, "
         "N2: Full diffusion tensor + free water NLLS, "
         "NT2: One full parenchymal diffusion tensor + one full flow tensor",
-        doc="Tensor fitting was performed with {value} regularization.",
+        doc=ConditionalDoc("Tensor fitting was performed with {value} regularization."),
     )
     free_water_diffusivity = traits.CInt(
         default_value=3000,
         argstr="--free_water_diffusivity %d",
         desc="Free water diffusivity in (mu m)^2/s for N2 fitting.",
-        doc="Free water diffusivity was set to {value} (mu m)^2/s.",
+        doc=ConditionalDoc(
+            "Free water diffusivity was set to {value} (mu m)^2/s.",
+            if_false="Free water diffusivity was set to the TORTOISE default of 3000 (mu m)^2/s."),
     )
     write_cs = traits.Bool(
         default_value=True,
         usedefault=True,
         argstr="--write_CS %d",
         desc="Write the Chi-squred image?",
-        doc="The Chi-squared image was written.",
+        doc=ConditionalDoc("The Chi-squared image was written."),
     )
     noise_file = File(
         exists=True,
