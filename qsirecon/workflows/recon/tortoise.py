@@ -19,6 +19,7 @@ from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import TORTOISEReconScalars
 from ...interfaces.reports import ScalarReport
 from ...utils.bids import clean_datasinks
+from ...utils.boilerplate import build_documentation
 from .utils import init_scalar_output_wf
 from qsirecon.interfaces.tortoise import (
     ComputeADMap,
@@ -140,16 +141,20 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
         estimate_tensor = pe.Node(
             EstimateTensor(**tensor_opts), name="estimate_tensor", n_procs=omp_nthreads
         )
-        desc += (
-            "A diffusion tensor model was fit using ``EstimateTensor`` "
-            "with {} regularization. ".format(tensor_opts.get("reg_mode", "WLLS"))
-        )
+
+        # Model description
+        desc += "A diffusion tensor model was fit using ``EstimateTensor`` "
+        desc += build_documentation(estimate_tensor)
 
         # Set up datasinks
         compute_dt_fa = pe.Node(ComputeFAMap(), name="compute_dt_fa")
+        desc += build_documentation(compute_dt_fa)
         compute_dt_rd = pe.Node(ComputeRDMap(), name="compute_dt_rd")
+        desc += build_documentation(compute_dt_rd)
         compute_dt_ad = pe.Node(ComputeADMap(), name="compute_dt_ad")
+        desc += build_documentation(compute_dt_ad)
         compute_dt_li = pe.Node(ComputeLIMap(), name="compute_dt_li")
+        desc += build_documentation(compute_dt_li)
         workflow.connect([
             (tortoise_convert, estimate_tensor, [
                 ("dwi_file", "in_file"),
