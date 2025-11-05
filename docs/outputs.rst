@@ -82,25 +82,6 @@ DKI’s sensitivity to non-Gaussian diffusion makes it useful for capturing the 
 Mean Apparent Propagator MRI (MAPMRI)
 *************************************
 
-<<<<<<< HEAD
-The Mean Apparent Propagator (MAPMRI) method :footcite:p:`ozarslan2013` is a model-free
-approach that captures complex water diffusion. As a matter of practice, a diffusion tensor
-is first computed (using just the inner shells (b<1250), saved as an output) to determine the
-coordinate framework in which the ensemble average diffusion propagator (EAP) is to be estimated
-in three dimensions by a combination of Hermite and Legendre polynomials. MAPMRI is estimated in
-TORTOISE :footcite:p:`irfanoglu2025` and maps are derived for multiple EAP-related properties.
-One set of maps captures the probability of a water molecule returning to its origin (RTOP)
-(which is inversely proportional to the pore size), to its principal axis (RTAP), or the plane
-perpendicular to the principal axis (RTPP) (which is inversely proportional to the analog of
-radial diffusivity). Furthermore, non-Gaussianity (NG) is calculated for the entire 3D, along
-the principal direction of diffusion (NGPar) and perpendicular to it (NGPer).
-The anisotropy of the EAP, or “propagator anisotropy” (PA). We calculate the angular difference,
-𝜃, as the angular distance between the fitted MAPMRI coefficients and the coefficients
-corresponding to its isotropic version :footcite:p:`ozarslan2013`. Prior work in adolescents
-and young adults has shown that MAPMRI scalars are robust to head motion and among the most
-sensitive to age effects :footcite:p:`pines2020`. Critically, our estimation of MAPMRI uses
-the metadata present in BIDS to define the Large and Small delta diffusion-gradient timing
-=======
 The Mean Apparent Propagator (MAPMRI) method :cite:p:`ozarslan2013` is a model-free
 approach that captures complex water diffusion. As a matter of practice, a diffusion tensor
 is first computed (using just the inner shells (b<1250), saved as an output) to determine the
@@ -118,7 +99,6 @@ corresponding to its isotropic version :cite:p:`ozarslan2013`. Prior work in ado
 and young adults has shown that MAPMRI scalars are robust to head motion and among the most
 sensitive to age effects :cite:p:`pines2020`. Critically, our estimation of MAPMRI uses
 the metadata present in BIDS to define the Large and Small delta diffusion-gradient timing
->>>>>>> b381cfc191e401434fc680d17cd191dc01cec878
 parameters (Δ and δ) for each scan.
 
 ************************************
