@@ -167,15 +167,17 @@ class ReconScalars(SimpleInterface):
 
         # If we have scalar_metadata but the input_spec might be wrong (from placeholder),
         # recreate the dynamic class
-        if hasattr(self, 'scalar_metadata') and self.scalar_metadata:
+        if hasattr(self, "scalar_metadata") and self.scalar_metadata:
             # Check if the current input_spec is the placeholder or doesn't match
             config_hash = hash(tuple(sorted(self.scalar_metadata.keys())))
             expected_class_name = f"DynamicReconScalarsInputSpec_{abs(config_hash)}"
 
             # If input_spec is the base class or doesn't match, recreate it
-            if (self.input_spec is ReconScalarsInputSpec or
-                not hasattr(self.input_spec, '__name__') or
-                self.input_spec.__name__ != expected_class_name):
+            if (
+                self.input_spec is ReconScalarsInputSpec
+                or not hasattr(self.input_spec, "__name__")
+                or self.input_spec.__name__ != expected_class_name
+            ):
                 self.input_spec = self._create_dynamic_input_spec(self.scalar_metadata)
 
     def _validate_scalar_metadata(self):
