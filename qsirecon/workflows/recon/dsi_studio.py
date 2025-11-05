@@ -696,7 +696,9 @@ def init_dsi_studio_export_wf(
     workflow = pe.Workflow(name=name)
     export = pe.Node(DSIStudioExport(to_export=",".join(scalar_names)), name="export")
     recon_scalars = pe.Node(
-        ReconScalars(scalar_config=dsistudio_scalars, qsirecon_suffix=qsirecon_suffix), name="recon_scalars", n_procs=1
+        ReconScalars(scalar_config=dsistudio_scalars, qsirecon_suffix=qsirecon_suffix),
+        name="recon_scalars",
+        n_procs=1,
     )
     fixhdr_nodes = {}
     for scalar_name in scalar_names:

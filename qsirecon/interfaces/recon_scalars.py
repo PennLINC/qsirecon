@@ -69,11 +69,7 @@ class ReconScalars(SimpleInterface):
         # If scalar_config is provided, dynamically create input_spec and set scalar_metadata
         if scalar_config is not None:
             # Create a dynamic input spec class with traits for each scalar
-            input_spec_class = type(
-                "DynamicReconScalarsInputSpec",
-                (ReconScalarsInputSpec,),
-                {}
-            )
+            input_spec_class = type("DynamicReconScalarsInputSpec", (ReconScalarsInputSpec,), {})
             # Add traits for each scalar in the config
             for input_name in scalar_config:
                 input_spec_class.add_class_trait(input_name, File(exists=True))

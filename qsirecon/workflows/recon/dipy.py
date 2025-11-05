@@ -498,7 +498,9 @@ def init_dipy_mapmri_recon_wf(
     omp_nthreads = config.nipype.omp_nthreads
     recon_map = pe.Node(MAPMRIReconstruction(**params), name="recon_map")
     recon_scalars = pe.Node(
-        ReconScalars(scalar_config=dipy_mapmri_scalars, dismiss_entities=["desc"], qsirecon_suffix=name),
+        ReconScalars(
+            scalar_config=dipy_mapmri_scalars, dismiss_entities=["desc"], qsirecon_suffix=name
+        ),
         name="recon_scalars",
         run_without_submitting=True,
     )

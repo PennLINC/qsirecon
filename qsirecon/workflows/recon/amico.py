@@ -104,7 +104,9 @@ diffusivity.""" % (
 were also computed (@parker2021not)."""
 
     recon_scalars = pe.Node(
-        ReconScalars(scalar_config=amico_scalars, dismiss_entities=["desc"], qsirecon_suffix=qsirecon_suffix),
+        ReconScalars(
+            scalar_config=amico_scalars, dismiss_entities=["desc"], qsirecon_suffix=qsirecon_suffix
+        ),
         name="recon_scalars",
         run_without_submitting=True,
     )
