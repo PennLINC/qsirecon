@@ -390,10 +390,11 @@ class _ComputeFAMapInputSpec(_TensorMapInputSpec):
         usedefault=True,
         argstr="%d",
         position=2,
-        doc="When calculating FA, negative eigenvalues were replaced with "
-        "best estimate positive values. Affected voxels had their "
-        "FA set to the median FA value of spatial neighbors. This imputation "
-        "was not performed when calculating other tensor maps.",
+        doc=ConditionalDoc(
+            "When calculating FA, negative eigenvalues were replaced with "
+            "best estimate positive values. Affected voxels had their "
+            "FA set to the median FA value of spatial neighbors. This imputation "
+            "was not performed when calculating other tensor maps."),
     )
 
 
@@ -451,7 +452,7 @@ class _EstimateMAPMRIInputSpec(_TORTOISEEstimatorInputSpec):
         usedefault=True,
         argstr="--map_order %d",
         desc="MAPMRI order",
-        doc="MAPMRI order was set to {value}.",
+        doc=ConditionalDoc("MAPMRI order was set to {value}."),
     )
     big_delta = traits.CFloat(argstr="--big_delta %.7f", desc="Big Delta in seconds")
     small_delta = traits.CFloat(argstr="--small_delta %.7f", desc="Small Delta in seconds")
