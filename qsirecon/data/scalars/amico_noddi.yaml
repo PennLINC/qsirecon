@@ -65,7 +65,7 @@ nrmse_file:
         Description: NRMSE between predicted and measured signal from NODDI
     figure:
         vmin: 0
-tf_image:
+tf_file:
     bids:
         model: noddi
         param: tf

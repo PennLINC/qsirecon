@@ -249,7 +249,7 @@ class _NODDITissueFractionInputSpec(BaseInterfaceInputSpec):
 
 
 class _NODDITissueFractionOutputSpec(TraitedSpec):
-    tf_image = File()
+    tf_file = File()
 
 
 class NODDITissueFraction(SimpleInterface):
@@ -260,8 +260,8 @@ class NODDITissueFraction(SimpleInterface):
         isovf_file = self.inputs.isovf_file
         mask_image = self.inputs.mask_image
 
-        tf_image = nim.math_img("(1 - isovf) * mask", isovf=isovf_file, mask=mask_image)
+        tf_file = nim.math_img("(1 - isovf) * mask", isovf=isovf_file, mask=mask_image)
         out_file = fname_presuffix(isovf_file, suffix="_tf", newpath=runtime.cwd)
-        tf_image.to_filename(out_file)
-        self._results["tf_image"] = out_file
+        tf_file.to_filename(out_file)
+        self._results["tf_file"] = out_file
         return runtime

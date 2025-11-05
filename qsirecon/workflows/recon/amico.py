@@ -76,7 +76,7 @@ def init_amico_noddi_fit_wf(
                 "config_file",
                 "fibgz",
                 "recon_scalars",
-                "tf_image",
+                "tf_file",
             ],
         ),
         name="outputnode",
@@ -105,7 +105,9 @@ were also computed (@parker2021not)."""
 
     recon_scalars = pe.Node(
         ReconScalars(
-            scalar_config=amico_scalars, dismiss_entities=["desc"], qsirecon_suffix=qsirecon_suffix
+            scalar_config=amico_scalars,
+            dismiss_entities=["desc"],
+            qsirecon_suffix=qsirecon_suffix,
         ),
         name="recon_scalars",
         run_without_submitting=True,
@@ -122,11 +124,9 @@ were also computed (@parker2021not)."""
             ('dwi_mask', 'mask_file'),
         ]),
         (inputnode, noddi_tissue_fraction, [('dwi_mask', 'mask_image')]),
-        (noddi_fit, noddi_tissue_fraction, [
-            ('isovf_file', 'isovf_file'),
-        ]),
-        (noddi_tissue_fraction, outputnode, [('tf_image', 'tf_image')]),
-        (noddi_tissue_fraction, recon_scalars, [('tf_image', 'tf_image')]),
+        (noddi_fit, noddi_tissue_fraction, [('isovf_file', 'isovf_file')]),
+        (noddi_tissue_fraction, outputnode, [('tf_file', 'tf_file')]),
+        (noddi_tissue_fraction, recon_scalars, [('tf_file', 'tf_file')]),
         (noddi_fit, outputnode, [
             ('directions_file', 'directions_file'),
             ('icvf_file', 'icvf_file'),
@@ -165,7 +165,7 @@ were also computed (@parker2021not)."""
             ('modulated_od_file', 'modulated_od_file'),
         ]),
         (inputnode, convert_to_fibgz, [('dwi_mask', 'mask_file')]),
-        (convert_to_fibgz, outputnode, [('fibgz_file', 'fibgz')])
+        (convert_to_fibgz, outputnode, [('fibgz_file', 'fibgz')]),
     ])  # fmt:skip
 
     if plot_reports:
