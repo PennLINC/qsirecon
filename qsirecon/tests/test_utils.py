@@ -315,3 +315,71 @@ def test_deep_update_dict_mixed_types():
         "string_key": "world",
         "number_key": 100,
     }
+
+
+def test_conditional_doc():
+    """Test ConditionalDoc."""
+    from nipype.interfaces.base import Undefined
+
+    from qsirecon.utils.boilerplate import ConditionalDoc
+
+    # Test with a value but no formatting
+    doc = ConditionalDoc(if_true="A passing test.", if_false="A failing test.")
+    assert doc.get_doc(value=True) == "A passing test."
+    assert doc.get_doc(value=False) == "A failing test."
+    # Undefined inherits from if_false when not specified.
+    assert doc.get_doc(value=Undefined) == "A failing test."
+    # Integers are fine.
+    assert doc.get_doc(value=1) == "A passing test."
+    # Only actual booleans are treated as such. 0 is not False.
+    assert doc.get_doc(value=0) == "A passing test."
+    assert doc.get_doc(value="test") == "A passing test."
+    assert doc.get_doc(value="") == "A passing test."
+
+    # Test with a value and formatting
+    doc = ConditionalDoc(
+        if_true="A passing test with value {value}.",
+        if_false="A failing test with value {value}.",
+        if_undefined="An undefined test with value {value}.",
+    )
+    assert doc.get_doc(value=True) == "A passing test with value True."
+    assert doc.get_doc(value=False) == "A failing test with value False."
+    assert doc.get_doc(value=Undefined) == "An undefined test with value <undefined>."
+    # Integers are fine.
+    assert doc.get_doc(value=1) == "A passing test with value 1."
+    assert doc.get_doc(value=0) == "A passing test with value 0."
+    # Floats are fine.
+    assert doc.get_doc(value=0.5) == "A passing test with value 0.5."
+    assert doc.get_doc(value=-0.5) == "A passing test with value -0.5."
+
+    assert doc.get_doc(value="test") == "A passing test with value test."
+    assert doc.get_doc(value="") == "A passing test with value ."
+
+
+def test_build_documentation():
+    """Test build_documentation."""
+    import nipype.pipeline.engine as pe
+
+    from qsirecon.interfaces.tortoise import EstimateTensor
+    from qsirecon.utils.boilerplate import build_documentation
+
+    # Test with an interface object
+    interface = EstimateTensor(reg_mode="DIAG", free_water_diffusivity=3000, write_cs=False)
+    doc = build_documentation(interface)
+    assert doc == (
+        "All b-values were used for tensor fitting. "
+        "Free water diffusivity was set to 3000 (mu m)^2/s. "
+        "Tensor fitting was performed with DIAG regularization."
+    )
+
+    # Test with a node
+    node = pe.Node(
+        EstimateTensor(reg_mode="DIAG", free_water_diffusivity=3000, write_cs=False),
+        name="estimate_tensor",
+    )
+    doc = build_documentation(node)
+    assert doc == (
+        "All b-values were used for tensor fitting. "
+        "Free water diffusivity was set to 3000 (mu m)^2/s. "
+        "Tensor fitting was performed with DIAG regularization."
+    )
