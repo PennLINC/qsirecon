@@ -357,6 +357,7 @@ class EstimateFODInputSpec(MRTrix3BaseInputSpec):
         sep=",",
         desc="maximum harmonic degree of response function - single value for single-shell "
         "response, list for multi-shell response",
+
     )
     in_dirs = File(
         exists=True,
@@ -372,8 +373,11 @@ class EstimateFODInputSpec(MRTrix3BaseInputSpec):
 
 class EstimateFODOutputSpec(TraitedSpec):
     wm_odf = File(desc="output WM ODF")
+    wm_odf_metadata = traits.Dict(desc="metadata for the WM FOD")
     gm_odf = File(desc="output GM ODF")
+    gm_odf_metadata = traits.Dict(desc="metadata for the GM FOD")
     csf_odf = File(desc="output CSF ODF")
+    csf_odf_metadata = traits.Dict(desc="metadata for the CSF FOD")
 
 
 class EstimateFOD(MRTrix3Base):
@@ -391,6 +395,28 @@ class EstimateFOD(MRTrix3Base):
         if self.inputs.algorithm in ("msmt_csd", "ss3t"):
             outputs["gm_odf"] = op.abspath(self._gen_filename("gm_odf"))
             outputs["csf_odf"] = op.abspath(self._gen_filename("csf_odf"))
+        
+        base_metadata = {
+            "Model": {
+                "Description": "Multi-Shell Multi-Tissue (MSMT) Constrained Spherical Deconvolution (CSD)",
+                "URL": "https://mrtrix.readthedocs.io/en/latest/constrained_spherical_deconvolution/multi_shell_multi_tissue_csd.html",
+            },
+            "Description": "",
+            "NonNegativity": "constrained",
+            "OrientationEncoding": {
+                "EncodingAxis": 3,
+                "Reference": "xyz",
+                "SphericalHarmonicBasis": "MRtrix3",
+                "SphericalHarmonicDegree": self.inputs.max_sh,
+                "Type": "sh",
+            },
+            "ParameterURL": "http://www.sciencedirect.com/science/article/pii/S1053811911012092",
+            "ResponseFunction": {
+                "Coefficients": [],
+                "Type": "zsh"
+            }
+        }
+        
         return outputs
 
     def _format_arg(self, name, spec, value):
