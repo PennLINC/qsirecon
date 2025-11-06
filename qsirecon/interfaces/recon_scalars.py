@@ -187,10 +187,15 @@ def create_recon_scalars_class(config_file: str | Path, register_globally: bool 
     # Create a custom __reduce__ method that stores the config file path
     def __reduce__(self):
         # Return a callable and its args that can recreate this instance
-        # First recreate the class, then create an instance with the current state
+        # Get state using __getstate__ if available, otherwise use __dict__
+        if hasattr(self, '__getstate__'):
+            state = self.__getstate__()
+        else:
+            state = self.__dict__.copy()
+
         return (
             _unpickle_recon_scalars_instance,
-            (config_file, self.__getstate__())
+            (config_file, state)
         )
 
     # Create the custom ReconScalars subclass
@@ -222,7 +227,10 @@ def _unpickle_recon_scalars_instance(config_file, state):
     instance = cls.__new__(cls)
     # Restore its state
     if state is not None:
-        instance.__setstate__(state)
+        if hasattr(instance, '__setstate__'):
+            instance.__setstate__(state)
+        else:
+            instance.__dict__.update(state)
     return instance
 
 
