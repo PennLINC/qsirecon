@@ -135,6 +135,7 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
             ('bvec_file', 'bvec_file'),
             ('dwi_mask', 'mask_file'),
         ]),
+        (inputnode, recon_scalars, [('dwi_file', 'source_file')]),
     ])  # fmt:skip
 
     # EstimateTensor

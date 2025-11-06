@@ -752,6 +752,9 @@ def init_dsi_studio_export_wf(
         # If not writing out scalar files, pass the working directory scalar configs
         workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
 
-    workflow.connect([(inputnode, export, [("fibgz", "input_file")])])
+    workflow.connect([
+        (inputnode, export, [("fibgz", "input_file")]),
+        (inputnode, recon_scalars, [("dwi_file", "source_file")]),
+    ])
 
     return clean_datasinks(workflow, qsirecon_suffix)

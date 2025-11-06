@@ -115,6 +115,11 @@ class ReconScalars(SimpleInterface):
         return runtime
 
 
+def _reconstruct_recon_scalars_class(config_file):
+    """Helper function to reconstruct a ReconScalars class during unpickling."""
+    return create_recon_scalars_class(config_file, register_globally=True)
+
+
 def create_recon_scalars_class(config_file: str | Path, register_globally: bool = True):
     """Factory function to create ReconScalars classes from a config file.
 
@@ -146,6 +151,9 @@ def create_recon_scalars_class(config_file: str | Path, register_globally: bool 
     The created class is registered in the module's namespace (by default) to
     ensure it can be pickled for Nipype's parallel execution.
     """
+    # Convert to string to ensure it's picklable
+    config_file = str(config_file)
+
     config = load_yaml(config_file)
 
     if not isinstance(config, dict):
@@ -176,6 +184,15 @@ def create_recon_scalars_class(config_file: str | Path, register_globally: bool 
     for input_name in config:
         CustomInputSpec.add_class_trait(input_name, File(exists=True))
 
+    # Create a custom __reduce__ method that stores the config file path
+    def __reduce__(self):
+        # Return a callable and its args that can recreate this instance
+        # First recreate the class, then create an instance with the current state
+        return (
+            _unpickle_recon_scalars_instance,
+            (config_file, self.__getstate__())
+        )
+
     # Create the custom ReconScalars subclass
     CustomReconScalars = type(
         class_name,
@@ -184,6 +201,8 @@ def create_recon_scalars_class(config_file: str | Path, register_globally: bool 
             "input_spec": CustomInputSpec,
             "scalar_metadata": config,
             "__module__": __name__,
+            "__reduce__": __reduce__,
+            "_config_file": config_file,  # Store for reference
         },
     )
 
@@ -193,6 +212,18 @@ def create_recon_scalars_class(config_file: str | Path, register_globally: bool 
         setattr(current_module, input_spec_name, CustomInputSpec)
 
     return CustomReconScalars
+
+
+def _unpickle_recon_scalars_instance(config_file, state):
+    """Helper function to unpickle a ReconScalars instance."""
+    # Recreate the class
+    cls = create_recon_scalars_class(config_file, register_globally=True)
+    # Create an instance
+    instance = cls.__new__(cls)
+    # Restore its state
+    if state is not None:
+        instance.__setstate__(state)
+    return instance
 
 
 class _ReconScalarsTableSplitterDataSinkInputSpec(BaseInterfaceInputSpec):

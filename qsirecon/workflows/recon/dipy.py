@@ -183,6 +183,7 @@ def init_dipy_brainsuite_shore_recon_wf(
             ('bval_file', 'bval_file'),
             ('bvec_file', 'bvec_file'),
             ('dwi_mask', 'mask_file')]),
+        (inputnode, recon_scalars, [('dwi_file', 'source_file')]),
         (recon_shore, outputnode, [
             ('shore_coeffs_image', 'shore_coeffs_image'),
             ('rtop_image', 'rtop_image'),
@@ -506,6 +507,7 @@ def init_dipy_mapmri_recon_wf(
             ('bval_file', 'bval_file'),
             ('bvec_file', 'bvec_file'),
             ('dwi_mask', 'mask_file')]),
+        (inputnode, recon_scalars, [('dwi_file', 'source_file')]),
         (recon_map, outputnode, [
             ('mapmri_coeffs', 'mapmri_coeffs'),
             ('rtop', 'rtop'),
@@ -711,6 +713,7 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
             ('bvec_file', 'bvec_file'),
             ('dwi_mask', 'mask_file'),
         ]),
+        (inputnode, recon_scalars, [('dwi_file', 'source_file')]),
         (recon_dki, outputnode, [
             ('tensor', 'tensor'),
             ('fibgz', 'fibgz'),
