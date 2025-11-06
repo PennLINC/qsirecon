@@ -540,7 +540,7 @@ def _sanitized_connectivity_matrix(conmat, official_labels):
 
     if not np.all(truncated_labels == matfile_region_ids):
         if len(official_labels) == len(matfile_region_ids):
-            print(
+            LOGGER.warn(
                 "Atlas/matfile string labels mismatch but lengths match — "
                 "falling back to order-based mapping."
             )
