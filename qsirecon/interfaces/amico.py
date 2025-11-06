@@ -127,21 +127,29 @@ class AmicoReconInterface(SimpleInterface):
 
 
 class NODDIInputSpec(AmicoInputSpec):
-    dPar = traits.Float(mandatory=True)
-    dIso = traits.Float(mandatory=True)
-    isExvivo = traits.Bool(False, usedefault=True)
+    dPar = traits.Float(mandatory=True, desc="Parallel diffusivity")
+    dIso = traits.Float(mandatory=True, desc="Isotropic diffusivity")
+    isExvivo = traits.Bool(False, usedefault=True, desc="Whether the data is ex vivo")
     num_threads = traits.Int(1, usedefault=True, nohash=True)
 
 
 class NODDIOutputSpec(AmicoOutputSpec):
-    directions_image = File()
-    icvf_image = File()
-    od_image = File()
-    isovf_image = File()
-    modulated_icvf_image = File()
-    modulated_od_image = File()
-    rmse_image = File()
-    nrmse_image = File()
+    directions_file = File()
+    directions_file_metadata = traits.Dict()
+    icvf_file = File()
+    icvf_file_metadata = traits.Dict()
+    od_file = File()
+    od_file_metadata = traits.Dict()
+    isovf_file = File()
+    isovf_file_metadata = traits.Dict()
+    modulated_icvf_file = File()
+    modulated_icvf_file_metadata = traits.Dict()
+    modulated_od_file = File()
+    modulated_od_file_metadata = traits.Dict()
+    rmse_file = File()
+    rmse_file_metadata = traits.Dict()
+    nrmse_file = File()
+    nrmse_file_metadata = traits.Dict()
     config_file = File()
 
 
@@ -202,26 +210,46 @@ class NODDI(AmicoReconInterface):
 
         # Write the results
         aeval.save_results()
-        self._results["directions_image"] = shim_dir + "/AMICO/NODDI/fit_dir.nii.gz"
-        self._results["icvf_image"] = shim_dir + "/AMICO/NODDI/fit_NDI.nii.gz"
-        self._results["od_image"] = shim_dir + "/AMICO/NODDI/fit_ODI.nii.gz"
-        self._results["isovf_image"] = shim_dir + "/AMICO/NODDI/fit_FWF.nii.gz"
-        self._results["modulated_od_image"] = shim_dir + "/AMICO/NODDI/fit_ODI_modulated.nii.gz"
-        self._results["modulated_icvf_image"] = shim_dir + "/AMICO/NODDI/fit_NDI_modulated.nii.gz"
-        self._results["rmse_image"] = shim_dir + "/AMICO/NODDI/fit_RMSE.nii.gz"
-        self._results["nrmse_image"] = shim_dir + "/AMICO/NODDI/fit_NRMSE.nii.gz"
+        self._results["directions_file"] = shim_dir + "/AMICO/NODDI/fit_dir.nii.gz"
+        self._results["icvf_file"] = shim_dir + "/AMICO/NODDI/fit_NDI.nii.gz"
+        self._results["od_file"] = shim_dir + "/AMICO/NODDI/fit_ODI.nii.gz"
+        self._results["isovf_file"] = shim_dir + "/AMICO/NODDI/fit_FWF.nii.gz"
+        self._results["modulated_od_file"] = shim_dir + "/AMICO/NODDI/fit_ODI_modulated.nii.gz"
+        self._results["modulated_icvf_file"] = shim_dir + "/AMICO/NODDI/fit_NDI_modulated.nii.gz"
+        self._results["rmse_file"] = shim_dir + "/AMICO/NODDI/fit_RMSE.nii.gz"
+        self._results["nrmse_file"] = shim_dir + "/AMICO/NODDI/fit_NRMSE.nii.gz"
         self._results["config_file"] = shim_dir + "/AMICO/NODDI/config.pickle"
 
         return runtime
 
+    def _list_outputs(self):
+        base_metadata = {
+            "Model": {
+                "Parameters": {
+                    "ParallelDiffusivity": self.inputs.dPar,
+                    "IsotropicDiffusivity": self.inputs.dIso,
+                    "IsExVivo": self.inputs.isExvivo,
+                },
+            },
+        }
+        outputs = super()._list_outputs()
+        file_outputs = [name for name in self.output_spec().get() if name.endswith("_file")]
+        for file_output in file_outputs:
+            # Patch in model and parameter information to metadata dictionaries
+            metadata_output = file_output + "_metadata"
+            if metadata_output in self.output_spec().get():
+                outputs[metadata_output] = base_metadata
+
+        return outputs
+
 
 class _NODDITissueFractionInputSpec(BaseInterfaceInputSpec):
-    isovf_image = File(exists=True, mandatory=True)
+    isovf_file = File(exists=True, mandatory=True)
     mask_image = File(exists=True, mandatory=True)
 
 
 class _NODDITissueFractionOutputSpec(TraitedSpec):
-    tf_image = File()
+    tf_file = File()
 
 
 class NODDITissueFraction(SimpleInterface):
@@ -229,11 +257,11 @@ class NODDITissueFraction(SimpleInterface):
     output_spec = _NODDITissueFractionOutputSpec
 
     def _run_interface(self, runtime):
-        isovf_image = self.inputs.isovf_image
+        isovf_file = self.inputs.isovf_file
         mask_image = self.inputs.mask_image
 
-        tf_image = nim.math_img("(1 - isovf) * mask", isovf=isovf_image, mask=mask_image)
-        out_file = fname_presuffix(isovf_image, suffix="_tf", newpath=runtime.cwd)
-        tf_image.to_filename(out_file)
-        self._results["tf_image"] = out_file
+        tf_file = nim.math_img("(1 - isovf) * mask", isovf=isovf_file, mask=mask_image)
+        out_file = fname_presuffix(isovf_file, suffix="_tf", newpath=runtime.cwd)
+        tf_file.to_filename(out_file)
+        self._results["tf_file"] = out_file
         return runtime
