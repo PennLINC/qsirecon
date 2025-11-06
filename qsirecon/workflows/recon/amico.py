@@ -15,7 +15,7 @@ from ...interfaces.amico import NODDI, NODDITissueFraction
 from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.converters import NODDItoFIBGZ
 from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.recon_scalars import AMICOReconScalars
+from ...interfaces.recon_scalars import create_recon_scalars_class
 from ...interfaces.reports import CLIReconPeaksReport, ScalarReport
 from ...utils.bids import clean_datasinks
 from ...utils.misc import load_yaml
@@ -103,8 +103,9 @@ diffusivity.""" % (
  Tissue fraction (1 - ISOVF) modulated ICVF and Orientation Dispersion maps
 were also computed (@parker2021not)."""
 
+    recon_scalars_class = create_recon_scalars_class(load_data("scalars/amico_noddi.yaml"))
     recon_scalars = pe.Node(
-        AMICOReconScalars(dismiss_entities=["desc"], qsirecon_suffix=qsirecon_suffix),
+        recon_scalars_class(dismiss_entities=["desc"], qsirecon_suffix=qsirecon_suffix),
         name="recon_scalars",
         run_without_submitting=True,
     )

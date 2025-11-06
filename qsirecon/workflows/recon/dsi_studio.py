@@ -35,11 +35,12 @@ from ...interfaces.dsi_studio import (
     _get_dsi_studio_bundles,
 )
 from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.recon_scalars import DSIStudioReconScalars
+from ...interfaces.recon_scalars import create_recon_scalars_class
 from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport, ScalarReport
 from ...utils.bids import clean_datasinks
 from ...utils.misc import remove_non_alphanumeric
 from .utils import init_scalar_output_wf
+from qsirecon.data import load as load_data
 
 LOGGER = logging.getLogger("nipype.interface")
 
@@ -695,8 +696,11 @@ def init_dsi_studio_export_wf(
     )
     workflow = pe.Workflow(name=name)
     export = pe.Node(DSIStudioExport(to_export=",".join(scalar_names)), name="export")
+    recon_scalars_class = create_recon_scalars_class(load_data("scalars/dsistudio_gqi.yaml"))
     recon_scalars = pe.Node(
-        DSIStudioReconScalars(qsirecon_suffix=qsirecon_suffix), name="recon_scalars", n_procs=1
+        recon_scalars_class(qsirecon_suffix=qsirecon_suffix),
+        name="recon_scalars",
+        n_procs=1,
     )
     fixhdr_nodes = {}
     for scalar_name in scalar_names:

@@ -23,14 +23,11 @@ from ...interfaces.dipy import (
     MAPMRIReconstruction,
 )
 from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.recon_scalars import (
-    BrainSuite3dSHOREReconScalars,
-    DIPYDKIReconScalars,
-    DIPYMAPMRIReconScalars,
-)
+from ...interfaces.recon_scalars import create_recon_scalars_class
 from ...interfaces.reports import CLIReconPeaksReport, ScalarReport
 from ...utils.bids import clean_datasinks
 from .utils import init_scalar_output_wf
+from qsirecon.data import load as load_data
 
 LOGGER = logging.getLogger("nipype.interface")
 
@@ -172,8 +169,9 @@ def init_dipy_brainsuite_shore_recon_wf(
         params["big_delta"], params["small_delta"] = deltas
 
     recon_shore = pe.Node(BrainSuiteShoreReconstruction(**params), name="recon_shore")
+    recon_scalars_class = create_recon_scalars_class(load_data("scalars/brainsuite_3dshore.yaml"))
     recon_scalars = pe.Node(
-        BrainSuite3dSHOREReconScalars(qsirecon_suffix="name"),
+        recon_scalars_class(qsirecon_suffix=qsirecon_suffix),
         name="recon_scalars",
         run_without_submitting=True,
     )
@@ -496,8 +494,9 @@ def init_dipy_mapmri_recon_wf(
     plot_reports = not config.execution.skip_odf_reports
     omp_nthreads = config.nipype.omp_nthreads
     recon_map = pe.Node(MAPMRIReconstruction(**params), name="recon_map")
+    recon_scalars_class = create_recon_scalars_class(load_data("scalars/dipy_mapmri.yaml"))
     recon_scalars = pe.Node(
-        DIPYMAPMRIReconScalars(dismiss_entities=["desc"], qsirecon_suffix=name),
+        recon_scalars_class(dismiss_entities=["desc"], qsirecon_suffix=qsirecon_suffix),
         name="recon_scalars",
         run_without_submitting=True,
     )
@@ -691,8 +690,9 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
         ),
         name="outputnode",
     )
+    recon_scalars_class = create_recon_scalars_class(load_data("scalars/dipy_dki.yaml"))
     recon_scalars = pe.Node(
-        DIPYDKIReconScalars(qsirecon_suffix=qsirecon_suffix),
+        recon_scalars_class(qsirecon_suffix=qsirecon_suffix),
         run_without_submitting=True,
         name="recon_scalars",
     )
