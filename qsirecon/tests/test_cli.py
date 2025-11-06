@@ -403,38 +403,6 @@ def test_autotrack(data_dir, output_dir, working_dir):
 
 
 @pytest.mark.integration
-@pytest.mark.dsi_studio_gqi_recon
-def test_dsi_studio_gqi_recon(data_dir, output_dir, working_dir):
-    """Test the DSI Studio GQI recon workflow
-    All supported reconstruction workflows get tested
-    Inputs
-    ------
-    - qsirecon multi shell results (data/DSDTI_fmap)
-    """
-    TEST_NAME = "dsi_studio_gqi_recon"
-
-    dataset_dir = download_test_data("multishell_output", data_dir)
-    # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
-    out_dir = os.path.join(output_dir, TEST_NAME)
-    work_dir = os.path.join(working_dir, TEST_NAME)
-
-    parameters = [
-        dataset_dir,
-        out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        "--recon-spec=dsi_studio_gqi",
-        "--atlases",
-        "4S156Parcels",
-        "Brainnetome246Ext"
-    ]
-
-    _run_and_generate(TEST_NAME, parameters, test_main=False)
-
-
-@pytest.mark.integration
 @pytest.mark.dipy_mapmri
 def test_dipy_mapmri(data_dir, output_dir, working_dir):
     """Run reconstruction workflow test.
@@ -691,6 +659,7 @@ def test_tortoise_recon(data_dir, output_dir, working_dir):
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
 
+
 @pytest.mark.integration
 @pytest.mark.dsi_studio_gqi_recon
 def test_dsi_studio_gqi_recon(data_dir, output_dir, working_dir):
@@ -723,6 +692,7 @@ def test_dsi_studio_gqi_recon(data_dir, output_dir, working_dir):
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
+
 
 def _run_and_generate(test_name, parameters, test_main=False):
     from qsirecon import config
