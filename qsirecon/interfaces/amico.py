@@ -154,10 +154,11 @@ class NODDIInputSpec(AmicoInputSpec):
         usedefault=True,
         desc=(
             "Flag indicating whether acquired data is ex vivo or fixed tissue. "
-            "Fixed tissue requires an additional dot compartment estimation, which is enabled by this flag."
+            "Fixed tissue requires an additional dot compartment estimation. "
         ),
         doc=ConditionalDoc(
-            if_true="Parameter maps were adjusted by additional dot compartment estimated for fixed tissue diffusivity."
+            if_true=("An additional dot compartment was computed "
+                     "to account for hindered diffusivity in fixed tissue"
         ),
     )
     num_threads = traits.Int(1, usedefault=True, nohash=True)
@@ -266,7 +267,7 @@ class NODDI(AmicoReconInterface):
                         "value": self.inputs.dIso,
                         "units": "mm^2/s",
                         "LongName": "IsotropicDiffusivity",
-                        "Description": "Isotropic diffusivity constant"
+                        "Description": "Isotropic diffusivity constant",
                     },
                     "IsExVivo": {
                         "value": self.inputs.isExvivo,
