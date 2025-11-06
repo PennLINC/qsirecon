@@ -96,7 +96,8 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
     )
     workflow = Workflow(name=name)
     recon_scalars = pe.Node(
-        TORTOISEReconScalars(qsirecon_suffix=qsirecon_suffix), name="recon_scalars"
+        TORTOISEReconScalars(qsirecon_suffix=qsirecon_suffix),
+        name="recon_scalars",
     )
     omp_nthreads = config.nipype.omp_nthreads
     desc = (
