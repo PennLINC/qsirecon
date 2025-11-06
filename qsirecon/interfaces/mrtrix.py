@@ -56,6 +56,13 @@ else:
     SS3T_ROOT = os.path.split(_SS3T_EXE)[0]
 
 
+def response_function_to_bids(response_function_file):
+    response_data = np.loadtxt(response_function_file)
+    if response_data.ndim == 1:
+        return [[value] for value in response_data]
+    return [row.tolist() for row in response_data]
+
+
 class TckGenInputSpec(TractographyInputSpec):
     power = traits.CFloat(argstr="-power %f")
     select = traits.CInt(argstr="-select %d")
@@ -396,27 +403,31 @@ class EstimateFOD(MRTrix3Base):
             outputs["gm_odf"] = op.abspath(self._gen_filename("gm_odf"))
             outputs["csf_odf"] = op.abspath(self._gen_filename("csf_odf"))
         
-        base_metadata = {
-            "Model": {
-                "Description": "Multi-Shell Multi-Tissue (MSMT) Constrained Spherical Deconvolution (CSD)",
-                "URL": "https://mrtrix.readthedocs.io/en/latest/constrained_spherical_deconvolution/multi_shell_multi_tissue_csd.html",
-            },
-            "Description": "",
-            "NonNegativity": "constrained",
-            "OrientationEncoding": {
-                "EncodingAxis": 3,
-                "Reference": "xyz",
-                "SphericalHarmonicBasis": "MRtrix3",
-                "SphericalHarmonicDegree": self.inputs.max_sh,
-                "Type": "sh",
-            },
-            "ParameterURL": "http://www.sciencedirect.com/science/article/pii/S1053811911012092",
-            "ResponseFunction": {
-                "Coefficients": [],
-                "Type": "zsh"
+        for (tissue_desc, tissue_type) in (("White matter", "wm"), ("Gray matter", "gm"), ("Cerebrospinal fluid", "csf")):
+            response_function = getattr(self.inputs, tissue_type + "_txt")
+            response_function_data = response_function_to_bids(response_function)
+
+            outputs[tissue_type + "_odf_metadata"] = {
+                "Model": {
+                    "Description": "Multi-Shell Multi-Tissue (MSMT) Constrained Spherical Deconvolution (CSD)",
+                    "URL": "https://mrtrix.readthedocs.io/en/latest/constrained_spherical_deconvolution/multi_shell_multi_tissue_csd.html",
+                },
+                "Description": tissue_desc,
+                "NonNegativity": "constrained",
+                "OrientationEncoding": {
+                    "EncodingAxis": 3,
+                    "Reference": "xyz",
+                    "SphericalHarmonicBasis": "MRtrix3",
+                    "SphericalHarmonicDegree": self.inputs.max_sh,
+                    "Type": "sh",
+                },
+                "ParameterURL": "http://www.sciencedirect.com/science/article/pii/S1053811911012092",
+                "ResponseFunction": {
+                    "Coefficients": response_function_data,
+                    "Type": "zsh"
+                }
             }
-        }
-        
+
         return outputs
 
     def _format_arg(self, name, spec, value):
