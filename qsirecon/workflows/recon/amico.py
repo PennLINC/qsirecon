@@ -121,6 +121,7 @@ were also computed (@parker2021not)."""
             ('dwi_mask', 'mask_file'),
         ]),
         (inputnode, noddi_tissue_fraction, [('dwi_mask', 'mask_image')]),
+        (inputnode, recon_scalars, [('dwi_file', 'source_file')]),
         (noddi_fit, noddi_tissue_fraction, [
             ('isovf_image', 'isovf_image'),
         ]),

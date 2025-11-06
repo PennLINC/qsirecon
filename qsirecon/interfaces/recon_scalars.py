@@ -8,6 +8,7 @@ Classes that collect scalar images and metadata from Recon Workflows
 
 
 """
+import copy
 import itertools
 import json
 import os
@@ -97,7 +98,8 @@ class ReconScalars(SimpleInterface):
         for input_name in file_traits:
             if not isdefined(inputs[input_name]):
                 continue
-            result = self.scalar_metadata[input_name].copy()
+            # Use deep copy to avoid modifying the class's scalar_metadata
+            result = copy.deepcopy(self.scalar_metadata[input_name])
             result["path"] = os.path.abspath(inputs[input_name])
             result["qsirecon_suffix"] = self.inputs.qsirecon_suffix
             result["variable_name"] = input_name
