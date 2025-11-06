@@ -195,3 +195,123 @@ def test_find_fs_path(tmp_path_factory):
         session_id=["01", Query.NONE],
     )
     assert fs_path.name == "01_01.long.01"
+
+
+def test_deep_update_dict_basic():
+    """Test basic dictionary update with deep_update_dict."""
+    from qsirecon.utils.misc import deep_update_dict
+
+    base = {"a": 1, "b": 2}
+    update = {"b": 3, "c": 4}
+    result = deep_update_dict(base, update)
+    assert result == {"a": 1, "b": 3, "c": 4}
+    # Verify it modifies in place
+    assert base == {"a": 1, "b": 3, "c": 4}
+
+
+def test_deep_update_dict_nested():
+    """Test nested dictionary merging."""
+    from qsirecon.utils.misc import deep_update_dict
+
+    base = {
+        "Model": {"param1": "a", "param2": "b"},
+        "Other": {"x": 1},
+    }
+    update = {
+        "Model": {"param2": "c", "param3": "d"},
+        "Other": {"y": 2},
+    }
+    result = deep_update_dict(base, update)
+    assert result == {
+        "Model": {"param1": "a", "param2": "c", "param3": "d"},
+        "Other": {"x": 1, "y": 2},
+    }
+
+
+def test_deep_update_dict_deeply_nested():
+    """Test deeply nested dictionary merging."""
+    from qsirecon.utils.misc import deep_update_dict
+
+    base = {
+        "level1": {
+            "level2": {
+                "level3": {"a": 1, "b": 2},
+                "other": "value",
+            }
+        }
+    }
+    update = {
+        "level1": {
+            "level2": {
+                "level3": {"b": 3, "c": 4},
+            }
+        }
+    }
+    result = deep_update_dict(base, update)
+    assert result == {
+        "level1": {
+            "level2": {
+                "level3": {"a": 1, "b": 3, "c": 4},
+                "other": "value",
+            }
+        }
+    }
+
+
+def test_deep_update_dict_replace_non_dict():
+    """Test that non-dict values are replaced."""
+    from qsirecon.utils.misc import deep_update_dict
+
+    # Replace dict with non-dict
+    base = {"key": {"nested": "value"}}
+    update = {"key": "simple_value"}
+    result = deep_update_dict(base, update)
+    assert result == {"key": "simple_value"}
+
+    # Replace non-dict with dict
+    base = {"key": "simple_value"}
+    update = {"key": {"nested": "value"}}
+    result = deep_update_dict(base, update)
+    assert result == {"key": {"nested": "value"}}
+
+
+def test_deep_update_dict_empty():
+    """Test with empty dictionaries."""
+    from qsirecon.utils.misc import deep_update_dict
+
+    # Empty update
+    base = {"a": 1, "b": {"c": 2}}
+    update = {}
+    result = deep_update_dict(base, update)
+    assert result == {"a": 1, "b": {"c": 2}}
+
+    # Empty base
+    base = {}
+    update = {"a": 1, "b": {"c": 2}}
+    result = deep_update_dict(base, update)
+    assert result == {"a": 1, "b": {"c": 2}}
+
+
+def test_deep_update_dict_mixed_types():
+    """Test with mixed types (lists, numbers, strings)."""
+    from qsirecon.utils.misc import deep_update_dict
+
+    base = {
+        "dict_key": {"nested": "value"},
+        "list_key": [1, 2, 3],
+        "string_key": "hello",
+        "number_key": 42,
+    }
+    update = {
+        "dict_key": {"nested": "updated", "new": "value"},
+        "list_key": [4, 5],  # Lists are replaced, not merged
+        "string_key": "world",
+        "number_key": 100,
+    }
+    result = deep_update_dict(base, update)
+    assert result == {
+        "dict_key": {"nested": "updated", "new": "value"},
+        "list_key": [4, 5],
+        "string_key": "world",
+        "number_key": 100,
+    }
