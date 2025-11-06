@@ -33,6 +33,8 @@ from .converters import (
     get_dsi_studio_ODF_geometry,
 )
 
+from ..utils.boilerplate import ConditionalDoc
+
 LOGGER = logging.getLogger("nipype.interface")
 TAU_DEFAULT = 1.0 / (4 * np.pi**2)
 
@@ -127,9 +129,19 @@ class AmicoReconInterface(SimpleInterface):
 
 
 class NODDIInputSpec(AmicoInputSpec):
-    dPar = traits.Float(mandatory=True, desc="Parallel diffusivity")
-    dIso = traits.Float(mandatory=True, desc="Isotropic diffusivity")
-    isExvivo = traits.Bool(False, usedefault=True, desc="Whether the data is ex vivo")
+    dPar = traits.Float(mandatory=True, 
+                        desc="Parallel diffusivity constant",
+                        doc = ConditionalDoc("The parallel diffusivity constant was set to {value} mm^2/s."),
+                        )
+    dIso = traits.Float(mandatory=True, 
+                        desc="Isotropic diffusivity constant",
+                        doc = ConditionalDoc("The isotropic diffusivity constant was set to {value} mm^2/s."),
+                        )
+    isExvivo = traits.Bool(False, 
+                           usedefault=True, 
+                           desc="Whether the data is ex vivo",
+                           doc = ConditionalDoc(if_true = "All estimates were adjusted to account for fixed tissue diffusivity."),
+                           )
     num_threads = traits.Int(1, usedefault=True, nohash=True)
 
 
@@ -226,8 +238,8 @@ class NODDI(AmicoReconInterface):
         base_metadata = {
             "Model": {
                 "Parameters": {
-                    "ParallelDiffusivity": self.inputs.dPar,
-                    "IsotropicDiffusivity": self.inputs.dIso,
+                    "dPar": {"value": self.inputs.dPar, "units": "mm^2/s", "bids_name": "Parallel Diffusivity constant"},
+                    "dIso": {"value": self.inputs.dIso, "units": "mm^2/s", "bids_name": "Isotropic Diffusivity constant"},
                     "IsExVivo": self.inputs.isExvivo,
                 },
             },

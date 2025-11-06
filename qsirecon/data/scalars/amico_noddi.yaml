@@ -3,7 +3,7 @@ directions_file:
         model: noddi
         param: direction
     metadata:
-        Description: Peak directions from NODDI
+        Description: Peak directions from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
             URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
@@ -17,10 +17,11 @@ icvf_file:
         model: noddi
         param: icvf
     metadata:
-        Description: Intracellular volume fraction from NODDI
+        Description: Intracellular volume fraction (Neurite Density Index; NDI) from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
             URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
+        ParameterURL: https://www.sciencedirect.com/science/article/abs/pii/S1053811912003539
     figure:
         vmin: 0
         vmax: 1
@@ -29,10 +30,11 @@ isovf_file:
         model: noddi
         param: isovf
     metadata:
-        Description: Isotropic volume fraction from NODDI
+        Description: Isotropic volume fraction (Freewater Fraction; FWF) from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
             URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
+        ParameterURL: https://www.sciencedirect.com/science/article/abs/pii/S1053811912003539
     figure:
         vmin: 0
         vmax: 1
@@ -41,20 +43,25 @@ od_file:
         model: noddi
         param: od
     metadata:
-        Description: Orientation dispersion index from NODDI
+        Description: Orientation dispersion index (ODI) from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
             URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
+        ParameterURL: https://www.sciencedirect.com/science/article/abs/pii/S1053811912003539
+    figure:
+        vmin: 0
+        vmax: 1
 modulated_icvf_file:
     bids:
         model: noddi
         param: icvf
         desc: modulated
     metadata:
-        Description: Tissue fraction modulated intracellular volume fraction from NODDI
+        Description: Intracellular volume fraction modulated by tissue fraction (ICVF * tissue fraction)
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
             URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
+        ParameterURL: https://www.sciencedirect.com/science/article/pii/S1053811921010211
     figure:
         vmin: 0
         vmax: 1
@@ -64,10 +71,11 @@ modulated_od_file:
         param: od
         desc: modulated
     metadata:
-        Description: Tissue fraction modulated intracellular volume fraction from NODDI
+        Description: Orientation dispersion index modulated by tissue fraction (OD * tissue fraction)
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
             URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
+        ParameterURL: https://www.sciencedirect.com/science/article/pii/S1053811921010211
     figure:
         vmin: 0
         vmax: 1
@@ -76,7 +84,7 @@ rmse_file:
         model: noddi
         param: rmse
     metadata:
-        Description: RMSE between predicted and measured signal from NODDI
+        Description: Root mean square error between predicted and measured signal from NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
             URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
@@ -87,7 +95,7 @@ nrmse_file:
         model: noddi
         param: nrmse
     metadata:
-        Description: NRMSE between predicted and measured signal from NODDI
+        Description: Normalized root mean square error between predicted and measured signal from NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
             URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
@@ -98,10 +106,11 @@ tf_file:
         model: noddi
         param: tf
     metadata:
-        Description: Tissue fraction from NODDI
+        Description: Tissue fraction (1 - isovf)
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
             URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
+        ParameterURL: https://www.sciencedirect.com/science/article/pii/S1053811921010211
     figure:
         vmin: 0
         vmax: 1

@@ -18,6 +18,7 @@ from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import AMICOReconScalars
 from ...interfaces.reports import CLIReconPeaksReport, ScalarReport
 from ...utils.bids import clean_datasinks
+from ...utils.boilerplate import build_documentation
 from ...utils.misc import load_yaml
 from .utils import init_scalar_output_wf
 from qsirecon.data import load as load_data
@@ -85,23 +86,10 @@ def init_amico_noddi_fit_wf(
     workflow = Workflow(name=name)
 
     plot_reports = params.pop("plot_reports", True)
-    desc = """
-### NODDI Reconstruction
-
-"""
-    desc += """\
-The NODDI model (@noddi) was fit using the AMICO implementation (@amico).
-A value of %.1E was used for parallel diffusivity and %.1E for isotropic
-diffusivity.""" % (
-        params["dPar"],
-        params["dIso"],
+    desc = (
+        "#### NODDI Reconstruction\n\n"
+        + "The NODDI model (@noddi) was fit using the AMICO implementation (@amico). "
     )
-    if params.get("is_exvivo"):
-        desc += " An additional component was added to the model for ex-vivo data."
-
-    desc += """\
- Tissue fraction (1 - ISOVF) modulated ICVF and Orientation Dispersion maps
-were also computed (@parker2021not)."""
 
     recon_scalars = pe.Node(
         AMICOReconScalars(
@@ -112,7 +100,9 @@ were also computed (@parker2021not)."""
         run_without_submitting=True,
     )
     noddi_fit = pe.Node(NODDI(**params), name="recon_noddi", n_procs=omp_nthreads)
+    desc += build_documentation(noddi_fit) + " "
     noddi_tissue_fraction = pe.Node(NODDITissueFraction(), name="noddi_tissue_fraction")
+    desc += ("ICVF and Orientation Dispersion maps were multipled by the tissue fraction (1 - ISOVF) to produce tissue fraction modulated maps (@parker2021not).")
     convert_to_fibgz = pe.Node(NODDItoFIBGZ(), name="convert_to_fibgz")
 
     workflow.connect([
