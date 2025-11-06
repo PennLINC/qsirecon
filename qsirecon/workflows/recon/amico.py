@@ -102,7 +102,7 @@ def init_amico_noddi_fit_wf(
     noddi_fit = pe.Node(NODDI(**params), name="recon_noddi", n_procs=omp_nthreads)
     desc += build_documentation(noddi_fit) + " "
     noddi_tissue_fraction = pe.Node(NODDITissueFraction(), name="noddi_tissue_fraction")
-    desc += ("ICVF and Orientation Dispersion maps were multipled by the tissue fraction (1 - ISOVF) to produce tissue fraction modulated maps (@parker2021not).")
+    desc += "ICVF and Orientation Dispersion maps were multipled by the tissue fraction (1 - ISOVF) to produce tissue fraction modulated maps (@parker2021not)."
     convert_to_fibgz = pe.Node(NODDItoFIBGZ(), name="convert_to_fibgz")
 
     workflow.connect([
