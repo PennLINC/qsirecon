@@ -140,9 +140,7 @@ def create_recon_scalars_class(config_file: str | Path):
     config = load_yaml(config_file)
 
     if not isinstance(config, dict):
-        raise ValueError(
-            f"Config file must contain a dictionary, got {type(config).__name__}"
-        )
+        raise ValueError(f"Config file must contain a dictionary, got {type(config).__name__}")
 
     if not config:
         raise ValueError(f"Config file is empty: {config_file}")
@@ -166,7 +164,6 @@ def create_recon_scalars_class(config_file: str | Path):
     CustomReconScalars.__qualname__ = f"ReconScalars_{config_name}"
 
     return CustomReconScalars
-
 
 
 class _ReconScalarsTableSplitterDataSinkInputSpec(BaseInterfaceInputSpec):
