@@ -22,13 +22,13 @@ def init_steinhardt_order_param_wf(inputs_dict, name="sop_recon", qsirecon_suffi
 
     Outputs
 
-        directions_image
+        directions_file
             Image of directions
-        icvf_image
+        icvf_file
             Voxelwise ICVF.
-        od_image
+        od_file
             Voxelwise Orientation Dispersion
-        isovf_image
+        isovf_file
             Voxelwise ISOVF
         config_file
             Pickle file with model configurations in it
