@@ -84,7 +84,7 @@ rtpp_file:
         model: mapmri
         param: rtpp
     metadata:
-        Description: Return to plane probability from MAPMR
+        Description: Return to plane probability from MAPMRI
         Model:
             Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
             URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
