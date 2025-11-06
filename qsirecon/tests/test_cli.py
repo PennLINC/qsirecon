@@ -688,7 +688,7 @@ def test_dsi_studio_gqi_recon(data_dir, output_dir, working_dir):
         "--recon-spec=dsi_studio_gqi",
         "--atlases",
         "4S156Parcels",
-        "Brainnetome246Ext"
+        "Brainnetome246Ext",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)

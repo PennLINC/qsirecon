@@ -150,7 +150,9 @@ def _resample_atlas(input_atlas, output_atlas, transform, ref_image):
     return result.runtime.cmdline
 
 
-def label_convert(original_atlas, converted_mif, converted_nii, orig_txt, mrtrix_txt, atlas_labels_file):
+def label_convert(
+    original_atlas, converted_mif, converted_nii, orig_txt, mrtrix_txt, atlas_labels_file
+):
     """Create a mrtrix label file from an atlas.
 
     Parameters
@@ -199,13 +201,17 @@ def label_convert(original_atlas, converted_mif, converted_nii, orig_txt, mrtrix
     cmd = ["labelconvert", original_atlas, orig_txt, mrtrix_txt, converted_mif]
     subprocess.run(cmd, check=True)
     if not os.path.isfile(converted_mif):
-        raise RuntimeError(f"Failed to create mrtrix label file ({converted_mif}) from {original_atlas}")
+        raise RuntimeError(
+            f"Failed to create mrtrix label file ({converted_mif}) from {original_atlas}"
+        )
 
     # Then run labelconvert to create a NIfTI file.
     cmd = ["labelconvert", original_atlas, orig_txt, mrtrix_txt, converted_nii]
     subprocess.run(cmd, check=True)
     if not os.path.isfile(converted_nii):
-        raise RuntimeError(f"Failed to create NIfTI label file ({converted_nii}) from {original_atlas}")
+        raise RuntimeError(
+            f"Failed to create NIfTI label file ({converted_nii}) from {original_atlas}"
+        )
 
 
 class _ConformAtlasInputSpec(BaseInterfaceInputSpec):
