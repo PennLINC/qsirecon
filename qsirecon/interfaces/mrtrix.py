@@ -412,8 +412,10 @@ class EstimateFOD(MRTrix3Base):
 
             outputs[tissue_type + "_odf_metadata"] = {
                 "Model": {
-                    "Description": "Multi-Shell Multi-Tissue (MSMT) Constrained Spherical Deconvolution (CSD)",
-                    "URL": "https://mrtrix.readthedocs.io/en/latest/constrained_spherical_deconvolution/multi_shell_multi_tissue_csd.html",
+                    "Description": "Multi-Shell Multi-Tissue (MSMT) "
+                    "Constrained Spherical Deconvolution (CSD)",
+                    "URL": "https://mrtrix.readthedocs.io/en/latest/"
+                    "constrained_spherical_deconvolution/multi_shell_multi_tissue_csd.html",
                 },
                 "Description": tissue_desc,
                 "NonNegativity": "constrained",
@@ -424,7 +426,8 @@ class EstimateFOD(MRTrix3Base):
                     "SphericalHarmonicDegree": self.inputs.max_sh if tissue_type == "wm" else 0,
                     "Type": "sh",
                 },
-                "ParameterURL": "http://www.sciencedirect.com/science/article/pii/S1053811911012092",
+                "ParameterURL": "http://www.sciencedirect.com/"
+                "science/article/pii/S1053811911012092",
                 "ResponseFunction": {"Coefficients": response_function_data, "Type": "zsh"},
             }
 
