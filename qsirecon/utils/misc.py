@@ -16,7 +16,13 @@ def check_deps(workflow):
 
 
 def load_yaml(fname):
+    """Load a YAML file and return a dictionary."""
+    import os
+
     import yaml
+
+    if not os.path.isfile(fname):
+        raise FileNotFoundError(f"File not found: {fname}")
 
     with open(fname) as f:
         return yaml.safe_load(f)

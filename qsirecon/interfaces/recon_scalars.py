@@ -11,6 +11,7 @@ Classes that collect scalar images and metadata from Recon Workflows
 import itertools
 import json
 import os
+from pathlib import Path
 
 import nibabel as nb
 import numpy as np
@@ -110,6 +111,63 @@ class ReconScalars(SimpleInterface):
             results.append(result)
         self._results["scalar_info"] = results
         return runtime
+
+
+def create_recon_scalars_class(config_file: str | Path):
+    """Factory function to create ReconScalars classes from a config file.
+
+    Parameters
+    ----------
+    config_file : str or pathlib.Path
+        The path to the config file containing scalar metadata.
+
+    Returns
+    -------
+    type
+        A ReconScalars subclass configured with the scalars from the config file.
+
+    Examples
+    --------
+    >>> MyReconScalars = create_recon_scalars_class("my_scalars.yaml")
+    >>> instance = MyReconScalars(source_file="...", qsirecon_suffix="...")
+
+    Notes
+    -----
+    This function dynamically creates a ReconScalars subclass with traits
+    corresponding to each scalar defined in the config file. The config file
+    should be a YAML file with scalar names as keys and metadata dictionaries
+    as values.
+    """
+    config = load_yaml(config_file)
+
+    if not isinstance(config, dict):
+        raise ValueError(
+            f"Config file must contain a dictionary, got {type(config).__name__}"
+        )
+
+    if not config:
+        raise ValueError(f"Config file is empty: {config_file}")
+
+    # Create custom InputSpec with traits for each scalar
+    class _CustomReconScalarsInputSpec(ReconScalarsInputSpec):
+        pass
+
+    for input_name in config:
+        _CustomReconScalarsInputSpec.add_class_trait(input_name, File(exists=True))
+
+    # Create the custom ReconScalars subclass
+    class CustomReconScalars(ReconScalars):
+        input_spec = _CustomReconScalarsInputSpec
+        scalar_metadata = config
+
+    # Give it a meaningful name for debugging and introspection
+    config_basename = os.path.basename(config_file)
+    config_name = os.path.splitext(config_basename)[0]
+    CustomReconScalars.__name__ = f"ReconScalars_{config_name}"
+    CustomReconScalars.__qualname__ = f"ReconScalars_{config_name}"
+
+    return CustomReconScalars
+
 
 
 class _ReconScalarsTableSplitterDataSinkInputSpec(BaseInterfaceInputSpec):
@@ -246,23 +304,6 @@ class ParcellationTableSplitterDataSink(SimpleInterface):
             self._results["out_meta"].append(out_meta)
 
         return runtime
-
-
-# Scalars produced in the TORTOISE recon workflow
-tortoise_scalars = load_yaml(load_data("scalars/tortoise.yaml"))
-
-
-class _TORTOISEReconScalarInputSpec(ReconScalarsInputSpec):
-    pass
-
-
-for input_name in tortoise_scalars:
-    _TORTOISEReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
-
-
-class TORTOISEReconScalars(ReconScalars):
-    input_spec = _TORTOISEReconScalarInputSpec
-    scalar_metadata = tortoise_scalars
 
 
 # Scalars produced in the AMICO recon workflow
