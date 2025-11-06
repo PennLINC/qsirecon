@@ -1,6 +1,6 @@
 """Functions to generate boilerplate text for reports."""
 
-from nipype.interfaces.base import traits, isdefined
+from nipype.interfaces.base import isdefined
 
 
 def list_to_str(lst):
