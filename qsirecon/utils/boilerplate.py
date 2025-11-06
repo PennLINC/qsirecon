@@ -119,6 +119,7 @@ class ConditionalDoc:
     >>> doc = ConditionalDoc(if_true="Value of {value}.", if_false="A failing test.")
     >>> doc.get_doc(value=3000)
     "Value of 3000."
+    """
     def __init__(self, if_true, if_false= "", if_undefined=None):
         self.if_true = if_true
         self.if_false = if_false
