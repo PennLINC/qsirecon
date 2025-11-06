@@ -27,13 +27,13 @@ from nipype.interfaces.base import (
 )
 from nipype.utils.filemanip import fname_presuffix
 
+from ..utils.boilerplate import ConditionalDoc
 from .converters import (
     amplitudes_to_fibgz,
     amplitudes_to_sh_mif,
     get_dsi_studio_ODF_geometry,
 )
 
-from ..utils.boilerplate import ConditionalDoc
 
 LOGGER = logging.getLogger("nipype.interface")
 TAU_DEFAULT = 1.0 / (4 * np.pi**2)
@@ -131,20 +131,33 @@ class AmicoReconInterface(SimpleInterface):
 class NODDIInputSpec(AmicoInputSpec):
     dPar = traits.Float(
         mandatory=True,
-        desc="Parallel diffusivity constant",
+        desc=(
+            "Assumed parallel diffusivity constant in mm^/2. "
+            "Passed to AMICO as dPar. "
+            "Defined in the recon spec as dPar. "
+            "Stored in the metadata as dPar"
+        ),
         doc=ConditionalDoc("The parallel diffusivity constant was set to {value} mm^2/s."),
     )
     dIso = traits.Float(
         mandatory=True,
-        desc="Isotropic diffusivity constant",
+        desc=(
+            "Assumed isotropic diffusivity constant in mm^/2. "
+            "Passed to AMICO as dIso. "
+            "Defined in the recon spec as dIso. "
+            "Stored in the metadata as dIso"
+        ),
         doc=ConditionalDoc("The isotropic diffusivity constant was set to {value} mm^2/s."),
     )
     isExvivo = traits.Bool(
         False,
         usedefault=True,
-        desc="Whether the data is ex vivo",
+        desc=(
+            "Flag indicating whether acquired data is ex vivo or fixed tissue. "
+            "Fixed tissue requires an additional dot compartment estimation, which is enabled by this flag."
+        ),
         doc=ConditionalDoc(
-            if_true="All estimates were adjusted to account for fixed tissue diffusivity."
+            if_true="Parameter maps were adjusted by additional dot compartment estimated for fixed tissue diffusivity."
         ),
     )
     num_threads = traits.Int(1, usedefault=True, nohash=True)
@@ -246,14 +259,19 @@ class NODDI(AmicoReconInterface):
                     "dPar": {
                         "value": self.inputs.dPar,
                         "units": "mm^2/s",
-                        "bids_name": "Parallel Diffusivity constant",
+                        "LongName": "ParallelDiffusivity",
+                        "Description": "Parallel diffusivity constant",
                     },
                     "dIso": {
                         "value": self.inputs.dIso,
                         "units": "mm^2/s",
-                        "bids_name": "Isotropic Diffusivity constant",
+                        "LongName": "IsotropicDiffusivity",
+                        "Description": "Isotropic diffusivity constant"
                     },
-                    "IsExVivo": self.inputs.isExvivo,
+                    "IsExVivo": {
+                        "value": self.inputs.isExvivo,
+                        "Description": "Dot compartment estimation for fixed tissue",
+                    },
                 },
             },
         }
