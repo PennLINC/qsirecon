@@ -71,7 +71,7 @@ def build_documentation(interface):
     It has not been tested with MapNodes or JoinNodes.
     """
     doc = []
-    input_traits = interface.inputs.class_editable_traits()
+    input_traits = sorted(interface.inputs.class_editable_traits())
     for _trait in input_traits:
         _trait_obj = interface.inputs.class_traits()[_trait]
         conditional_doc = _trait_obj.doc
@@ -83,6 +83,7 @@ def build_documentation(interface):
         else:
             raise ValueError(f"Conditional doc is not a ConditionalDoc: {conditional_doc}")
 
+    doc = [d for d in doc if d]
     return " ".join(doc)
 
 

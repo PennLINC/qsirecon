@@ -344,7 +344,7 @@ def test_conditional_doc():
     )
     assert doc.get_doc(value=True) == "A passing test with value True."
     assert doc.get_doc(value=False) == "A failing test with value False."
-    assert doc.get_doc(value=Undefined) == "An undefined test with value Undefined."
+    assert doc.get_doc(value=Undefined) == "An undefined test with value <undefined>."
     # Integers are fine.
     assert doc.get_doc(value=1) == "A passing test with value 1."
     assert doc.get_doc(value=0) == "A passing test with value 0."
@@ -367,8 +367,9 @@ def test_build_documentation():
     interface = EstimateTensor(reg_mode="DIAG", free_water_diffusivity=3000, write_cs=False)
     doc = build_documentation(interface)
     assert doc == (
-        "Tensor fitting was performed with DIAG regularization. "
-        "Free water diffusivity was set to 3000 (mu m)^2/s."
+        "All b-values were used for tensor fitting. "
+        "Free water diffusivity was set to 3000 (mu m)^2/s. "
+        "Tensor fitting was performed with DIAG regularization."
     )
 
     # Test with a node
@@ -378,6 +379,7 @@ def test_build_documentation():
     )
     doc = build_documentation(node)
     assert doc == (
-        "Tensor fitting was performed with DIAG regularization. "
-        "Free water diffusivity was set to 3000 (mu m)^2/s."
+        "All b-values were used for tensor fitting. "
+        "Free water diffusivity was set to 3000 (mu m)^2/s. "
+        "Tensor fitting was performed with DIAG regularization."
     )

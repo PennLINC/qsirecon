@@ -349,7 +349,7 @@ class _EstimateTensorInputSpec(_TORTOISEEstimatorInputSpec):
     noise_file = File(
         exists=True,
         copyfile=False,
-        desc="Use this image for weigthing and correction of interpolation artifacts.",
+        desc="Use this image for weighting and correction of interpolation artifacts.",
     )
 
 
