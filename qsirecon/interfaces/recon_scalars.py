@@ -11,6 +11,7 @@ Classes that collect scalar images and metadata from Recon Workflows
 import itertools
 import json
 import os
+import sys
 from pathlib import Path
 
 import nibabel as nb
@@ -112,13 +113,16 @@ class ReconScalars(SimpleInterface):
         return runtime
 
 
-def create_recon_scalars_class(config_file: str | Path):
+def create_recon_scalars_class(config_file: str | Path, register_globally: bool = True):
     """Factory function to create ReconScalars classes from a config file.
 
     Parameters
     ----------
     config_file : str or pathlib.Path
         The path to the config file containing scalar metadata.
+    register_globally : bool, optional
+        If True, register the created class in the module's namespace so it can
+        be pickled by Nipype. Default is True.
 
     Returns
     -------
@@ -136,6 +140,9 @@ def create_recon_scalars_class(config_file: str | Path):
     corresponding to each scalar defined in the config file. The config file
     should be a YAML file with scalar names as keys and metadata dictionaries
     as values.
+
+    The created class is registered in the module's namespace (by default) to
+    ensure it can be pickled for Nipype's parallel execution.
     """
     config = load_yaml(config_file)
 
@@ -145,23 +152,43 @@ def create_recon_scalars_class(config_file: str | Path):
     if not config:
         raise ValueError(f"Config file is empty: {config_file}")
 
-    # Create custom InputSpec with traits for each scalar
-    class _CustomReconScalarsInputSpec(ReconScalarsInputSpec):
-        pass
-
-    for input_name in config:
-        _CustomReconScalarsInputSpec.add_class_trait(input_name, File(exists=True))
-
-    # Create the custom ReconScalars subclass
-    class CustomReconScalars(ReconScalars):
-        input_spec = _CustomReconScalarsInputSpec
-        scalar_metadata = config
-
-    # Give it a meaningful name for debugging and introspection
+    # Generate a meaningful class name
     config_basename = os.path.basename(config_file)
     config_name = os.path.splitext(config_basename)[0]
-    CustomReconScalars.__name__ = f"ReconScalars_{config_name}"
-    CustomReconScalars.__qualname__ = f"ReconScalars_{config_name}"
+    class_name = f"ReconScalars_{config_name}"
+
+    # Check if class already exists in module namespace
+    current_module = sys.modules[__name__]
+    if hasattr(current_module, class_name):
+        # Return existing class if it's already been created
+        return getattr(current_module, class_name)
+
+    # Create custom InputSpec with traits for each scalar
+    input_spec_name = f"_{class_name}InputSpec"
+    CustomInputSpec = type(
+        input_spec_name,
+        (ReconScalarsInputSpec,),
+        {"__module__": __name__},
+    )
+
+    for input_name in config:
+        CustomInputSpec.add_class_trait(input_name, File(exists=True))
+
+    # Create the custom ReconScalars subclass
+    CustomReconScalars = type(
+        class_name,
+        (ReconScalars,),
+        {
+            "input_spec": CustomInputSpec,
+            "scalar_metadata": config,
+            "__module__": __name__,
+        },
+    )
+
+    # Register in module namespace for pickling
+    if register_globally:
+        setattr(current_module, class_name, CustomReconScalars)
+        setattr(current_module, input_spec_name, CustomInputSpec)
 
     return CustomReconScalars
 
