@@ -120,7 +120,8 @@ class ConditionalDoc:
     >>> doc.get_doc(value=3000)
     "Value of 3000."
     """
-    def __init__(self, if_true, if_false= "", if_undefined=None):
+
+    def __init__(self, if_true, if_false="", if_undefined=None):
         self.if_true = if_true
         self.if_false = if_false
         if if_undefined is None:
@@ -131,7 +132,10 @@ class ConditionalDoc:
     def get_doc(self, value):
         if isdefined(value):
             if isinstance(value, bool):
-                return self.if_true.format(value=value) if value else self.if_false.format(value=value)
+                return (
+                    self.if_true.format(value=value)
+                    if value
+                    else self.if_false.format(value=value)
+                )
             return self.if_true.format(value=value)
         return self.if_undefined.format(value=value)
-
