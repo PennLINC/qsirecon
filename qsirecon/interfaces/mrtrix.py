@@ -364,7 +364,6 @@ class EstimateFODInputSpec(MRTrix3BaseInputSpec):
         sep=",",
         desc="maximum harmonic degree of response function - single value for single-shell "
         "response, list for multi-shell response",
-
     )
     in_dirs = File(
         exists=True,
@@ -402,8 +401,12 @@ class EstimateFOD(MRTrix3Base):
         if self.inputs.algorithm in ("msmt_csd", "ss3t"):
             outputs["gm_odf"] = op.abspath(self._gen_filename("gm_odf"))
             outputs["csf_odf"] = op.abspath(self._gen_filename("csf_odf"))
-        
-        for (tissue_desc, tissue_type) in (("White matter", "wm"), ("Gray matter", "gm"), ("Cerebrospinal fluid", "csf")):
+
+        for tissue_desc, tissue_type in (
+            ("White matter", "wm"),
+            ("Gray matter", "gm"),
+            ("Cerebrospinal fluid", "csf"),
+        ):
             response_function = getattr(self.inputs, tissue_type + "_txt")
             response_function_data = response_function_to_bids(response_function)
 
@@ -418,14 +421,11 @@ class EstimateFOD(MRTrix3Base):
                     "EncodingAxis": 3,
                     "Reference": "xyz",
                     "SphericalHarmonicBasis": "MRtrix3",
-                    "SphericalHarmonicDegree": self.inputs.max_sh,
+                    "SphericalHarmonicDegree": self.inputs.max_sh if tissue_type == "wm" else 0,
                     "Type": "sh",
                 },
                 "ParameterURL": "http://www.sciencedirect.com/science/article/pii/S1053811911012092",
-                "ResponseFunction": {
-                    "Coefficients": response_function_data,
-                    "Type": "zsh"
-                }
+                "ResponseFunction": {"Coefficients": response_function_data, "Type": "zsh"},
             }
 
         return outputs

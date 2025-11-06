@@ -296,8 +296,10 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
             name="ds_wm_odf",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, "wm_odf",
-                         ds_wm_odf, "in_file")  # fmt:skip
+        workflow.connect([
+            (outputnode, ds_wm_odf, [("wm_odf", "in_file")]),
+            (estimate_fod, ds_wm_odf, [("wm_odf_metadata", "meta_dict")]),
+        ])  # fmt:skip
         ds_wm_txt = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
