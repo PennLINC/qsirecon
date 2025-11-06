@@ -30,7 +30,7 @@ from nipype.interfaces.base import (
 )
 
 from ..utils.bids import _get_bidsuris
-from ..utils.misc import load_yaml
+from ..utils.misc import deep_update_dict, load_yaml
 from .bids import get_recon_output_name
 from qsirecon.data import load as load_data
 
@@ -117,8 +117,9 @@ class ReconScalars(SimpleInterface):
                     f"BIDS fields for {input_name} conflict with source file BIDS {bids_overlap}"
                 )
 
-            # Update the metadata with the run-specific metadata
-            result["metadata"].update(metadata)
+            # Update the metadata with the run-specific metadata.
+            # This is done recursively across all levels of the metadata dictionary.
+            deep_update_dict(result["metadata"], metadata)
 
             results.append(result)
 
