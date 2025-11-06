@@ -122,7 +122,7 @@ This workflow produces :ref:`mrtrix_dwi_outputs` and :ref:`mrtrix_anatomical_out
 
 .. _mrtrix_singleshell_ss3t_ACT-fast:
 
-``mrtrix_multishell_msmt_ACT-fast``
+``mrtrix_singleshell_ss3t_ACT-fast``
 ===================================
 
 Identical to :ref:`mrtrix_singleshell_ss3t_ACT-hsvs` except FSL's FAST is used for

@@ -22,6 +22,8 @@ from nipype.interfaces.base import (
 )
 from nipype.utils.filemanip import fname_presuffix
 
+from ..utils.boilerplate import ConditionalDoc
+
 LOGGER = logging.getLogger("nipype.interface")
 
 SLOPPY_DRBUDDI = (
@@ -294,10 +296,15 @@ class _TORTOISEEstimatorInputSpec(TORTOISEInputSpec):
     bmtxt_file = File(
         exists=True, mandatory=True, desc="Full path to the input bmtxt file", copyfile=False
     )
+    # This is an example of a trait where we won't know if it's used until runtime
     mask = File(exists=True, argstr="--mask %s", desc="Full path to the mask NIFTI image")
     bval_cutoff = traits.CInt(
         argstr="--bval_cutoff %d",
         desc="Maximum b-value volumes to use for tensor fitting. (Default: use all volumes)",
+        doc=ConditionalDoc(
+            "A maximum b-value cutoff of b={value} was used.",
+            if_false="All b-values were used for tensor fitting.",
+        ),
     )
     inclusion_file = File(exists=True, argstr="--inclusion %s")
     voxelwise_bmat_file = File(
@@ -321,22 +328,28 @@ class _EstimateTensorInputSpec(_TORTOISEEstimatorInputSpec):
         "DIAG: Diagonal Only NLLS, "
         "N2: Full diffusion tensor + free water NLLS, "
         "NT2: One full parenchymal diffusion tensor + one full flow tensor",
+        doc=ConditionalDoc("Tensor fitting was performed with {value} regularization."),
     )
     free_water_diffusivity = traits.CInt(
         default_value=3000,
         argstr="--free_water_diffusivity %d",
         desc="Free water diffusivity in (mu m)^2/s for N2 fitting.",
+        doc=ConditionalDoc(
+            "Free water diffusivity was set to {value} (mu m)^2/s.",
+            if_false="Free water diffusivity was set to the TORTOISE default of 3000 (mu m)^2/s.",
+        ),
     )
     write_cs = traits.Bool(
         default_value=True,
         usedefault=True,
         argstr="--write_CS %d",
         desc="Write the Chi-squred image?",
+        doc=ConditionalDoc("The Chi-squared image was written."),
     )
     noise_file = File(
         exists=True,
         copyfile=False,
-        desc="Use this image for weigthing and correction of interpolation artifacts.",
+        desc="Use this image for weighting and correction of interpolation artifacts.",
     )
 
 
@@ -374,7 +387,18 @@ class _TensorMapCmdline(TORTOISEReconCommandLine):
 
 
 class _ComputeFAMapInputSpec(_TensorMapInputSpec):
-    filter_outliers = traits.Bool(True, usedefault=True, argstr="%d", position=2)
+    filter_outliers = traits.Bool(
+        True,
+        usedefault=True,
+        argstr="%d",
+        position=2,
+        doc=ConditionalDoc(
+            "When calculating FA, negative eigenvalues were replaced with "
+            "best estimate positive values. Affected voxels had their "
+            "FA set to the median FA value of spatial neighbors. This imputation "
+            "was not performed when calculating other tensor maps."
+        ),
+    )
 
 
 class _ComputeFAMapOutputSpec(TraitedSpec):
@@ -427,7 +451,11 @@ class _EstimateMAPMRIInputSpec(_TORTOISEEstimatorInputSpec):
     )
     a0_file = File(exists=True, argstr="--A0 %s", desc="A0 image computed externally")
     map_order = traits.Int(
-        default_value=4, usedefault=True, argstr="--map_order %d", desc="MAPMRI order"
+        default_value=4,
+        usedefault=True,
+        argstr="--map_order %d",
+        desc="MAPMRI order",
+        doc=ConditionalDoc("MAPMRI order was set to {value}."),
     )
     big_delta = traits.CFloat(argstr="--big_delta %.7f", desc="Big Delta in seconds")
     small_delta = traits.CFloat(argstr="--small_delta %.7f", desc="Small Delta in seconds")

@@ -195,3 +195,191 @@ def test_find_fs_path(tmp_path_factory):
         session_id=["01", Query.NONE],
     )
     assert fs_path.name == "01_01.long.01"
+
+
+def test_deep_update_dict_basic():
+    """Test basic dictionary update with deep_update_dict."""
+    from qsirecon.utils.misc import deep_update_dict
+
+    base = {"a": 1, "b": 2}
+    update = {"b": 3, "c": 4}
+    result = deep_update_dict(base, update)
+    assert result == {"a": 1, "b": 3, "c": 4}
+    # Verify it modifies in place
+    assert base == {"a": 1, "b": 3, "c": 4}
+
+
+def test_deep_update_dict_nested():
+    """Test nested dictionary merging."""
+    from qsirecon.utils.misc import deep_update_dict
+
+    base = {
+        "Model": {"param1": "a", "param2": "b"},
+        "Other": {"x": 1},
+    }
+    update = {
+        "Model": {"param2": "c", "param3": "d"},
+        "Other": {"y": 2},
+    }
+    result = deep_update_dict(base, update)
+    assert result == {
+        "Model": {"param1": "a", "param2": "c", "param3": "d"},
+        "Other": {"x": 1, "y": 2},
+    }
+
+
+def test_deep_update_dict_deeply_nested():
+    """Test deeply nested dictionary merging."""
+    from qsirecon.utils.misc import deep_update_dict
+
+    base = {
+        "level1": {
+            "level2": {
+                "level3": {"a": 1, "b": 2},
+                "other": "value",
+            }
+        }
+    }
+    update = {
+        "level1": {
+            "level2": {
+                "level3": {"b": 3, "c": 4},
+            }
+        }
+    }
+    result = deep_update_dict(base, update)
+    assert result == {
+        "level1": {
+            "level2": {
+                "level3": {"a": 1, "b": 3, "c": 4},
+                "other": "value",
+            }
+        }
+    }
+
+
+def test_deep_update_dict_replace_non_dict():
+    """Test that non-dict values are replaced."""
+    from qsirecon.utils.misc import deep_update_dict
+
+    # Replace dict with non-dict
+    base = {"key": {"nested": "value"}}
+    update = {"key": "simple_value"}
+    result = deep_update_dict(base, update)
+    assert result == {"key": "simple_value"}
+
+    # Replace non-dict with dict
+    base = {"key": "simple_value"}
+    update = {"key": {"nested": "value"}}
+    result = deep_update_dict(base, update)
+    assert result == {"key": {"nested": "value"}}
+
+
+def test_deep_update_dict_empty():
+    """Test with empty dictionaries."""
+    from qsirecon.utils.misc import deep_update_dict
+
+    # Empty update
+    base = {"a": 1, "b": {"c": 2}}
+    update = {}
+    result = deep_update_dict(base, update)
+    assert result == {"a": 1, "b": {"c": 2}}
+
+    # Empty base
+    base = {}
+    update = {"a": 1, "b": {"c": 2}}
+    result = deep_update_dict(base, update)
+    assert result == {"a": 1, "b": {"c": 2}}
+
+
+def test_deep_update_dict_mixed_types():
+    """Test with mixed types (lists, numbers, strings)."""
+    from qsirecon.utils.misc import deep_update_dict
+
+    base = {
+        "dict_key": {"nested": "value"},
+        "list_key": [1, 2, 3],
+        "string_key": "hello",
+        "number_key": 42,
+    }
+    update = {
+        "dict_key": {"nested": "updated", "new": "value"},
+        "list_key": [4, 5],  # Lists are replaced, not merged
+        "string_key": "world",
+        "number_key": 100,
+    }
+    result = deep_update_dict(base, update)
+    assert result == {
+        "dict_key": {"nested": "updated", "new": "value"},
+        "list_key": [4, 5],
+        "string_key": "world",
+        "number_key": 100,
+    }
+
+
+def test_conditional_doc():
+    """Test ConditionalDoc."""
+    from nipype.interfaces.base import Undefined
+
+    from qsirecon.utils.boilerplate import ConditionalDoc
+
+    # Test with a value but no formatting
+    doc = ConditionalDoc(if_true="A passing test.", if_false="A failing test.")
+    assert doc.get_doc(value=True) == "A passing test."
+    assert doc.get_doc(value=False) == "A failing test."
+    # Undefined inherits from if_false when not specified.
+    assert doc.get_doc(value=Undefined) == "A failing test."
+    # Integers are fine.
+    assert doc.get_doc(value=1) == "A passing test."
+    # Only actual booleans are treated as such. 0 is not False.
+    assert doc.get_doc(value=0) == "A passing test."
+    assert doc.get_doc(value="test") == "A passing test."
+    assert doc.get_doc(value="") == "A passing test."
+
+    # Test with a value and formatting
+    doc = ConditionalDoc(
+        if_true="A passing test with value {value}.",
+        if_false="A failing test with value {value}.",
+        if_undefined="An undefined test with value {value}.",
+    )
+    assert doc.get_doc(value=True) == "A passing test with value True."
+    assert doc.get_doc(value=False) == "A failing test with value False."
+    assert doc.get_doc(value=Undefined) == "An undefined test with value <undefined>."
+    # Integers are fine.
+    assert doc.get_doc(value=1) == "A passing test with value 1."
+    assert doc.get_doc(value=0) == "A passing test with value 0."
+    # Floats are fine.
+    assert doc.get_doc(value=0.5) == "A passing test with value 0.5."
+    assert doc.get_doc(value=-0.5) == "A passing test with value -0.5."
+
+    assert doc.get_doc(value="test") == "A passing test with value test."
+    assert doc.get_doc(value="") == "A passing test with value ."
+
+
+def test_build_documentation():
+    """Test build_documentation."""
+    import nipype.pipeline.engine as pe
+
+    from qsirecon.interfaces.tortoise import EstimateTensor
+    from qsirecon.utils.boilerplate import build_documentation
+
+    # Test with an interface object
+    interface = EstimateTensor(reg_mode="DIAG", free_water_diffusivity=3000, write_cs=False)
+    doc = build_documentation(interface)
+    assert doc == (
+        "All b-values were used for tensor fitting. "
+        "Free water diffusivity was set to 3000 (mu m)^2/s. "
+        "Tensor fitting was performed with DIAG regularization."
+    )
+
+    # Test with a node
+    node = pe.Node(
+        EstimateTensor(reg_mode="DIAG", free_water_diffusivity=3000, write_cs=False),
+        name="estimate_tensor",
+    )
+    doc = build_documentation(node)
+    assert doc == (
+        "All b-values were used for tensor fitting. "
+        "Free water diffusivity was set to 3000 (mu m)^2/s. "
+        "Tensor fitting was performed with DIAG regularization."
+    )
