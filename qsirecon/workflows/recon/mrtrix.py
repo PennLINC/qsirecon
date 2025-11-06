@@ -329,8 +329,6 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
                 name="ds_gm_odf",
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, "gm_odf",
-                             ds_gm_odf, "in_file")  # fmt:skip
             ds_gm_txt = pe.Node(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
@@ -343,8 +341,11 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
                 name="ds_gm_txt",
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, "gm_txt",
-                             ds_gm_txt, "in_file")  # fmt:skip
+            workflow.connect([
+                (outputnode, ds_gm_odf, [("gm_odf", "in_file")]),
+                (estimate_fod, ds_gm_odf, [("gm_odf_metadata", "meta_dict")]),
+                (outputnode, ds_gm_txt, [("gm_txt", "in_file")]),
+            ])  # fmt:skip
 
             ds_csf_odf = pe.Node(
                 DerivativesDataSink(
@@ -359,8 +360,6 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
                 name="ds_csf_odf",
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, "csf_odf",
-                             ds_csf_odf, "in_file")  # fmt:skip
             ds_csf_txt = pe.Node(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
@@ -373,8 +372,11 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
                 name="ds_csf_txt",
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, "csf_txt",
-                             ds_csf_txt, "in_file")  # fmt:skip
+            workflow.connect([
+                (outputnode, ds_csf_odf, [("csf_odf", "in_file")]),
+                (estimate_fod, ds_csf_odf, [("csf_odf_metadata", "meta_dict")]),
+                (outputnode, ds_csf_txt, [("csf_txt", "in_file")]),
+            ])  # fmt:skip
 
             if run_mtnormalize:
                 ds_mt_norm = pe.Node(
