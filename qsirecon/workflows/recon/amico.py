@@ -37,21 +37,21 @@ def init_amico_noddi_fit_wf(
 
     Outputs
 
-        directions_image
+        directions_file
             Image of directions
-        icvf_image
+        icvf_file
             Voxelwise ICVF.
-        od_image
+        od_file
             Voxelwise Orientation Dispersion
-        isovf_image
+        isovf_file
             Voxelwise ISOVF
-        modulated_icvf_image
+        modulated_icvf_file
             Voxelwise modulated ICVF (ICVF * (1 - ISOVF))
-        modulated_od_image
+        modulated_od_file
             Voxelwise modulated Orientation Dispersion  (OD * (1 - ISOVF))
-        rmse_image
+        rmse_file
             Voxelwise root mean square error between predicted and measured signal
-        nrmse_image
+        nrmse_file
             Voxelwise normalized root mean square error between predicted and measured signal
         config_file
             Pickle file with model configurations in it
@@ -65,18 +65,18 @@ def init_amico_noddi_fit_wf(
     outputnode = pe.Node(
         niu.IdentityInterface(
             fields=[
-                "directions_image",
-                "icvf_image",
-                "od_image",
-                "isovf_image",
-                "modulated_icvf_image",
-                "modulated_od_image",
-                "rmse_image",
-                "nrmse_image",
+                "directions_file",
+                "icvf_file",
+                "od_file",
+                "isovf_file",
+                "modulated_icvf_file",
+                "modulated_od_file",
+                "rmse_file",
+                "nrmse_file",
                 "config_file",
                 "fibgz",
                 "recon_scalars",
-                "tf_image",
+                "tf_file",
             ],
         ),
         name="outputnode",
@@ -104,7 +104,10 @@ diffusivity.""" % (
 were also computed (@parker2021not)."""
 
     recon_scalars = pe.Node(
-        AMICOReconScalars(dismiss_entities=["desc"], qsirecon_suffix=qsirecon_suffix),
+        AMICOReconScalars(
+            dismiss_entities=["desc"],
+            qsirecon_suffix=qsirecon_suffix,
+        ),
         name="recon_scalars",
         run_without_submitting=True,
     )
@@ -120,42 +123,48 @@ were also computed (@parker2021not)."""
             ('dwi_mask', 'mask_file'),
         ]),
         (inputnode, noddi_tissue_fraction, [('dwi_mask', 'mask_image')]),
-        (noddi_fit, noddi_tissue_fraction, [
-            ('isovf_image', 'isovf_image'),
-        ]),
-        (noddi_tissue_fraction, outputnode, [('tf_image', 'tf_image')]),
-        (noddi_tissue_fraction, recon_scalars, [('tf_image', 'tf_image')]),
+        (noddi_fit, noddi_tissue_fraction, [('isovf_file', 'isovf_file')]),
+        (noddi_tissue_fraction, outputnode, [('tf_file', 'tf_file')]),
+        (noddi_tissue_fraction, recon_scalars, [('tf_file', 'tf_file')]),
         (noddi_fit, outputnode, [
-            ('directions_image', 'directions_image'),
-            ('icvf_image', 'icvf_image'),
-            ('od_image', 'od_image'),
-            ('isovf_image', 'isovf_image'),
-            ('modulated_icvf_image', 'modulated_icvf_image'),
-            ('modulated_od_image', 'modulated_od_image'),
-            ('rmse_image', 'rmse_image'),
-            ('nrmse_image', 'nrmse_image'),
+            ('directions_file', 'directions_file'),
+            ('icvf_file', 'icvf_file'),
+            ('od_file', 'od_file'),
+            ('isovf_file', 'isovf_file'),
+            ('modulated_icvf_file', 'modulated_icvf_file'),
+            ('modulated_od_file', 'modulated_od_file'),
+            ('rmse_file', 'rmse_file'),
+            ('nrmse_file', 'nrmse_file'),
             ('config_file', 'config_file'),
         ]),
         (noddi_fit, recon_scalars, [
-            ('icvf_image', 'icvf_image'),
-            ('od_image', 'od_image'),
-            ('isovf_image', 'isovf_image'),
-            ('directions_image', 'directions_image'),
-            ('modulated_icvf_image', 'modulated_icvf_image'),
-            ('modulated_od_image', 'modulated_od_image'),
-            ('rmse_image', 'rmse_image'),
-            ('nrmse_image', 'nrmse_image'),
+            ('icvf_file', 'icvf_file'),
+            ('icvf_file_metadata', 'icvf_file_metadata'),
+            ('od_file', 'od_file'),
+            ('od_file_metadata', 'od_file_metadata'),
+            ('isovf_file', 'isovf_file'),
+            ('isovf_file_metadata', 'isovf_file_metadata'),
+            ('directions_file', 'directions_file'),
+            ('directions_file_metadata', 'directions_file_metadata'),
+            ('modulated_icvf_file', 'modulated_icvf_file'),
+            ('modulated_icvf_file_metadata', 'modulated_icvf_file_metadata'),
+            ('modulated_od_file', 'modulated_od_file'),
+            ('modulated_od_file_metadata', 'modulated_od_file_metadata'),
+            ('rmse_file', 'rmse_file'),
+            ('rmse_file_metadata', 'rmse_file_metadata'),
+            ('nrmse_file', 'nrmse_file'),
+            ('nrmse_file_metadata', 'nrmse_file_metadata'),
         ]),
         (noddi_fit, convert_to_fibgz, [
-            ('directions_image', 'directions_file'),
-            ('icvf_image', 'icvf_file'),
-            ('od_image', 'od_file'),
-            ('isovf_image', 'isovf_file'),
-            ('modulated_icvf_image', 'modulated_icvf_file'),
-            ('modulated_od_image', 'modulated_od_file'),
+            ('directions_file', 'directions_file'),
+            ('icvf_file', 'icvf_file'),
+            ('od_file', 'od_file'),
+            ('isovf_file', 'isovf_file'),
+            ('modulated_icvf_file', 'modulated_icvf_file'),
+            ('modulated_od_file', 'modulated_od_file'),
         ]),
         (inputnode, convert_to_fibgz, [('dwi_mask', 'mask_file')]),
-        (convert_to_fibgz, outputnode, [('fibgz_file', 'fibgz')])
+        (convert_to_fibgz, outputnode, [('fibgz_file', 'fibgz')]),
     ])  # fmt:skip
 
     if plot_reports:
@@ -176,7 +185,7 @@ were also computed (@parker2021not)."""
         workflow.connect([
             (inputnode, plot_peaks, [('dwi_mask', 'mask_file')]),
             (convert_to_fibgz, plot_peaks, [('fibgz_file', 'fib_file')]),
-            (noddi_fit, plot_peaks, [('icvf_image', 'background_image')]),
+            (noddi_fit, plot_peaks, [('icvf_file', 'background_image')]),
             (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')]),
         ])  # fmt:skip
 
