@@ -28,36 +28,6 @@ Outputs of *QSIRecon*
    please open an issue in the *QSIRecon* repository.
 
 
-******************************************
-Whole-brain parametric microstructure maps
-******************************************
-
-
-
-******************************
-Diffusion tensor imaging (DTI)
-******************************
-
-
-
-********************************
-Diffusion kurtosis imaging (DKI)
-********************************
-
-
-
-*************************************
-Mean Apparent Propagator MRI (MAPMRI)
-*************************************
-
-
-
-************************************
-Generalized q-Sampling Imaging (GQI)
-************************************
-
-
-
 ********************
 Dataset Organization
 ********************
@@ -155,10 +125,3 @@ DKI and TORTOISE::
 If parcellation is enabled,
 the output directory will also contain an "atlases" directory containing a BIDS-Atlas dataset.
 See :ref:`connectivity_atlases` for more information on this output directory.
-
-
-**********
-References
-**********
-
-.. footbibliography::
