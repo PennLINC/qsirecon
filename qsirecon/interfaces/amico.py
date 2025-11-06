@@ -223,22 +223,22 @@ class NODDI(AmicoReconInterface):
         return runtime
 
     def _list_outputs(self):
+        base_metadata = {
+            "Model": {
+                "Parameters": {
+                    "ParallelDiffusivity": self.inputs.dPar,
+                    "IsotropicDiffusivity": self.inputs.dIso,
+                    "IsExVivo": self.inputs.isExvivo,
+                },
+            },
+        }
         outputs = super()._list_outputs()
         file_outputs = [name for name in self.output_spec().get() if name.endswith("_file")]
         for file_output in file_outputs:
             # Patch in model and parameter information to metadata dictionaries
             metadata_output = file_output + "_metadata"
             if metadata_output in self.output_spec().get():
-                outputs[metadata_output] = {
-                    "Model": {
-                        "Description": "AMICO NODDI",
-                        "Parameters": {
-                            "ParallelDiffusivity": self.inputs.dPar,
-                            "IsotropicDiffusivity": self.inputs.dIso,
-                            "IsExVivo": self.inputs.isExvivo,
-                        },
-                    },
-                }
+                outputs[metadata_output] = base_metadata
 
         return outputs
 
