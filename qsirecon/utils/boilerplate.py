@@ -62,7 +62,14 @@ def describe_atlases(atlases):
 
 
 def build_documentation(interface):
-    """Build documentation for a given interface."""
+    """Build documentation for a given interface.
+
+    This is only useful for inputs that are specified when the interface is initialized.
+    It will not work for inputs that are set through workflow connections.
+
+    It will work with either the original interface object or a Nipype Node.
+    It has not been tested with MapNodes or JoinNodes.
+    """
     doc = []
     input_traits = interface.inputs.class_editable_traits()
     for _trait in input_traits:
@@ -80,6 +87,38 @@ def build_documentation(interface):
 
 
 class ConditionalDoc:
+    """Store conditional documentation for a Nipype Interface input.
+
+    This is only useful for inputs that are specified when the interface is initialized.
+    It will not work for inputs that are set through workflow connections.
+
+    Parameters
+    ----------
+    if_true : str
+        The string to use if the input's value is not False or _Undefined.
+        This string may have a value variable to incorporate (e.g., "The value is {value}."),
+        but it will still work if not.
+    if_false : str, optional
+        The string to use if the input's value is False.
+        Default is an empty string.
+    if_undefined : str or None, optional
+        The string to use if the input's value is Undefined.
+        If not specified, the string from `if_false` will be used instead.
+
+    Returns
+    -------
+    str
+        The formatted string from the appropriate input (if_true, if_false, or if_undefined).
+
+    Examples
+    ---------
+    >>> doc = ConditionalDoc(if_true="A passing test.", if_false="A failing test.")
+    >>> doc.get_doc(value='value')
+    "A passing test."
+
+    >>> doc = ConditionalDoc(if_true="Value of {value}.", if_false="A failing test.")
+    >>> doc.get_doc(value=3000)
+    "Value of 3000."
     def __init__(self, if_true, if_false= "", if_undefined=None):
         self.if_true = if_true
         self.if_false = if_false
@@ -91,7 +130,7 @@ class ConditionalDoc:
     def get_doc(self, value):
         if isdefined(value):
             if isinstance(value, bool):
-                return self.if_true.format(value = value) if value else self.if_false.format(value = value)
-            return self.if_true.format(value = value)
-        return self.if_undefined.format(value = value)
+                return self.if_true.format(value=value) if value else self.if_false.format(value=value)
+            return self.if_true.format(value=value)
+        return self.if_undefined.format(value=value)
 

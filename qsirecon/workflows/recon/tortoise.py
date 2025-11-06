@@ -143,18 +143,18 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
         )
 
         # Model description
-        desc += "A diffusion tensor model was fit using ``EstimateTensor`` "
-        desc += build_documentation(estimate_tensor)
+        desc += "A diffusion tensor model was fit using ``EstimateTensor``. "
+        desc += build_documentation(estimate_tensor) + " "
 
         # Set up datasinks
         compute_dt_fa = pe.Node(ComputeFAMap(), name="compute_dt_fa")
-        desc += build_documentation(compute_dt_fa)
+        desc += build_documentation(compute_dt_fa) + " "
         compute_dt_rd = pe.Node(ComputeRDMap(), name="compute_dt_rd")
-        desc += build_documentation(compute_dt_rd)
+        desc += build_documentation(compute_dt_rd) + " "
         compute_dt_ad = pe.Node(ComputeADMap(), name="compute_dt_ad")
-        desc += build_documentation(compute_dt_ad)
+        desc += build_documentation(compute_dt_ad) + " "
         compute_dt_li = pe.Node(ComputeLIMap(), name="compute_dt_li")
-        desc += build_documentation(compute_dt_li)
+        desc += build_documentation(compute_dt_li) + " "
         workflow.connect([
             (tortoise_convert, estimate_tensor, [
                 ("dwi_file", "in_file"),

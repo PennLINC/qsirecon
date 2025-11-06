@@ -303,7 +303,8 @@ class _TORTOISEEstimatorInputSpec(TORTOISEInputSpec):
         desc="Maximum b-value volumes to use for tensor fitting. (Default: use all volumes)",
         doc=ConditionalDoc(
             "A maximum b-value cutoff of b={value} was used.",
-            if_false="All b-values were used for tensor fitting."),
+            if_false="All b-values were used for tensor fitting.",
+        ),
     )
     inclusion_file = File(exists=True, argstr="--inclusion %s")
     voxelwise_bmat_file = File(
@@ -335,7 +336,8 @@ class _EstimateTensorInputSpec(_TORTOISEEstimatorInputSpec):
         desc="Free water diffusivity in (mu m)^2/s for N2 fitting.",
         doc=ConditionalDoc(
             "Free water diffusivity was set to {value} (mu m)^2/s.",
-            if_false="Free water diffusivity was set to the TORTOISE default of 3000 (mu m)^2/s."),
+            if_false="Free water diffusivity was set to the TORTOISE default of 3000 (mu m)^2/s.",
+        ),
     )
     write_cs = traits.Bool(
         default_value=True,
@@ -394,7 +396,8 @@ class _ComputeFAMapInputSpec(_TensorMapInputSpec):
             "When calculating FA, negative eigenvalues were replaced with "
             "best estimate positive values. Affected voxels had their "
             "FA set to the median FA value of spatial neighbors. This imputation "
-            "was not performed when calculating other tensor maps."),
+            "was not performed when calculating other tensor maps."
+        ),
     )
 
 
