@@ -30,6 +30,7 @@ from ...interfaces.recon_scalars import (
 )
 from ...interfaces.reports import CLIReconPeaksReport, ScalarReport
 from ...utils.bids import clean_datasinks
+from ...utils.boilerplate import build_documentation
 from .utils import init_scalar_output_wf
 
 LOGGER = logging.getLogger("nipype.interface")
@@ -474,7 +475,7 @@ def init_dipy_mapmri_recon_wf(
     )
 
     workflow = Workflow(name=name)
-    suffix_str = f" (outputs written to qsirecon-<{qsirecon_suffix}>)" if qsirecon_suffix else ""
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
     desc = (
         f"\n\n#### Dipy Reconstruction{suffix_str}\n\n"
         "MAPMRI reconstruction was performed with Dipy."
@@ -503,12 +504,12 @@ def init_dipy_mapmri_recon_wf(
 
     if deltas_source == "spec":
         desc += (
-            f" 'big_delta was set to {deltas[0]} and small_delta was set to {deltas[1]}, "
+            f" Big Delta was set to {deltas[0]} and Small Delta was set to {deltas[1]}, "
             "based on the recon spec."
         )
     elif deltas_source == "dwi_metadata":
         desc += (
-            f" 'big_delta was set to {deltas[0]} and small_delta was set to {deltas[1]}, "
+            f" Big Delta was set to {deltas[0]} and Small Delta was set to {deltas[1]}, "
             "based on the dwi metadata."
         )
     else:
@@ -517,6 +518,7 @@ def init_dipy_mapmri_recon_wf(
     plot_reports = not config.execution.skip_odf_reports
     omp_nthreads = config.nipype.omp_nthreads
     recon_map = pe.Node(MAPMRIReconstruction(**params), name="recon_map")
+    desc += build_documentation(recon_map) + " "
     recon_scalars = pe.Node(
         DIPYMAPMRIReconScalars(dismiss_entities=["desc"], qsirecon_suffix=name),
         name="recon_scalars",
