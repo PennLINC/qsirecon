@@ -404,7 +404,28 @@ bibtex_bibfiles = [
     "../qsirecon/data/models.bib",
 ]
 bibtex_style = "unsrt"
-bibtex_reference_style = "author_year"
+
+
+def _round_brackets() -> BracketStyle:
+    return BracketStyle(left="(", right=")")
+
+
+@dataclass
+class AuthorYearRoundReferenceStyle(AuthorYearReferenceStyle):
+    bracket_parenthetical: BracketStyle = field(default_factory=_round_brackets)
+    bracket_textual: BracketStyle = field(default_factory=_round_brackets)
+    bracket_author: BracketStyle = field(default_factory=_round_brackets)
+    bracket_label: BracketStyle = field(default_factory=_round_brackets)
+    bracket_year: BracketStyle = field(default_factory=_round_brackets)
+
+
+sphinxcontrib.bibtex.plugin.register_plugin(
+    "sphinxcontrib.bibtex.style.referencing",
+    "author_year_round",
+    AuthorYearRoundReferenceStyle,
+)
+
+bibtex_reference_style = "author_year_round"
 bibtex_footbibliography_header = ""
 
 
