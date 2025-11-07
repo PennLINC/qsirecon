@@ -694,6 +694,7 @@ def init_dwi_recon_anatomical_workflow(
             ds_atlas_mrtrix_lut = pe.MapNode(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
+                    desc="mrtrix",
                     suffix="dseg",
                     extension=".txt",
                 ),
