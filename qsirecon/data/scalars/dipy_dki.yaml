@@ -122,7 +122,7 @@ dkimicro_ad:
         Model:
             Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
             URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
-        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/23589312/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
         Units: mm^2/s
 dkimicro_ade:
     bids:
@@ -133,7 +133,7 @@ dkimicro_ade:
         Model:
             Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
             URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
-        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/23589312/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
         Units: mm^2/s
 dkimicro_ak:
     bids:
@@ -144,7 +144,7 @@ dkimicro_ak:
         Model:
             Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
             URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
-        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/23589312/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
 dkimicro_awf:
     bids:
         model: dkimicro
@@ -154,7 +154,7 @@ dkimicro_awf:
         Model:
             Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
             URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
-        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/23589312/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
 dkimicro_axonald:
     bids:
         model: dkimicro
@@ -164,7 +164,7 @@ dkimicro_axonald:
         Model:
             Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
             URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
-        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/23589312/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
         Units: mm^2/s
 dkimicro_kfa:
     bids:
@@ -175,7 +175,7 @@ dkimicro_kfa:
         Model:
             Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
             URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
-        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/23589312/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
 dkimicro_md:
     bids:
         model: dkimicro
@@ -185,7 +185,7 @@ dkimicro_md:
         Model:
             Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
             URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
-        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/23589312/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
         Units: mm^2/s
 dkimicro_rd:
     bids:
@@ -196,7 +196,7 @@ dkimicro_rd:
         Model:
             Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
             URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
-        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/23589312/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
         Units: mm^2/s
 dkimicro_rde:
     bids:
@@ -207,7 +207,7 @@ dkimicro_rde:
         Model:
             Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
             URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
-        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/23589312/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
         Units: mm^2/s
 dkimicro_tortuosity:
     bids:
@@ -218,7 +218,7 @@ dkimicro_tortuosity:
         Model:
             Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
             URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
-        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/23589312/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
 dkimicro_trace:
     bids:
         model: dkimicro
@@ -228,5 +228,5 @@ dkimicro_trace:
         Model:
             Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
             URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
-        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/23589312/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
         Units: mm^2/s
