@@ -74,6 +74,10 @@ autodoc_mock_imports = [
     "pandas",
     "pygraphviz",
     "seaborn",
+    # Mock internal optional module used by CLI to avoid import errors in docs
+    "qsirecon.viz.reports",
+    # Mock Cython module that is not importable at doc build time
+    "qsirecon.utils.maths",
 ]
 
 # NOTE: Not in qsirecon
@@ -178,7 +182,6 @@ napoleon_custom_sections = [
     ("Inputs", "Parameters"),
     ("Outputs", "Parameters"),
     ("Attributes", "Parameters"),
-    ("Recon Spec Options", "Parameters"),
     ("Mandatory Inputs", "Parameters"),
     ("Optional Inputs", "Parameters"),
     ("License", "License"),
@@ -188,6 +191,14 @@ napoleon_custom_sections = [
 apidoc_module_dir = "../qsirecon"
 apidoc_output_dir = "api"
 apidoc_excluded_paths = ["conftest.py", "*/tests/*", "tests/*", "data/*"]
+apidoc_excluded_paths += [
+    # Exclude config module to avoid duplicate object descriptions
+    "config.py",
+    # Skip problematic utils/shm.py from docs
+    "utils/shm.py",
+    # Avoid duplicate/invalid module references from package docstring
+    "workflows/recon/__init__.py",
+]
 apidoc_separate_modules = True
 apidoc_extra_args = ["--module-first", "-d 1", "-T"]
 
