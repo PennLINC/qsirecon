@@ -17,7 +17,7 @@ DKI Foundational Papers
 - DKI was first introduced by :cite:t:`jensen2005dki` as an extension of DTI to measure **diffusion non-Gaussianity** in tissues. Their seminal work defined **diffusional kurtosis** as a quantitative marker, showing that normal white matter has substantially higher kurtosis than gray matter.
 - Building on this, :cite:t:`lu2006dki` provided the first full **mathematical derivation of the kurtosis tensor**, introduced rotational invariants like **mean kurtosis (MK)**, reported reproducible MK values, and showed that kurtosis anisotropy can reveal complex fiber geometries.
 - Jensen and Helpern's 2010 review :cite:p:`jensen2010dki` consolidated the DKI model, formalizing **MK, AK, RK** as rotationally invariant descriptors, discussed practical acquisition requirements and highlighted DKI’s sensitivity to tissue heterogeneity.
-- :cite:t:`tabesh2011dki` introduced **constrained least-squares estimation** to ensure physically valid DKI fits, defined **KFA**, and provided closed-form formulas for MK and RK.
+- :cite:t:`tabesh2011dki` introduced **constrained least-squares estimation** to ensure physically valid DKI fits, defined Kurtosis Fractional Anisotropy **KFA**, and provided closed-form formulas for MK and RK.
 - :cite:t:`fieremans2011dki` extended DKI toward **microstructural modeling of white matter**, deriving **AWF** and **extra-axonal tortuosity** from DKI data and aligning DKI-derived parameters with known tissue features.
 
 DKI Studies Across The Lifespan
