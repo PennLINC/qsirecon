@@ -57,6 +57,7 @@ else:
 
 
 def response_function_to_bids(response_function_file):
+    """Load a response function from MRtrix3 and convert to JSON-compatible format."""
     response_data = np.loadtxt(response_function_file)
     if response_data.ndim == 1:
         return [[value] for value in response_data]
@@ -431,8 +432,7 @@ class EstimateFOD(MRTrix3Base):
                     "Type": "sh",
                 },
                 "ParameterURL": (
-                    "http://www.sciencedirect.com/"
-                    "science/article/pii/S1053811911012092"
+                    "http://www.sciencedirect.com/" "science/article/pii/S1053811911012092"
                 ),
                 "ResponseFunction": {"Coefficients": response_function_data, "Type": "zsh"},
             }
@@ -482,8 +482,7 @@ class SS3TEstimateFOD(SS3TBase, EstimateFOD):
             outputs[tissue_type + "_odf_metadata"] = {
                 "Model": {
                     "Description": (
-                        "Single-Shell 3-Tissue (SS3T) "
-                        "Constrained Spherical Deconvolution (CSD)"
+                        "Single-Shell 3-Tissue (SS3T) " "Constrained Spherical Deconvolution (CSD)"
                     ),
                     "URL": "https://3Tissue.github.io",
                 },
@@ -497,8 +496,7 @@ class SS3TEstimateFOD(SS3TBase, EstimateFOD):
                     "Type": "sh",
                 },
                 "ParameterURL": (
-                    "http://www.sciencedirect.com/"
-                    "science/article/pii/S1053811911012092"
+                    "http://www.sciencedirect.com/" "science/article/pii/S1053811911012092"
                 ),
                 "ResponseFunction": {"Coefficients": response_function_data, "Type": "zsh"},
             }
