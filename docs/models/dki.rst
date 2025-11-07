@@ -4,6 +4,40 @@
 Diffusion kurtosis imaging (DKI)
 ################################
 
+Water diffusion in the brain is affected by the physical structures that make up neurons and organelles.
+Instead of freely diffusing through space, water encounters barriers from myelin, cell membranes and other structures that introduce non-Gaussian features into the water diffusion distribution.
+The Diffusion Kurtosis Imaging (DKI; :cite:p:`jensen2005dki`) model extends the of the DTI model by adding an additional 15 parameters that capture the deviations from Gaussianity missed when fitting the simple 6 parameter DTI model.
+The DKI model incorporates data from all shells, potentially estimating the same scalar maps from DTI (FA, MD, etc) more accurately than a traditional tensor fit :cite:p:`henriques2021dki`.
+In addition to the measures from DTI, the DKI model also allows one to compute additional scalars derived from the kurtosis tensor such as mean kurtosis (MK), radial kurtosis (RK), and axial kurtosis (AK) :cite:p:`jensen2010dki`.
+DKI’s sensitivity to non-Gaussian diffusion makes it useful for capturing the interaction of water with more complex tissue features.
+
+Foundational Papers and First Derivations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- DKI was first introduced by Jensen et al. (2005) as an extension of DTI to measure **diffusion non-Gaussianity** in tissues :cite:p:`jensen2005dki`.
+Their seminal work defined **diffusional kurtosis** as a quantitative marker, showing that normal white matter has substantially higher kurtosis than gray matter.
+- Building on this, Lu et al. (2006) provided the first full **mathematical derivation of the kurtosis tensor**, introduced rotational invariants like **mean kurtosis (MK)**, reported reproducible MK values, and showed that kurtosis anisotropy can reveal complex fiber geometries :cite:p:`lu2006dki`.
+- Jensen and Helpern’s 2010 review consolidated the DKI model, formalizing **MK, AK, RK** as rotationally invariant descriptors, discussed practical acquisition requirements and highlighted DKI’s sensitivity to tissue heterogeneity :cite:p:`jensen2010dki`.
+- Tabesh et al. (2011) introduced **constrained least-squares estimation** to ensure physically valid DKI fits, defined **KFA**, and provided closed-form formulas for MK and RK :cite:p:`tabesh2011dki`.
+- Fieremans et al. (2011) extended DKI toward **microstructural modeling of white matter**, deriving **AWF** and **extra-axonal tortuosity** from DKI data :cite:p:`fieremans2011dki` and aligning DKI-derived parameters with known tissue features.
+
+TODO Add: https://www.frontiersin.org/journals/human-neuroscience/articles/10.3389/fnhum.2021.675433/full
+
+Influential Lifespan Findings (Development and Aging)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Normal aging:** Falangola et al. (2008) showed age-related changes in DKI metrics across the healthy lifespan; MD increased and FA decreased in the oldest group :cite:p:`falangola2008dki`, while **MK** exhibited distinct trends across the lifespan.
+- **Early development:** Paydar et al. (2014) demonstrated that **FA and MK rise with age in WM**, but MK continues to increase after FA plateaus; MK also revealed GM maturation undetectable by FA :cite:p:`paydar2014dki`.
+- **Adult lifespan and aging white matter:** Coutu et al. (2014) found **MK and kurtosis anisotropy** decline with age and that **MK** shows a clearer linear association with advancing age than FA/MD, indicating progressive loss of microstructural complexity in WM :cite:p:`coutu2014dki`.
+
+Methodological Warnings and Caveats
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- **Acquisition and fitting constraints:** DKI’s higher-order model (4th-order tensor) requires multiple high–b shells and many directions, leading to long scans and lower SNR :cite:p:`steven2014dki`. “Fast kurtosis” strategies can focus on efficient MK estimation :cite:p:`hansen2017fastkurtosis`.
+- **Interpretation pitfalls (lack of specificity):** DKI metrics are **not tissue-specific**; MK aggregates different sources (density, dispersion, heterogeneity). Hui et al. caution that the “main caveat of DKI is that different kurtosis sources are all conflated” (`discovery.ucl.ac.uk <https://discovery.ucl.ac.uk/id/eprint/10185792/1/1-s2.0-S1053811921011046-main.pdf#:~:text=The%20main%20caveat%20of%20DKI,mono%02exponential>`_).
+- **Noise, artifacts, and reproducibility:** Unconstrained DKI can yield non-physical or variable estimates; regularized estimation with plausible bounds improves reproducibility (`pubmed.ncbi.nlm.nih.gov <https://pubmed.ncbi.nlm.nih.gov/33829542/#:~:text=reproducibility%20of%20the%20kurtosis%20metrics,with%20enhanced%20quality%20and%20contrast>`_).
+
+
 
 
 **********
