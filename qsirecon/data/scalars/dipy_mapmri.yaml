@@ -1,4 +1,4 @@
-lapnorm_file:
+lapnorm:
     bids:
         model: mapmri
         param: lapnorm
@@ -7,7 +7,7 @@ lapnorm_file:
         Model:
             Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
             URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
-mapcoeffs_file:
+mapcoeffs:
     bids:
         model: mapmri
         param: mapcoeffs
@@ -16,7 +16,7 @@ mapcoeffs_file:
         Model:
             Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
             URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
-msd_file:
+msd:
     bids:
         model: mapmri
         param: msd
@@ -25,7 +25,7 @@ msd_file:
         Model:
             Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
             URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
-ng_file:
+ng:
     bids:
         model: mapmri
         param: ng
@@ -34,7 +34,7 @@ ng_file:
         Model:
             Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
             URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
-ngpar_file:
+ngpar:
     bids:
         model: mapmri
         param: ngpar
@@ -43,7 +43,7 @@ ngpar_file:
         Model:
             Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
             URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
-ngperp_file:
+ngperp:
     bids:
         model: mapmri
         param: ngperp
@@ -52,7 +52,7 @@ ngperp_file:
         Model:
             Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
             URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
-qiv_file:
+qiv:
     bids:
         model: mapmri
         param: qiv
@@ -61,7 +61,7 @@ qiv_file:
         Model:
             Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
             URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
-rtap_file:
+rtap:
     bids:
         model: mapmri
         param: rtap
@@ -70,7 +70,7 @@ rtap_file:
         Model:
             Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
             URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
-rtop_file:
+rtop:
     bids:
         model: mapmri
         param: rtop
@@ -79,7 +79,7 @@ rtop_file:
         Model:
             Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
             URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
-rtpp_file:
+rtpp:
     bids:
         model: mapmri
         param: rtpp

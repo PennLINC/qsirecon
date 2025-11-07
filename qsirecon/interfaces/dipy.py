@@ -328,8 +328,8 @@ class MAPMRIOutputSpec(DipyReconOutputSpec):
     perng_metadata = traits.Dict(desc="Metadata for the perng file.")
     parng = File(desc="Voxelwise Parallel Nematic Gradient.")
     parng_metadata = traits.Dict(desc="Metadata for the parng file.")
-    mapmri_coeffs = File(desc="Voxelwise MAPMRI coefficients.")
-    mapmri_coeffs_metadata = traits.Dict(desc="Metadata for the mapmri_coeffs file.")
+    mapcoeffs = File(desc="Voxelwise MAPMRI coefficients.")
+    mapcoeffs_metadata = traits.Dict(desc="Metadata for the mapmri_coeffs file.")
 
 
 class MAPMRIReconstruction(DipyReconInterface):
@@ -407,7 +407,7 @@ class MAPMRIReconstruction(DipyReconInterface):
         self._results["rtpp"] = self._save_scalar(rtpp, "_rtpp", runtime, dwi_img)
 
         coeffs = mapfit_aniso.mapmri_coeff
-        self._results["mapmri_coeffs"] = self._save_scalar(coeffs, "_mapcoeffs", runtime, dwi_img)
+        self._results["mapcoeffs"] = self._save_scalar(coeffs, "_mapcoeffs", runtime, dwi_img)
 
         if self.inputs.anisotropic_scaling:
             ng = mapfit_aniso.ng()
@@ -428,14 +428,26 @@ class MAPMRIReconstruction(DipyReconInterface):
         base_metadata = {
             "Model": {
                 "Parameters": {
-                    "ParallelDiffusivity": self.inputs.dPar,
-                    "IsotropicDiffusivity": self.inputs.dIso,
-                    "IsExVivo": self.inputs.isExvivo,
+                    "RadialOrder": self.inputs.radial_order,
+                    "LaplacianRegularization": self.inputs.laplacian_regularization,
+                    "LaplacianWeighting": self.inputs.laplacian_weighting,
+                    "PositivityConstraint": self.inputs.positivity_constraint,
+                    "AnisotropicScaling": self.inputs.anisotropic_scaling,
+                    # XXX: These are not used.
+                    "PositivityGrid": self.inputs.pos_grid,
+                    "PositivityRadius": self.inputs.pos_radius,
+                    "EigenvalueThreshold": self.inputs.eigenvalue_threshold,
+                    "BvalThreshold": self.inputs.bval_threshold,
+                    "DtiScaleEstimation": self.inputs.dti_scale_estimation,
+                    "StaticDiffusivity": self.inputs.static_diffusivity,
+                    "CvxpySolver": self.inputs.cvxpy_solver,
                 },
             },
         }
         outputs = super()._list_outputs()
-        file_outputs = [name for name in self.output_spec().get() if name.endswith("_file")]
+        file_outputs = [
+            name for name in self.output_spec().get() if not name.endswith("_metadata")
+        ]
         for file_output in file_outputs:
             # Patch in model and parameter information to metadata dictionaries
             metadata_output = file_output + "_metadata"
