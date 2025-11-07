@@ -87,7 +87,7 @@ def init_amico_noddi_fit_wf(
 
     plot_reports = params.pop("plot_reports", True)
     desc = (
-        "\n#### NODDI Reconstruction\n\n"
+        "\n\n#### NODDI Reconstruction\n\n"
         + "The NODDI model (@noddi) was fit using the AMICO implementation (@amico). "
     )
 
@@ -103,8 +103,9 @@ def init_amico_noddi_fit_wf(
     desc += build_documentation(noddi_fit) + " "
     noddi_tissue_fraction = pe.Node(NODDITissueFraction(), name="noddi_tissue_fraction")
     desc += (
-        "The output tissue fraction map was separately reconstructed using "
-        + "custom code matching the AMICO implementation (@parker2021not). "
+        "AMICO does not save the tissue fraction map. Therefore, "
+        "the output tissue fraction map was separately reconstructed using "
+        "custom Python code matching the AMICO implementation. "
     )
     convert_to_fibgz = pe.Node(NODDItoFIBGZ(), name="convert_to_fibgz")
 

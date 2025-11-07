@@ -148,6 +148,12 @@ class NODDIInputSpec(AmicoInputSpec):
         ),
         doc=ConditionalDoc("The isotropic diffusivity constant was set to {value} mm^2/s."),
     )
+    b0_threshold = traits.Float(
+        50.0,
+        usedefault=True,
+        desc="Threshold below which a b-value is considered a b0.",
+        doc=ConditionalDoc("All b-values were rounded to the closest {value} s/mm²."),
+    )
     isExvivo = traits.Bool(
         False,
         usedefault=True,
@@ -170,10 +176,10 @@ class NODDIInputSpec(AmicoInputSpec):
             if_true=(
                 "Diffusion-weighted images were normalized to the mean non-diffusion-weighted "
                 "(b0) signal to reduce intensity variation across volumes. For each voxel, "
-                "the mean signal intensity was computed across all b₀ volumes identified in "
+                "the mean signal intensity was computed across all b0 volumes identified in "
                 "the acquisition scheme. Voxelwise normalization factors were then defined as "
                 "the reciprocal of these mean b0 values. To prevent division by noise-dominated "
-                "or near-zero intensities, voxels with mean b₀ signal below a fixed threshold "
+                "or near-zero intensities, voxels with mean b0 signal below a fixed threshold "
                 "(defined as b0 x mean of all positive b0 values) were excluded from normalization "
                 "by setting their factors to zero. The resulting normalization factors were applied to "
                 "each diffusion-weighted volume by voxelwise multiplication, yielding data expressed as "
@@ -185,32 +191,40 @@ class NODDIInputSpec(AmicoInputSpec):
         True,
         usedefault=True,
         desc=(
-            "Flag indicating whether to compute the root mean square error (RMSE) "
-            "between the measured and fitted signals. Default: True."
+            "Flag indicating whether to compute the root mean square error "
+            "(RMSE) between the measured and fitted signals. Default: True."
         ),
         doc=ConditionalDoc(
-            if_true="The root mean square error (RMSE) between the measured and fitted signals was computed.",
+            if_true="The root mean square error (RMSE) between the measured "
+            "and fitted signals was computed."
         ),
     )
     nrmse = traits.Bool(
         True,
         usedefault=True,
         desc=(
-            "Flag indicating whether to compute the normalized root mean square error (NRMSE) "
-            "between the measured and fitted signals. Default: True."
+            "Flag indicating whether to compute the normalized root mean square error"
+            " (NRMSE) between the measured and fitted signals. "
+            "Default: True."
         ),
         doc=ConditionalDoc(
-            if_true="The normalized root mean square error (NRMSE) between the measured and fitted signals was computed.",
+            if_true=(
+                "The normalized root mean square error (NRMSE) "
+                "between the measured and fitted signals was computed."
+            ),
         ),
     )
     saveModulatedMaps = traits.Bool(
         True,
         usedefault=True,
-        desc=("Flag indicating whether to save modulated maps for ICVF and ODI. Default: True."),
+        desc=(
+            "Flag indicating whether to save modulated maps for ICVF and ODI. " "Default: True."
+        ),
         doc=ConditionalDoc(
             if_true=(
-                "ICVF and Orientation Dispersion maps were multipled by the tissue fraction "
-                "1 - ISOVF in AMICO to produce tissue fraction modulated maps (@parker2021not)."
+                "Intracellular volume fraction (ICVF) and Orientation dispersion maps "
+                "were multipled by the tissue fraction (1 - isotropic volume fraction) "
+                "in AMICO to produce tissue fraction modulated maps (@parker2021not)."
             ),
         ),
     )
@@ -219,11 +233,13 @@ class NODDIInputSpec(AmicoInputSpec):
         "WLS",
         usedefault=True,
         desc=(
-            "Fitting method to use. Options are 'OLS' (Ordinary Least Squares) or 'WLS' (Weighted Least Squares). Default: 'OLS'."
+            "Fitting method to use. Options are 'OLS' (Ordinary Least Squares) "
+            "or 'WLS' (Weighted Least Squares). "
+            "Default: 'OLS'."
         ),
         doc=ConditionalDoc(
             "Peak directions were estimated from a diffusion tensor model "
-            "using {value} fitting in DIPY (@dipy))."
+            "using {value} fitting in DIPY (@dipy)."
         ),
     )
     num_threads = traits.Int(1, usedefault=True, nohash=True)
