@@ -138,6 +138,8 @@ were also computed (@parker2021not)."""
             ('config', 'config'),
         ]),
         (noddi_fit, recon_scalars, [
+            ('directions', 'directions'),
+            ('directions_metadata', 'directions_metadata'),
             ('icvf', 'icvf'),
             ('icvf_metadata', 'icvf_metadata'),
             ('od', 'od'),

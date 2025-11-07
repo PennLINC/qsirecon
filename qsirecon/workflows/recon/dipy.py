@@ -83,11 +83,11 @@ def init_dipy_brainsuite_shore_recon_wf(
 
         shore_coeffs
             3dSHORE coefficients
-        rtop_file
+        rtop
             Voxelwise Return-to-origin probability.
-        rtap_file
+        rtap
             Voxelwise Return-to-axis probability.
-        rtpp_file
+        rtpp
             Voxelwise Return-to-plane probability.
 
 
@@ -253,7 +253,7 @@ def init_dipy_brainsuite_shore_recon_wf(
 
         ds_rtop = pe.Node(
             DerivativesDataSink(
-                desc="rtop_file",
+                desc="rtop",
                 extension=".nii.gz",
                 compress=True,
             ),
@@ -385,17 +385,17 @@ def init_dipy_mapmri_recon_wf(
 
         shore_coeffs
             3dSHORE coefficients
-        rtop_file
+        rtop
             Voxelwise Return-to-origin probability.
-        rtap_file
+        rtap
             Voxelwise Return-to-axis probability.
-        rtpp_file
+        rtpp
             Voxelwise Return-to-plane probability.
-        msd_file
+        msd
             Voxelwise MSD
-        qiv_file
+        qiv
             q-space inverse variance
-        lapnorm_file
+        lapnorm
             Voxelwise norm of the Laplacian
 
     Params
@@ -456,25 +456,25 @@ def init_dipy_mapmri_recon_wf(
         niu.IdentityInterface(
             fields=[
                 "mapmri_coeffs",
-                "rtop_file",
-                "rtap_file",
-                "rtpp_file",
+                "rtop",
+                "rtap",
+                "rtpp",
                 "fibgz",
                 "fod_sh_mif",
-                "parng_file",
-                "perng_file",
-                "ng_file",
-                "qiv_file",
-                "lapnorm_file",
-                "msd_file",
+                "parng",
+                "perng",
+                "ng",
+                "qiv",
+                "lapnorm",
+                "msd",
                 "recon_scalars",
-            ],
+            ]
         ),
         name="outputnode",
     )
 
     workflow = Workflow(name=name)
-    desc = "\n\n#### Dipy Reconstruction\n\n"
+    desc = "#### Dipy Reconstruction\n\n"
 
     # Do we have deltas?
     deltas = (params.get("big_delta", None), params.get("small_delta", None))
@@ -506,32 +506,30 @@ def init_dipy_mapmri_recon_wf(
             ('dwi_file', 'dwi_file'),
             ('bval_file', 'bval_file'),
             ('bvec_file', 'bvec_file'),
-            ('dwi_mask', 'mask_file'),
-        ]),
+            ('dwi_mask', 'mask_file')]),
         (recon_map, outputnode, [
             ('mapmri_coeffs', 'mapmri_coeffs'),
-            ('rtop_file', 'rtop_file'),
-            ('rtap_file', 'rtap_file'),
-            ('rtpp_file', 'rtpp_file'),
-            ('parng_file', 'parng_file'),
-            ('perng_file', 'perng_file'),
-            ('msd_file', 'msd_file'),
-            ('ng_file', 'ng_file'),
-            ('qiv_file', 'qiv_file'),
-            ('lapnorm_file', 'lapnorm_file'),
+            ('rtop', 'rtop'),
+            ('rtap', 'rtap'),
+            ('rtpp', 'rtpp'),
+            ('parng', 'parng'),
+            ('perng', 'perng'),
+            ('msd', 'msd'),
+            ('ng', 'ng'),
+            ('qiv', 'qiv'),
+            ('lapnorm', 'lapnorm'),
             ('fibgz', 'fibgz'),
-            ('fod_sh_mif', 'fod_sh_mif'),
-        ]),
+            ('fod_sh_mif', 'fod_sh_mif')]),
         (recon_map, recon_scalars, [
-            ('rtop_file', 'rtop_file'),
-            ('rtap_file', 'rtap_file'),
-            ('rtpp_file', 'rtpp_file'),
-            ('ng_file', 'ng_file'),
-            ('parng_file', 'ngpar_file'),
-            ('perng_file', 'ngperp_file'),
-            ('msd_file', 'msd_file'),
-            ('qiv_file', 'qiv_file'),
-            ('lapnorm_file', 'lapnorm_file'),
+            ('rtop', 'rtop_file'),
+            ('rtap', 'rtap_file'),
+            ('rtpp', 'rtpp_file'),
+            ('ng', 'ng_file'),
+            ('parng', 'ngpar_file'),
+            ('perng', 'ngperp_file'),
+            ('msd', 'msd_file'),
+            ('qiv', 'qiv_file'),
+            ('lapnorm', 'lapnorm_file'),
             ('mapmri_coeffs', 'mapcoeffs_file'),
         ]),
     ])  # fmt:skip
@@ -555,12 +553,10 @@ def init_dipy_mapmri_recon_wf(
             (inputnode, plot_peaks, [
                 ('dwi_mask', 'mask_file'),
                 ('dwi_ref', 'background_image'),
-                ('odf_rois', 'odf_rois'),
-            ]),
+                ('odf_rois', 'odf_rois')]),
             (recon_map, plot_peaks, [
                 ('odf_directions', 'directions_file'),
-                ('odf_amplitudes', 'odf_file'),
-            ]),
+                ('odf_amplitudes', 'odf_file')]),
             (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')]),
         ])  # fmt:skip
 
