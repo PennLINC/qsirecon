@@ -360,11 +360,7 @@ class _DIPYMAPMRIReconScalarInputSpec(ReconScalarsInputSpec):
 
 for input_name in dipy_mapmri_scalars:
     _DIPYMAPMRIReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
-    if input_name.endswith("_file"):
-        _DIPYMAPMRIReconScalarInputSpec.add_class_trait(
-            input_name + "_metadata",
-            traits.Dict(),
-        )
+    _DIPYMAPMRIReconScalarInputSpec.add_class_trait(f"{input_name}_metadata", traits.Dict())
 
 
 class DIPYMAPMRIReconScalars(ReconScalars):

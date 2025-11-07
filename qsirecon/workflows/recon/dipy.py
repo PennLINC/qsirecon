@@ -455,7 +455,7 @@ def init_dipy_mapmri_recon_wf(
     outputnode = pe.Node(
         niu.IdentityInterface(
             fields=[
-                "mapmri_coeffs",
+                "mapcoeffs",
                 "rtop",
                 "rtap",
                 "rtpp",
