@@ -485,7 +485,7 @@ class SS3TEstimateFOD(SS3TBase, EstimateFOD):
                     "EncodingAxis": 3,
                     "Reference": "xyz",
                     "SphericalHarmonicBasis": "MRtrix3",
-                    "SphericalHarmonicDegree": self.inputs.max_sh if tissue_type == "wm" else 0,
+                    "SphericalHarmonicDegree": 8 if tissue_type == "wm" else 0,
                     "Type": "sh",
                 },
                 "ParameterURL": "http://www.sciencedirect.com/"
