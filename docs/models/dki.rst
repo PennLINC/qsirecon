@@ -34,8 +34,8 @@ Methodological Warnings and Caveats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - **Acquisition and fitting constraints:** DKI’s higher-order model (4th-order tensor) requires multiple high–b shells and many directions, leading to long scans and lower SNR :cite:p:`steven2014dki`. “Fast kurtosis” strategies can focus on efficient MK estimation :cite:p:`hansen2017fastkurtosis`.
-- **Interpretation pitfalls (lack of specificity):** DKI metrics are **not tissue-specific**; MK aggregates different sources (density, dispersion, heterogeneity). Hui et al. caution that the “main caveat of DKI is that different kurtosis sources are all conflated” (`discovery.ucl.ac.uk <https://discovery.ucl.ac.uk/id/eprint/10185792/1/1-s2.0-S1053811921011046-main.pdf#:~:text=The%20main%20caveat%20of%20DKI,mono%02exponential>`_).
-- **Noise, artifacts, and reproducibility:** Unconstrained DKI can yield non-physical or variable estimates; regularized estimation with plausible bounds improves reproducibility (`pubmed.ncbi.nlm.nih.gov <https://pubmed.ncbi.nlm.nih.gov/33829542/#:~:text=reproducibility%20of%20the%20kurtosis%20metrics,with%20enhanced%20quality%20and%20contrast>`_).
+- **Interpretation pitfalls (lack of specificity):** DKI metrics are **not tissue-specific**; MK aggregates different sources (density, dispersion, heterogeneity). Hui et al. caution that the “main caveat of DKI is that different kurtosis sources are all conflated” :cite:p:`alves2022cti`.
+- **Noise, artifacts, and reproducibility:** Unconstrained DKI can yield non-physical or variable estimates; regularized estimation with plausible bounds improves reproducibility :cite:p:`henriques2021robustdki`.
 
 
 
