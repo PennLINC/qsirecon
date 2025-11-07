@@ -221,7 +221,7 @@ class NODDIInputSpec(AmicoInputSpec):
         desc=(
             "Fitting method to use. Options are 'OLS' (Ordinary Least Squares) or 'WLS' (Weighted Least Squares). Default: 'OLS'."
         ),
-        doc=(
+        doc=ConditionalDoc(
             "Peak directions were estimated from a diffusion tensor model "
             "using {value} fitting in DIPY (@dipy))."
         ),
