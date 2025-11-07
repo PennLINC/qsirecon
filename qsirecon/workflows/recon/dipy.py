@@ -506,7 +506,8 @@ def init_dipy_mapmri_recon_wf(
             ('dwi_file', 'dwi_file'),
             ('bval_file', 'bval_file'),
             ('bvec_file', 'bvec_file'),
-            ('dwi_mask', 'mask_file')]),
+            ('dwi_mask', 'mask_file'),
+        ]),
         (recon_map, outputnode, [
             ('mapmri_coeffs', 'mapmri_coeffs'),
             ('rtop', 'rtop'),
@@ -519,7 +520,8 @@ def init_dipy_mapmri_recon_wf(
             ('qiv', 'qiv'),
             ('lapnorm', 'lapnorm'),
             ('fibgz', 'fibgz'),
-            ('fod_sh_mif', 'fod_sh_mif')]),
+            ('fod_sh_mif', 'fod_sh_mif'),
+        ]),
         (recon_map, recon_scalars, [
             ('rtop', 'rtop_file'),
             ('rtap', 'rtap_file'),

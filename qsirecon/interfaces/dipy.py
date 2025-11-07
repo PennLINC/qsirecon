@@ -30,6 +30,7 @@ from nipype.utils.filemanip import fname_presuffix
 from pkg_resources import resource_filename as pkgr
 
 from ..interfaces.mrtrix import _convert_fsl_to_mrtrix
+from ..utils.boilerplate import ConditionalDoc
 from ..utils.brainsuite_shore import BrainSuiteShoreModel, brainsuite_shore_basis
 from .converters import (
     amplitudes_to_fibgz,
@@ -47,9 +48,34 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
     dwi_file = File(exists=True, mandatory=True)
     mask_file = File(exists=True)
     local_bvec_file = File(exists=True)
-    big_delta = traits.Either(None, traits.Float(), usedefault=True)
-    small_delta = traits.Either(None, traits.Float(), usedefault=True)
-    b0_threshold = traits.CFloat(50, usedefault=True)
+    big_delta = traits.Either(
+        None,
+        traits.Float(),
+        usedefault=True,
+        desc=(
+            "Big delta in seconds. "
+            "This is not added to the boilerplate through this interface. "
+            "It is added in the workflow."
+        ),
+    )
+    small_delta = traits.Either(
+        None,
+        traits.Float(),
+        usedefault=True,
+        desc=(
+            "Small delta in seconds. "
+            "This is not added to the boilerplate through this interface. "
+            "It is added in the workflow."
+        ),
+    )
+    b0_threshold = traits.CFloat(
+        50,
+        usedefault=True,
+        desc="B-value threshold. Any b-values below this threshold are considered b0s.",
+        doc=ConditionalDoc(
+            "B-values less than {value} were treated as b0s.",
+        ),
+    )
     # Outputs
     write_fibgz = traits.Bool(True)
     write_mif = traits.Bool(True)
@@ -190,33 +216,120 @@ class DipyReconInterface(SimpleInterface):
 
 
 class MAPMRIInputSpec(DipyReconInputSpec):
-    radial_order = traits.Int(6, usedefault=True)
-    laplacian_regularization = traits.Bool(True, usedefault=True)
-    laplacian_weighting = traits.Either(traits.Str("GCV"), traits.Float(0.2), usedefault=True)
-    positivity_constraint = traits.Bool(False, usedefault=True)
-    pos_grid = traits.Int(15, usedefault=True)
-    pos_radius = traits.Either(
-        traits.Str("adaptive"), traits.Int(), default="adaptive", usedefault=True
+    radial_order = traits.Int(
+        6,
+        usedefault=True,
+        desc="MAPMRI radial order.",
+        doc=ConditionalDoc("The radial order of the MAPMRI model was set to {value}."),
     )
-    anisotropic_scaling = traits.Bool(True, usedefault=True)
-    eigenvalue_threshold = traits.Float(1e-04, usedefault=True)
-    bval_threshold = traits.Float()
-    dti_scale_estimation = traits.Bool(True, usedefault=True)
-    static_diffusivity = traits.Float(0.7e-3, usedefault=True)
-    cvxpy_solver = traits.Str()
+    laplacian_regularization = traits.Bool(
+        True,
+        usedefault=True,
+        desc="Laplacian regularization.",
+        doc=ConditionalDoc(
+            "Laplacian regularization was enabled.",
+            if_false="Laplacian regularization was disabled.",
+        ),
+    )
+    # XXX: Does traits.Str limit the values to "GCV" and "0.2", or do we need Enum?
+    laplacian_weighting = traits.Either(
+        traits.Str("GCV"),
+        traits.Float(0.2),
+        usedefault=True,
+        desc="Laplacian weighting.",
+        doc=ConditionalDoc("Laplacian weighting was set to {value}."),
+    )
+    positivity_constraint = traits.Bool(
+        False,
+        usedefault=True,
+        desc="Positivity constraint.",
+        doc=ConditionalDoc(
+            "Positivity constraint was enabled.",
+            if_false="Positivity constraint was disabled.",
+        ),
+    )
+    # XXX: This is not used.
+    pos_grid = traits.Int(
+        15,
+        usedefault=True,
+        desc="Positivity grid.",
+        doc=ConditionalDoc("Positivity grid was set to {value}."),
+    )
+    # XXX: This is not used.
+    pos_radius = traits.Either(
+        traits.Str("adaptive"),
+        traits.Int(),
+        default="adaptive",
+        usedefault=True,
+        desc="Positivity radius.",
+        doc=ConditionalDoc("Positivity radius was set to {value}."),
+    )
+    anisotropic_scaling = traits.Bool(
+        True,
+        usedefault=True,
+        desc="Anisotropic scaling.",
+        doc=ConditionalDoc(
+            "Anisotropic scaling was enabled.",
+            if_false="Anisotropic scaling was disabled.",
+        ),
+    )
+    # XXX: This is not used.
+    eigenvalue_threshold = traits.Float(
+        1e-04,
+        usedefault=True,
+        desc="Eigenvalue threshold.",
+        doc=ConditionalDoc("Eigenvalue threshold was set to {value}."),
+    )
+    # XXX: This is not used, but an inherited b0_threshold parameter is.
+    bval_threshold = traits.Float(
+        desc="B-value threshold.",
+        doc=ConditionalDoc("B-value threshold was set to {value}."),
+    )
+    # XXX: This is not used.
+    dti_scale_estimation = traits.Bool(
+        True,
+        usedefault=True,
+        desc="DTI scale estimation.",
+        doc=ConditionalDoc(
+            "DTI scale estimation was enabled.",
+            if_false="DTI scale estimation was disabled.",
+        ),
+    )
+    # XXX: This is not used.
+    static_diffusivity = traits.Float(
+        0.7e-3,
+        usedefault=True,
+        desc="Static diffusivity.",
+        doc=ConditionalDoc("Static diffusivity was set to {value}."),
+    )
+    # XXX: This is not used.
+    cvxpy_solver = traits.Str(
+        desc="CVXPY solver.",
+        doc=ConditionalDoc("CVXPY solver was set to {value}."),
+    )
 
 
 class MAPMRIOutputSpec(DipyReconOutputSpec):
-    rtop = File()
-    lapnorm = File()
-    msd = File()
-    qiv = File()
-    rtap = File()
-    rtpp = File()
-    ng = File()
-    perng = File()
-    parng = File()
-    mapmri_coeffs = File()
+    rtop = File(desc="Voxelwise Return-to-origin probability.")
+    rtop_metadata = traits.Dict(desc="Metadata for the rtop file.")
+    lapnorm = File(desc="Voxelwise norm of the Laplacian.")
+    lapnorm_metadata = traits.Dict(desc="Metadata for the lapnorm file.")
+    msd = File(desc="Voxelwise MSD.")
+    msd_metadata = traits.Dict(desc="Metadata for the msd file.")
+    qiv = File(desc="Voxelwise q-space inverse variance.")
+    qiv_metadata = traits.Dict(desc="Metadata for the qiv file.")
+    rtap = File(desc="Voxelwise Return-to-axis probability.")
+    rtap_metadata = traits.Dict(desc="Metadata for the rtap file.")
+    rtpp = File(desc="Voxelwise Return-to-plane probability.")
+    rtpp_metadata = traits.Dict(desc="Metadata for the rtpp file.")
+    ng = File(desc="Voxelwise Nematic Gradient.")
+    ng_metadata = traits.Dict(desc="Metadata for the ng file.")
+    perng = File(desc="Voxelwise Perpendicular Nematic Gradient.")
+    perng_metadata = traits.Dict(desc="Metadata for the perng file.")
+    parng = File(desc="Voxelwise Parallel Nematic Gradient.")
+    parng_metadata = traits.Dict(desc="Metadata for the parng file.")
+    mapmri_coeffs = File(desc="Voxelwise MAPMRI coefficients.")
+    mapmri_coeffs_metadata = traits.Dict(desc="Metadata for the mapmri_coeffs file.")
 
 
 class MAPMRIReconstruction(DipyReconInterface):
@@ -310,6 +423,26 @@ class MAPMRIReconstruction(DipyReconInterface):
         self._write_external_formats(runtime, mapfit_aniso, mask_img, "_MAPMRI")
 
         return runtime
+
+    def _list_outputs(self):
+        base_metadata = {
+            "Model": {
+                "Parameters": {
+                    "ParallelDiffusivity": self.inputs.dPar,
+                    "IsotropicDiffusivity": self.inputs.dIso,
+                    "IsExVivo": self.inputs.isExvivo,
+                },
+            },
+        }
+        outputs = super()._list_outputs()
+        file_outputs = [name for name in self.output_spec().get() if name.endswith("_file")]
+        for file_output in file_outputs:
+            # Patch in model and parameter information to metadata dictionaries
+            metadata_output = file_output + "_metadata"
+            if metadata_output in self.output_spec().get():
+                outputs[metadata_output] = base_metadata
+
+        return outputs
 
 
 class BrainSuiteShoreReconstructionInputSpec(DipyReconInputSpec):
