@@ -702,6 +702,17 @@ def init_dwi_recon_anatomical_workflow(
                 name="ds_atlas_mrtrix_lut",
                 run_without_submitting=True,
             )
+            ds_atlas_orig_lut = pe.MapNode(
+                DerivativesDataSink(
+                    dismiss_entities=("desc",),
+                    desc="dsistudio",
+                    suffix="dseg",
+                    extension=".txt",
+                ),
+                iterfield=["in_file", "seg"],
+                name="ds_atlas_orig_lut",
+                run_without_submitting=True,
+            )
             workflow.connect([
                 (extract_atlas_files, ds_atlas, [
                     ("nifti_files", "in_file"),
@@ -713,6 +724,10 @@ def init_dwi_recon_anatomical_workflow(
                 ]),
                 (extract_atlas_files, ds_atlas_mrtrix_lut, [
                     ("mrtrix_lut_files", "in_file"),
+                    ("atlases", "seg"),
+                ]),
+                (extract_atlas_files, ds_atlas_orig_lut, [
+                    ("orig_lut_files", "in_file"),
                     ("atlases", "seg"),
                 ]),
             ])  # fmt:skip
@@ -728,6 +743,7 @@ def init_dwi_recon_anatomical_workflow(
                 (ds_atlas, recombine_atlas_configs, [("out_file", "nifti_files")]),
                 (ds_atlas_mifs, recombine_atlas_configs, [("out_file", "mif_files")]),
                 (ds_atlas_mrtrix_lut, recombine_atlas_configs, [("out_file", "mrtrix_lut_files")]),
+                (ds_atlas_orig_lut, recombine_atlas_configs, [("out_file", "orig_lut_files")]),
                 (recombine_atlas_configs, buffernode, [("atlas_configs", "atlas_configs")]),
             ])  # fmt:skip
 
