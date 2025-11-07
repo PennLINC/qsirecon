@@ -307,6 +307,47 @@ class TestReportPlot(SimpleInterface):
         return runtime
 
 
+class _DeconstructAtlasConfigsInputSpec(BaseInterfaceInputSpec):
+    atlas_configs = traits.Dict(
+        mandatory=True,
+        desc=(
+            "Dictionary of atlas configurations. "
+            "Keys are atlas names and values are dictionaries with the following keys: "
+            "'file', 'label', 'metadata'. "
+            "'file' is the path to the atlas file. "
+            "'label' is the path to the label file. "
+            "'metadata' is a dictionary with relevant metadata. "
+            "'xfm_to_anat' is the path to the transform to get the atlas into ACPC space."
+        ),
+    )
+
+
+class _DeconstructAtlasConfigsOutputSpec(TraitedSpec):
+    atlases_names = traits.List(traits.Str(), desc="List of atlas names")
+    nifti_files = traits.List(File(), desc="List of nifti files")
+    atlas_labels_files = traits.List(File(), desc="List of atlas labels files")
+    xfms_to_anat = traits.List(File(), desc="List of transforms to get the atlas into ACPC space")
+
+
+class DeconstructAtlasConfigs(SimpleInterface):
+    input_spec = _DeconstructAtlasConfigsInputSpec
+    output_spec = _DeconstructAtlasConfigsOutputSpec
+
+    def _run_interface(self, runtime):
+        self._results["atlases_names"] = []
+        self._results["nifti_files"] = []
+        self._results["atlas_labels_files"] = []
+        self._results["xfms_to_anat"] = []
+
+        for atlas_name, atlas_config in self.inputs.atlas_configs.items():
+            self._results["atlases_names"].append(atlas_name)
+            self._results["nifti_files"].append(atlas_config["dwi_resolution_niigz"])
+            self._results["atlas_labels_files"].append(atlas_config["labels"])
+            self._results["xfms_to_anat"].append(atlas_config["xfm_to_anat"])
+
+        return runtime
+
+
 class _SplitAtlasConfigsInputSpec(BaseInterfaceInputSpec):
     atlas_configs = traits.Dict(
         mandatory=True,
