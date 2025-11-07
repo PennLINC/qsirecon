@@ -10,6 +10,7 @@ Contents
 
    installation
    quickstart
+   models
    builtin_workflows
    building_workflows
    outputs
