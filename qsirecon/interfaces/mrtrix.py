@@ -464,6 +464,35 @@ class SS3TEstimateFOD(SS3TBase, EstimateFOD):
         outputs["wm_odf"] = op.abspath(self._gen_filename("wm_odf"))
         outputs["gm_odf"] = op.abspath(self._gen_filename("gm_odf"))
         outputs["csf_odf"] = op.abspath(self._gen_filename("csf_odf"))
+
+        for tissue_desc, tissue_type in (
+            ("White matter", "wm"),
+            ("Gray matter", "gm"),
+            ("Cerebrospinal fluid", "csf"),
+        ):
+            response_function = getattr(self.inputs, tissue_type + "_txt")
+            response_function_data = response_function_to_bids(response_function)
+
+            outputs[tissue_type + "_odf_metadata"] = {
+                "Model": {
+                    "Description": "Single-Shell 3-Tissue (SS3T) "
+                    "Constrained Spherical Deconvolution (CSD)",
+                    "URL": "https://3Tissue.github.io",
+                },
+                "Description": tissue_desc,
+                "NonNegativity": "constrained",
+                "OrientationEncoding": {
+                    "EncodingAxis": 3,
+                    "Reference": "xyz",
+                    "SphericalHarmonicBasis": "MRtrix3",
+                    "SphericalHarmonicDegree": self.inputs.max_sh if tissue_type == "wm" else 0,
+                    "Type": "sh",
+                },
+                "ParameterURL": "http://www.sciencedirect.com/"
+                "science/article/pii/S1053811911012092",
+                "ResponseFunction": {"Coefficients": response_function_data, "Type": "zsh"},
+            }
+
         return outputs
 
     def _gen_filename(self, name):
