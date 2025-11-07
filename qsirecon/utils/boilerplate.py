@@ -72,6 +72,20 @@ def build_documentation(interface):
     """
     doc = []
     input_traits = sorted(interface.inputs.class_editable_traits())
+    # Define order of traits to be documented based on doc_position field,
+    # when available.
+    # Otherwise, use alphabetical order.
+    doc_position_traits = [
+        trait
+        for trait in input_traits
+        if hasattr(interface.inputs.class_traits()[trait], "doc_position")
+    ]
+    doc_position_traits.sort(key=lambda x: interface.inputs.class_traits()[x].doc_position)
+    non_doc_position_traits = sorted(
+        [trait for trait in input_traits if trait not in doc_position_traits]
+    )
+    input_traits = doc_position_traits + non_doc_position_traits
+
     for _trait in input_traits:
         _trait_obj = interface.inputs.class_traits()[_trait]
         conditional_doc = _trait_obj.doc
