@@ -10,24 +10,24 @@ DTI Foundational Papers
 **DTI Concept Introduction**: Basser et al. introduced DTI as a new MRI 
 modality that computes a Gaussian diffusion tensor per voxel, yielding eigenvalues 
 and eigenvectors that describe 3D water diffusion :cite:p:`basser1994`. 
-This enabled mapping of fiber orientations in tissue and orientation-independent 
+This enabled mapping of water diffusion orientations in tissue and orientation-independent 
 scalar measures like trace (sum of eigenvalues, related to Mean Diffusivity, MD). 
 It established the idea that tensors encode more microstructural information 
 than single-direction diffusivities.
 
-**First Anisotropy Indices**: Pierpaoli and Basser defined fractional anisotropy 
+**Anisotropy quantification**: Pierpaoli and Basser defined fractional anisotropy 
 (FA), a normalized 0–1 index quantifying how anisotropic (directionally dependent)
 diffusion is :cite:p:`pierpaolibasser1996`. 
 They demonstrated that earlier methods (diffusion measured in just a few directions) 
 underestimated anisotropy, and introduced rotationally invariant metrics (FA, relative 
-anisotropy, etc.) to robustly characterize white matter integrity. This work also 
+anisotropy, etc.). This work also 
 cautioned that noise can bias anisotropy measures requiring eigenvalue ordering.
 
 **First Human DTI Maps**: Pierpaoli et al. acquired the first DTI scans of the human 
 brain, mapping principal diffusion directions and magnitudes 
 :cite:p:`pierpaoli1996`. They observed that water diffuses ~3 times faster along 
 axonal fibers than perpendicular to them in highly coherent tracts (e.g. corpus 
-callosum) than in regions with crossing or less organized fibers.
+callosum).
 They also introduced Trace (D = 3×MD) as 
 an orientation-invariant measure of overall diffusivity, which was roughly 
 uniform in normal brain except higher in cortical gray matter due to its 
@@ -89,7 +89,7 @@ degeneration and fiber loss are often greatest in late-developing, more complex 
 (though subsequent research has refined this view with more nuanced patterns).
 
 **Microstructural Changes with Aging**: DTI metrics suggest that aging involves 
-loss of fiber integrity (lower FA) and increased water mobility 
+lower FA and increased water mobility 
 (higher MD/apparent diffusion coefficient, ADC) :cite:p:`westlye2010`. 
 In older adults, increased radial diffusivity is commonly observed, consistent 
 with demyelination or degraded myelin packing, while axial diffusivity may also 
@@ -106,7 +106,7 @@ dominant fiber orientation per voxel – an assumption often violated in the bra
 In regions with crossing, kissing, or branching fibers, the tensor model yields 
 an average that can underestimate anisotropy and obscure fiber directions. For 
 instance, a voxel containing two crossing tracts will show an artificially low 
-FA (appearing "isotropic") even if each tract is highly anisotropic. This issue 
+FA (appearing "isotropic") even if each tract is highly anisotropic, and principal diffusion direction that is an average of the true tract directions. This issue 
 can lead to misinterpretation of reduced FA: it might reflect complex fiber 
 geometry rather than neural degeneration. Advanced high-angular-resolution methods 
 (e.g., multi-tensor or Q-ball imaging) are recommended when crossing fibers are 
@@ -158,10 +158,10 @@ and b-value can influence DTI metrics. A minimal 6-direction tensor encoding is
 insufficient for reliable quantitative work – more directions (20–30+) are 
 recommended to stabilize FA/MD measures and reduce variability. Similarly, 
 moderate b-values (~1000 s/mm²) are typically chosen to balance SNR and 
-sensitivity; very high b-values can introduce bias in tensor-fitting (and 
-require models beyond DTI). During analysis, image alignment (registration) 
+sensitivity; very high b-values can introduce bias in tensor-fitting, due to higher sensitivity to non-Gaussian diffusion -- and 
+require other models, such as DKI. During analysis, image alignment (registration) 
 and smoothing can also introduce caveats: misregistration across subjects can 
-blur tract-specific values, and heavy smoothing can artificially increase FA 
+blur tract-specific values, and heavy smoothing can artificially decrease FA 
 in partial volume voxels. Tools like tract-based spatial statistics (TBSS) were 
 developed to mitigate some of these issues by skeletonizing white matter maps 
 to focus on centers of tracts. The key caveat is that DTI analyses involve many 
