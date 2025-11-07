@@ -158,7 +158,8 @@ class NODDIInputSpec(AmicoInputSpec):
         doc=ConditionalDoc(
             if_true=("An additional dot compartment was computed "
                      "to account for hindered diffusivity in fixed tissue"
-        ),
+            ),
+        )
     )
     num_threads = traits.Int(1, usedefault=True, nohash=True)
 
