@@ -444,6 +444,12 @@ class MAPMRIReconstruction(DipyReconInterface):
                     "DtiScaleEstimation": inputs["dti_scale_estimation"],
                     "StaticDiffusivity": inputs["static_diffusivity"],
                     "CvxpySolver": inputs["cvxpy_solver"],
+                    # Inherited from DipyReconInterface
+                    "BigDelta": inputs["big_delta"],
+                    "SmallDelta": inputs["small_delta"],
+                    "B0Threshold": inputs["b0_threshold"],
+                    "WriteFibgz": inputs["write_fibgz"],
+                    "WriteMif": inputs["write_mif"],
                 },
             },
         }
