@@ -10,6 +10,7 @@ Workflows for AMICO
 """
 import os
 import os.path as op
+
 import nibabel as nb
 import nilearn.image as nim
 import numpy as np
@@ -25,13 +26,13 @@ from nipype.interfaces.base import (
     traits,
 )
 from nipype.utils.filemanip import fname_presuffix
+
 from ..utils.boilerplate import ConditionalDoc
 from .converters import (
     amplitudes_to_fibgz,
     amplitudes_to_sh_mif,
     get_dsi_studio_ODF_geometry,
 )
-
 
 LOGGER = logging.getLogger("nipype.interface")
 TAU_DEFAULT = 1.0 / (4 * np.pi**2)
@@ -155,10 +156,8 @@ class NODDIInputSpec(AmicoInputSpec):
             "Fixed tissue requires an additional dot compartment estimation. "
         ),
         doc=ConditionalDoc(
-            if_true=(
-                "An additional dot compartment was computed "
-                "to account for hindered diffusivity in fixed tissue"
-            ),
+            if_true=("An additional dot compartment was computed "
+                     "to account for hindered diffusivity in fixed tissue"
         ),
     )
     num_threads = traits.Int(1, usedefault=True, nohash=True)
