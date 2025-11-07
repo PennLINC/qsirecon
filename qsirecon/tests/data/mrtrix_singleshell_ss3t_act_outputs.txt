@@ -39,5 +39,5 @@ sub-PNC/dwi
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-Gordon333Ext_dseg.mif.gz
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-Gordon333Ext_dseg.nii.gz
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-Gordon333Ext_desc-mrtrix_dseg.txt
-sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-Gordon333Ext_desc-dsistudio_dseg.txt
+sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-Gordon333Ext_dseg.txt
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_desc-brain_mask.nii.gz
