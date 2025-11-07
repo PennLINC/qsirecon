@@ -412,10 +412,14 @@ class EstimateFOD(MRTrix3Base):
 
             outputs[tissue_type + "_odf_metadata"] = {
                 "Model": {
-                    "Description": "Multi-Shell Multi-Tissue (MSMT) "
-                    "Constrained Spherical Deconvolution (CSD)",
-                    "URL": "https://mrtrix.readthedocs.io/en/latest/"
-                    "constrained_spherical_deconvolution/multi_shell_multi_tissue_csd.html",
+                    "Description": (
+                        "Multi-Shell Multi-Tissue (MSMT) "
+                        "Constrained Spherical Deconvolution (CSD)"
+                    ),
+                    "URL": (
+                        "https://mrtrix.readthedocs.io/en/latest/"
+                        "constrained_spherical_deconvolution/multi_shell_multi_tissue_csd.html"
+                    ),
                 },
                 "Description": tissue_desc,
                 "NonNegativity": "constrained",
