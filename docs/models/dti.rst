@@ -77,7 +77,7 @@ and slowly falls thereafter, while mean and radial diffusivities do the reverse
 found no simple "last-in-first-out" pattern although late-maturing frontal tracts 
 often showed pronounced aging changes, all regions eventually exhibited 
 microstructural decline, indicating a widespread but heterogeneous aging effect 
-rather than one specific sequence :cite:p:`westlye2010`.
+rather than one specific sequence.
 
 **Regional Patterns in Aging**: Many DTI studies of aging report that anterior white 
 matter tracts (which myelinate last) are more vulnerable to aging. Salat et al. 
@@ -90,12 +90,11 @@ degeneration and fiber loss are often greatest in late-developing, more complex 
 
 **Microstructural Changes with Aging**: DTI metrics suggest that aging involves 
 loss of fiber integrity (lower FA) and increased water mobility 
-(higher MD/apparent diffusion coefficient (ADC)). 
+(higher MD/apparent diffusion coefficient, ADC) :cite:p:`westlye2010`. 
 In older adults, increased radial diffusivity is commonly observed, consistent 
 with demyelination or degraded myelin packing, while axial diffusivity may also 
 eventually decrease if axonal loss occurs. Longitudinal studies in elderly cohorts 
-(e.g. over 60) have confirmed ongoing within-person FA declines annually 
-:cite:p:`westlye2010`. These DTI changes correlate with cognitive slowing and 
+(e.g. over 60) have confirmed ongoing within-person FA declines annually. These DTI changes correlate with cognitive slowing and 
 executive function decline in many studies, highlighting DTI's value in tracking 
 brain aging and its cognitive consequences.
 
