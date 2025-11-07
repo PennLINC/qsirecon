@@ -46,7 +46,8 @@ needs_sphinx = "4.2.0"
 extensions = [
     # "matplotlib.sphinxext.plot_directive",
     # "nbsphinx",
-    "nipype.sphinxext.apidoc",
+    # Use QSIRecon's custom apidoc processor instead of Nipype's default
+    "qsirecon_apidoc",
     "nipype.sphinxext.plot_workflow",
     "recommonmark",
     "sphinx.ext.autodoc",
@@ -177,6 +178,7 @@ napoleon_custom_sections = [
     ("Inputs", "Parameters"),
     ("Outputs", "Parameters"),
     ("Attributes", "Parameters"),
+    ("Recon Spec Options", "Parameters"),
     ("Mandatory Inputs", "Parameters"),
     ("Optional Inputs", "Parameters"),
     ("License", "License"),

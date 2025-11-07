@@ -455,10 +455,19 @@ class _EstimateMAPMRIInputSpec(_TORTOISEEstimatorInputSpec):
         usedefault=True,
         argstr="--map_order %d",
         desc="MAPMRI order",
+        recon_spec_accessible=True,
         doc=ConditionalDoc("MAPMRI order was set to {value}."),
     )
-    big_delta = traits.CFloat(argstr="--big_delta %.7f", desc="Big Delta in seconds")
-    small_delta = traits.CFloat(argstr="--small_delta %.7f", desc="Small Delta in seconds")
+    big_delta = traits.CFloat(
+        argstr="--big_delta %.7f", 
+        desc="Big Delta in seconds",
+        recon_spec_accessible=True,
+    )
+    small_delta = traits.CFloat(
+        argstr="--small_delta %.7f",
+        desc="Small Delta in seconds",
+        recon_spec_accessible=True,
+    )
 
 
 class _EstimateMAPMRIOutputSpec(TraitedSpec):
