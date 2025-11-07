@@ -153,13 +153,77 @@ class NODDIInputSpec(AmicoInputSpec):
         usedefault=True,
         desc=(
             "Flag indicating whether acquired data is ex vivo or fixed tissue. "
-            "Fixed tissue requires an additional dot compartment estimation. "
+            "Fixed tissue requires an additional dot compartment estimation."
         ),
         doc=ConditionalDoc(
             if_true=(
                 "An additional dot compartment was computed "
-                "to account for hindered diffusivity in fixed tissue"
+                "to account for hindered diffusivity in fixed tissue."
             ),
+        ),
+    )
+    doNormalize = traits.Bool(
+        True,
+        usedefault=True,
+        desc=("Flag indicating whether to normalize the data during fitting. " "Default: True."),
+        doc=ConditionalDoc(
+            if_true=(
+                "Diffusion-weighted images were normalized to the mean non-diffusion-weighted "
+                "(b0) signal to reduce intensity variation across volumes. For each voxel, "
+                "the mean signal intensity was computed across all b₀ volumes identified in "
+                "the acquisition scheme. Voxelwise normalization factors were then defined as "
+                "the reciprocal of these mean b0 values. To prevent division by noise-dominated "
+                "or near-zero intensities, voxels with mean b₀ signal below a fixed threshold "
+                "(defined as b0 x mean of all positive b0 values) were excluded from normalization "
+                "by setting their factors to zero. The resulting normalization factors were applied to "
+                "each diffusion-weighted volume by voxelwise multiplication, yielding data expressed as "
+                "signal intensity relative to the mean b0 image."
+            ),
+        ),
+    )
+    rmse = traits.Bool(
+        True,
+        usedefault=True,
+        desc=(
+            "Flag indicating whether to compute the root mean square error (RMSE) "
+            "between the measured and fitted signals. Default: True."
+        ),
+        doc=ConditionalDoc(
+            if_true="The root mean square error (RMSE) between the measured and fitted signals was computed.",
+        ),
+    )
+    nrmse = traits.Bool(
+        True,
+        usedefault=True,
+        desc=(
+            "Flag indicating whether to compute the normalized root mean square error (NRMSE) "
+            "between the measured and fitted signals. Default: True."
+        ),
+        doc=ConditionalDoc(
+            if_true="The normalized root mean square error (NRMSE) between the measured and fitted signals was computed.",
+        ),
+    )
+    saveModulatedMaps = traits.Bool(
+        True,
+        usedefault=True,
+        desc=("Flag indicating whether to save modulated maps for ICVF and ODI. Default: True."),
+        doc=ConditionalDoc(
+            if_true=(
+                "ICVF and Orientation Dispersion maps were multipled by the tissue fraction "
+                "1 - ISOVF in AMICO to produce tissue fraction modulated maps (@parker2021not)."
+            ),
+        ),
+    )
+    fitMethod = traits.Enum(
+        "OLS",
+        "WLS",
+        usedefault=True,
+        desc=(
+            "Fitting method to use. Options are 'OLS' (Ordinary Least Squares) or 'WLS' (Weighted Least Squares). Default: 'OLS'."
+        ),
+        doc=(
+            "Peak directions were estimated from a diffusion tensor model "
+            "using {value} fitting in DIPY (@dipy))."
         ),
     )
     num_threads = traits.Int(1, usedefault=True, nohash=True)
@@ -226,9 +290,11 @@ class NODDI(AmicoReconInterface):
         # Set global configuration
         aeval.set_config("BLAS_nthreads", 1)
         aeval.set_config("nthreads", self.inputs.num_threads)
-        aeval.set_config("doSaveModulatedMaps", True)
-        aeval.set_config("doComputeRMSE", True)
-        aeval.set_config("doComputeNRMSE", True)
+        aeval.set_config("doSaveModulatedMaps", self.inputs.saveModulatedMaps)
+        aeval.set_config("doComputeRMSE", self.inputs.rmse)
+        aeval.set_config("doComputeNRMSE", self.inputs.nrmse)
+        aeval.set_config("doNormalize", self.inputs.doNormalize)
+        aeval.set_config("fitMethod", self.inputs.fitMethod)
 
         # Set model parameters
         aeval.model.dPar = self.inputs.dPar
