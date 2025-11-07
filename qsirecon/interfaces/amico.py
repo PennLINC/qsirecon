@@ -171,7 +171,7 @@ class NODDIInputSpec(AmicoInputSpec):
     doNormalize = traits.Bool(
         True,
         usedefault=True,
-        desc=("Flag indicating whether to normalize the data during fitting. " "Default: True."),
+        desc=("Flag indicating whether to normalize the data during fitting. Default: True."),
         doc=ConditionalDoc(
             if_true=(
                 "Diffusion-weighted images were normalized to the mean non-diffusion-weighted "
@@ -180,10 +180,11 @@ class NODDIInputSpec(AmicoInputSpec):
                 "the acquisition scheme. Voxelwise normalization factors were then defined as "
                 "the reciprocal of these mean b0 values. To prevent division by noise-dominated "
                 "or near-zero intensities, voxels with mean b0 signal below a fixed threshold "
-                "(defined as b0 x mean of all positive b0 values) were excluded from normalization "
-                "by setting their factors to zero. The resulting normalization factors were applied to "
-                "each diffusion-weighted volume by voxelwise multiplication, yielding data expressed as "
-                "signal intensity relative to the mean b0 image."
+                "(defined as b0 x mean of all positive b0 values) were excluded from "
+                "normalization by setting their factors to zero. The resulting normalization "
+                "factors were applied to each diffusion-weighted volume by voxelwise "
+                "multiplication, yielding data expressed as signal intensity relative "
+                "to the mean b0 image."
             ),
         ),
     )
