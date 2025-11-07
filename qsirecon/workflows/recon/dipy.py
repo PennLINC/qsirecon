@@ -474,7 +474,11 @@ def init_dipy_mapmri_recon_wf(
     )
 
     workflow = Workflow(name=name)
-    desc = "\n\n#### Dipy Reconstruction\n\nMAPMRI reconstruction was performed with Dipy."
+    suffix_str = f" (outputs written to qsirecon-<{qsirecon_suffix}>)" if qsirecon_suffix else ""
+    desc = (
+        f"\n\n#### Dipy Reconstruction{suffix_str}\n\n"
+        "MAPMRI reconstruction was performed with Dipy."
+    )
 
     # Do we have deltas?
     deltas = (params.get("big_delta", None), params.get("small_delta", None))

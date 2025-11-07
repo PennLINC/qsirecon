@@ -425,22 +425,25 @@ class MAPMRIReconstruction(DipyReconInterface):
         return runtime
 
     def _list_outputs(self):
+        inputs = self.inputs.get()
+        # Convert _Undefined values to "n/a"
+        inputs = {k: "n/a" if not isdefined(v) else v for k, v in inputs.items()}
         base_metadata = {
             "Model": {
                 "Parameters": {
-                    "RadialOrder": self.inputs.radial_order,
-                    "LaplacianRegularization": self.inputs.laplacian_regularization,
-                    "LaplacianWeighting": self.inputs.laplacian_weighting,
-                    "PositivityConstraint": self.inputs.positivity_constraint,
-                    "AnisotropicScaling": self.inputs.anisotropic_scaling,
+                    "RadialOrder": inputs["radial_order"],
+                    "LaplacianRegularization": inputs["laplacian_regularization"],
+                    "LaplacianWeighting": inputs["laplacian_weighting"],
+                    "PositivityConstraint": inputs["positivity_constraint"],
+                    "AnisotropicScaling": inputs["anisotropic_scaling"],
                     # XXX: These are not used.
-                    "PositivityGrid": self.inputs.pos_grid,
-                    "PositivityRadius": self.inputs.pos_radius,
-                    "EigenvalueThreshold": self.inputs.eigenvalue_threshold,
-                    "BvalThreshold": self.inputs.bval_threshold,
-                    "DtiScaleEstimation": self.inputs.dti_scale_estimation,
-                    "StaticDiffusivity": self.inputs.static_diffusivity,
-                    "CvxpySolver": self.inputs.cvxpy_solver,
+                    "PositivityGrid": inputs["pos_grid"],
+                    "PositivityRadius": inputs["pos_radius"],
+                    "EigenvalueThreshold": inputs["eigenvalue_threshold"],
+                    "BvalThreshold": inputs["bval_threshold"],
+                    "DtiScaleEstimation": inputs["dti_scale_estimation"],
+                    "StaticDiffusivity": inputs["static_diffusivity"],
+                    "CvxpySolver": inputs["cvxpy_solver"],
                 },
             },
         }
