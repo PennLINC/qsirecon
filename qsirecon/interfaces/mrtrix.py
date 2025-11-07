@@ -481,8 +481,10 @@ class SS3TEstimateFOD(SS3TBase, EstimateFOD):
 
             outputs[tissue_type + "_odf_metadata"] = {
                 "Model": {
-                    "Description": "Single-Shell 3-Tissue (SS3T) "
-                    "Constrained Spherical Deconvolution (CSD)",
+                    "Description": (
+                        "Single-Shell 3-Tissue (SS3T) "
+                        "Constrained Spherical Deconvolution (CSD)"
+                    ),
                     "URL": "https://3Tissue.github.io",
                 },
                 "Description": tissue_desc,
