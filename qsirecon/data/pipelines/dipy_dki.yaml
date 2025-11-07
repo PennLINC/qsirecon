@@ -5,6 +5,8 @@ nodes:
     input: qsirecon
     name: dki_recon
     parameters:
+        # Calculate MSDKI metrics
+        msdki: false
         # Calculate microstructural metrics
         wmti: true
         write_fibgz: false

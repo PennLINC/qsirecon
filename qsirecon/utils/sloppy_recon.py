@@ -4,7 +4,10 @@ from copy import deepcopy
 def make_sloppy(spec):
     fast_options = {
         ("Dipy", "3dSHORE_reconstruction"): {"extrapolate_scheme": "ABCD"},
-        ("Dipy", "DKI_reconstruction"): {"wmti": False},
+        ("Dipy", "DKI_reconstruction"): {
+            "msdki": False,
+            "wmti": False,
+        },
         ("Dipy", "MAPMRI_reconstruction"): {
             "extrapolate_scheme": "ABCD",
             "anisotropic_scaling": False,
