@@ -488,8 +488,10 @@ class SS3TEstimateFOD(SS3TBase, EstimateFOD):
                     "SphericalHarmonicDegree": 8 if tissue_type == "wm" else 0,
                     "Type": "sh",
                 },
-                "ParameterURL": "http://www.sciencedirect.com/"
-                "science/article/pii/S1053811911012092",
+                "ParameterURL": (
+                    "http://www.sciencedirect.com/"
+                    "science/article/pii/S1053811911012092"
+                ),
                 "ResponseFunction": {"Coefficients": response_function_data, "Type": "zsh"},
             }
 
