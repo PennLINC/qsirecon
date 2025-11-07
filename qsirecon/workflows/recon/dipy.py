@@ -474,10 +474,11 @@ def init_dipy_mapmri_recon_wf(
     )
 
     workflow = Workflow(name=name)
-    desc = "#### Dipy Reconstruction\n\n"
+    desc = "\n\n#### Dipy Reconstruction\n\nMAPMRI reconstruction was performed with Dipy."
 
     # Do we have deltas?
     deltas = (params.get("big_delta", None), params.get("small_delta", None))
+    deltas_source = None
     approximate_deltas = None in deltas
     dwi_metadata = inputs_dict.get("dwi_metadata", {})
     if approximate_deltas:
@@ -486,12 +487,28 @@ def init_dipy_mapmri_recon_wf(
             dwi_metadata.get("SmallDelta", None),
         )
         approximate_deltas = None in deltas
+        deltas_source = "dwi_metadata" if not approximate_deltas else None
+    else:
+        deltas_source = "spec"
 
     # Set deltas if we have them. Prevent only one from being defined
     if approximate_deltas:
         LOGGER.warning('Both "big_delta" and "small_delta" are required for precise MAPMRI')
     else:
         params["big_delta"], params["small_delta"] = deltas
+
+    if deltas_source == "spec":
+        desc += (
+            f" 'big_delta was set to {deltas[0]} and small_delta was set to {deltas[1]}, "
+            "based on the recon spec."
+        )
+    elif deltas_source == "dwi_metadata":
+        desc += (
+            f" 'big_delta was set to {deltas[0]} and small_delta was set to {deltas[1]}, "
+            "based on the dwi metadata."
+        )
+    else:
+        desc += " Delta information was not provided, resulting in possibly imprecise MAPMRI."
 
     plot_reports = not config.execution.skip_odf_reports
     omp_nthreads = config.nipype.omp_nthreads
