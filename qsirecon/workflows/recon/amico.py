@@ -37,23 +37,23 @@ def init_amico_noddi_fit_wf(
 
     Outputs
 
-        directions_file
+        directions
             Image of directions
-        icvf_file
+        icvf
             Voxelwise ICVF.
-        od_file
+        od
             Voxelwise Orientation Dispersion
-        isovf_file
+        isovf
             Voxelwise ISOVF
-        modulated_icvf_file
+        modulated_icvf
             Voxelwise modulated ICVF (ICVF * (1 - ISOVF))
-        modulated_od_file
+        modulated_od
             Voxelwise modulated Orientation Dispersion  (OD * (1 - ISOVF))
-        rmse_file
+        rmse
             Voxelwise root mean square error between predicted and measured signal
-        nrmse_file
+        nrmse
             Voxelwise normalized root mean square error between predicted and measured signal
-        config_file
+        config
             Pickle file with model configurations in it
         fibgz
 
@@ -65,18 +65,18 @@ def init_amico_noddi_fit_wf(
     outputnode = pe.Node(
         niu.IdentityInterface(
             fields=[
-                "directions_file",
-                "icvf_file",
-                "od_file",
-                "isovf_file",
-                "modulated_icvf_file",
-                "modulated_od_file",
-                "rmse_file",
-                "nrmse_file",
-                "config_file",
+                "directions",
+                "icvf",
+                "od",
+                "isovf",
+                "modulated_icvf",
+                "modulated_od",
+                "rmse",
+                "nrmse",
+                "config",
                 "fibgz",
                 "recon_scalars",
-                "tf_file",
+                "tf",
             ],
         ),
         name="outputnode",
@@ -123,45 +123,43 @@ were also computed (@parker2021not)."""
             ('dwi_mask', 'mask_file'),
         ]),
         (inputnode, noddi_tissue_fraction, [('dwi_mask', 'mask_image')]),
-        (noddi_fit, noddi_tissue_fraction, [('isovf_file', 'isovf_file')]),
-        (noddi_tissue_fraction, outputnode, [('tf_file', 'tf_file')]),
-        (noddi_tissue_fraction, recon_scalars, [('tf_file', 'tf_file')]),
+        (noddi_fit, noddi_tissue_fraction, [('isovf', 'isovf')]),
+        (noddi_tissue_fraction, outputnode, [('tf', 'tf')]),
+        (noddi_tissue_fraction, recon_scalars, [('tf', 'tf')]),
         (noddi_fit, outputnode, [
-            ('directions_file', 'directions_file'),
-            ('icvf_file', 'icvf_file'),
-            ('od_file', 'od_file'),
-            ('isovf_file', 'isovf_file'),
-            ('modulated_icvf_file', 'modulated_icvf_file'),
-            ('modulated_od_file', 'modulated_od_file'),
-            ('rmse_file', 'rmse_file'),
-            ('nrmse_file', 'nrmse_file'),
-            ('config_file', 'config_file'),
+            ('directions', 'directions'),
+            ('icvf', 'icvf'),
+            ('od', 'od'),
+            ('isovf', 'isovf'),
+            ('modulated_icvf', 'modulated_icvf'),
+            ('modulated_od', 'modulated_od'),
+            ('rmse', 'rmse'),
+            ('nrmse', 'nrmse'),
+            ('config', 'config'),
         ]),
         (noddi_fit, recon_scalars, [
-            ('icvf_file', 'icvf_file'),
-            ('icvf_file_metadata', 'icvf_file_metadata'),
-            ('od_file', 'od_file'),
-            ('od_file_metadata', 'od_file_metadata'),
-            ('isovf_file', 'isovf_file'),
-            ('isovf_file_metadata', 'isovf_file_metadata'),
-            ('directions_file', 'directions_file'),
-            ('directions_file_metadata', 'directions_file_metadata'),
-            ('modulated_icvf_file', 'modulated_icvf_file'),
-            ('modulated_icvf_file_metadata', 'modulated_icvf_file_metadata'),
-            ('modulated_od_file', 'modulated_od_file'),
-            ('modulated_od_file_metadata', 'modulated_od_file_metadata'),
-            ('rmse_file', 'rmse_file'),
-            ('rmse_file_metadata', 'rmse_file_metadata'),
-            ('nrmse_file', 'nrmse_file'),
-            ('nrmse_file_metadata', 'nrmse_file_metadata'),
+            ('icvf', 'icvf'),
+            ('icvf_metadata', 'icvf_metadata'),
+            ('od', 'od'),
+            ('od_metadata', 'od_metadata'),
+            ('isovf', 'isovf'),
+            ('isovf_metadata', 'isovf_metadata'),
+            ('modulated_icvf', 'modulated_icvf'),
+            ('modulated_icvf_metadata', 'modulated_icvf_metadata'),
+            ('modulated_od', 'modulated_od'),
+            ('modulated_od_metadata', 'modulated_od_metadata'),
+            ('rmse', 'rmse'),
+            ('rmse_metadata', 'rmse_metadata'),
+            ('nrmse', 'nrmse'),
+            ('nrmse_metadata', 'nrmse_metadata'),
         ]),
         (noddi_fit, convert_to_fibgz, [
-            ('directions_file', 'directions_file'),
-            ('icvf_file', 'icvf_file'),
-            ('od_file', 'od_file'),
-            ('isovf_file', 'isovf_file'),
-            ('modulated_icvf_file', 'modulated_icvf_file'),
-            ('modulated_od_file', 'modulated_od_file'),
+            ('directions', 'directions'),
+            ('icvf', 'icvf'),
+            ('od', 'od'),
+            ('isovf', 'isovf'),
+            ('modulated_icvf', 'modulated_icvf'),
+            ('modulated_od', 'modulated_od'),
         ]),
         (inputnode, convert_to_fibgz, [('dwi_mask', 'mask_file')]),
         (convert_to_fibgz, outputnode, [('fibgz_file', 'fibgz')]),
@@ -185,7 +183,7 @@ were also computed (@parker2021not)."""
         workflow.connect([
             (inputnode, plot_peaks, [('dwi_mask', 'mask_file')]),
             (convert_to_fibgz, plot_peaks, [('fibgz_file', 'fib_file')]),
-            (noddi_fit, plot_peaks, [('icvf_file', 'background_image')]),
+            (noddi_fit, plot_peaks, [('icvf', 'background_image')]),
             (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')]),
         ])  # fmt:skip
 
@@ -217,7 +215,7 @@ were also computed (@parker2021not)."""
             name="ds_noddi_config",
             run_without_submitting=True,
         )
-        workflow.connect([(outputnode, ds_config, [("config_file", "in_file")])])
+        workflow.connect([(outputnode, ds_config, [("config", "in_file")])])
 
         plot_scalars = pe.Node(
             ScalarReport(),

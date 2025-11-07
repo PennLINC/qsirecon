@@ -273,11 +273,10 @@ class _TORTOISEReconScalarInputSpec(ReconScalarsInputSpec):
 
 for input_name in tortoise_scalars:
     _TORTOISEReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
-    if input_name.endswith("_file"):
-        _TORTOISEReconScalarInputSpec.add_class_trait(
-            input_name + "_metadata",
-            traits.Dict(),
-        )
+    _TORTOISEReconScalarInputSpec.add_class_trait(
+        input_name + "_metadata",
+        traits.Dict(),
+    )
 
 
 class TORTOISEReconScalars(ReconScalars):
@@ -295,11 +294,10 @@ class _AMICOReconScalarInputSpec(ReconScalarsInputSpec):
 
 for input_name in amico_scalars:
     _AMICOReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
-    if input_name.endswith("_file"):
-        _AMICOReconScalarInputSpec.add_class_trait(
-            input_name + "_metadata",
-            traits.Dict(),
-        )
+    _AMICOReconScalarInputSpec.add_class_trait(
+        input_name + "_metadata",
+        traits.Dict(),
+    )
 
 
 class AMICOReconScalars(ReconScalars):
@@ -317,11 +315,10 @@ class _DSIStudioReconScalarInputSpec(ReconScalarsInputSpec):
 
 for input_name in dsistudio_scalars:
     _DSIStudioReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
-    if input_name.endswith("_file"):
-        _DSIStudioReconScalarInputSpec.add_class_trait(
-            input_name + "_metadata",
-            traits.Dict(),
-        )
+    _DSIStudioReconScalarInputSpec.add_class_trait(
+        input_name + "_metadata",
+        traits.Dict(),
+    )
 
 
 class DSIStudioReconScalars(ReconScalars):
@@ -338,11 +335,10 @@ class _DIPYDKIReconScalarInputSpec(ReconScalarsInputSpec):
 
 for input_name in dipy_dki_scalars:
     _DIPYDKIReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
-    if input_name.endswith("_file"):
-        _DIPYDKIReconScalarInputSpec.add_class_trait(
-            input_name + "_metadata",
-            traits.Dict(),
-        )
+    _DIPYDKIReconScalarInputSpec.add_class_trait(
+        input_name + "_metadata",
+        traits.Dict(),
+    )
 
 
 class DIPYDKIReconScalars(ReconScalars):
@@ -360,11 +356,10 @@ class _DIPYMAPMRIReconScalarInputSpec(ReconScalarsInputSpec):
 
 for input_name in dipy_mapmri_scalars:
     _DIPYMAPMRIReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
-    if input_name.endswith("_file"):
-        _DIPYMAPMRIReconScalarInputSpec.add_class_trait(
-            input_name + "_metadata",
-            traits.Dict(),
-        )
+    _DIPYMAPMRIReconScalarInputSpec.add_class_trait(
+        input_name + "_metadata",
+        traits.Dict(),
+    )
 
 
 class DIPYMAPMRIReconScalars(ReconScalars):
@@ -382,11 +377,10 @@ class _BrainSuite3dSHOREReconScalarInputSpec(ReconScalarsInputSpec):
 
 for input_name in brainsuite_3dshore_scalars:
     _BrainSuite3dSHOREReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
-    if input_name.endswith("_file"):
-        _BrainSuite3dSHOREReconScalarInputSpec.add_class_trait(
-            input_name + "_metadata",
-            traits.Dict(),
-        )
+    _BrainSuite3dSHOREReconScalarInputSpec.add_class_trait(
+        input_name + "_metadata",
+        traits.Dict(),
+    )
 
 
 class BrainSuite3dSHOREReconScalars(ReconScalars):
