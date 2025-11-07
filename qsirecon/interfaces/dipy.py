@@ -324,12 +324,12 @@ class MAPMRIOutputSpec(DipyReconOutputSpec):
     rtpp_metadata = traits.Dict(desc="Metadata for the rtpp file.")
     ng = File(desc="Voxelwise Nematic Gradient.")
     ng_metadata = traits.Dict(desc="Metadata for the ng file.")
-    perng = File(desc="Voxelwise Perpendicular Nematic Gradient.")
-    perng_metadata = traits.Dict(desc="Metadata for the perng file.")
-    parng = File(desc="Voxelwise Parallel Nematic Gradient.")
-    parng_metadata = traits.Dict(desc="Metadata for the parng file.")
+    ngperp = File(desc="Voxelwise Perpendicular Nematic Gradient.")
+    ngperp_metadata = traits.Dict(desc="Metadata for the ngperp file.")
+    ngpar = File(desc="Voxelwise Parallel Nematic Gradient.")
+    ngpar_metadata = traits.Dict(desc="Metadata for the ngpar file.")
     mapcoeffs = File(desc="Voxelwise MAPMRI coefficients.")
-    mapcoeffs_metadata = traits.Dict(desc="Metadata for the mapmri_coeffs file.")
+    mapcoeffs_metadata = traits.Dict(desc="Metadata for the mapcoeffs file.")
 
 
 class MAPMRIReconstruction(DipyReconInterface):
@@ -413,11 +413,11 @@ class MAPMRIReconstruction(DipyReconInterface):
             ng = mapfit_aniso.ng()
             self._results["ng"] = self._save_scalar(ng, "_ng", runtime, dwi_img)
 
-            perng = mapfit_aniso.ng_perpendicular()
-            self._results["perng"] = self._save_scalar(perng, "_perng", runtime, dwi_img)
+            ngperp = mapfit_aniso.ng_perpendicular()
+            self._results["ngperp"] = self._save_scalar(ngperp, "_ngperp", runtime, dwi_img)
 
-            parng = mapfit_aniso.ng_parallel()
-            self._results["parng"] = self._save_scalar(parng, "_parng", runtime, dwi_img)
+            ngpar = mapfit_aniso.ng_parallel()
+            self._results["ngpar"] = self._save_scalar(ngpar, "_ngpar", runtime, dwi_img)
 
         # Write DSI Studio or MRtrix
         self._write_external_formats(runtime, mapfit_aniso, mask_img, "_MAPMRI")

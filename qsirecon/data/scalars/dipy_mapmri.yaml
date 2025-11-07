@@ -21,7 +21,7 @@ msd:
         model: mapmri
         param: msd
     metadata:
-        Description: mean square displacement from MAPMRI
+        Description: Mean square displacement from MAPMRI
         Model:
             Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
             URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
