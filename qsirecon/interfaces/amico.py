@@ -10,7 +10,6 @@ Workflows for AMICO
 """
 import os
 import os.path as op
-
 import nibabel as nb
 import nilearn.image as nim
 import numpy as np
@@ -26,7 +25,6 @@ from nipype.interfaces.base import (
     traits,
 )
 from nipype.utils.filemanip import fname_presuffix
-
 from ..utils.boilerplate import ConditionalDoc
 from .converters import (
     amplitudes_to_fibgz,
@@ -132,7 +130,7 @@ class NODDIInputSpec(AmicoInputSpec):
     dPar = traits.Float(
         mandatory=True,
         desc=(
-            "Assumed parallel diffusivity constant in mm^/2. "
+            "Parallel diffusivity constant in mm^/2. "
             "Passed to AMICO as dPar. "
             "Defined in the recon spec as dPar. "
             "Stored in the metadata as dPar"
@@ -142,7 +140,7 @@ class NODDIInputSpec(AmicoInputSpec):
     dIso = traits.Float(
         mandatory=True,
         desc=(
-            "Assumed isotropic diffusivity constant in mm^/2. "
+            "Isotropic diffusivity constant in mm^2/s. "
             "Passed to AMICO as dIso. "
             "Defined in the recon spec as dIso. "
             "Stored in the metadata as dIso"
