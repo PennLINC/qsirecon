@@ -19,3 +19,4 @@ Contents
    comparisons
    help
    license
+   api_reference
