@@ -44,20 +44,26 @@ needs_sphinx = "4.2.0"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "nbsphinx",
-    "nipype.sphinxext.apidoc",
+    # "matplotlib.sphinxext.plot_directive",
+    # "nbsphinx",
+    # Use QSIRecon's custom apidoc processor instead of Nipype's default
+    "qsirecon_apidoc",
     "nipype.sphinxext.plot_workflow",
     "recommonmark",
     "sphinx.ext.autodoc",
     "sphinx.ext.coverage",
     "sphinx.ext.doctest",
+    # "sphinx.ext.graphviz",
+    # "sphinx.ext.inheritance_diagram",
     "sphinx.ext.intersphinx",
     "sphinx.ext.linkcode",
     "sphinx.ext.mathjax",
+    # "sphinx.ext.napoleon",
     "sphinx_markdown_tables",
     "sphinxarg.ext",  # argparse extension
     "sphinxcontrib.apidoc",
     "sphinxcontrib.bibtex",
+    "sphinx_design",
 ]
 
 # Mock modules in autodoc:
@@ -68,6 +74,10 @@ autodoc_mock_imports = [
     "pandas",
     "pygraphviz",
     "seaborn",
+    # Mock internal optional module used by CLI to avoid import errors in docs
+    "qsirecon.viz.reports",
+    # Mock Cython module that is not importable at doc build time
+    "qsirecon.utils.maths",
 ]
 
 # NOTE: Not in qsirecon
@@ -181,6 +191,14 @@ napoleon_custom_sections = [
 apidoc_module_dir = "../qsirecon"
 apidoc_output_dir = "api"
 apidoc_excluded_paths = ["conftest.py", "*/tests/*", "tests/*", "data/*"]
+apidoc_excluded_paths += [
+    # Exclude config module to avoid duplicate object descriptions
+    "config.py",
+    # Skip problematic utils/shm.py from docs
+    "utils/shm.py",
+    # Avoid duplicate/invalid module references from package docstring
+    "workflows/recon/__init__.py",
+]
 apidoc_separate_modules = True
 apidoc_extra_args = ["--module-first", "-d 1", "-T"]
 

@@ -1,0 +1,12 @@
+# Example configuration used for documentation builds
+# This file exists to satisfy an include directive in qsirecon.config docstrings.
+# It does not affect runtime behavior.
+
+[execution]
+work_dir = "/tmp/qsirecon"
+boilerplate_only = false
+
+[environment]
+exec_env = "docs"
+version = "0.0.0"
+
