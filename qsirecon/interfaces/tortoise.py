@@ -27,7 +27,6 @@ from ..utils.boilerplate import ConditionalDoc
 LOGGER = logging.getLogger("nipype.interface")
 
 
-
 class TORTOISEInputSpec(CommandLineInputSpec):
     num_threads = traits.Int(desc="number of OMP threads")
 
@@ -309,7 +308,7 @@ class _EstimateMAPMRIInputSpec(_TORTOISEEstimatorInputSpec):
         doc=ConditionalDoc("MAPMRI order was set to {value}."),
     )
     big_delta = traits.CFloat(
-        argstr="--big_delta %.7f", 
+        argstr="--big_delta %.7f",
         desc="Big Delta in seconds",
         recon_spec_accessible=True,
     )

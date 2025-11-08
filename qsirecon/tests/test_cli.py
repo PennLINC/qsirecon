@@ -659,6 +659,7 @@ def test_tortoise_recon(data_dir, output_dir, working_dir):
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
 
+
 @pytest.mark.integration
 @pytest.mark.dsi_studio_gqi_recon
 def test_dsi_studio_gqi_recon(data_dir, output_dir, working_dir):
@@ -687,10 +688,11 @@ def test_dsi_studio_gqi_recon(data_dir, output_dir, working_dir):
         "--recon-spec=dsi_studio_gqi",
         "--atlases",
         "4S156Parcels",
-        "Brainnetome246Ext"
+        "Brainnetome246Ext",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
+
 
 def _run_and_generate(test_name, parameters, test_main=False):
     from qsirecon import config
