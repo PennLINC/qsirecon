@@ -32,8 +32,8 @@ derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_
 derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-rk_dwimap.nii.gz
 derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-sphericity_dwimap.json
 derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-sphericity_dwimap.nii.gz
-derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-tensor_param-fa_dwimap.json
-derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-tensor_param-fa_dwimap.nii.gz
+derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-fa_dwimap.json
+derivatives/qsirecon-DKI/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-dki_param-fa_dwimap.nii.gz
 logs
 logs/CITATION.bib
 logs/CITATION.html
