@@ -364,7 +364,9 @@ class MAPMRIReconstruction(DipyReconInterface):
             },
         }
         if inputs["laplacian_regularization"]:
-            base_metadata["Model"]["Parameters"]["LaplacianWeighting"] = inputs["laplacian_weighting"]
+            base_metadata["Model"]["Parameters"]["LaplacianWeighting"] = inputs[
+                "laplacian_weighting"
+            ]
 
         outputs = super()._list_outputs()
         file_outputs = [
