@@ -48,26 +48,24 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
     dwi_file = File(exists=True, mandatory=True)
     mask_file = File(exists=True)
     local_bvec_file = File(exists=True)
+    # NOTE: Do not add ConditionalDoc here because it is described in the workflow.
     big_delta = traits.Either(
         None,
         traits.Float(),
         usedefault=True,
         desc=(
-            "Big delta in seconds. "
-            "This is not added to the boilerplate through this interface. "
-            "It is added in the workflow. "
+            "Large delta in seconds. "
             "Documented as 'LargeDelta' in the BIDS metadata."
         ),
         recon_spec_accessible=True,
     )
+    # NOTE: Do not add ConditionalDoc here because it is described in the workflow.
     small_delta = traits.Either(
         None,
         traits.Float(),
         usedefault=True,
         desc=(
             "Small delta in seconds. "
-            "This is not added to the boilerplate through this interface. "
-            "It is added in the workflow. "
             "Documented as 'SmallDelta' in the BIDS metadata."
         ),
         recon_spec_accessible=True,
@@ -80,9 +78,7 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
             "Documented as 'B0Threshold' in the BIDS metadata."
         ),
         doc=ConditionalDoc(
-            (
-                "B-values less than {value} were treated as b0s for the sake of modeling."
-            ),
+            "B-values less than {value} were treated as b0s for the sake of modeling.",
         ),
         recon_spec_accessible=True,
     )
@@ -90,13 +86,13 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
     write_fibgz = traits.Bool(True, recon_spec_accessible=True)
     write_mif = traits.Bool(True, recon_spec_accessible=True)
     # To extrapolate
+    # Currently only used by BrainSuiteShoreReconstruction.
     extrapolate_scheme = traits.Enum(
         "HCP",
         "ABCD",
         "DSIQ5",
         desc=(
             "Sampling scheme to extrapolate the DWI data to. "
-            "Appears to only be used by BrainSuiteShoreReconstruction. "
             "Documented as 'ExtrapolateScheme' in the BIDS metadata."
         ),
         recon_spec_accessible=True,
