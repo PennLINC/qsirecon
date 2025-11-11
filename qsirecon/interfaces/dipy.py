@@ -484,22 +484,22 @@ class MAPMRIReconstruction(DipyReconInterface):
         inputs = {k: "n/a" if not isdefined(v) else v for k, v in inputs.items()}
 
         model_params = {
-            inputs["radial_order"]: "RadialOrder",
-            inputs["laplacian_regularization"]: "LaplacianRegularization",
-            inputs["laplacian_weighting"]: "LaplacianWeighting",
-            inputs["positivity_constraint"]: "PositivityConstraint",
-            inputs["global_constraints"]: "GlobalConstraints",
-            inputs["pos_grid"]: "PositivityGrid",
-            inputs["pos_radius"]: "PositivityRadius",
-            inputs["anisotropic_scaling"]: "AnisotropicScaling",
-            inputs["eigenvalue_threshold"]: "EigenvalueThreshold",
-            inputs["bval_threshold"]: "BValThreshold",
-            inputs["dti_scale_estimation"]: "DTIScaleEstimation",
-            inputs["static_diffusivity"]: "StaticDiffusivity",
-            inputs["cvxpy_solver"]: "CVXPYSolver",
+            "RadialOrder": "radial_order",
+            "LaplacianRegularization": "laplacian_regularization",
+            "LaplacianWeighting": "laplacian_weighting",
+            "PositivityConstraint": "positivity_constraint",
+            "GlobalConstraints": "global_constraints",
+            "PositivityGrid": "pos_grid",
+            "PositivityRadius": "pos_radius",
+            "AnisotropicScaling": "anisotropic_scaling",
+            "EigenvalueThreshold": "eigenvalue_threshold",
+            "BValThreshold": "bval_threshold",
+            "DTIScaleEstimation": "dti_scale_estimation",
+            "StaticDiffusivity": "static_diffusivity",
+            "CVXPYSolver": "cvxpy_solver",
         }
         model_params = {
-            v: inputs.get(k, "n/a") for k, v in model_params.items() if k in self._used_params
+            k: inputs.get(v, "n/a") for k, v in model_params.items() if v in self._used_params
         }
         other_params = {
             # Inherited from DipyReconInterface
