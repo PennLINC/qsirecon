@@ -435,6 +435,13 @@ class MAPMRIOutputSpec(DipyReconOutputSpec):
 
 
 class MAPMRIReconstruction(DipyReconInterface):
+    """Apply MAPMRI reconstruction to the DWI data.
+
+    See Also
+    --------
+    :class:`~dipy.reconst.mapmri.MapmriModel`
+    """
+
     input_spec = MAPMRIInputSpec
     output_spec = MAPMRIOutputSpec
 
