@@ -53,10 +53,7 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
         None,
         traits.Float(),
         usedefault=True,
-        desc=(
-            "Large delta in seconds. "
-            "Documented as 'LargeDelta' in the BIDS metadata."
-        ),
+        desc="Large delta in seconds. Documented as 'LargeDelta' in the BIDS metadata.",
         recon_spec_accessible=True,
     )
     # NOTE: Do not add ConditionalDoc here because it is described in the workflow.
@@ -64,10 +61,7 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
         None,
         traits.Float(),
         usedefault=True,
-        desc=(
-            "Small delta in seconds. "
-            "Documented as 'SmallDelta' in the BIDS metadata."
-        ),
+        desc="Small delta in seconds. Documented as 'SmallDelta' in the BIDS metadata.",
         recon_spec_accessible=True,
     )
     b0_threshold = traits.CFloat(

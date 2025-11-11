@@ -485,10 +485,9 @@ def init_dipy_mapmri_recon_wf(
 
     # Do we have deltas?
     deltas, deltas_string = infer_deltas(inputs_dict.get("dwi_metadata", {}), params)
+    desc += deltas_string
     if deltas is not None:
         params["big_delta"], params["small_delta"] = deltas
-
-    desc += deltas_string
 
     plot_reports = not config.execution.skip_odf_reports
     omp_nthreads = config.nipype.omp_nthreads
