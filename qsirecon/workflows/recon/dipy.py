@@ -619,39 +619,71 @@ def init_dipy_mapmri_recon_wf(
 
 
 def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="", params={}):
-    """Fit DKI
+    """Fit DKI.
 
-    Inputs
+    This workflow corresponds to the "DKI_reconstruction" pipeline action.
 
-        *qsirecon outputs*
+    Parameters
+    ----------
+    inputs_dict : dict
+        Dictionary containing the input node fields.
+    name : str
+        Name of the workflow.
+    qsirecon_suffix : str
+        Suffix for the qsirecon outputs.
+    params : dict
+        Dictionary containing the parameters for the workflow.
+        Parameters that can be passed to the workflow are:
+
+        - wmti : bool
+            Whether to compute microstructural metrics.
+        - write_fibgz : bool
+            Whether to write out a DSI Studio fib file.
+        - write_mif : bool
+            Whether to write out a MRTrix mif file with sh coefficients.
+        - radial_order : int
+            An even integer that represents the order of the basis.
 
     Outputs
+    -------
+    tensor : str
+        Path to the tensor file.
+    fa : str
+        Path to the FA file.
+    md : str
+        Path to the MD file.
+    rd : str
+        Path to the RD file.
+    ad : str
+        Path to the AD file.
+    color_fa : str
+        Path to the color FA file.
+    kfa : str
+        Path to the KFA file.
+    mk : str
+        Path to the MK file.
+    ak : str
+        Path to the AK file.
+    rk : str
+        Path to the RK file.
+    mkt : str
+        Path to the MKT file.
+    awf : str
+        Only if wmti is True
+    rde : str
+        Only if wmti is True
+    tortuosity : str
+        Only if wmti is True
+    trace : str
+        Only if wmti is True
+    recon_scalars : str
+        Path to the recon_scalars file.
 
-        tensor
-        fa
-        md
-        rd
-        ad
-        color_fa
-        kfa
-        mk
-        ak
-        rk
-        mkt
-        awf
-            Only if wmti is True
-        rde
-            Only if wmti is True
-
-    Params
-
-        write_fibgz: bool
-            True writes out a DSI Studio fib file
-        write_mif: bool
-            True writes out a MRTrix mif file with sh coefficients
-        radial_order: int
-            An even integer that represent the order of the basis
-
+    See also
+    --------
+    :class:`qsirecon.interfaces.dipy.KurtosisReconstruction`
+    :class:`qsirecon.interfaces.dipy.KurtosisReconstructionMicrostructure`
+    :class:`qsirecon.interfaces.recon_scalars.DIPYDKIReconScalars`
     """
 
     inputnode = pe.Node(
