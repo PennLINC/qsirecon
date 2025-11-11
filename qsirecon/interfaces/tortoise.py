@@ -409,12 +409,13 @@ class ComputeMDMap(SimpleInterface):
             ad=self.inputs.ad,
             rd=self.inputs.rd,
         )
-        self._results["md"] = fname_presuffix(
+        md_file = fname_presuffix(
             self.inputs.ad,
             suffix="_MD",
             newpath=runtime.cwd,
-            use_ext=False,
+            use_ext=True,
         )
-        md_img.to_filename(self._results["md"])
+        md_img.to_filename(md_file)
+        self._results["md"] = md_file
         self._results["md_metadata"] = {}
         return runtime
