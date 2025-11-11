@@ -407,6 +407,10 @@ class _ExtractAtlasFilesOutputSpec(TraitedSpec):
     nifti_files = traits.List(File(), desc="List of nifti files")
     mif_files = traits.List(File(), desc="List of mif files")
     mrtrix_lut_files = traits.List(File(), desc="List of mrtrix lut files")
+    # XXX: Need the following
+    xfms_to_anat = traits.List(File(), desc="List of transforms to get the atlas into ACPC space")
+    labels_files = traits.List(File(), desc="List of labels files")
+
 
 
 class ExtractAtlasFiles(SimpleInterface):
