@@ -55,7 +55,6 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
         usedefault=True,
         desc="Large delta in seconds. Documented as 'LargeDelta' in the BIDS metadata.",
         recon_spec_accessible=True,
-        requires=["small_delta"],
     )
     # NOTE: Do not add ConditionalDoc here because it is described in the workflow.
     small_delta = traits.Either(
@@ -64,7 +63,6 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
         usedefault=True,
         desc="Small delta in seconds. Documented as 'SmallDelta' in the BIDS metadata.",
         recon_spec_accessible=True,
-        requires=["big_delta"],
     )
     b0_threshold = traits.CFloat(
         50,
@@ -380,7 +378,6 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             ),
         ),
         recon_spec_accessible=True,
-        xor=["static_diffusivity"],
     )
     # XXX: Not stored as attribute in the model, so metadata is not available.
     static_diffusivity = traits.Float(
@@ -394,7 +391,6 @@ class MAPMRIInputSpec(DipyReconInputSpec):
         ),
         doc=ConditionalDoc("Static tissue diffusivity was set to {value}."),
         recon_spec_accessible=True,
-        xor=["dti_scale_estimation"],
     )
     cvxpy_solver = traits.Either(
         None,
