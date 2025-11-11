@@ -301,9 +301,7 @@ class MAPMRIInputSpec(DipyReconInputSpec):
     eigenvalue_threshold = traits.Float(
         1e-04,
         usedefault=True,
-        desc=(
-            "Sets the minimum of the tensor eigenvalues in order to avoid stability problem."
-        ),
+        desc="Sets the minimum of the tensor eigenvalues in order to avoid stability problem.",
         doc=ConditionalDoc("The eigenvalue threshold was set to {value}."),
     )
     bval_threshold = traits.Float(
