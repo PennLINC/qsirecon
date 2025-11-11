@@ -291,9 +291,9 @@ class MAPMRIReconstruction(DipyReconInterface):
         dwi_img = nb.load(self.inputs.dwi_file)
         data = dwi_img.get_fdata(dtype="float32")
         mask_img, mask_array = self._get_mask(dwi_img, gtab)
-        kwargs = {'laplacian_weighting': None}
+        kwargs = {"laplacian_weighting": None}
         if self.inputs.laplacian_regularization:
-            kwargs['laplacian_weighting'] = self.inputs.laplacian_weighting
+            kwargs["laplacian_weighting"] = self.inputs.laplacian_weighting
 
         map_model_aniso = mapmri.MapmriModel(
             gtab,
@@ -363,8 +363,8 @@ class MAPMRIReconstruction(DipyReconInterface):
                 },
             },
         }
-        if inputs['laplacian_regularization']:
-            base_metadata['Model']['Parameters']['LaplacianWeighting'] = inputs['laplacian_weighting']
+        if inputs["laplacian_regularization"]:
+            base_metadata["Model"]["Parameters"]["LaplacianWeighting"] = inputs["laplacian_weighting"]
 
         outputs = super()._list_outputs()
         file_outputs = [
