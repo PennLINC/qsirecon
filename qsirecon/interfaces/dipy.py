@@ -55,7 +55,8 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
         desc=(
             "Big delta in seconds. "
             "This is not added to the boilerplate through this interface. "
-            "It is added in the workflow."
+            "It is added in the workflow. "
+            "Documented as 'LargeDelta' in the BIDS metadata."
         ),
         recon_spec_accessible=True,
     )
@@ -66,14 +67,18 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
         desc=(
             "Small delta in seconds. "
             "This is not added to the boilerplate through this interface. "
-            "It is added in the workflow."
+            "It is added in the workflow. "
+            "Documented as 'SmallDelta' in the BIDS metadata."
         ),
         recon_spec_accessible=True,
     )
     b0_threshold = traits.CFloat(
         50,
         usedefault=True,
-        desc="B-value threshold. Any b-values below this threshold are considered b0s.",
+        desc=(
+            "B-value threshold. Any b-values below this threshold are considered b0s. "
+            "Documented as 'B0Threshold' in the BIDS metadata."
+        ),
         doc=ConditionalDoc(
             (
                 "B-values less than {value} were treated as b0s for the sake of modeling."
@@ -91,7 +96,8 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
         "DSIQ5",
         desc=(
             "Sampling scheme to extrapolate the DWI data to. "
-            "Appears to only be used by BrainSuiteShoreReconstruction."
+            "Appears to only be used by BrainSuiteShoreReconstruction. "
+            "Documented as 'ExtrapolateScheme' in the BIDS metadata."
         ),
         recon_spec_accessible=True,
     )
@@ -233,14 +239,20 @@ class MAPMRIInputSpec(DipyReconInputSpec):
     radial_order = traits.Int(
         6,
         usedefault=True,
-        desc="An even integer that represents the order of the basis.",
+        desc=(
+            "An even integer that represents the order of the basis. "
+            "Documented as 'RadialOrder' in the BIDS metadata."
+        ),
         doc=ConditionalDoc("The radial order of the MAPMRI model was set to {value}."),
         recon_spec_accessible=True,
     )
     laplacian_regularization = traits.Bool(
         True,
         usedefault=True,
-        desc="Regularize using the Laplacian of the MAP-MRI basis.",
+        desc=(
+            "Regularize using the Laplacian of the MAP-MRI basis. "
+            "Documented as 'LaplacianRegularization' in the BIDS metadata."
+        ),
         doc=ConditionalDoc(
             "The Laplacian of the MAP-MRI basis was used for regularization.",
             if_false="The Laplacian of the MAP-MRI basis was not used for regularization.",
@@ -257,7 +269,8 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             "The string 'GCV' makes it use generalized cross-validation to find "
             "the regularization weight. A scalar sets the regularization weight "
             "to that value and an array will make it selected the optimal weight "
-            "from the values in the array."
+            "from the values in the array. "
+            "Documented as 'LaplacianWeighting' in the BIDS metadata."
         ),
         doc=ConditionalDoc("Laplacian weighting was set to {value}."),
         recon_spec_accessible=True,
@@ -265,7 +278,10 @@ class MAPMRIInputSpec(DipyReconInputSpec):
     positivity_constraint = traits.Bool(
         False,
         usedefault=True,
-        desc=("Constrain the propagator to be positive."),
+        desc=(
+            "Constrain the propagator to be positive. "
+            "Documented as 'PositivityConstraint' in the BIDS metadata."
+        ),
         doc=ConditionalDoc(
             "The propagator was constrained to be positive.",
             if_false="The propagator was not constrained to be positive.",
@@ -278,7 +294,8 @@ class MAPMRIInputSpec(DipyReconInputSpec):
         desc=(
             "If set to False, positivity is enforced on a grid determined by pos_grid and "
             "pos_radius. If set to True, positivity is enforced everywhere using the constraints "
-            "of Merlet2013."
+            "of Merlet2013. "
+            "Documented as 'GlobalConstraints' in the BIDS metadata."
         ),
         doc=ConditionalDoc(
             "Positivity was enforced everywhere using the constraints of @merlet3dshore.",
@@ -289,7 +306,10 @@ class MAPMRIInputSpec(DipyReconInputSpec):
     pos_grid = traits.Int(
         15,
         usedefault=True,
-        desc="The number of points in the grid that is used in the local positivity constraint.",
+        desc=(
+            "The number of points in the grid that is used in the local positivity constraint. "
+            "Documented as 'PositivityGrid' in the BIDS metadata."
+        ),
         doc=ConditionalDoc("The local positivity constraint grid was set to {value} points."),
         recon_spec_accessible=True,
     )
@@ -304,7 +324,8 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             "constraint constrains to posivity is that value. If set to "
             "'adaptive', the maximum distance is dependent on the estimated "
             "tissue diffusivity. If 'infinity', semidefinite programming "
-            "constraints are used."
+            "constraints are used. "
+            "Documented as 'PositivityRadius' in the BIDS metadata."
         ),
         doc=ConditionalDoc("The positivity radius was set to {value}."),
         recon_spec_accessible=True,
@@ -314,7 +335,8 @@ class MAPMRIInputSpec(DipyReconInputSpec):
         usedefault=True,
         desc=(
             "If True, uses the standard anisotropic MAP-MRI basis. If False, "
-            "uses the isotropic MAP-MRI basis."
+            "uses the isotropic MAP-MRI basis. "
+            "Documented as 'AnisotropicScaling' in the BIDS metadata."
         ),
         doc=ConditionalDoc(
             "The anisotropic MAP-MRI basis was used.",
@@ -325,7 +347,10 @@ class MAPMRIInputSpec(DipyReconInputSpec):
     eigenvalue_threshold = traits.Float(
         1e-04,
         usedefault=True,
-        desc="Sets the minimum of the tensor eigenvalues in order to avoid stability problems.",
+        desc=(
+            "Sets the minimum of the tensor eigenvalues in order to avoid stability problems. "
+            "Documented as 'EigenvalueThreshold' in the BIDS metadata."
+        ),
         doc=ConditionalDoc("The eigenvalue threshold was set to {value}."),
         recon_spec_accessible=True,
     )
@@ -336,7 +361,8 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             "estimation. In order for the estimated non-Gaussianity to have "
             "meaning this value should set to a lower value (b<2000 s/mm^2) "
             "such that the scale factors are estimated on signal points that "
-            "reasonably represent the spins at Gaussian diffusion."
+            "reasonably represent the spins at Gaussian diffusion. "
+            "Documented as 'BValThreshold' in the BIDS metadata."
         ),
         doc=ConditionalDoc(
             "The b-value threshold for scale factor estimation was set to {value}.",
@@ -352,7 +378,8 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             "the isotropic tissue diffusivity to static_diffusivity. This vastly "
             "increases fitting speed but at the cost of slightly reduced fitting "
             "quality. Can still be used in combination with regularization and "
-            "constraints."
+            "constraints. "
+            "Documented as 'DTIScaleEstimation' in the BIDS metadata."
         ),
         doc=ConditionalDoc(
             "DTI fitting was used to estimate the isotropic scale factor.",
@@ -366,7 +393,8 @@ class MAPMRIInputSpec(DipyReconInputSpec):
         desc=(
             "The tissue diffusivity that is used when dti_scale_estimation is "
             "set to False. The default is that of typical white matter "
-            "D=0.7e-3."
+            "D=0.7e-3. "
+            "Documented as 'StaticDiffusivity' in the BIDS metadata."
         ),
         doc=ConditionalDoc("Static tissue diffusivity was set to {value}."),
         recon_spec_accessible=True,
@@ -378,7 +406,8 @@ class MAPMRIInputSpec(DipyReconInputSpec):
         desc=(
             "cvxpy solver name. Optionally optimize the positivity constraint "
             "with a particular cvxpy solver. See https://www.cvxpy.org/ for "
-            "details."
+            "details. "
+            "Documented as 'CVXPYSolver' in the BIDS metadata."
         ),
         doc=ConditionalDoc("CVXPY solver was set to {value}."),
         recon_spec_accessible=True,
@@ -502,7 +531,7 @@ class MAPMRIReconstruction(DipyReconInterface):
         }
         other_params = {
             # Inherited from DipyReconInterface
-            "BigDelta": inputs["big_delta"],
+            "LargeDelta": inputs["big_delta"],
             "SmallDelta": inputs["small_delta"],
             "B0Threshold": inputs["b0_threshold"],
             "WriteFibgz": inputs["write_fibgz"],

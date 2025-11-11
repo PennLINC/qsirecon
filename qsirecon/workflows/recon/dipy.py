@@ -11,6 +11,7 @@ Dipy Reconstruction workflows
 import logging
 
 import nipype.pipeline.engine as pe
+from dipy import __version__ as dipy_version
 from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
@@ -477,46 +478,14 @@ def init_dipy_mapmri_recon_wf(
     workflow = Workflow(name=name)
     suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
     desc = (
-        f"\n\n#### Dipy Reconstruction{suffix_str}\n\n"
-        "MAPMRI reconstruction was performed with Dipy [@dipy]."
+        f"\n\n#### DIPY Reconstruction{suffix_str}\n\n"
+        "Mean Apparent Propagator MRI (MAPMRI) reconstruction was performed with "
+        f"DIPY {dipy_version} [@dipy]."
     )
 
     # Do we have deltas?
-    deltas = (params.get("big_delta", None), params.get("small_delta", None))
-    deltas_source = None
-    approximate_deltas = None in deltas
-    dwi_metadata = inputs_dict.get("dwi_metadata", {})
-    if approximate_deltas:
-        deltas = (
-            dwi_metadata.get("LargeDelta", None),
-            dwi_metadata.get("SmallDelta", None),
-        )
-        approximate_deltas = None in deltas
-        deltas_source = "dwi_metadata" if not approximate_deltas else None
-    else:
-        deltas_source = "spec"
-
-    # Set deltas if we have them. Prevent only one from being defined
-    if approximate_deltas:
-        LOGGER.warning('Both "big_delta" and "small_delta" are required for precise MAPMRI')
-    else:
-        params["big_delta"], params["small_delta"] = deltas
-
-    if deltas_source == "spec":
-        desc += (
-            f" Big Delta was set to {deltas[0]} and Small Delta was set to {deltas[1]}, "
-            "based on hardcoded values in the reconstruction specification."
-        )
-    elif deltas_source == "dwi_metadata":
-        desc += (
-            f" Big Delta was set to {deltas[0]} and Small Delta was set to {deltas[1]}, "
-            "based on the DWI metadata."
-        )
-    else:
-        desc += (
-            " Delta information was not provided, resulting in possibly imprecise MAPMRI "
-            "reconstruction."
-        )
+    deltas, deltas_string = infer_deltas(inputs_dict.get("dwi_metadata", {}), params)
+    desc += deltas_string
 
     plot_reports = not config.execution.skip_odf_reports
     omp_nthreads = config.nipype.omp_nthreads
@@ -924,3 +893,44 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
     workflow.__desc__ = desc
 
     return clean_datasinks(workflow, qsirecon_suffix)
+
+
+def infer_deltas(metadata, params):
+    """Infer deltas from available information."""
+    deltas = (params.get("big_delta", None), params.get("small_delta", None))
+    deltas_source = None
+    approximate_deltas = None in deltas
+    if approximate_deltas:
+        deltas = (
+            metadata.get("LargeDelta", None),
+            metadata.get("SmallDelta", None),
+        )
+        approximate_deltas = None in deltas
+        deltas_source = "dwi_metadata" if not approximate_deltas else None
+    else:
+        deltas_source = "spec"
+
+    # Set deltas if we have them. Prevent only one from being defined
+    if approximate_deltas:
+        LOGGER.warning(
+            'Both "big_delta" and "small_delta" are recommended for precise reconstruction.'
+        )
+    else:
+        params["big_delta"], params["small_delta"] = deltas
+
+    if deltas_source == "spec":
+        deltas_string = (
+            f" Big Delta was set to {deltas[0]} and Small Delta was set to {deltas[1]}, "
+            "based on hardcoded values in the reconstruction specification."
+        )
+    elif deltas_source == "dwi_metadata":
+        deltas_string = (
+            f" Big Delta was set to {deltas[0]} and Small Delta was set to {deltas[1]}, "
+            "based on the DWI metadata."
+        )
+    else:
+        deltas_string = (
+            " Delta information was not provided, resulting in possibly imprecise MAPMRI "
+            "reconstruction."
+        )
+    return deltas, deltas_string
