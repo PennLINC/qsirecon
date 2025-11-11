@@ -248,22 +248,6 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             if_false="Positivity constraint was disabled.",
         ),
     )
-    # XXX: This is not used.
-    pos_grid = traits.Int(
-        15,
-        usedefault=True,
-        desc="Positivity grid.",
-        doc=ConditionalDoc("Positivity grid was set to {value}."),
-    )
-    # XXX: This is not used.
-    pos_radius = traits.Either(
-        traits.Str("adaptive"),
-        traits.Int(),
-        default="adaptive",
-        usedefault=True,
-        desc="Positivity radius.",
-        doc=ConditionalDoc("Positivity radius was set to {value}."),
-    )
     anisotropic_scaling = traits.Bool(
         True,
         usedefault=True,
@@ -272,40 +256,6 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             "Anisotropic scaling was enabled.",
             if_false="Anisotropic scaling was disabled.",
         ),
-    )
-    # XXX: This is not used.
-    eigenvalue_threshold = traits.Float(
-        1e-04,
-        usedefault=True,
-        desc="Eigenvalue threshold.",
-        doc=ConditionalDoc("Eigenvalue threshold was set to {value}."),
-    )
-    # XXX: This is not used, but an inherited b0_threshold parameter is.
-    bval_threshold = traits.Float(
-        desc="B-value threshold.",
-        doc=ConditionalDoc("B-value threshold was set to {value}."),
-    )
-    # XXX: This is not used.
-    dti_scale_estimation = traits.Bool(
-        True,
-        usedefault=True,
-        desc="DTI scale estimation.",
-        doc=ConditionalDoc(
-            "DTI scale estimation was enabled.",
-            if_false="DTI scale estimation was disabled.",
-        ),
-    )
-    # XXX: This is not used.
-    static_diffusivity = traits.Float(
-        0.7e-3,
-        usedefault=True,
-        desc="Static diffusivity.",
-        doc=ConditionalDoc("Static diffusivity was set to {value}."),
-    )
-    # XXX: This is not used.
-    cvxpy_solver = traits.Str(
-        desc="CVXPY solver.",
-        doc=ConditionalDoc("CVXPY solver was set to {value}."),
     )
 
 
@@ -341,50 +291,19 @@ class MAPMRIReconstruction(DipyReconInterface):
         dwi_img = nb.load(self.inputs.dwi_file)
         data = dwi_img.get_fdata(dtype="float32")
         mask_img, mask_array = self._get_mask(dwi_img, gtab)
-        weighting = (
-            "GCV" if self.inputs.laplacian_weighting == "GCV" else self.inputs.laplacian_weighting
+        kwargs = {'laplacian_weighting': None}
+        if self.inputs.laplacian_regularization:
+            kwargs['laplacian_weighting'] = self.inputs.laplacian_weighting
+
+        map_model_aniso = mapmri.MapmriModel(
+            gtab,
+            laplacian_regularization=self.inputs.laplacian_regularization,
+            positivity_constraint=self.inputs.positivity_constraint,
+            radial_order=self.inputs.radial_order,
+            bval_threshold=self.inputs.b0_threshold,
+            anisotropic_scaling=self.inputs.anisotropic_scaling,
+            **kwargs,
         )
-
-        if self.inputs.laplacian_regularization and self.inputs.positivity_constraint:
-            map_model_aniso = mapmri.MapmriModel(
-                gtab,
-                radial_order=self.inputs.radial_order,
-                laplacian_regularization=True,
-                laplacian_weighting=weighting,
-                positivity_constraint=True,
-                bval_threshold=self.inputs.b0_threshold,
-                anisotropic_scaling=self.inputs.anisotropic_scaling,
-            )
-
-        elif self.inputs.positivity_constraint:
-            map_model_aniso = mapmri.MapmriModel(
-                gtab,
-                radial_order=self.inputs.radial_order,
-                laplacian_regularization=False,
-                positivity_constraint=True,
-                bval_threshold=self.inputs.b0_threshold,
-                anisotropic_scaling=self.inputs.anisotropic_scaling,
-            )
-
-        elif self.inputs.laplacian_regularization:
-            map_model_aniso = mapmri.MapmriModel(
-                gtab,
-                radial_order=self.inputs.radial_order,
-                laplacian_regularization=True,
-                laplacian_weighting=weighting,
-                bval_threshold=self.inputs.b0_threshold,
-                anisotropic_scaling=self.inputs.anisotropic_scaling,
-            )
-
-        else:
-            map_model_aniso = mapmri.MapmriModel(
-                gtab,
-                radial_order=self.inputs.radial_order,
-                laplacian_regularization=False,
-                positivity_constraint=False,
-                bval_threshold=self.inputs.b0_threshold,
-                anisotropic_scaling=self.inputs.anisotropic_scaling,
-            )
 
         LOGGER.info("Fitting MAPMRI Model.")
         mapfit_aniso = map_model_aniso.fit(data, mask=mask_array)
@@ -433,17 +352,8 @@ class MAPMRIReconstruction(DipyReconInterface):
                 "Parameters": {
                     "RadialOrder": inputs["radial_order"],
                     "LaplacianRegularization": inputs["laplacian_regularization"],
-                    "LaplacianWeighting": inputs["laplacian_weighting"],
                     "PositivityConstraint": inputs["positivity_constraint"],
                     "AnisotropicScaling": inputs["anisotropic_scaling"],
-                    # XXX: These are not used.
-                    "PositivityGrid": inputs["pos_grid"],
-                    "PositivityRadius": inputs["pos_radius"],
-                    "EigenvalueThreshold": inputs["eigenvalue_threshold"],
-                    "BvalThreshold": inputs["bval_threshold"],
-                    "DtiScaleEstimation": inputs["dti_scale_estimation"],
-                    "StaticDiffusivity": inputs["static_diffusivity"],
-                    "CvxpySolver": inputs["cvxpy_solver"],
                     # Inherited from DipyReconInterface
                     "BigDelta": inputs["big_delta"],
                     "SmallDelta": inputs["small_delta"],
@@ -453,6 +363,9 @@ class MAPMRIReconstruction(DipyReconInterface):
                 },
             },
         }
+        if inputs['laplacian_regularization']:
+            base_metadata['Model']['Parameters']['LaplacianWeighting'] = inputs['laplacian_weighting']
+
         outputs = super()._list_outputs()
         file_outputs = [
             name for name in self.output_spec().get() if not name.endswith("_metadata")

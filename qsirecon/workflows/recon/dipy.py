@@ -478,7 +478,7 @@ def init_dipy_mapmri_recon_wf(
     suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
     desc = (
         f"\n\n#### Dipy Reconstruction{suffix_str}\n\n"
-        "MAPMRI reconstruction was performed with Dipy."
+        "MAPMRI reconstruction was performed with Dipy [@dipy]."
     )
 
     # Do we have deltas?
@@ -505,15 +505,18 @@ def init_dipy_mapmri_recon_wf(
     if deltas_source == "spec":
         desc += (
             f" Big Delta was set to {deltas[0]} and Small Delta was set to {deltas[1]}, "
-            "based on the recon spec."
+            "based on hardcoded values in the reconstruction specification."
         )
     elif deltas_source == "dwi_metadata":
         desc += (
             f" Big Delta was set to {deltas[0]} and Small Delta was set to {deltas[1]}, "
-            "based on the dwi metadata."
+            "based on the DWI metadata."
         )
     else:
-        desc += " Delta information was not provided, resulting in possibly imprecise MAPMRI."
+        desc += (
+            " Delta information was not provided, resulting in possibly imprecise MAPMRI "
+            "reconstruction."
+        )
 
     plot_reports = not config.execution.skip_odf_reports
     omp_nthreads = config.nipype.omp_nthreads
