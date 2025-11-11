@@ -265,6 +265,19 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             if_false="The propagator was not constrained to be positive.",
         ),
     )
+    global_constraints = traits.Bool(
+        False,
+        usedefault=True,
+        desc=(
+            "If set to False, positivity is enforced on a grid determined by pos_grid and "
+            "pos_radius. If set to True, positivity is enforced everywhere using the constraints "
+            "of Merlet2013."
+        ),
+        doc=ConditionalDoc(
+            "Positivity was enforced everywhere using the constraints of @merlet3dshore.",
+            if_false="Positivity was enforced on a grid determined by pos_grid and pos_radius.",
+        ),
+    )
     pos_grid = traits.Int(
         15,
         usedefault=True,
