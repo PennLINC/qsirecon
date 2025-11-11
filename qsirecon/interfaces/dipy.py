@@ -438,7 +438,7 @@ class MAPMRIReconstruction(DipyReconInterface):
             cvxpy_solver=self.inputs.cvxpy_solver,
             **kwargs,
         )
-        self._used_params = [k for k in self.inputs.get() if hasattr(map_model_aniso, k)]
+        self._used_params = [k for k in self.inputs.get().keys() if hasattr(map_model_aniso, k)]
 
         LOGGER.info("Fitting MAPMRI Model.")
         mapfit_aniso = map_model_aniso.fit(data, mask=mask_array)
