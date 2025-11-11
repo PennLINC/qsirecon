@@ -102,8 +102,9 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
         name="recon_scalars",
     )
     omp_nthreads = config.nipype.omp_nthreads
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
     desc = (
-        "#### TORTOISE Reconstruction\n\n"
+        f"\n\n#### TORTOISE Reconstruction{suffix_str}\n\n"
         + "Methods implemented in TORTOISE (@tortoisev3) were used for reconstruction. "
     )
 
@@ -159,7 +160,7 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
         desc += build_documentation(compute_dt_li) + " "
         compute_md = pe.Node(ComputeMDMap(), name="compute_md")
         desc += (
-            "TORTOISE does not compute a mean diffusivity. "
+            "\n\nTORTOISE does not compute a mean diffusivity. "
             "Therefore, mean diffusivity was separately computed from the axial diffusivity and "
             "radial diffusivity using custom Python code. "
         )
@@ -194,6 +195,10 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
         ])  # fmt:skip
 
     mapmri_opts = params.get("estimate_mapmri", {})
+    if tensor_opts and mapmri_opts:
+        # Split up the sections
+        desc += "\n\n"
+
     if mapmri_opts:
         # MAPMRI-only steps
         # Set deltas if we have them. Prevent only one from being defined
