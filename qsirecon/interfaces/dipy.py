@@ -244,7 +244,7 @@ class MAPMRIInputSpec(DipyReconInputSpec):
     )
     laplacian_weighting = traits.Either(
         "GCV",
-        traits.list(traits.Float()),
+        traits.List(traits.Float()),
         traits.Float(0.2),
         default="GCV",
         usedefault=True,
