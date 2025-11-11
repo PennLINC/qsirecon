@@ -11,6 +11,7 @@ Dipy Reconstruction workflows
 import logging
 
 import nipype.pipeline.engine as pe
+from dipy import __version__ as dipy_version
 from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
@@ -30,6 +31,7 @@ from ...interfaces.recon_scalars import (
 )
 from ...interfaces.reports import CLIReconPeaksReport, ScalarReport
 from ...utils.bids import clean_datasinks
+from ...utils.boilerplate import build_documentation
 from .utils import init_scalar_output_wf
 
 LOGGER = logging.getLogger("nipype.interface")
@@ -455,14 +457,14 @@ def init_dipy_mapmri_recon_wf(
     outputnode = pe.Node(
         niu.IdentityInterface(
             fields=[
-                "mapmri_coeffs",
+                "mapcoeffs",
                 "rtop",
                 "rtap",
                 "rtpp",
                 "fibgz",
                 "fod_sh_mif",
-                "parng",
-                "perng",
+                "ngpar",
+                "ngperp",
                 "ng",
                 "qiv",
                 "lapnorm",
@@ -474,28 +476,23 @@ def init_dipy_mapmri_recon_wf(
     )
 
     workflow = Workflow(name=name)
-    desc = "#### Dipy Reconstruction\n\n"
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    desc = (
+        f"\n\n#### DIPY Reconstruction{suffix_str}\n\n"
+        "Mean Apparent Propagator MRI (MAPMRI) reconstruction was performed with "
+        f"DIPY {dipy_version} [@dipy]."
+    )
 
     # Do we have deltas?
-    deltas = (params.get("big_delta", None), params.get("small_delta", None))
-    approximate_deltas = None in deltas
-    dwi_metadata = inputs_dict.get("dwi_metadata", {})
-    if approximate_deltas:
-        deltas = (
-            dwi_metadata.get("LargeDelta", None),
-            dwi_metadata.get("SmallDelta", None),
-        )
-        approximate_deltas = None in deltas
-
-    # Set deltas if we have them. Prevent only one from being defined
-    if approximate_deltas:
-        LOGGER.warning('Both "big_delta" and "small_delta" are required for precise MAPMRI')
-    else:
+    deltas, deltas_string = infer_deltas(inputs_dict.get("dwi_metadata", {}), params)
+    desc += deltas_string
+    if deltas is not None:
         params["big_delta"], params["small_delta"] = deltas
 
     plot_reports = not config.execution.skip_odf_reports
     omp_nthreads = config.nipype.omp_nthreads
     recon_map = pe.Node(MAPMRIReconstruction(**params), name="recon_map")
+    desc += " " + build_documentation(recon_map)
     recon_scalars = pe.Node(
         DIPYMAPMRIReconScalars(dismiss_entities=["desc"], qsirecon_suffix=name),
         name="recon_scalars",
@@ -506,31 +503,43 @@ def init_dipy_mapmri_recon_wf(
             ('dwi_file', 'dwi_file'),
             ('bval_file', 'bval_file'),
             ('bvec_file', 'bvec_file'),
-            ('dwi_mask', 'mask_file')]),
+            ('dwi_mask', 'mask_file'),
+        ]),
         (recon_map, outputnode, [
-            ('mapmri_coeffs', 'mapmri_coeffs'),
+            ('mapcoeffs', 'mapcoeffs'),
             ('rtop', 'rtop'),
             ('rtap', 'rtap'),
             ('rtpp', 'rtpp'),
-            ('parng', 'parng'),
-            ('perng', 'perng'),
+            ('ngpar', 'ngpar'),
+            ('ngperp', 'ngperp'),
             ('msd', 'msd'),
             ('ng', 'ng'),
             ('qiv', 'qiv'),
             ('lapnorm', 'lapnorm'),
             ('fibgz', 'fibgz'),
-            ('fod_sh_mif', 'fod_sh_mif')]),
+            ('fod_sh_mif', 'fod_sh_mif'),
+        ]),
         (recon_map, recon_scalars, [
-            ('rtop', 'rtop_file'),
-            ('rtap', 'rtap_file'),
-            ('rtpp', 'rtpp_file'),
-            ('ng', 'ng_file'),
-            ('parng', 'ngpar_file'),
-            ('perng', 'ngperp_file'),
-            ('msd', 'msd_file'),
-            ('qiv', 'qiv_file'),
-            ('lapnorm', 'lapnorm_file'),
-            ('mapmri_coeffs', 'mapcoeffs_file'),
+            ('rtop', 'rtop'),
+            ('rtop_metadata', 'rtop_metadata'),
+            ('rtap', 'rtap'),
+            ('rtap_metadata', 'rtap_metadata'),
+            ('rtpp', 'rtpp'),
+            ('rtpp_metadata', 'rtpp_metadata'),
+            ('ng', 'ng'),
+            ('ng_metadata', 'ng_metadata'),
+            ('ngpar', 'ngpar'),
+            ('ngpar_metadata', 'ngpar_metadata'),
+            ('ngperp', 'ngperp'),
+            ('ngperp_metadata', 'ngperp_metadata'),
+            ('msd', 'msd'),
+            ('msd_metadata', 'msd_metadata'),
+            ('qiv', 'qiv'),
+            ('qiv_metadata', 'qiv_metadata'),
+            ('lapnorm', 'lapnorm'),
+            ('lapnorm_metadata', 'lapnorm_metadata'),
+            ('mapcoeffs', 'mapcoeffs'),
+            ('mapcoeffs_metadata', 'mapcoeffs_metadata'),
         ]),
     ])  # fmt:skip
 
@@ -886,3 +895,43 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
     workflow.__desc__ = desc
 
     return clean_datasinks(workflow, qsirecon_suffix)
+
+
+def infer_deltas(metadata, params):
+    """Infer deltas from available information."""
+    deltas = (params.get("big_delta", None), params.get("small_delta", None))
+    deltas_source = None
+    approximate_deltas = None in deltas
+    if approximate_deltas:
+        deltas = (
+            metadata.get("LargeDelta", None),
+            metadata.get("SmallDelta", None),
+        )
+        approximate_deltas = None in deltas
+        deltas_source = "dwi_metadata" if not approximate_deltas else None
+    else:
+        deltas_source = "spec"
+
+    # Set deltas if we have them. Prevent only one from being defined
+    if approximate_deltas:
+        LOGGER.warning(
+            'Both "big_delta" and "small_delta" are recommended for precise reconstruction.'
+        )
+        deltas = None
+
+    if deltas_source == "spec":
+        deltas_string = (
+            f" Big Delta was set to {deltas[0]} and Small Delta was set to {deltas[1]}, "
+            "based on hardcoded values in the reconstruction specification."
+        )
+    elif deltas_source == "dwi_metadata":
+        deltas_string = (
+            f" Big Delta was set to {deltas[0]} and Small Delta was set to {deltas[1]}, "
+            "based on the DWI metadata."
+        )
+    else:
+        deltas_string = (
+            " Delta information was not provided, resulting in possibly imprecise MAPMRI "
+            "reconstruction."
+        )
+    return deltas, deltas_string

@@ -103,7 +103,8 @@ class ReconScalars(SimpleInterface):
             metadata_name = input_name + "_metadata"
             metadata = inputs.get(metadata_name, {})
             # account for Undefined or None values
-            metadata = metadata or {}
+            if not isdefined(metadata) or metadata is None:
+                metadata = {}
 
             result = self.scalar_metadata[input_name].copy()
             result["path"] = os.path.abspath(inputs[input_name])
