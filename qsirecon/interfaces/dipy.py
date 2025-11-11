@@ -383,6 +383,7 @@ class MAPMRIInputSpec(DipyReconInputSpec):
         ),
         recon_spec_accessible=True,
     )
+    # XXX: Not stored as attribute in the model, so metadata is not available.
     static_diffusivity = traits.Float(
         0.7e-3,
         usedefault=True,
