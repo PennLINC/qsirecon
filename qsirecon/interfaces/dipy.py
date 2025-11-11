@@ -438,6 +438,7 @@ class MAPMRIReconstruction(DipyReconInterface):
             cvxpy_solver=self.inputs.cvxpy_solver,
             **kwargs,
         )
+        self._used_params = [k for k in self.inputs.get() if hasattr(map_model_aniso, k)]
 
         LOGGER.info("Fitting MAPMRI Model.")
         mapfit_aniso = map_model_aniso.fit(data, mask=mask_array)
@@ -481,37 +482,42 @@ class MAPMRIReconstruction(DipyReconInterface):
         inputs = self.inputs.get()
         # Convert _Undefined values to "n/a"
         inputs = {k: "n/a" if not isdefined(v) else v for k, v in inputs.items()}
+
+        model_params = {
+            inputs["radial_order"]: "RadialOrder",
+            inputs["laplacian_regularization"]: "LaplacianRegularization",
+            inputs["laplacian_weighting"]: "LaplacianWeighting",
+            inputs["positivity_constraint"]: "PositivityConstraint",
+            inputs["global_constraints"]: "GlobalConstraints",
+            inputs["pos_grid"]: "PositivityGrid",
+            inputs["pos_radius"]: "PositivityRadius",
+            inputs["anisotropic_scaling"]: "AnisotropicScaling",
+            inputs["eigenvalue_threshold"]: "EigenvalueThreshold",
+            inputs["bval_threshold"]: "BValThreshold",
+            inputs["dti_scale_estimation"]: "DTIScaleEstimation",
+            inputs["static_diffusivity"]: "StaticDiffusivity",
+            inputs["cvxpy_solver"]: "CVXPYSolver",
+        }
+        model_params = {
+            v: inputs.get(k, "n/a") for k, v in model_params.items() if k in self._used_params
+        }
+        other_params = {
+            # Inherited from DipyReconInterface
+            "BigDelta": inputs["big_delta"],
+            "SmallDelta": inputs["small_delta"],
+            "B0Threshold": inputs["b0_threshold"],
+            "WriteFibgz": inputs["write_fibgz"],
+            "WriteMif": inputs["write_mif"],
+        }
+
         base_metadata = {
             "Model": {
                 "Parameters": {
-                    "RadialOrder": inputs["radial_order"],
-                    "LaplacianRegularization": inputs["laplacian_regularization"],
-                    "PositivityConstraint": inputs["positivity_constraint"],
-                    "GlobalConstraints": inputs["global_constraints"],
-                    "PositivityGrid": inputs["pos_grid"],
-                    "PositivityRadius": inputs["pos_radius"],
-                    "AnisotropicScaling": inputs["anisotropic_scaling"],
-                    "EigenvalueThreshold": inputs["eigenvalue_threshold"],
-                    "BValThreshold": inputs["bval_threshold"],
-                    "DTIScaleEstimation": inputs["dti_scale_estimation"],
-                    "CVXPYSolver": inputs["cvxpy_solver"],
-                    # Inherited from DipyReconInterface
-                    "BigDelta": inputs["big_delta"],
-                    "SmallDelta": inputs["small_delta"],
-                    "B0Threshold": inputs["b0_threshold"],
-                    "WriteFibgz": inputs["write_fibgz"],
-                    "WriteMif": inputs["write_mif"],
+                    **model_params,
+                    **other_params,
                 },
             },
         }
-        if inputs["laplacian_regularization"]:
-            base_metadata["Model"]["Parameters"]["LaplacianWeighting"] = inputs[
-                "laplacian_weighting"
-            ]
-        if not inputs["dti_scale_estimation"]:
-            base_metadata["Model"]["Parameters"]["StaticDiffusivity"] = inputs[
-                "static_diffusivity"
-            ]
 
         outputs = super()._list_outputs()
         file_outputs = [
