@@ -384,3 +384,37 @@ def make_bmat_file(bvals, bvecs):
     pout = subprocess.run(["FSLBVecsToTORTOISEBmatrix", op.abspath(bvals), op.abspath(bvecs)])
     print(pout)
     return bvals.replace("bval", "bmtxt")
+
+
+class _ComputeMDMapInputSpec(BaseInterfaceInputSpec):
+    ad = File(exists=True, mandatory=True)
+    rd = File(exists=True, mandatory=True)
+
+
+class _ComputeMDMapOutputSpec(TraitedSpec):
+    md = File(exists=True)
+    md_metadata = traits.Dict(desc="Metadata for the md file.")
+
+
+class ComputeMDMap(SimpleInterface):
+    input_spec = _ComputeMDMapInputSpec
+    output_spec = _ComputeMDMapOutputSpec
+
+    def _run_interface(self, runtime):
+        """Compute the MD from the AD and RD."""
+        from nilearn import image
+
+        md_img = image.math_img(
+            "(ad + (2 * rd)) / 3",
+            ad=self.inputs.ad,
+            rd=self.inputs.rd,
+        )
+        self._results["md"] = fname_presuffix(
+            self.inputs.ad,
+            suffix="_MD",
+            newpath=runtime.cwd,
+            use_ext=False,
+        )
+        md_img.to_filename(self._results["md"])
+        self._results["md_metadata"] = {}
+        return runtime

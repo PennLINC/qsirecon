@@ -25,6 +25,7 @@ from qsirecon.interfaces.tortoise import (
     ComputeADMap,
     ComputeFAMap,
     ComputeLIMap,
+    ComputeMDMap,
     ComputeMAPMRI_NG,
     ComputeMAPMRI_PA,
     ComputeMAPMRI_RTOP,
@@ -156,6 +157,12 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
         desc += build_documentation(compute_dt_ad) + " "
         compute_dt_li = pe.Node(ComputeLIMap(), name="compute_dt_li")
         desc += build_documentation(compute_dt_li) + " "
+        compute_md = pe.Node(ComputeMDMap(), name="compute_md")
+        desc += (
+            "TORTOISE does not compute a mean diffusivity. "
+            "Therefore, mean diffusivity was separately computed from the axial diffusivity and "
+            "radial diffusivity using custom Python code. "
+        )
         workflow.connect([
             (tortoise_convert, estimate_tensor, [
                 ("dwi_file", "in_file"),
@@ -177,7 +184,13 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
             (compute_dt_fa, recon_scalars, [("fa_file", "fa_file")]),
             (compute_dt_rd, recon_scalars, [("rd_file", "rd_file")]),
             (compute_dt_ad, recon_scalars, [("ad_file", "ad_file")]),
-            (compute_dt_li, recon_scalars, [("li_file", "li_file")])
+            (compute_dt_li, recon_scalars, [("li_file", "li_file")]),
+            (compute_dt_ad, compute_md, [("ad_file", "ad")]),
+            (compute_dt_rd, compute_md, [("rd_file", "rd")]),
+            (compute_md, recon_scalars, [
+                ("md", "md"),
+                ("md_metadata", "md_metadata"),
+            ]),
         ])  # fmt:skip
 
     mapmri_opts = params.get("estimate_mapmri", {})
