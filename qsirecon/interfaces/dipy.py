@@ -73,14 +73,25 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
         usedefault=True,
         desc="B-value threshold. Any b-values below this threshold are considered b0s.",
         doc=ConditionalDoc(
-            "B-values less than {value} were treated as b0s.",
+            (
+                "B-values less than {value} were treated as b0s for the sake of generating "
+                "gradient tables."
+            ),
         ),
     )
     # Outputs
     write_fibgz = traits.Bool(True)
     write_mif = traits.Bool(True)
     # To extrapolate
-    extrapolate_scheme = traits.Enum("HCP", "ABCD", "DSIQ5")
+    extrapolate_scheme = traits.Enum(
+        "HCP",
+        "ABCD",
+        "DSIQ5",
+        desc=(
+            "Sampling scheme to extrapolate the DWI data to. "
+            "Appears to only be used by BrainSuiteShoreReconstruction."
+        ),
+    )
 
 
 class DipyReconOutputSpec(TraitedSpec):
@@ -219,43 +230,126 @@ class MAPMRIInputSpec(DipyReconInputSpec):
     radial_order = traits.Int(
         6,
         usedefault=True,
-        desc="MAPMRI radial order.",
+        desc="An even integer that represents the order of the basis.",
         doc=ConditionalDoc("The radial order of the MAPMRI model was set to {value}."),
     )
     laplacian_regularization = traits.Bool(
         True,
         usedefault=True,
-        desc="Laplacian regularization.",
+        desc="Regularize using the Laplacian of the MAP-MRI basis.",
         doc=ConditionalDoc(
-            "Laplacian regularization was enabled.",
-            if_false="Laplacian regularization was disabled.",
+            "The Laplacian of the MAP-MRI basis was used for regularization.",
+            if_false="The Laplacian of the MAP-MRI basis was not used for regularization.",
         ),
     )
-    # XXX: Does traits.Str limit the values to "GCV" and "0.2", or do we need Enum?
     laplacian_weighting = traits.Either(
-        traits.Str("GCV"),
+        "GCV",
+        traits.list(traits.Float()),
         traits.Float(0.2),
+        default="GCV",
         usedefault=True,
-        desc="Laplacian weighting.",
+        desc=(
+            "The string 'GCV' makes it use generalized cross-validation to find "
+            "the regularization weight. A scalar sets the regularization weight "
+            "to that value and an array will make it selected the optimal weight "
+            "from the values in the array."
+        ),
         doc=ConditionalDoc("Laplacian weighting was set to {value}."),
     )
     positivity_constraint = traits.Bool(
         False,
         usedefault=True,
-        desc="Positivity constraint.",
+        desc=("Constrain the propagator to be positive."),
         doc=ConditionalDoc(
-            "Positivity constraint was enabled.",
-            if_false="Positivity constraint was disabled.",
+            "The propagator was constrained to be positive.",
+            if_false="The propagator was not constrained to be positive.",
         ),
+    )
+    pos_grid = traits.Int(
+        15,
+        usedefault=True,
+        desc="The number of points in the grid that is used in the local positivity constraint.",
+        doc=ConditionalDoc("The local positivity constraint grid was set to {value} points."),
+    )
+    pos_radius = traits.Either(
+        "adaptive",
+        "infinity",
+        traits.Float(),
+        default="adaptive",
+        usedefault=True,
+        desc=(
+            "If set to a float, the maximum distance the local positivity "
+            "constraint constrains to posivity is that value. If set to "
+            "'adaptive', the maximum distance is dependent on the estimated "
+            "tissue diffusivity. If 'infinity', semidefinite programming "
+            "constraints are used."
+        ),
+        doc=ConditionalDoc("The positivity radius was set to {value}."),
     )
     anisotropic_scaling = traits.Bool(
         True,
         usedefault=True,
-        desc="Anisotropic scaling.",
-        doc=ConditionalDoc(
-            "Anisotropic scaling was enabled.",
-            if_false="Anisotropic scaling was disabled.",
+        desc=(
+            "If True, uses the standard anisotropic MAP-MRI basis. If False, "
+            "uses the isotropic MAP-MRI basis (equal to 3D-SHORE)."
         ),
+        doc=ConditionalDoc(
+            "The anisotropic MAP-MRI basis was used.",
+            if_false="The isotropic MAP-MRI (3D-SHORE) basis was used.",
+        ),
+    )
+    eigenvalue_threshold = traits.Float(
+        1e-04,
+        usedefault=True,
+        desc=(
+            "Sets the minimum of the tensor eigenvalues in order to avoid "
+            "stability problem."
+        ),
+        doc=ConditionalDoc("The eigenvalue threshold was set to {value}."),
+    )
+    bval_threshold = traits.Float(
+        2000,
+        desc=(
+            "Sets the b-value threshold to be used in the scale factor "
+            "estimation. In order for the estimated non-Gaussianity to have "
+            "meaning this value should set to a lower value (b<2000 s/mm^2) "
+            "such that the scale factors are estimated on signal points that "
+            "reasonably represent the spins at Gaussian diffusion."
+        ),
+        doc=ConditionalDoc(
+            "The b-value threshold for scale factor estimation was set to {value}.",
+        ),
+    )
+    dti_scale_estimation = traits.Bool(
+        True,
+        usedefault=True,
+        desc=(
+            "Whether or not DTI fitting is used to estimate the isotropic scale "
+            "factor for isotropic MAP-MRI. When set to False the algorithm presets "
+            "the isotropic tissue diffusivity to static_diffusivity. This vastly "
+            "increases fitting speed but at the cost of slightly reduced fitting "
+            "quality. Can still be used in combination with regularization and "
+            "constraints."
+        ),
+        doc=ConditionalDoc(
+            "DTI fitting was used to estimate the isotropic scale factor.",
+            if_false="DTI fitting was not used to estimate the isotropic scale factor.",
+        ),
+    )
+    static_diffusivity = traits.Float(
+        0.7e-3,
+        usedefault=True,
+        desc=(
+            "The tissue diffusivity that is used when dti_scale_estimation is "
+            "set to False. The default is that of typical white matter "
+            "D=0.7e-3."
+        ),
+        doc=ConditionalDoc("Static tissue diffusivity was set to {value}."),
+    )
+    # XXX: This is not used.
+    cvxpy_solver = traits.Str(
+        desc="CVXPY solver.",
+        doc=ConditionalDoc("CVXPY solver was set to {value}."),
     )
 
 
@@ -296,12 +390,19 @@ class MAPMRIReconstruction(DipyReconInterface):
             kwargs["laplacian_weighting"] = self.inputs.laplacian_weighting
 
         map_model_aniso = mapmri.MapmriModel(
-            gtab,
+            gtab=gtab,
+            radial_order=self.inputs.radial_order,
             laplacian_regularization=self.inputs.laplacian_regularization,
             positivity_constraint=self.inputs.positivity_constraint,
-            radial_order=self.inputs.radial_order,
-            bval_threshold=self.inputs.b0_threshold,
-            anisotropic_scaling=self.inputs.anisotropic_scaling,
+            global_constraints=self.inputs.global_constraints,
+            pos_grid=self.inputs.pos_grid,
+            pos_radius=self.inputs.pos_radius,
+            anisotropy_scaling=self.inputs.anisotropic_scaling,
+            eigenvalue_threshold=self.inputs.eigenvalue_threshold,
+            bval_threshold=self.inputs.bval_threshold,
+            dti_scale_estimation=self.inputs.dti_scale_estimation,
+            static_diffusivity=self.inputs.static_diffusivity,
+            cvxpy_solver=self.inputs.cvxpy_solver,
             **kwargs,
         )
 
@@ -353,7 +454,14 @@ class MAPMRIReconstruction(DipyReconInterface):
                     "RadialOrder": inputs["radial_order"],
                     "LaplacianRegularization": inputs["laplacian_regularization"],
                     "PositivityConstraint": inputs["positivity_constraint"],
+                    "GlobalConstraints": inputs["global_constraints"],
+                    "PositivityGrid": inputs["pos_grid"],
+                    "PositivityRadius": inputs["pos_radius"],
                     "AnisotropicScaling": inputs["anisotropic_scaling"],
+                    "EigenvalueThreshold": inputs["eigenvalue_threshold"],
+                    "BValThreshold": inputs["bval_threshold"],
+                    "DTIScaleEstimation": inputs["dti_scale_estimation"],
+                    "CVXPYSolver": inputs["cvxpy_solver"],
                     # Inherited from DipyReconInterface
                     "BigDelta": inputs["big_delta"],
                     "SmallDelta": inputs["small_delta"],
@@ -367,6 +475,8 @@ class MAPMRIReconstruction(DipyReconInterface):
             base_metadata["Model"]["Parameters"]["LaplacianWeighting"] = inputs[
                 "laplacian_weighting"
             ]
+        if not inputs["dti_scale_estimation"]:
+            base_metadata["Model"]["Parameters"]["StaticDiffusivity"] = inputs["static_diffusivity"]
 
         outputs = super()._list_outputs()
         file_outputs = [
