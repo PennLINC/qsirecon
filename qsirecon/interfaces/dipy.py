@@ -57,6 +57,7 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
             "This is not added to the boilerplate through this interface. "
             "It is added in the workflow."
         ),
+        recon_spec_accessible=True,
     )
     small_delta = traits.Either(
         None,
@@ -67,6 +68,7 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
             "This is not added to the boilerplate through this interface. "
             "It is added in the workflow."
         ),
+        recon_spec_accessible=True,
     )
     b0_threshold = traits.CFloat(
         50,
@@ -78,10 +80,11 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
                 "gradient tables."
             ),
         ),
+        recon_spec_accessible=True,
     )
     # Outputs
-    write_fibgz = traits.Bool(True)
-    write_mif = traits.Bool(True)
+    write_fibgz = traits.Bool(True, recon_spec_accessible=True)
+    write_mif = traits.Bool(True, recon_spec_accessible=True)
     # To extrapolate
     extrapolate_scheme = traits.Enum(
         "HCP",
@@ -91,6 +94,7 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
             "Sampling scheme to extrapolate the DWI data to. "
             "Appears to only be used by BrainSuiteShoreReconstruction."
         ),
+        recon_spec_accessible=True,
     )
 
 
@@ -232,6 +236,7 @@ class MAPMRIInputSpec(DipyReconInputSpec):
         usedefault=True,
         desc="An even integer that represents the order of the basis.",
         doc=ConditionalDoc("The radial order of the MAPMRI model was set to {value}."),
+        recon_spec_accessible=True,
     )
     laplacian_regularization = traits.Bool(
         True,
@@ -241,6 +246,7 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             "The Laplacian of the MAP-MRI basis was used for regularization.",
             if_false="The Laplacian of the MAP-MRI basis was not used for regularization.",
         ),
+        recon_spec_accessible=True,
     )
     laplacian_weighting = traits.Either(
         "GCV",
@@ -255,6 +261,7 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             "from the values in the array."
         ),
         doc=ConditionalDoc("Laplacian weighting was set to {value}."),
+        recon_spec_accessible=True,
     )
     positivity_constraint = traits.Bool(
         False,
@@ -264,6 +271,7 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             "The propagator was constrained to be positive.",
             if_false="The propagator was not constrained to be positive.",
         ),
+        recon_spec_accessible=True,
     )
     global_constraints = traits.Bool(
         False,
@@ -277,12 +285,14 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             "Positivity was enforced everywhere using the constraints of @merlet3dshore.",
             if_false="Positivity was enforced on a grid determined by pos_grid and pos_radius.",
         ),
+        recon_spec_accessible=True,
     )
     pos_grid = traits.Int(
         15,
         usedefault=True,
         desc="The number of points in the grid that is used in the local positivity constraint.",
         doc=ConditionalDoc("The local positivity constraint grid was set to {value} points."),
+        recon_spec_accessible=True,
     )
     pos_radius = traits.Either(
         "adaptive",
@@ -298,6 +308,7 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             "constraints are used."
         ),
         doc=ConditionalDoc("The positivity radius was set to {value}."),
+        recon_spec_accessible=True,
     )
     anisotropic_scaling = traits.Bool(
         True,
@@ -310,12 +321,14 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             "The anisotropic MAP-MRI basis was used.",
             if_false="The isotropic MAP-MRI (3D-SHORE) basis was used.",
         ),
+        recon_spec_accessible=True,
     )
     eigenvalue_threshold = traits.Float(
         1e-04,
         usedefault=True,
         desc="Sets the minimum of the tensor eigenvalues in order to avoid stability problem.",
         doc=ConditionalDoc("The eigenvalue threshold was set to {value}."),
+        recon_spec_accessible=True,
     )
     bval_threshold = traits.Float(
         2000,
@@ -329,6 +342,7 @@ class MAPMRIInputSpec(DipyReconInputSpec):
         doc=ConditionalDoc(
             "The b-value threshold for scale factor estimation was set to {value}.",
         ),
+        recon_spec_accessible=True,
     )
     dti_scale_estimation = traits.Bool(
         True,
@@ -345,6 +359,7 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             "DTI fitting was used to estimate the isotropic scale factor.",
             if_false="DTI fitting was not used to estimate the isotropic scale factor.",
         ),
+        recon_spec_accessible=True,
     )
     static_diffusivity = traits.Float(
         0.7e-3,
@@ -355,8 +370,8 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             "D=0.7e-3."
         ),
         doc=ConditionalDoc("Static tissue diffusivity was set to {value}."),
+        recon_spec_accessible=True,
     )
-    # XXX: This is not used.
     cvxpy_solver = traits.Either(
         None,
         traits.Str(),
@@ -367,6 +382,7 @@ class MAPMRIInputSpec(DipyReconInputSpec):
             "details."
         ),
         doc=ConditionalDoc("CVXPY solver was set to {value}."),
+        recon_spec_accessible=True,
     )
 
 
