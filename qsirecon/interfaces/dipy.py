@@ -439,7 +439,7 @@ class MAPMRIReconstruction(DipyReconInterface):
 
     See Also
     --------
-    :class:`~dipy.reconst.mapmri.MapmriModel`
+    :class:`dipy.reconst.mapmri.MapmriModel`
     """
 
     input_spec = MAPMRIInputSpec

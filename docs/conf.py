@@ -413,7 +413,7 @@ intersphinx_mapping = {
     "nibabel": ("https://nipy.org/nibabel/", None),
     "nilearn": ("http://nilearn.github.io/stable/", None),
     "nipype": ("https://nipype.readthedocs.io/en/latest/", None),
-    "dipy": (f"https://docs.dipy.org/{dipy_version}/reference", None),
+    "dipy": (f"https://docs.dipy.org/{dipy_version}", None),
 }
 suppress_warnings = ["image.nonlocal_uri"]
 
