@@ -76,8 +76,7 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
         desc="B-value threshold. Any b-values below this threshold are considered b0s.",
         doc=ConditionalDoc(
             (
-                "B-values less than {value} were treated as b0s for the sake of generating "
-                "gradient tables."
+                "B-values less than {value} were treated as b0s for the sake of modeling."
             ),
         ),
         recon_spec_accessible=True,
@@ -315,18 +314,18 @@ class MAPMRIInputSpec(DipyReconInputSpec):
         usedefault=True,
         desc=(
             "If True, uses the standard anisotropic MAP-MRI basis. If False, "
-            "uses the isotropic MAP-MRI basis (equal to 3D-SHORE)."
+            "uses the isotropic MAP-MRI basis."
         ),
         doc=ConditionalDoc(
             "The anisotropic MAP-MRI basis was used.",
-            if_false="The isotropic MAP-MRI (3D-SHORE) basis was used.",
+            if_false="The isotropic MAP-MRI basis was used.",
         ),
         recon_spec_accessible=True,
     )
     eigenvalue_threshold = traits.Float(
         1e-04,
         usedefault=True,
-        desc="Sets the minimum of the tensor eigenvalues in order to avoid stability problem.",
+        desc="Sets the minimum of the tensor eigenvalues in order to avoid stability problems.",
         doc=ConditionalDoc("The eigenvalue threshold was set to {value}."),
         recon_spec_accessible=True,
     )
@@ -357,7 +356,7 @@ class MAPMRIInputSpec(DipyReconInputSpec):
         ),
         doc=ConditionalDoc(
             "DTI fitting was used to estimate the isotropic scale factor.",
-            if_false="DTI fitting was not used to estimate the isotropic scale factor.",
+            if_false="The isotropic tissue diffusivity was set to the static diffusivity constant.",
         ),
         recon_spec_accessible=True,
     )
