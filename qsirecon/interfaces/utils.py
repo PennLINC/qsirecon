@@ -463,12 +463,19 @@ class RecombineAtlasConfigs(SimpleInterface):
     output_spec = _RecombineAtlasConfigsOutputSpec
 
     def _run_interface(self, runtime):
-        atlas_configs = self.inputs.atlas_configs.copy()
+        from nipype.interfaces.base import isdefined
+
+        atlas_configs = {}
+        if isdefined(self.inputs.atlas_configs):
+            atlas_configs = self.inputs.atlas_configs.copy()
 
         for i_atlas, atlas_name in enumerate(self.inputs.atlases):
-            atlas_configs[atlas_name]["dwi_resolution_niigz"] = self.inputs.nifti_files[i_atlas]
-            atlas_configs[atlas_name]["dwi_resolution_mif"] = self.inputs.mif_files[i_atlas]
-            atlas_configs[atlas_name]["mrtrix_lut"] = self.inputs.mrtrix_lut_files[i_atlas]
+            if isdefined(self.inputs.nifti_files):
+                atlas_configs[atlas_name]["dwi_resolution_niigz"] = self.inputs.nifti_files[i_atlas]
+            if isdefined(self.inputs.mif_files):
+                atlas_configs[atlas_name]["dwi_resolution_mif"] = self.inputs.mif_files[i_atlas]
+            if isdefined(self.inputs.mrtrix_lut_files):
+                atlas_configs[atlas_name]["mrtrix_lut"] = self.inputs.mrtrix_lut_files[i_atlas]
 
         self._results["atlas_configs"] = atlas_configs
 

@@ -651,7 +651,7 @@ def init_dwi_recon_anatomical_workflow(
             )
 
             deconstruct_atlas_configs = pe.Node(
-                DeconstructAtlasConfigs(),
+                ExtractAtlasFiles(),
                 name="deconstruct_atlas_configs",
             )
             workflow.connect([
@@ -669,7 +669,7 @@ def init_dwi_recon_anatomical_workflow(
             ])  # fmt:skip
 
             resample_atlases = pe.MapNode(
-                ApplyTransforms(
+                ants.ApplyTransforms(
                     interpolation="MultiLabel",
                 ),
                 name="resample_atlases",
@@ -689,55 +689,35 @@ def init_dwi_recon_anatomical_workflow(
                 iterfield=["in_file"],
             )
             workflow.connect([
-                (deconstruct_atlas_configs, make_luts, [("atlas_labels_files", "in_file")]),
+                (deconstruct_atlas_configs, make_luts, [("labels_files", "in_file")]),
             ])  # fmt:skip
 
             convert_to_mifs = pe.MapNode(
-                LabelConvert(extension=".mif.gz"),
+                mrtrix3.LabelConvert(out_file="parcellation.mif.gz"),
                 name="convert_to_mifs",
                 run_without_submitting=True,
-                iterfield=["in_file", "orig_lut", "mrtrix_lut"],
+                iterfield=["in_file", "in_lut", "in_config"],
             )
             workflow.connect([
                 (resample_atlases, convert_to_mifs, [("out_file", "in_file")]),
                 (make_luts, convert_to_mifs, [
-                    ("orig_lut", "orig_lut"),
-                    ("mrtrix_lut", "mrtrix_lut"),
+                    ("orig_lut", "in_lut"),
+                    ("mrtrix_lut", "in_config"),
                 ]),
             ])  # fmt:skip
 
             convert_to_niis = pe.MapNode(
-                LabelConvert(extension=".nii.gz"),
+                mrtrix3.LabelConvert(out_file="parcellation.nii.gz"),
                 name="convert_to_niis",
                 run_without_submitting=True,
-                iterfield=["in_file", "orig_lut", "mrtrix_lut"],
+                iterfield=["in_file", "in_lut", "in_config"],
             )
             workflow.connect([
                 (resample_atlases, convert_to_niis, [("out_file", "in_file")]),
-            ])  # fmt:skip
-
-            construct_atlas_configs = pe.Node(
-                ConstructAtlasConfigs(),
-                name="construct_atlas_configs",
-                run_without_submitting=True,
-            )
-            workflow.connect([
-                (convert_to_niis, construct_atlas_configs, [("out_file", "nifti_files")]),
-                (convert_to_mifs, construct_atlas_configs, [("out_file", "mif_files")]),
-                (deconstruct_atlas_configs, construct_atlas_configs, [("atlases_names", "atlases")]),
-                (make_luts, construct_atlas_configs, [("mrtrix_lut", "mrtrix_lut_files")]),
-            ])  # fmt:skip
-
-            # Split apart the atlas configs to write out individual files, then recombine them
-            # with the written-out files in the configs.
-            # This lets us reference the output files in later nodes that use the atlas configs.
-            extract_atlas_files = pe.Node(
-                ExtractAtlasFiles(),
-                name="extract_atlas_files",
-                run_without_submitting=True,
-            )
-            workflow.connect([
-                (construct_atlas_configs, extract_atlas_files, [("atlas_configs", "atlas_configs")]),
+                (make_luts, convert_to_niis, [
+                    ("orig_lut", "in_lut"),
+                    ("mrtrix_lut", "in_config"),
+                ]),
             ])  # fmt:skip
 
             ds_atlas = pe.MapNode(
@@ -750,6 +730,11 @@ def init_dwi_recon_anatomical_workflow(
                 name="ds_atlas",
                 run_without_submitting=True,
             )
+            workflow.connect([
+                (deconstruct_atlas_configs, ds_atlas, [("atlases", "seg")]),
+                (convert_to_niis, ds_atlas, [("out_file", "in_file")]),
+            ])  # fmt:skip
+
             ds_atlas_mifs = pe.MapNode(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
@@ -761,6 +746,11 @@ def init_dwi_recon_anatomical_workflow(
                 name="ds_atlas_mifs",
                 run_without_submitting=True,
             )
+            workflow.connect([
+                (deconstruct_atlas_configs, ds_atlas_mifs, [("atlases", "seg")]),
+                (convert_to_mifs, ds_atlas_mifs, [("out_file", "in_file")]),
+            ])  # fmt:skip
+
             ds_atlas_mrtrix_lut = pe.MapNode(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
@@ -773,28 +763,19 @@ def init_dwi_recon_anatomical_workflow(
                 run_without_submitting=True,
             )
             workflow.connect([
-                (extract_atlas_files, ds_atlas, [
-                    ("nifti_files", "in_file"),
-                    ("atlases", "seg"),
-                ]),
-                (extract_atlas_files, ds_atlas_mifs, [
-                    ("mif_files", "in_file"),
-                    ("atlases", "seg"),
-                ]),
-                (extract_atlas_files, ds_atlas_mrtrix_lut, [
-                    ("mrtrix_lut_files", "in_file"),
-                    ("atlases", "seg"),
-                ]),
+                (deconstruct_atlas_configs, ds_atlas_mrtrix_lut, [("atlases", "seg")]),
+                (convert_to_mifs, ds_atlas_mrtrix_lut, [("out_file", "in_file")]),
             ])  # fmt:skip
 
+            # Recombine the atlas configs into a single dictionary using output files
             recombine_atlas_configs = pe.Node(
                 RecombineAtlasConfigs(),
                 name="recombine_atlas_configs",
                 run_without_submitting=True,
             )
             workflow.connect([
-                (construct_atlas_configs, recombine_atlas_configs, [("atlas_configs", "atlas_configs")]),
-                (extract_atlas_files, recombine_atlas_configs, [("atlases", "atlases")]),
+                (inputnode, recombine_atlas_configs, [("atlas_configs", "atlas_configs")]),
+                (deconstruct_atlas_configs, recombine_atlas_configs, [("atlases", "atlases")]),
                 (ds_atlas, recombine_atlas_configs, [("out_file", "nifti_files")]),
                 (ds_atlas_mifs, recombine_atlas_configs, [("out_file", "mif_files")]),
                 (ds_atlas_mrtrix_lut, recombine_atlas_configs, [("out_file", "mrtrix_lut_files")]),
