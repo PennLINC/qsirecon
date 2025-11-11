@@ -302,8 +302,7 @@ class MAPMRIInputSpec(DipyReconInputSpec):
         1e-04,
         usedefault=True,
         desc=(
-            "Sets the minimum of the tensor eigenvalues in order to avoid "
-            "stability problem."
+            "Sets the minimum of the tensor eigenvalues in order to avoid stability problem."
         ),
         doc=ConditionalDoc("The eigenvalue threshold was set to {value}."),
     )
@@ -348,7 +347,13 @@ class MAPMRIInputSpec(DipyReconInputSpec):
     )
     # XXX: This is not used.
     cvxpy_solver = traits.Str(
-        desc="CVXPY solver.",
+        None,
+        usedefault=True,
+        desc=(
+            "cvxpy solver name. Optionally optimize the positivity constraint "
+            "with a particular cvxpy solver. See https://www.cvxpy.org/ for "
+            "details."
+        ),
         doc=ConditionalDoc("CVXPY solver was set to {value}."),
     )
 
@@ -476,7 +481,9 @@ class MAPMRIReconstruction(DipyReconInterface):
                 "laplacian_weighting"
             ]
         if not inputs["dti_scale_estimation"]:
-            base_metadata["Model"]["Parameters"]["StaticDiffusivity"] = inputs["static_diffusivity"]
+            base_metadata["Model"]["Parameters"]["StaticDiffusivity"] = inputs[
+                "static_diffusivity"
+            ]
 
         outputs = super()._list_outputs()
         file_outputs = [
