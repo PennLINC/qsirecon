@@ -16,6 +16,7 @@ from pathlib import Path
 
 import matplotlib
 import matplotlib.pyplot as plt
+import nibabel as nb
 import numpy as np
 import pandas as pd
 from nipype.interfaces.base import (
@@ -502,11 +503,21 @@ def plot_scalar_map(
     # We want the x-ticks of the histogram to match the colorbar ticks for the map image
     xticks = ax0.get_xticklabels()
     xlim = list(ax0.get_xlim())
-    if vmin is not None:
-        xlim[0] = vmin
+    if isinstance(vmin, str) and vmin.endswith("%"):
+        perc = float(vmin.strip("%"))
+        xlim[0] = np.percentile(df["Data"], perc)
+    elif isinstance(vmin, (int, float)):
+        xlim[0] = float(vmin)
+    elif vmin is not None:
+        raise ValueError(f"Invalid vmin: {vmin}")
 
-    if vmax is not None:
-        xlim[1] = vmax
+    if isinstance(vmax, str) and vmax.endswith("%"):
+        perc = float(vmax.strip("%"))
+        xlim[1] = np.percentile(df["Data"], perc)
+    elif isinstance(vmax, (int, float)):
+        xlim[1] = float(vmax)
+    elif vmax is not None:
+        raise ValueError(f"Invalid vmax: {vmax}")
 
     ax0.set_xlim(xlim)
     ax0.set_title(title)
@@ -525,6 +536,12 @@ def plot_scalar_map(
         kwargs = {"symmetric_cbar": True}
     else:
         kwargs = {"symmetric_cbar": False}
+
+    # Trick the figure into using the correct vmin and vmax
+    overlay_data = overlay.get_fdata()
+    overlay_data[overlay_data < xmin] = xmin
+    overlay_data[overlay_data > xmax] = xmax
+    overlay = nb.Nifti1Image(overlay_data, overlay.affine, overlay.header)
 
     plotting.plot_stat_map(
         stat_map_img=overlay,
