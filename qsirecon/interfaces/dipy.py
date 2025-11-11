@@ -373,7 +373,9 @@ class MAPMRIInputSpec(DipyReconInputSpec):
         ),
         doc=ConditionalDoc(
             "DTI fitting was used to estimate the isotropic scale factor.",
-            if_false="The isotropic tissue diffusivity was set to the static diffusivity constant.",
+            if_false=(
+                "The isotropic tissue diffusivity was set to the static diffusivity constant."
+            ),
         ),
         recon_spec_accessible=True,
     )
