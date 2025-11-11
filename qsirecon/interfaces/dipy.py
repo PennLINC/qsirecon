@@ -344,8 +344,9 @@ class MAPMRIInputSpec(DipyReconInputSpec):
         doc=ConditionalDoc("Static tissue diffusivity was set to {value}."),
     )
     # XXX: This is not used.
-    cvxpy_solver = traits.Str(
+    cvxpy_solver = traits.Either(
         None,
+        traits.Str(),
         usedefault=True,
         desc=(
             "cvxpy solver name. Optionally optimize the positivity constraint "
