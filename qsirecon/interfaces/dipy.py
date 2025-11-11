@@ -430,7 +430,7 @@ class MAPMRIReconstruction(DipyReconInterface):
             global_constraints=self.inputs.global_constraints,
             pos_grid=self.inputs.pos_grid,
             pos_radius=self.inputs.pos_radius,
-            anisotropy_scaling=self.inputs.anisotropic_scaling,
+            anisotropic_scaling=self.inputs.anisotropic_scaling,
             eigenvalue_threshold=self.inputs.eigenvalue_threshold,
             bval_threshold=self.inputs.bval_threshold,
             dti_scale_estimation=self.inputs.dti_scale_estimation,
