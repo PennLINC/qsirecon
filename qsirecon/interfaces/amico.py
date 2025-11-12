@@ -134,7 +134,7 @@ class NODDIInputSpec(AmicoInputSpec):
             "Parallel diffusivity constant in mm^/2. "
             "Passed to AMICO as dPar. "
             "Defined in the recon spec as dPar. "
-            "Stored in the metadata as dPar"
+            "Stored in the metadata as ParallelDiffusivity."
         ),
         doc=ConditionalDoc("The parallel diffusivity constant was set to {value} mm^2/s."),
     )
@@ -144,7 +144,7 @@ class NODDIInputSpec(AmicoInputSpec):
             "Isotropic diffusivity constant in mm^2/s. "
             "Passed to AMICO as dIso. "
             "Defined in the recon spec as dIso. "
-            "Stored in the metadata as dIso"
+            "Stored in the metadata as IsotropicDiffusivity."
         ),
         doc=ConditionalDoc("The isotropic diffusivity constant was set to {value} mm^2/s."),
     )
@@ -341,22 +341,14 @@ class NODDI(AmicoReconInterface):
         base_metadata = {
             "Model": {
                 "Parameters": {
-                    "dPar": {
-                        "value": self.inputs.dPar,
-                        "units": "mm^2/s",
-                        "LongName": "ParallelDiffusivity",
-                        "Description": "Parallel diffusivity constant",
-                    },
-                    "dIso": {
-                        "value": self.inputs.dIso,
-                        "units": "mm^2/s",
-                        "LongName": "IsotropicDiffusivity",
-                        "Description": "Isotropic diffusivity constant",
-                    },
-                    "IsExVivo": {
-                        "value": self.inputs.isExvivo,
-                        "Description": "Dot compartment estimation for fixed tissue",
-                    },
+                    "ParallelDiffusivity": self.inputs.dPar,
+                    "IsotropicDiffusivity": self.inputs.dIso,
+                    "IsExvivo": self.inputs.isExvivo,
+                    "saveModulatedMaps": self.inputs.saveModulatedMaps,
+                    "fitMethod": self.inputs.fitMethod,
+                    "doNormalize": self.inputs.doNormalize,
+                    "rmse": self.inputs.rmse,
+                    "nrmse": self.inputs.nrmse,
                 },
             },
         }
