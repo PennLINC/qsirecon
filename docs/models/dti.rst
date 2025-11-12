@@ -7,8 +7,8 @@ Diffusion tensor imaging (DTI)
 DTI Foundational Papers
 =======================
 
-**DTI Concept Introduction**: Basser et al. introduced DTI as a new MRI 
-modality that computes a Gaussian diffusion tensor per voxel, yielding eigenvalues 
+**DTI Concept Introduction**: Basser et al. introduced DTI as a new modeling 
+framework that computes a Gaussian diffusion tensor per voxel, yielding eigenvalues 
 and eigenvectors that describe 3D water diffusion :cite:p:`basser1994`. 
 This enabled mapping of water diffusion orientations in tissue and orientation-independent 
 scalar measures like trace (sum of eigenvalues, related to Mean Diffusivity, MD). 
@@ -48,15 +48,14 @@ DTI Studies Across The Lifespan
 ===============================
 
 The tensor model has been used extensively in the human brain 
-:cite:p:`pierpaoli1996` including developmental neuroscience, with large known 
-effects of increasing FA and decreasing MD with age :cite:p:`qiu2015`.
+:cite:p:`pierpaoli1996` including developmental neuroscience.
 
 **Neonatal Diffusivity**:  Neil et al. reported neonatal 
 mean diffusivity values 1.5–2 times higher than in adults, with very low 
 white-matter anisotropy :cite:p:`neil1998`. This reflects abundant free water and 
 unmyelinated fibers at birth. Diffusivity drops and anisotropy rises steeply 
-in the first postnatal months as the brain matures (water compartmentalizes and 
-myelination progresses).
+in the first postnatal months as the brain matures. Water compartmentalizes and 
+myelination progresses :cite:p:`ouyang2019delineation`.
 
 **Childhood to Adolescence**: White matter development continues through 
 childhood and the teen years. Longitudinal data showed steady FA increases 
@@ -133,7 +132,7 @@ of free water in a voxel drastically lowers FA and raises diffusivity, since fre
 water diffusion is fast and isotropic. This can mask true tissue changes – for 
 example, a remyelinating lesion adjacent to CSF might still show low FA due to 
 CSF contamination. Methods like the free-water elimination model address this by 
-fitting a two-component model :cite:p:`pasternak2009`, 
+fitting a two-component model :cite:p:`pierpaoli2004`, 
 effectively stripping out the isotropic diffusion component and revealing the 
 "true" tissue tensor. Researchers should be mindful of partial voluming, especially 
 in periventricular areas, and consider correction strategies or region-of-interest 
@@ -156,15 +155,13 @@ artifacts.
 **Acquisition and Analysis Choices**: The choice of diffusion gradient directions 
 and b-value can influence DTI metrics. A minimal 6-direction tensor encoding is 
 insufficient for reliable quantitative work – more directions (20–30+) are 
-recommended to stabilize FA/MD measures and reduce variability. Similarly, 
-moderate b-values (~1000 s/mm²) are typically chosen to balance SNR and 
+recommended to stabilize FA/MD measures and reduce variability :cite:p:`jones2004-hs`.
+ Similarly, moderate b-values (~1000 s/mm²) are typically chosen to balance SNR and 
 sensitivity; very high b-values can introduce bias in tensor-fitting, due to higher sensitivity to non-Gaussian diffusion -- and 
 require other models, such as DKI. During analysis, image alignment (registration) 
 and smoothing can also introduce caveats: misregistration across subjects can 
 blur tract-specific values, and heavy smoothing can artificially decrease FA 
-in partial volume voxels. Tools like tract-based spatial statistics (TBSS) were 
-developed to mitigate some of these issues by skeletonizing white matter maps 
-to focus on centers of tracts. The key caveat is that DTI analyses involve many 
+in partial volume voxels. The key caveat is that DTI analyses involve many 
 processing steps, each of which must be done carefully – otherwise, errors can 
 propagate and lead to incorrect conclusions. Community guidelines and 
 detailed "pitfall" checklists (e.g., :cite:p:`jones2010`) are valuable 
