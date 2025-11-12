@@ -412,22 +412,25 @@ class _ExtractAtlasFilesOutputSpec(TraitedSpec):
     labels_files = traits.List(File(), desc="List of labels files")
 
 
-
 class ExtractAtlasFiles(SimpleInterface):
     input_spec = _ExtractAtlasFilesInputSpec
     output_spec = _ExtractAtlasFilesOutputSpec
 
     def _run_interface(self, runtime):
         self._results["atlases"] = []
+        self._results["labels_files"] = []
         self._results["nifti_files"] = []
         self._results["mif_files"] = []
         self._results["mrtrix_lut_files"] = []
+        self._results["xfms_to_anat"] = []
 
         for atlas_name, atlas_config in self.inputs.atlas_configs.items():
             self._results["atlases"].append(atlas_name)
-            self._results["nifti_files"].append(atlas_config["dwi_resolution_niigz"])
-            self._results["mif_files"].append(atlas_config["dwi_resolution_mif"])
-            self._results["mrtrix_lut_files"].append(atlas_config["mrtrix_lut"])
+            self._results["labels_files"].append(atlas_config.get("labels", None))
+            self._results["nifti_files"].append(atlas_config.get("dwi_resolution_niigz", None))
+            self._results["mif_files"].append(atlas_config.get("dwi_resolution_mif", None))
+            self._results["mrtrix_lut_files"].append(atlas_config.get("mrtrix_lut", None))
+            self._results["xfms_to_anat"].append(atlas_config.get("xfm_to_anat", None))
 
         return runtime
 
