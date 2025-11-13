@@ -476,8 +476,6 @@ def amico_directions_to_fibgz(
         modulated orientation dispersion image
     modulated_icvf_img: nb.Nifti1Image
         modulated icvf image
-    num_fibers: int
-        The maximum number of fibers/fixels stored in each voxel.
 
     Returns:
     ========
