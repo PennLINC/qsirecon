@@ -327,10 +327,19 @@ class NODDI(AmicoReconInterface):
         self._results["icvf_file"] = shim_dir + "/AMICO/NODDI/fit_NDI.nii.gz"
         self._results["od_file"] = shim_dir + "/AMICO/NODDI/fit_ODI.nii.gz"
         self._results["isovf_file"] = shim_dir + "/AMICO/NODDI/fit_FWF.nii.gz"
-        self._results["modulated_od_file"] = shim_dir + "/AMICO/NODDI/fit_ODI_modulated.nii.gz"
-        self._results["modulated_icvf_file"] = shim_dir + "/AMICO/NODDI/fit_NDI_modulated.nii.gz"
-        self._results["rmse_file"] = shim_dir + "/AMICO/NODDI/fit_RMSE.nii.gz"
-        self._results["nrmse_file"] = shim_dir + "/AMICO/NODDI/fit_NRMSE.nii.gz"
+
+        if self.inputs.saveModulatedMaps:
+            self._results["modulated_od_file"] = shim_dir + "/AMICO/NODDI/fit_ODI_modulated.nii.gz"
+            self._results["modulated_icvf_file"] = (
+                shim_dir + "/AMICO/NODDI/fit_NDI_modulated.nii.gz"
+            )
+
+        if self.inputs.rmse:
+            self._results["rmse_file"] = shim_dir + "/AMICO/NODDI/fit_RMSE.nii.gz"
+
+        if self.inputs.nrmse:
+            self._results["nrmse_file"] = shim_dir + "/AMICO/NODDI/fit_NRMSE.nii.gz"
+
         self._results["config_file"] = shim_dir + "/AMICO/NODDI/config.pickle"
 
         return runtime
