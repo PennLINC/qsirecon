@@ -539,6 +539,7 @@ def plot_scalar_map(
         vmax=xmax,
         axes=ax1,
         cmap=cmap,
+        alpha=0.5,
         **kwargs,
     )
     mappable = cm.ScalarMappable(norm=plt.Normalize(vmin=xmin, vmax=xmax), cmap=cmap)
