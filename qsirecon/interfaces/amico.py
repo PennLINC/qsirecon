@@ -350,8 +350,9 @@ class NODDI(AmicoReconInterface):
                 "Parameters": {
                     "ParallelDiffusivity": self.inputs.dPar,
                     "IsotropicDiffusivity": self.inputs.dIso,
-                    "IsExvivo": self.inputs.isExvivo,
+                    "isExvivo": self.inputs.isExvivo,
                     "saveModulatedMaps": self.inputs.saveModulatedMaps,
+                    "b0_threshold": self.inputs.b0_threshold,
                     "fitMethod": self.inputs.fitMethod,
                     "doNormalize": self.inputs.doNormalize,
                     "rmse": self.inputs.rmse,
