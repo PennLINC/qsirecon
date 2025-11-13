@@ -176,14 +176,28 @@ def init_amico_noddi_fit_wf(
     if params.get("rmse", True):
         workflow.connect(
             [
-                (noddi_fit, recon_scalars, [("rmse_file", "rmse_file")]),
+                (
+                    noddi_fit,
+                    recon_scalars,
+                    [
+                        ("rmse_file", "rmse_file"),
+                        ("rmse_file_metadata", "rmse_file_metadata"),
+                    ],
+                ),
             ]
         )
 
     if params.get("nrmse", True):
         workflow.connect(
             [
-                (noddi_fit, recon_scalars, [("nrmse_file", "nrmse_file")]),
+                (
+                    noddi_fit,
+                    recon_scalars,
+                    [
+                        ("nrmse_file", "nrmse_file"),
+                        ("nrmse_file_metadata", "nrmse_file_metadata"),
+                    ],
+                ),
             ]
         )
 
