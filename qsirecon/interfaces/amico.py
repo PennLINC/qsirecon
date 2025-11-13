@@ -218,9 +218,7 @@ class NODDIInputSpec(AmicoInputSpec):
     saveModulatedMaps = traits.Bool(
         True,
         usedefault=True,
-        desc=(
-            "Flag indicating whether to save modulated maps for ICVF and ODI. Default: True."
-        ),
+        desc=("Flag indicating whether to save modulated maps for ICVF and ODI. Default: True."),
         doc=ConditionalDoc(
             if_true=(
                 "Intracellular volume fraction (ICVF) and Orientation dispersion maps "

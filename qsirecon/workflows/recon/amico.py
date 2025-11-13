@@ -101,12 +101,14 @@ def init_amico_noddi_fit_wf(
     )
     noddi_fit = pe.Node(NODDI(**params), name="recon_noddi", n_procs=omp_nthreads)
     desc += build_documentation(noddi_fit) + " "
-    noddi_tissue_fraction = pe.Node(NODDITissueFraction(), name="noddi_tissue_fraction")
-    desc += (
-        "AMICO does not save the tissue fraction map. Therefore, "
-        "the output tissue fraction map was separately reconstructed using "
-        "custom Python code matching the AMICO implementation. "
-    )
+
+    if params.get("saveModulatedMaps", True):
+        noddi_tissue_fraction = pe.Node(NODDITissueFraction(), name="noddi_tissue_fraction")
+        desc += (
+            "AMICO does not save the tissue fraction map. Therefore, "
+            "the output tissue fraction map was separately reconstructed using "
+            "custom Python code matching the AMICO implementation. "
+        )
     convert_to_fibgz = pe.Node(NODDItoFIBGZ(), name="convert_to_fibgz")
 
     workflow.connect([
@@ -116,19 +118,11 @@ def init_amico_noddi_fit_wf(
             ('bvec_file', 'bvec_file'),
             ('dwi_mask', 'mask_file'),
         ]),
-        (inputnode, noddi_tissue_fraction, [('dwi_mask', 'mask_image')]),
-        (noddi_fit, noddi_tissue_fraction, [('isovf_file', 'isovf_file')]),
-        (noddi_tissue_fraction, outputnode, [('tf_file', 'tf_file')]),
-        (noddi_tissue_fraction, recon_scalars, [('tf_file', 'tf_file')]),
         (noddi_fit, outputnode, [
             ('directions_file', 'directions_file'),
             ('icvf_file', 'icvf_file'),
             ('od_file', 'od_file'),
             ('isovf_file', 'isovf_file'),
-            ('modulated_icvf_file', 'modulated_icvf_file'),
-            ('modulated_od_file', 'modulated_od_file'),
-            ('rmse_file', 'rmse_file'),
-            ('nrmse_file', 'nrmse_file'),
             ('config_file', 'config_file'),
         ]),
         (noddi_fit, recon_scalars, [
@@ -140,26 +134,58 @@ def init_amico_noddi_fit_wf(
             ('isovf_file_metadata', 'isovf_file_metadata'),
             ('directions_file', 'directions_file'),
             ('directions_file_metadata', 'directions_file_metadata'),
-            ('modulated_icvf_file', 'modulated_icvf_file'),
-            ('modulated_icvf_file_metadata', 'modulated_icvf_file_metadata'),
-            ('modulated_od_file', 'modulated_od_file'),
-            ('modulated_od_file_metadata', 'modulated_od_file_metadata'),
-            ('rmse_file', 'rmse_file'),
-            ('rmse_file_metadata', 'rmse_file_metadata'),
-            ('nrmse_file', 'nrmse_file'),
-            ('nrmse_file_metadata', 'nrmse_file_metadata'),
         ]),
         (noddi_fit, convert_to_fibgz, [
             ('directions_file', 'directions_file'),
             ('icvf_file', 'icvf_file'),
             ('od_file', 'od_file'),
             ('isovf_file', 'isovf_file'),
-            ('modulated_icvf_file', 'modulated_icvf_file'),
-            ('modulated_od_file', 'modulated_od_file'),
         ]),
         (inputnode, convert_to_fibgz, [('dwi_mask', 'mask_file')]),
         (convert_to_fibgz, outputnode, [('fibgz_file', 'fibgz')]),
     ])  # fmt:skip
+
+    if params.get("saveModulatedMaps", True):
+        workflow.connect(
+            [
+                (inputnode, noddi_tissue_fraction, [("dwi_mask", "mask_image")]),
+                (noddi_fit, noddi_tissue_fraction, [("isovf_file", "isovf_file")]),
+                (noddi_tissue_fraction, outputnode, [("tf_file", "tf_file")]),
+                (noddi_tissue_fraction, recon_scalars, [("tf_file", "tf_file")]),
+                (
+                    noddi_fit,
+                    recon_scalars,
+                    [
+                        ("modulated_icvf_file", "modulated_icvf_file"),
+                        ("modulated_icvf_file_metadata", "modulated_icvf_file_metadata"),
+                        ("modulated_od_file", "modulated_od_file"),
+                        ("modulated_od_file_metadata", "modulated_od_file_metadata"),
+                    ],
+                ),
+                (
+                    noddi_fit,
+                    convert_to_fibgz,
+                    [
+                        ("modulated_icvf_file", "modulated_icvf_file"),
+                        ("modulated_od_file", "modulated_od_file"),
+                    ],
+                ),
+            ]
+        )
+
+    if params.get("rmse", True):
+        workflow.connect(
+            [
+                (noddi_fit, recon_scalars, [("rmse_file", "rmse_file")]),
+            ]
+        )
+
+    if params.get("nrmse", True):
+        workflow.connect(
+            [
+                (noddi_fit, recon_scalars, [("nrmse_file", "nrmse_file")]),
+            ]
+        )
 
     if plot_reports:
         plot_peaks = pe.Node(
