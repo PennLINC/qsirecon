@@ -219,7 +219,7 @@ class NODDIInputSpec(AmicoInputSpec):
         True,
         usedefault=True,
         desc=(
-            "Flag indicating whether to save modulated maps for ICVF and ODI. " "Default: True."
+            "Flag indicating whether to save modulated maps for ICVF and ODI. Default: True."
         ),
         doc=ConditionalDoc(
             if_true=(
@@ -311,7 +311,7 @@ class NODDI(AmicoReconInterface):
         aeval.set_config("doComputeRMSE", self.inputs.rmse)
         aeval.set_config("doComputeNRMSE", self.inputs.nrmse)
         aeval.set_config("doNormalize", self.inputs.doNormalize)
-        aeval.set_config("fitMethod", self.inputs.fitMethod)
+        aeval.set_config("DTI_fit_method", self.inputs.fitMethod)
 
         # Set model parameters
         aeval.model.dPar = self.inputs.dPar
