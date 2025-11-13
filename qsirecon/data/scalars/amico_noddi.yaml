@@ -57,7 +57,7 @@ modulated_icvf_file:
         param: icvf
         desc: modulated
     metadata:
-        Description: Intracellular volume fraction modulated by tissue fraction (ICVF * tissue fraction)
+        Description: Intracellular volume fraction modulated by tissue fraction (ICVF * tissue fraction) from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
             URL: https://pubmed.ncbi.nlm.nih.gov/25462697
@@ -71,7 +71,7 @@ modulated_od_file:
         param: od
         desc: modulated
     metadata:
-        Description: Orientation dispersion index modulated by tissue fraction (OD * tissue fraction)
+        Description: Orientation dispersion index modulated by tissue fraction (OD * tissue fraction) from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
             URL: https://pubmed.ncbi.nlm.nih.gov/25462697
@@ -84,7 +84,7 @@ rmse_file:
         model: noddi
         param: rmse
     metadata:
-        Description: Root mean square error between predicted and measured signal from NODDI
+        Description: Root mean square error between predicted and measured signal from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
             URL: https://pubmed.ncbi.nlm.nih.gov/25462697
@@ -95,7 +95,7 @@ nrmse_file:
         model: noddi
         param: nrmse
     metadata:
-        Description: Normalized root mean square error between predicted and measured signal from NODDI
+        Description: Normalized root mean square error between predicted and measured signal from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
             URL: https://pubmed.ncbi.nlm.nih.gov/25462697
@@ -106,7 +106,7 @@ tf_file:
         model: noddi
         param: tf
     metadata:
-        Description: Tissue fraction (1 - isovf)
+        Description: Tissue fraction (1 - isotropic volume fraction) computed by QSIRecon 
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
             URL: https://pubmed.ncbi.nlm.nih.gov/25462697
