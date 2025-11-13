@@ -151,14 +151,8 @@ def init_amico_noddi_fit_wf(
                 (inputnode, noddi_tissue_fraction, [("dwi_mask", "mask_image")]),
                 (noddi_fit, noddi_tissue_fraction, [("isovf_file", "isovf_file")]),
                 (noddi_tissue_fraction, outputnode, [("tf_file", "tf_file")]),
-                (
-                    noddi_tissue_fraction,
-                    recon_scalars,
-                    [
-                        ("tf_file", "tf_file"),
-                        ("tf_file_metadata", "tf_file_metadata"),
-                    ],
-                ),
+                (noddi_tissue_fraction, recon_scalars, [("tf_file", "tf_file")]),
+                (noddi_fit, recon_scalars, [("isovf_file_metadata", "tf_file_metadata")]),
                 (
                     noddi_fit,
                     recon_scalars,
