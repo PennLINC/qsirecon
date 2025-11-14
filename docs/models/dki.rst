@@ -6,10 +6,11 @@ Diffusional kurtosis imaging (DKI)
 
 Water diffusion in the brain is affected by the physical structures that make up neurons and organelles.
 Instead of freely diffusing through space, water encounters barriers from myelin, cell membranes and other structures that introduce non-Gaussian features into the water diffusion distribution.
-The Diffusional Kurtosis Imaging (DKI; :cite:p:`jensen2005dki`) model extends the of the DTI model by adding an additional 15 parameters that capture the deviations from Gaussianity missed when fitting the simple 6 parameter DTI model.
-The DKI model incorporates data from all shells, potentially estimating the same scalar maps from DTI (FA, MD, etc) more accurately than a traditional tensor fit :cite:p:`henriques2021dki`.
+Diffusional Kurtosis Imaging (DKI; :cite:p:jensen2005dki) extends the DTI model by adding a kurtosis tensor with an additional 15 parameters. Together with the six parameters of the diffusion tensor, there are 21 parameters (plus the baseline b=0 signal), which describe both the Gaussian component of the diffusion and its non-Gaussian deviations, capturing the degree to which the diffusion distribution in tissue deviates from a Gaussian process.
+
+The DKI model requires data from multiple shells, and provides the same scalar maps from DTI (FA, MD, etc), potentially more accurately than a traditional tensor fit :cite:p:henriques2021dki.
 In addition to the measures from DTI, the DKI model also allows one to compute additional scalars derived from the kurtosis tensor such as mean kurtosis (MK), radial kurtosis (RK), and axial kurtosis (AK) :cite:p:`jensen2010dki`.
-DKI’s sensitivity to non-Gaussian diffusion makes it useful for capturing the interaction of water with more complex tissue features.
+DKI's sensitivity to non-Gaussian diffusion makes it useful for capturing the interaction of water with more complex tissue features.
 
 DKI Foundational Papers
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -30,7 +31,7 @@ DKI Studies Across The Lifespan
 DKI Methodological Warnings and Caveats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- **Acquisition and fitting constraints:** DKI’s higher-order model (4th-order tensor) requires multiple high–b shells and many directions, leading to long scans and lower SNR :cite:p:`steven2014dki`. “Fast kurtosis” strategies can focus on efficient MK estimation :cite:p:`hansen2017fastkurtosis`.
+- **Acquisition and fitting constraints:** DKI's higher-order model (4th-order tensor) requires multiple high–b shells and many directions, leading to long scans and lower SNR :cite:p:`steven2014dki`. However most modern multi shell dMRI scans are compatible with DKI.
 - **Interpretation pitfalls (lack of specificity):** DKI metrics are **not tissue-specific**; MK aggregates different sources (density, dispersion, heterogeneity). Hui et al. caution that the “main caveat of DKI is that different kurtosis sources are all conflated” :cite:p:`alves2022cti`.
 - **Noise, artifacts, and reproducibility:** Unconstrained DKI can yield non-physical or variable estimates; regularized estimation with plausible bounds improves reproducibility :cite:p:`henriques2021robustdki`. Further, if data is not adequately denoised and de-Gibbs'ed there will be holes in the maps. [`MKDKI`](https://docs.dipy.org/stable/examples_built/reconstruction/reconst_msdki.html), a newly incorporated feature, can improve this.
 
