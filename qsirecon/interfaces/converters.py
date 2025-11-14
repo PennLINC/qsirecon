@@ -166,9 +166,7 @@ class NODDItoFIBGZ(SimpleInterface):
             od_img=nb.load(self.inputs.od),
             icvf_img=nb.load(self.inputs.icvf),
             modulated_od_img=(
-                nb.load(self.inputs.modulated_od)
-                if isdefined(self.inputs.modulated_od)
-                else None
+                nb.load(self.inputs.modulated_od) if isdefined(self.inputs.modulated_od) else None
             ),
             modulated_icvf_img=(
                 nb.load(self.inputs.modulated_icvf)

@@ -230,7 +230,7 @@ def init_amico_noddi_fit_wf(
             name="ds_noddi_config",
             run_without_submitting=True,
         )
-        workflow.connect([(outputnode, ds_config, [("config", "in_file")])])
+        workflow.connect([(outputnode, ds_config, [("config_file", "in_file")])])
 
         plot_scalars = pe.Node(
             ScalarReport(),

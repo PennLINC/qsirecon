@@ -261,7 +261,7 @@ class NODDIOutputSpec(AmicoOutputSpec):
     rmse_metadata = traits.Dict()
     nrmse = File()
     nrmse_metadata = traits.Dict()
-    config = File()
+    config_file = File()
 
 
 class NODDI(AmicoReconInterface):
