@@ -245,23 +245,23 @@ class NODDIInputSpec(AmicoInputSpec):
 
 
 class NODDIOutputSpec(AmicoOutputSpec):
-    directions_file = File()
-    directions_file_metadata = traits.Dict()
-    icvf_file = File()
-    icvf_file_metadata = traits.Dict()
-    od_file = File()
-    od_file_metadata = traits.Dict()
-    isovf_file = File()
-    isovf_file_metadata = traits.Dict()
-    modulated_icvf_file = File()
-    modulated_icvf_file_metadata = traits.Dict()
-    modulated_od_file = File()
-    modulated_od_file_metadata = traits.Dict()
-    rmse_file = File()
-    rmse_file_metadata = traits.Dict()
-    nrmse_file = File()
-    nrmse_file_metadata = traits.Dict()
-    config_file = File()
+    directions = File()
+    directions_metadata = traits.Dict()
+    icvf = File()
+    icvf_metadata = traits.Dict()
+    od = File()
+    od_metadata = traits.Dict()
+    isovf = File()
+    isovf_metadata = traits.Dict()
+    modulated_icvf = File()
+    modulated_icvf_metadata = traits.Dict()
+    modulated_od = File()
+    modulated_od_metadata = traits.Dict()
+    rmse = File()
+    rmse_metadata = traits.Dict()
+    nrmse = File()
+    nrmse_metadata = traits.Dict()
+    config = File()
 
 
 class NODDI(AmicoReconInterface):
@@ -323,22 +323,20 @@ class NODDI(AmicoReconInterface):
 
         # Write the results
         aeval.save_results()
-        self._results["directions_file"] = shim_dir + "/AMICO/NODDI/fit_dir.nii.gz"
-        self._results["icvf_file"] = shim_dir + "/AMICO/NODDI/fit_NDI.nii.gz"
-        self._results["od_file"] = shim_dir + "/AMICO/NODDI/fit_ODI.nii.gz"
-        self._results["isovf_file"] = shim_dir + "/AMICO/NODDI/fit_FWF.nii.gz"
+        self._results["directions"] = shim_dir + "/AMICO/NODDI/fit_dir.nii.gz"
+        self._results["icvf"] = shim_dir + "/AMICO/NODDI/fit_NDI.nii.gz"
+        self._results["od"] = shim_dir + "/AMICO/NODDI/fit_ODI.nii.gz"
+        self._results["isovf"] = shim_dir + "/AMICO/NODDI/fit_FWF.nii.gz"
 
         if self.inputs.saveModulatedMaps:
-            self._results["modulated_od_file"] = shim_dir + "/AMICO/NODDI/fit_ODI_modulated.nii.gz"
-            self._results["modulated_icvf_file"] = (
-                shim_dir + "/AMICO/NODDI/fit_NDI_modulated.nii.gz"
-            )
+            self._results["modulated_od"] = shim_dir + "/AMICO/NODDI/fit_ODI_modulated.nii.gz"
+            self._results["modulated_icvf"] = shim_dir + "/AMICO/NODDI/fit_NDI_modulated.nii.gz"
 
         if self.inputs.rmse:
-            self._results["rmse_file"] = shim_dir + "/AMICO/NODDI/fit_RMSE.nii.gz"
+            self._results["rmse"] = shim_dir + "/AMICO/NODDI/fit_RMSE.nii.gz"
 
         if self.inputs.nrmse:
-            self._results["nrmse_file"] = shim_dir + "/AMICO/NODDI/fit_NRMSE.nii.gz"
+            self._results["nrmse"] = shim_dir + "/AMICO/NODDI/fit_NRMSE.nii.gz"
 
         self._results["config_file"] = shim_dir + "/AMICO/NODDI/config.pickle"
 
@@ -361,7 +359,9 @@ class NODDI(AmicoReconInterface):
             },
         }
         outputs = super()._list_outputs()
-        file_outputs = [name for name in self.output_spec().get() if name.endswith("_file")]
+        file_outputs = [
+            name for name in self.output_spec().get() if not name.endswith("_metadata")
+        ]
         for file_output in file_outputs:
             # Patch in model and parameter information to metadata dictionaries
             metadata_output = file_output + "_metadata"
@@ -372,12 +372,12 @@ class NODDI(AmicoReconInterface):
 
 
 class _NODDITissueFractionInputSpec(BaseInterfaceInputSpec):
-    isovf_file = File(exists=True, mandatory=True)
+    isovf = File(exists=True, mandatory=True)
     mask_image = File(exists=True, mandatory=True)
 
 
 class _NODDITissueFractionOutputSpec(TraitedSpec):
-    tf_file = File()
+    tf = File()
 
 
 class NODDITissueFraction(SimpleInterface):
@@ -385,11 +385,11 @@ class NODDITissueFraction(SimpleInterface):
     output_spec = _NODDITissueFractionOutputSpec
 
     def _run_interface(self, runtime):
-        isovf_file = self.inputs.isovf_file
+        isovf = self.inputs.isovf
         mask_image = self.inputs.mask_image
 
-        tf_file = nim.math_img("(1 - isovf) * mask", isovf=isovf_file, mask=mask_image)
-        out_file = fname_presuffix(isovf_file, suffix="_tf", newpath=runtime.cwd)
+        tf_file = nim.math_img("(1 - isovf) * mask", isovf=isovf, mask=mask_image)
+        out_file = fname_presuffix(isovf, suffix="_tf", newpath=runtime.cwd)
         tf_file.to_filename(out_file)
-        self._results["tf_file"] = out_file
+        self._results["tf"] = out_file
         return runtime

@@ -139,12 +139,12 @@ class FIBGZtoFOD(SimpleInterface):
 
 
 class NODDItoFIBGZInputSpec(BaseInterfaceInputSpec):
-    icvf_file = File(exists=True)
-    isovf_file = File(exists=True)
-    od_file = File(exists=True)
-    modulated_icvf_file = File(exists=True, mandatory=False)
-    modulated_od_file = File(exists=True, mandatory=False)
-    directions_file = File(exists=True)
+    icvf = File(exists=True)
+    isovf = File(exists=True)
+    od = File(exists=True)
+    modulated_icvf = File(exists=True, mandatory=False)
+    modulated_od = File(exists=True, mandatory=False)
+    directions = File(exists=True)
     mask_file = File(exists=True)
 
 
@@ -158,24 +158,24 @@ class NODDItoFIBGZ(SimpleInterface):
 
     def _run_interface(self, runtime):
         output_file = fname_presuffix(
-            self.inputs.icvf_file, use_ext=False, newpath=runtime.cwd, suffix=".fib"
+            self.inputs.icvf, use_ext=False, newpath=runtime.cwd, suffix=".fib"
         )
         verts, faces = get_dsi_studio_ODF_geometry("odf8")
         amico_directions_to_fibgz(
-            directions_img=nb.load(self.inputs.directions_file),
-            od_img=nb.load(self.inputs.od_file),
-            icvf_img=nb.load(self.inputs.icvf_file),
+            directions_img=nb.load(self.inputs.directions),
+            od_img=nb.load(self.inputs.od),
+            icvf_img=nb.load(self.inputs.icvf),
             modulated_od_img=(
-                nb.load(self.inputs.modulated_od_file)
-                if isdefined(self.inputs.modulated_od_file)
+                nb.load(self.inputs.modulated_od)
+                if isdefined(self.inputs.modulated_od)
                 else None
             ),
             modulated_icvf_img=(
-                nb.load(self.inputs.modulated_icvf_file)
-                if isdefined(self.inputs.modulated_icvf_file)
+                nb.load(self.inputs.modulated_icvf)
+                if isdefined(self.inputs.modulated_icvf)
                 else None
             ),
-            isovf_img=nb.load(self.inputs.isovf_file),
+            isovf_img=nb.load(self.inputs.isovf),
             odf_dirs=verts,
             odf_faces=faces,
             output_file=output_file,

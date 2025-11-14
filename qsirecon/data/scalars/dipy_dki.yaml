@@ -4,6 +4,10 @@ dki_ad:
         param: ad
     metadata:
         Description: DKI axial diffusivity
+        Model:
+            Description: Diffusion Kurtosis Imaging (DKI)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21337412/
         Units: mm^2/s
 dki_ak:
     bids:
@@ -11,42 +15,71 @@ dki_ak:
         param: ak
     metadata:
         Description: DKI axial kurtosis
+        Model:
+            Description: Diffusion Kurtosis Imaging (DKI)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21337412/
 dki_fa:
     bids:
-        model: tensor
+        model: dki
         param: fa
     metadata:
         Description: DKI fractional anisotropy
+        Model:
+            Description: Diffusion Kurtosis Imaging (DKI)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21337412/
 dki_kfa:
     bids:
         model: dki
         param: kfa
     metadata:
         Description: DKI kurtosis fractional anisotropy
+        Model:
+            Description: Diffusion Kurtosis Imaging (DKI)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21337412/
 dki_linearity:
     bids:
         model: dki
         param: linearity
     metadata:
         Description: DKI linearity
+        Model:
+            Description: Diffusion Kurtosis Imaging (DKI)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21337412/
 dki_md:
     bids:
         model: dki
         param: md
     metadata:
         Description: DKI mean diffusivity
+        Model:
+            Description: Diffusion Kurtosis Imaging (DKI)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21337412/
+        Units: mm^2/s
 dki_mk:
     bids:
         model: dki
         param: mk
     metadata:
         Description: DKI mean kurtosis
+        Model:
+            Description: Diffusion Kurtosis Imaging (DKI)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21337412/
 dki_mkt:
     bids:
         model: dki
         param: mkt
     metadata:
         Description: DKI mean of the kurtosis tensor
+        Model:
+            Description: Diffusion Kurtosis Imaging (DKI)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/23589312/
 dki_planarity:
     bids:
         model: dki
@@ -59,12 +92,21 @@ dki_rd:
         param: rd
     metadata:
         Description: DKI radial diffusivity
+        Model:
+            Description: Diffusion Kurtosis Imaging (DKI)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21337412/
+        Units: mm^2/s
 dki_rk:
     bids:
         model: dki
         param: rk
     metadata:
         Description: DKI radial kurtosis
+        Model:
+            Description: Diffusion Kurtosis Imaging (DKI)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21337412/
 dki_sphericity:
     bids:
         model: dki
@@ -77,63 +119,114 @@ dkimicro_ad:
         param: ad
     metadata:
         Description: DKI Microstructural Axial Diffusivity
+        Model:
+            Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
+        Units: mm^2/s
 dkimicro_ade:
     bids:
         model: dkimicro
         param: ade
     metadata:
         Description: DKI Microstructural Axial Diffusivity of the Extra-Cellular Compartment
+        Model:
+            Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
+        Units: mm^2/s
 dkimicro_ak:
     bids:
         model: dkimicro
         param: ak
     metadata:
         Description: DKI Microstructural Axial Kurtosis
+        Model:
+            Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
 dkimicro_awf:
     bids:
         model: dkimicro
         param: awf
     metadata:
         Description: DKI axonal water fraction
+        Model:
+            Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
 dkimicro_axonald:
     bids:
         model: dkimicro
         param: axonald
     metadata:
         Description: DKI Microstructural Axonal Diffusivity
+        Model:
+            Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
+        Units: mm^2/s
 dkimicro_kfa:
     bids:
         model: dkimicro
         param: kfa
     metadata:
         Description: DKI Microstructural Kurtosis Fractional Anisotropy
+        Model:
+            Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
 dkimicro_md:
     bids:
         model: dkimicro
         param: md
     metadata:
         Description: DKI Microstructural Mean Diffusivity
+        Model:
+            Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
+        Units: mm^2/s
 dkimicro_rd:
     bids:
         model: dkimicro
         param: rd
     metadata:
         Description: DKI Microstructural Radial Diffusivity
+        Model:
+            Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
+        Units: mm^2/s
 dkimicro_rde:
     bids:
         model: dkimicro
         param: rde
     metadata:
         Description: DKI radial diffusivity of the extra-cellular compartment
+        Model:
+            Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
+        Units: mm^2/s
 dkimicro_tortuosity:
     bids:
         model: dkimicro
         param: tortuosity
     metadata:
         Description: DKI Microstructural Tortuosity
+        Model:
+            Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
 dkimicro_trace:
     bids:
         model: dkimicro
         param: trace
     metadata:
-        Description: DKI Microstructural Trace
+        Description: DKI Microstructural trace
+        Model:
+            Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
+            URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
+        Units: mm^2/s

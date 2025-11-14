@@ -1,4 +1,4 @@
-directions_file:
+directions:
     bids:
         model: noddi
         param: direction
@@ -12,7 +12,7 @@ directions_file:
             Type: unit3vector
             Reference: xyz
     reorient_on_resample: true
-icvf_file:
+icvf:
     bids:
         model: noddi
         param: icvf
@@ -25,7 +25,7 @@ icvf_file:
     figure:
         vmin: 0
         vmax: 1
-isovf_file:
+isovf:
     bids:
         model: noddi
         param: isovf
@@ -38,7 +38,7 @@ isovf_file:
     figure:
         vmin: 0
         vmax: 1
-od_file:
+od:
     bids:
         model: noddi
         param: od
@@ -51,7 +51,7 @@ od_file:
     figure:
         vmin: 0
         vmax: 1
-modulated_icvf_file:
+modulated_icvf:
     bids:
         model: noddi
         param: icvf
@@ -65,7 +65,7 @@ modulated_icvf_file:
     figure:
         vmin: 0
         vmax: 1
-modulated_od_file:
+modulated_od:
     bids:
         model: noddi
         param: od
@@ -79,7 +79,7 @@ modulated_od_file:
     figure:
         vmin: 0
         vmax: 1
-rmse_file:
+rmse:
     bids:
         model: noddi
         param: rmse
@@ -90,7 +90,7 @@ rmse_file:
             URL: https://pubmed.ncbi.nlm.nih.gov/25462697
     figure:
         vmin: 0
-nrmse_file:
+nrmse:
     bids:
         model: noddi
         param: nrmse
@@ -101,7 +101,7 @@ nrmse_file:
             URL: https://pubmed.ncbi.nlm.nih.gov/25462697
     figure:
         vmin: 0
-tf_file:
+tf:
     bids:
         model: noddi
         param: tf
