@@ -18,6 +18,7 @@ from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import AMICOReconScalars
 from ...interfaces.reports import CLIReconPeaksReport, ScalarReport
 from ...utils.bids import clean_datasinks
+from ...utils.boilerplate import build_documentation
 from ...utils.misc import load_yaml
 from .utils import init_scalar_output_wf
 from qsirecon.data import load as load_data
@@ -29,7 +30,7 @@ def init_amico_noddi_fit_wf(
     qsirecon_suffix="",
     params={},
 ):
-    """Reconstruct EAPs, ODFs, using 3dSHORE (brainsuite-style basis set).
+    """Reconstruct NODDI scalars using AMICO.
 
     Inputs
 
@@ -85,23 +86,10 @@ def init_amico_noddi_fit_wf(
     workflow = Workflow(name=name)
 
     plot_reports = params.pop("plot_reports", True)
-    desc = """
-### NODDI Reconstruction
-
-"""
-    desc += """\
-The NODDI model (@noddi) was fit using the AMICO implementation (@amico).
-A value of %.1E was used for parallel diffusivity and %.1E for isotropic
-diffusivity.""" % (
-        params["dPar"],
-        params["dIso"],
+    desc = (
+        "\n\n#### NODDI Reconstruction\n\n"
+        + "The NODDI model (@noddi) was fit using the AMICO implementation (@amico). "
     )
-    if params.get("is_exvivo"):
-        desc += " An additional component was added to the model for ex-vivo data."
-
-    desc += """\
- Tissue fraction (1 - ISOVF) modulated ICVF and Orientation Dispersion maps
-were also computed (@parker2021not)."""
 
     recon_scalars = pe.Node(
         AMICOReconScalars(
@@ -112,7 +100,15 @@ were also computed (@parker2021not)."""
         run_without_submitting=True,
     )
     noddi_fit = pe.Node(NODDI(**params), name="recon_noddi", n_procs=omp_nthreads)
-    noddi_tissue_fraction = pe.Node(NODDITissueFraction(), name="noddi_tissue_fraction")
+    desc += build_documentation(noddi_fit) + " "
+
+    if params.get("saveModulatedMaps", True):
+        noddi_tissue_fraction = pe.Node(NODDITissueFraction(), name="noddi_tissue_fraction")
+        desc += (
+            "AMICO does not save the tissue fraction map. Therefore, "
+            "the output tissue fraction map was separately reconstructed using "
+            "custom Python code matching the AMICO implementation. "
+        )
     convert_to_fibgz = pe.Node(NODDItoFIBGZ(), name="convert_to_fibgz")
 
     workflow.connect([
@@ -122,50 +118,67 @@ were also computed (@parker2021not)."""
             ('bvec_file', 'bvec_file'),
             ('dwi_mask', 'mask_file'),
         ]),
-        (inputnode, noddi_tissue_fraction, [('dwi_mask', 'mask_image')]),
-        (noddi_fit, noddi_tissue_fraction, [('isovf', 'isovf')]),
-        (noddi_tissue_fraction, outputnode, [('tf', 'tf')]),
-        (noddi_tissue_fraction, recon_scalars, [('tf', 'tf')]),
         (noddi_fit, outputnode, [
             ('directions', 'directions'),
             ('icvf', 'icvf'),
             ('od', 'od'),
             ('isovf', 'isovf'),
-            ('modulated_icvf', 'modulated_icvf'),
-            ('modulated_od', 'modulated_od'),
-            ('rmse', 'rmse'),
-            ('nrmse', 'nrmse'),
-            ('config', 'config'),
+            ('config_file', 'config_file'),
         ]),
         (noddi_fit, recon_scalars, [
-            ('directions', 'directions'),
-            ('directions_metadata', 'directions_metadata'),
             ('icvf', 'icvf'),
             ('icvf_metadata', 'icvf_metadata'),
             ('od', 'od'),
             ('od_metadata', 'od_metadata'),
             ('isovf', 'isovf'),
             ('isovf_metadata', 'isovf_metadata'),
-            ('modulated_icvf', 'modulated_icvf'),
-            ('modulated_icvf_metadata', 'modulated_icvf_metadata'),
-            ('modulated_od', 'modulated_od'),
-            ('modulated_od_metadata', 'modulated_od_metadata'),
-            ('rmse', 'rmse'),
-            ('rmse_metadata', 'rmse_metadata'),
-            ('nrmse', 'nrmse'),
-            ('nrmse_metadata', 'nrmse_metadata'),
+            ('directions', 'directions'),
+            ('directions_metadata', 'directions_metadata'),
         ]),
         (noddi_fit, convert_to_fibgz, [
             ('directions', 'directions'),
             ('icvf', 'icvf'),
             ('od', 'od'),
             ('isovf', 'isovf'),
-            ('modulated_icvf', 'modulated_icvf'),
-            ('modulated_od', 'modulated_od'),
         ]),
         (inputnode, convert_to_fibgz, [('dwi_mask', 'mask_file')]),
         (convert_to_fibgz, outputnode, [('fibgz_file', 'fibgz')]),
     ])  # fmt:skip
+
+    if params.get("saveModulatedMaps", True):
+        workflow.connect([
+            (inputnode, noddi_tissue_fraction, [("dwi_mask", "mask_image")]),
+            (noddi_fit, noddi_tissue_fraction, [("isovf", "isovf")]),
+            (noddi_tissue_fraction, outputnode, [("tf", "tf")]),
+            (noddi_tissue_fraction, recon_scalars, [("tf", "tf")]),
+            (noddi_fit, recon_scalars, [("isovf_metadata", "tf_metadata")]),
+            (noddi_fit, recon_scalars, [
+                ("modulated_icvf", "modulated_icvf"),
+                ("modulated_icvf_metadata", "modulated_icvf_metadata"),
+                ("modulated_od", "modulated_od"),
+                ("modulated_od_metadata", "modulated_od_metadata"),
+            ]),
+            (noddi_fit, convert_to_fibgz, [
+                ("modulated_icvf", "modulated_icvf"),
+                ("modulated_od", "modulated_od"),
+            ]),
+        ])  # fmt:skip
+
+    if params.get("rmse", True):
+        workflow.connect([
+            (noddi_fit, recon_scalars, [
+                ("rmse", "rmse"),
+                ("rmse_metadata", "rmse_metadata"),
+            ]),
+        ])  # fmt:skip
+
+    if params.get("nrmse", True):
+        workflow.connect([
+            (noddi_fit, recon_scalars, [
+                ("nrmse", "nrmse"),
+                ("nrmse_metadata", "nrmse_metadata"),
+            ]),
+        ])  # fmt:skip
 
     if plot_reports:
         plot_peaks = pe.Node(
@@ -217,7 +230,7 @@ were also computed (@parker2021not)."""
             name="ds_noddi_config",
             run_without_submitting=True,
         )
-        workflow.connect([(outputnode, ds_config, [("config", "in_file")])])
+        workflow.connect([(outputnode, ds_config, [("config_file", "in_file")])])
 
         plot_scalars = pe.Node(
             ScalarReport(),
