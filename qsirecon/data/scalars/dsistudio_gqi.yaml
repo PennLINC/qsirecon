@@ -16,19 +16,19 @@ gfa_file:
         model: gqi
         param: gfa
     metadata:
-        Description: Generalized Fractional Anisotropy
+        Description: Generalized Fractional Anisotropy from a GQI fit
 ha_file:
     bids:
         model: tensor
         param: ha
     metadata:
-        Description: Helix Angle from tensor fit
+        Description: Helix Angle from a tensor fit
 iso_file:
     bids:
         model: gqi
         param: iso
     metadata:
-        Description: Isotropic Diffusion from GQI
+        Description: Isotropic Diffusion from a GQI fit
 md_file:
     bids:
         model: tensor
@@ -41,19 +41,19 @@ nrdi02L_file:
         model: gqi
         param: nrdi02L
     metadata:
-        Description: Non-restricted Diffusion Imaging. The total amount of non-restricted diffusion regardless of orientation at a 0.2 diffusion sampling length ratio.
+        Description: Non-restricted Diffusion Imaging from a GQI fit. The total amount of non-restricted diffusion regardless of orientation at a 0.2 diffusion sampling length ratio.
 nrdi04L_file:
     bids:
         model: gqi
         param: nrdi04L
     metadata:
-        Description: Non-restricted Diffusion Imaging. The total amount of non-restricted diffusion regardless of orientation at a 0.4 diffusion sampling length ratio.
+        Description: Non-restricted Diffusion Imaging from a GQI fit. The total amount of non-restricted diffusion regardless of orientation at a 0.4 diffusion sampling length ratio.
 nrdi06L_file:
     bids:
         model: gqi
         param: nrdi06L
     metadata:
-        Description: Non-restricted Diffusion Imaging. The total amount of non-restricted diffusion regardless of orientation at a 0.6 diffusion sampling length ratio.
+        Description: Non-restricted Diffusion Imaging from a GQI fit. The total amount of non-restricted diffusion regardless of orientation at a 0.6 diffusion sampling length ratio.
 qa_file:
     bids:
         model: gqi
