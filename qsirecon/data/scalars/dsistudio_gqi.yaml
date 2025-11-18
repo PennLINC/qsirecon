@@ -5,12 +5,6 @@ ad_file:
     metadata:
         Description: Axial Diffusivity from a tensor fit. The first eigenvalue of the tensor.
         Units: μm^2/ms
-color_file:
-    bids:
-        model: tensor
-        param: color
-    metadata:
-        Description: Color-encoded FA map from a tensor fit
 dti_fa_file:
     bids:
         model: tensor
