@@ -3,10 +3,10 @@ directions:
         model: noddi
         param: direction
     metadata:
-        Description: Peak directions from NODDI
+        Description: Peak directions from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
-            URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
+            URL: https://pubmed.ncbi.nlm.nih.gov/25462697
         OrientationEncoding:
             EncodingAxis: 3
             Type: unit3vector
@@ -17,10 +17,11 @@ icvf:
         model: noddi
         param: icvf
     metadata:
-        Description: Intracellular volume fraction from NODDI
+        Description: Intracellular volume fraction (Neurite Density Index; NDI) from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
-            URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
+            URL: https://pubmed.ncbi.nlm.nih.gov/25462697
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/22484410
     figure:
         vmin: 0
         vmax: 1
@@ -29,10 +30,11 @@ isovf:
         model: noddi
         param: isovf
     metadata:
-        Description: Isotropic volume fraction from NODDI
+        Description: Isotropic volume fraction (Freewater Fraction; FWF) from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
-            URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
+            URL: https://pubmed.ncbi.nlm.nih.gov/25462697
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/22484410
     figure:
         vmin: 0
         vmax: 1
@@ -41,20 +43,25 @@ od:
         model: noddi
         param: od
     metadata:
-        Description: Orientation dispersion index from NODDI
+        Description: Orientation dispersion index (ODI) from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
-            URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
+            URL: https://pubmed.ncbi.nlm.nih.gov/25462697
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/22484410
+    figure:
+        vmin: 0
+        vmax: 1
 modulated_icvf:
     bids:
         model: noddi
         param: icvf
         desc: modulated
     metadata:
-        Description: Tissue fraction modulated intracellular volume fraction from NODDI
+        Description: Intracellular volume fraction modulated by tissue fraction (ICVF * tissue fraction) from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
-            URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
+            URL: https://pubmed.ncbi.nlm.nih.gov/25462697
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/34852276
     figure:
         vmin: 0
         vmax: 1
@@ -64,10 +71,11 @@ modulated_od:
         param: od
         desc: modulated
     metadata:
-        Description: Tissue fraction modulated intracellular volume fraction from NODDI
+        Description: Orientation dispersion index modulated by tissue fraction (OD * tissue fraction) from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
-            URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
+            URL: https://pubmed.ncbi.nlm.nih.gov/25462697
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/34852276
     figure:
         vmin: 0
         vmax: 1
@@ -76,10 +84,10 @@ rmse:
         model: noddi
         param: rmse
     metadata:
-        Description: RMSE between predicted and measured signal from NODDI
+        Description: Root mean square error between predicted and measured signal from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
-            URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
+            URL: https://pubmed.ncbi.nlm.nih.gov/25462697
     figure:
         vmin: 0
 nrmse:
@@ -87,10 +95,10 @@ nrmse:
         model: noddi
         param: nrmse
     metadata:
-        Description: NRMSE between predicted and measured signal from NODDI
+        Description: Normalized root mean square error between predicted and measured signal from AMICO NODDI
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
-            URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
+            URL: https://pubmed.ncbi.nlm.nih.gov/25462697
     figure:
         vmin: 0
 tf:
@@ -98,10 +106,11 @@ tf:
         model: noddi
         param: tf
     metadata:
-        Description: Tissue fraction from NODDI
+        Description: Tissue fraction (1 - isotropic volume fraction) computed by QSIRecon 
         Model:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
-            URL: https://www.sciencedirect.com/science/article/pii/S1053811914008519
+            URL: https://pubmed.ncbi.nlm.nih.gov/25462697
+        ParameterURL: https://pubmed.ncbi.nlm.nih.gov/34852276
     figure:
         vmin: 0
         vmax: 1
