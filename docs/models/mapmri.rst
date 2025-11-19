@@ -62,16 +62,6 @@ and interpretable for general use.
 MAP-MRI Studies Across The Lifespan
 ===================================
 
-**Lifespan Trajectories**: Recent MAP-MRI studies on healthy populations across the
-lifespan reveal non-linear microstructural changes in both white and gray matter as
-the brain develops, matures, and ages. Using cross-sectional cohorts spanning
-young adulthood to old age (e.g. ages ~21–94), researchers observe that many
-MAP-MRI metrics follow an "inverted U" trajectory – reflecting continued
-maturation into mid-adulthood and subsequent degeneration in later years
-:cite:p:`kiely2021`. For example, metrics sensitive to fiber coherence and
-density tend to increase from youth to middle age and then decline with older
-age, mirroring known myelination and axonal changes across the lifespan.
-
 **White Matter Maturation vs. Aging**: In white matter, MAP-MRI indices have 
 highlighted distinct patterns of change. Propagator anisotropy (PA) – 
 a microscale analog of anisotropy – typically peaks in early-to-mid adulthood 
@@ -85,18 +75,6 @@ lower PA in older white matter compared to younger adults, reflecting
 microstructural degeneration such as demyelination and axonal packing 
 loss in senescence.
 
-**Regional "Last-in-First-Out" Effects**: Lifespan MAP-MRI studies also support 
-region-specific aging patterns that align with developmental timing. 
-Late-maturing fiber tracts (e.g. frontal lobe connections) show earlier and 
-more pronounced aging effects in MAP metrics (faster PA decline and NG 
-increase), whereas early-maturing posterior tracts (e.g. occipital regions) 
-are relatively spared until later in life :cite:p:`kiely2021`. 
-This "last-in-first-out" trend means regions that myelinate last during 
-development tend to deteriorate first with aging – a pattern that MAP-MRI 
-metrics are sensitive to, paralleling observations from conventional DTI and 
-myelin imaging :cite:p:`kiely2021`. Such findings reinforce the value of MAP-MRI 
-in capturing subtle microstructural aging processes that vary across brain regions.
-
 **Gray Matter Findings**: In cortical and deep gray matter, diffusion is more 
 isotropic, so MAP-MRI changes are more subtle but still informative. Lifespan 
 studies have reported modest declines in gray matter propagator anisotropy with 
@@ -107,17 +85,6 @@ across ages, but the contrast between young and old was most pronounced in
 white matter metrics, indicating that white matter microstructure undergoes 
 more significant age-related remodeling :cite:p:`bouhrara2023`.
 
-**Cross-Sectional vs. Longitudinal**: Most available lifespan MAP-MRI data are 
-cross-sectional, comparing different age groups. These designs benefit from 
-large N (e.g. N≈125–150) to map normative trends :cite:p:`bouhrara2019`, but 
-they cannot distinguish cohort effects from true within-subject changes. Ongoing 
-and future longitudinal studies (scanning the same individuals over time) are 
-expected to validate these cross-sectional inferences – for instance, 
-confirming that an individual's PA indeed declines and NG rises as they 
-transition from mid-life to older age. Early longitudinal results (though 
-scarce for MAP-MRI specifically) suggest the rates of change in MAP metrics 
-could serve as personal "brain aging" markers, with faster NG increases or PA 
-decreases potentially indicating accelerated microstructural aging.
 
 MAP-MRI Methodological Warnings and Caveats
 ===========================================
@@ -183,14 +150,7 @@ CSF-rich voxels will show very low non-Gaussianity (since free water diffusion
 is Gaussian) and high apparent diffusivity, which could mask or dilute the 
 tissue's NG and RTOP values (see also 
 `DIPY documentation <https://docs.dipy.org/stable/examples_built/reconstruction/reconst_mapmri.html>`_). 
-In practice, this means that areas near ventricles 
-or subarachnoid spaces might exhibit artifactual differences. Some pipelines 
-include a CSF compartment fit or threshold (e.g., using MAP-MRI in conjunction 
-with free-water elimination) to address this. Users should be aware that 
-partial volume with free fluid lowers RTOP and NG, whereas partial volume with 
-crossing fibers or GM/WM mix can affect PA and directional metrics. Adequate 
-resolution and possibly tissue segmentation should be considered when 
-interpreting maps in periphery regions.
+
 
 **Comparison with Other Models**: Another caveat is how MAP-MRI metrics relate 
 to more familiar diffusion metrics. There is often moderate correlation between 
