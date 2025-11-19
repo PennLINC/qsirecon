@@ -24,10 +24,7 @@ anisotropy (PA) as a generalized anisotropy index reflecting the deviation of
 the full propagator from an isotropic counterpart. A global non-Gaussianity (NG) 
 index was introduced to capture the total deviation of the diffusion propagator 
 from a Gaussian form, reflecting microstructural complexity not captured by a 
-single diffusion tensor :cite:p:`ozarslan2013`. :cite:t:`gu2019` demonstrated 
-the use of wild bootstrap methods to quantify uncertainty in MAP-MRI metrics 
-(RTOP, NG, PA), showing how uncertainty measures can improve group analyses and 
-aid in comparing different preprocessing pipelines.
+single diffusion tensor :cite:p:`ozarslan2013`.
 
 **Clinical Feasibility**: :cite:t:`avram2016` demonstrated that MAP-MRI acquisition 
 and reconstruction are feasible in vivo within clinically practical scan times 
