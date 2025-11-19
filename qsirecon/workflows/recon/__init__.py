@@ -14,3 +14,33 @@ Reconstruction pipeline nodes
 .. automodule:: qsirecon.workflows.recon.utils
 
 """
+
+from . import (
+    amico,
+    anatomical,
+    build_workflow,
+    converters,
+    dipy,
+    dsi_studio,
+    mrtrix,
+    pyafq,
+    scalar_mapping,
+    steinhardt,
+    tortoise,
+    utils,
+)
+
+__all__ = [
+    "amico",
+    "anatomical",
+    "build_workflow",
+    "converters",
+    "dipy",
+    "dsi_studio",
+    "mrtrix",
+    "pyafq",
+    "scalar_mapping",
+    "steinhardt",
+    "tortoise",
+    "utils",
+]

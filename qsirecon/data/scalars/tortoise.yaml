@@ -22,6 +22,14 @@ li_file:
         param: li
     metadata:
         Description: LI from a tensor fit
+md:
+    bids:
+        model: tensor
+        param: md
+    metadata:
+        Description: Mean Diffusivity from a tensor fit
+        Model:
+            Description: Custom Python code implementing the formula (ad + (2 * rd)) / 3
 ng_file:
     bids:
         model: mapmri
