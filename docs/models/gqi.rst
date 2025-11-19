@@ -15,31 +15,78 @@ quantitative anisotropy (QA), and isotropic component (ISO) :cite:p:`yeh2013`.
 GQI Foundational Papers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-- Generalized q-Sampling Imaging (GQI) was introduced as an analytical, model-free diffusion MRI reconstruction method that bridges Q-ball imaging (single-shell HARDI) and diffusion spectrum imaging (grid sampling) :cite:p:`yeh2010`. It estimates the spin distribution function (SDF), an ODF-like representation of diffusion directions, from a variety of sampling schemes.
-- Generalized Fractional Anisotropy (GFA) – originally defined in QBI :cite:p:`yeh2010` – is an ODF-derived analog of the DTI-based Fractional Anisotropy (FA). It quantifies the angular variance of diffusion and is output by GQI for each voxel. GFA provides a unitless 0–1 measure of anisotropy but, like FA, can be confounded by complex fiber architecture (e.g., crossing fibers can lower GFA).
-- Quantitative Anisotropy (QA) was a key new metric introduced with GQI :cite:p:`yeh2010`. Unlike FA/GFA which are normalized measures per voxel, QA measures the absolute density of diffusional spins along a specific fiber orientation (per fiber population). By subtracting the isotropic background signal, QA directly reflects the relative volume fraction or “strength” of each fiber pathway in the voxel. This makes QA more specific to fiber integrity and less sensitive to isotropic partial volumes.
-- Isotropic Diffusion (ISO) refers to the isotropic component separated out by GQI. In practice, GQI estimates the background isotropic diffusion in a voxel (often approximated by the minimum SDF value) :cite:p:`yeh2010`. This yields an ISO value that quantifies free-water diffusion (e.g. CSF or edema) independently. GQI’s ability to isolate isotropic diffusion helps reduce free-water contamination in anisotropy measures.
-- Foundational studies validated GQI and its metrics: :cite:t:`yeh2010` showed GQI’s ODF reconstruction accuracy comparable to DSI/QBI and introduced QA. Subsequent work :cite:p:`yeh2013deterministic` demonstrated QA’s practical advantages – it remains stable despite crossing fibers or edema, leading to improved tractography with fewer false positives. Early applications in development :cite:p:`lim2015rabbitbrain` highlighted that GQI metrics like GFA and QA can track brain maturation, revealing age-related increases in anisotropy even in regions where DTI failed to detect changes (e.g. hippocampal development).
-- Takeaway: GQI extends diffusion MRI beyond the tensor model, providing directional resolution in complex fiber regions and introducing metrics (QA, ISO, GFA) that offer richer microstructural information. General neuroimaging users should understand that QA and GQI-derived anisotropies allow fiber-specific analysis (robust to crossing and free water), while GFA generalizes the concept of FA to ODFs. These innovations laid the groundwork for more accurate mapping of white-matter architecture in research and, potentially, clinical imaging.
+- Generalized q-Sampling Imaging (GQI) was introduced as an analytical,
+  model-free diffusion MRI reconstruction method that bridges Q-ball imaging (single-shell HARDI)
+  and diffusion spectrum imaging (grid sampling) :cite:p:`yeh2010`.
+  It estimates the spin distribution function (SDF),
+  an ODF-like representation of diffusion directions,
+  from a variety of sampling schemes.
+- Generalized Fractional Anisotropy (GFA),
+  originally defined in QBI :cite:p:`tuch2004q`,
+  is an SDF-derived analog of the DTI-based Fractional Anisotropy (FA).
+  It quantifies the angular variance of diffusion and is output by GQI for each voxel. 
+  GFA provides a unitless 0-1 measure of anisotropy but, like FA, 
+  can be confounded by complex fiber architecture (e.g., crossing fibers can lower GFA).
+- Quantitative Anisotropy (QA) was a key new metric introduced with GQI :cite:p:`yeh2010`. 
+  Unlike FA/GFA which are normalized measures per voxel, 
+  QA measures the absolute density of diffusional spins along a specific 
+  SDF lobe.
+  SDF lobes are interpreted as fiber orientations (fixels in MRtrix terms).
+  By subtracting the isotropic background signal, 
+  QA directly reflects the relative volume fraction or "strength" of each fixel in the SDF. 
+- Isotropic Diffusion (ISO) refers to the isotropic component separated out by GQI. 
+  In practice, GQI estimates the background isotropic diffusion in a voxel 
+  as the minimum SDF value :cite:p:`yeh2010`. 
+- Foundational studies validated GQI and its metrics: :cite:t:`yeh2010` 
+  showed GQI's ODF reconstruction accuracy comparable to DSI/QBI and introduced QA. 
+  Subsequent work :cite:p:`yeh2013` demonstrated QA's practical advantages:
+  it remains stable despite crossing fibers or edema, 
+  leading to improved tractography with fewer false positives.
+
 
 GQI Studies Across The Lifespan
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Development (Youth): GQI-derived metrics generally increase during brain maturation, reflecting strengthening and organization of white matter. For example, :cite:t:`lim2015rabbitbrain` showed that rabbit brains from infancy to adulthood had rising GFA and normalized quantitative anisotropy (NQA) values in major tracts, mirroring the well-known FA increases in development. Importantly, GQI metrics unveiled maturation in regions like the hippocampus (gray matter) that DTI FA did not capture – indicating GQI’s potential to detect subtler microstructural ordering (e.g. neurite density increases) in both white and gray matter during development.
-- Normal Aging: In healthy adulthood and aging, studies find a decline in anisotropy metrics, but the extent differs between DTI and GQI measures. Cross-sectional data :cite:t:`liu2018fibertracts` showed widespread age-related FA reductions, whereas QA reductions with age were present but more localized. This suggests QA might remain relatively stable unless substantial axonal loss occurs. In other words, an older brain with more crossing fibers or diffuse demyelination may show a drop in FA (since overall directional coherence decreases) while QA (measuring core fiber density) is less affected until more severe changes.
-- Sensitivity to Change: The differing age trajectories of FA vs. QA were confirmed by a large-sample machine learning study :cite:p:`guo2022agedtiqsi`, where FA-based models predicted brain age more accurately than QA-based models. This implies that some microstructural aging effects (e.g. minor myelin thinning, increased isotropic water) disproportionately lower FA but not QA. For clinicians or researchers, this means QA might underestimate mild age-related degeneration but conversely is more specific to actual fiber loss.
-- Pathological Aging and Injury: GQI metrics have been applied to models of aging-related brain injury (e.g. radiation exposure in older rabbits). :cite:t:`shen2015rabbitbraininjury` found QA and ISO could track complex temporal changes (inflammation, edema, recovery) post-radiation that weren’t fully captured by FA. Notably, ISO (isotropic diffusion) tends to increase in situations of edema or tissue loss – a factor often more pronounced in aging brains (e.g. ventricular expansion, lesions). GQI explicitly quantifies this isotropic water component, which can help disentangle true axonal changes (QA) from mere fluid-related changes (ISO) in elderly or disease populations.
-- Key Insight: Across the lifespan, GQI provides a multi-faceted view: GFA and QA reflect the integrity and density of oriented fibers, while ISO gauges free-water content. During development, all indicate growing structural integrity; during healthy aging, GFA and FA drop earlier/more than QA, pointing to reorganization and demyelination rather than outright fiber loss in early aging. In advanced aging or pathology, QA declines (fiber loss) may appear alongside elevated ISO (atrophy-related water content). Users should leverage this combination of metrics to get a nuanced picture of brain aging – e.g. distinguishing healthy aging (where fibers are still present but less orderly) from neurodegenerative changes (where fibers are truly lost).
+GQI has predominantly been used as the basis for tractography.
+There are, however some studies looking at GQI-based metrics across the lifespan.
+
+- Development (animal model): GQI-derived metrics generally increase during brain maturation, 
+  reflecting strengthening and organization of white matter. 
+  For example, :cite:t:`lim2015rabbitbrain` showed that rabbit brains from infancy to adulthood had rising GFA
+  and normalized quantitative anisotropy (NQA) values in major tracts, 
+  mirroring the well-known FA increases in development. 
+  Importantly, 
+  GQI metrics unveiled maturation in regions like the hippocampus (gray matter) that DTI FA did not capture,
+  indicating GQI's potential to detect subtler microstructural ordering.
+- Pathological Aging and Injury (animal model): 
+  GQI metrics have been applied to models of aging-related brain injury (e.g., radiation exposure in older rabbits). 
+  :cite:t:`shen2015rabbitbraininjury` found QA and ISO could track complex temporal changes 
+  (inflammation, edema, recovery) post-radiation that weren't fully captured by FA. 
+  Notably, ISO (isotropic diffusion) tends to increase in situations of edema or tissue loss
+  which is often more pronounced in aging brains (e.g. ventricular expansion, lesions). 
+  GQI explicitly quantifies this isotropic water component, 
+  which can help disentangle true axonal changes (QA) from mere fluid-related changes (ISO) in elderly or disease populations.
+
 
 GQI Methodological Warnings and Caveats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Data Requirements: GQI’s accuracy and outputs depend on adequate diffusion sampling. A critical caveat is the “balanced sampling” requirement :cite:p:`yeh2010` – the diffusion acquisition must cover directions evenly. If not (e.g. very anisotropic or sparse direction sets), GQI may produce spurious anisotropy where none exists, or miss fibers in undersampled orientations. In practice, users should ensure high angular resolution or multi-shell data for GQI. Insufficient or uneven data can violate model assumptions, leading to reconstruction artifacts.
-- Metric Interpretation – GFA vs. QA: Generalized FA (GFA) is susceptible to the same pitfalls as DTI-FA in complex tissue. In regions with crossing fibers or mixed diffusion components, GFA will underestimate anisotropy – a crossing of two orthogonal fiber bundles yields a more isotropic ODF, lowering GFA even if fibers are intact. Thus, a low GFA could mean “crossing fibers” rather than demyelination or fiber loss. Quantitative Anisotropy (QA), conversely, isolates each fiber’s contribution and remains more stable in such scenarios :cite:p:`yeh2013deterministic`. The caveat is that QA and GFA measure different things: QA reflects fiber density, while GFA reflects fiber organization. A neuroimaging user should be careful not to treat QA and GFA interchangeably – for example, a disease that causes disorganization without net loss of axons might drastically lower GFA but change QA minimally.
-- Partial Volume and Free Water: One big advantage of GQI (and QA) is reduced partial volume artifact, but this comes with interpretative differences. FA and GFA are depressed by free water (edema, CSF) – hence DTI-based analysis often flags perilesional edema or ventricles as “low-FA” (which can be misinterpreted as damage). GQI provides an ISO metric for free water and a separate QA for fibers, so in edema one might see normal QA (fibers still there) but high ISO. The caveat is that one must integrate these metrics: a region of interest with low FA but normal QA and high ISO likely indicates dilution of anisotropy by water rather than true fiber degeneration :cite:p:`yeh2013deterministic`. In sum, GQI metrics demand a more nuanced interpretation – the user should check ISO alongside QA/GFA to avoid misattributing effects of extracellular fluid to fiber integrity.
-- Reproducibility and Normalization: Because QA is an absolute signal metric, it can vary with scanner hardware and protocol. Between scanners or sessions, differences in coil gains, b-value, or SNR could lead to QA changes unrelated to biology. This is a caution especially in multi-center studies or longitudinal studies with system upgrades. The introduction of normalized measures (like NQA or QA/ISO ratio) is an important methodological development to improve reproducibility. General users should strive to use such normalized indices or at least calibrate QA across datasets (for example, by referencing an internal standard or CSF) to ensure that observed differences truly reflect tissue changes.
-- Model Limitations vs. DTI: GQI expands capability at the cost of complexity. It generally outperforms DTI in resolving crossing fibers and reconstructing complex tracts :cite:p:`suo2021pyramidaltracts`, but users should be aware of edge cases. Very fine secondary fiber populations might still be missed or could introduce noise if the reconstruction parameters (like diffusion sampling length ratio) aren’t optimally chosen. Unlike the simple tensor, GQI has a parameter (the length ratio ~1.2–1.3) to tune the sensitivity to diffusion distance – using a wrong value could under- or over-estimate QA and fiber counts. It’s wise to follow recommended settings from foundational papers or software defaults and to perform sensitivity analyses when possible.
-- Clinical Translation Caveat: While GQI metrics (QA, GFA, ISO) offer richer information, their biological specificity is still under investigation. For example, QA is thought to correlate with axonal density :cite:p:`yeh2013deterministic`, but in pathology other factors (inflammation, gliosis) might also influence it. ISO is often interpreted as free water (CSF, edema), but some isotropic diffusion can also come from very restricted compartments (cell bodies). Thus, when using GQI metrics in clinical research, one should combine them with other imaging or histological data when possible. Over time, community consensus and validation studies will further clarify these caveats, improving confidence in interpreting GQI-derived indices. Until then, prudent use – leveraging multiple metrics and understanding their assumptions – will yield the best insights from GQI for neuroimaging studies.
+- Data Requirements: GQI's accuracy and outputs depend on adequate diffusion sampling. 
+  In practice, users should ensure high angular resolution or multi-shell data for GQI.
+- Reproducibility and Normalization:
+  Because QA is an absolute signal metric, 
+  it can vary with scanner hardware and protocol.
+  Between scanners or sessions, 
+  differences in coil gains, b-value, or SNR could lead to QA changes unrelated to biology. 
+  This is a concern especially in multi-center studies or longitudinal studies with system upgrades.
+- Model Limitations vs. DTI: 
+  GQI expands capability at the cost of complexity. 
+  Unlike the simple tensor, GQI has a parameter (the length ratio ~1.2-1.3) 
+  to tune the sensitivity to diffusion distance.
+  Using a wrong value could under- or over-estimate QA and fiber (fixel) counts.
+- Clinical Translation Caveat: 
+  While GQI metrics (QA, GFA, ISO) offer richer information, 
+  their biological specificity is still under investigation.
 
 
 **********
