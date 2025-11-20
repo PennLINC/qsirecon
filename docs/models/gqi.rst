@@ -1,4 +1,4 @@
-.. include:: links.rst
+.. include:: ../links.rst
 
 ####################################
 Generalized q-Sampling Imaging (GQI)

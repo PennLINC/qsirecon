@@ -1,8 +1,8 @@
-.. include:: links.rst
+.. include:: ../links.rst
 
-#####################################
-Mean Apparent Propagator MRI (MAPMRI)
-#####################################
+##############################################
+Mean Apparent Propagator MRI (MAP-MRI)
+##############################################
 
 
 

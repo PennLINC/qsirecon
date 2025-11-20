@@ -1,4 +1,4 @@
-.. include:: links.rst
+.. include:: ../links.rst
 
 ##############################
 Diffusion tensor imaging (DTI)
