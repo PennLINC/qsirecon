@@ -27,6 +27,7 @@ from nipype.interfaces.base import (
 )
 from nipype.utils.filemanip import fname_presuffix
 
+from ..utils.boilerplate import ConditionalDoc
 from .converters import (
     amplitudes_to_fibgz,
     amplitudes_to_sh_mif,
@@ -127,21 +128,139 @@ class AmicoReconInterface(SimpleInterface):
 
 
 class NODDIInputSpec(AmicoInputSpec):
-    dPar = traits.Float(mandatory=True)
-    dIso = traits.Float(mandatory=True)
-    isExvivo = traits.Bool(False, usedefault=True)
+    dPar = traits.Float(
+        mandatory=True,
+        desc=(
+            "Parallel diffusivity constant in mm^/2. "
+            "Passed to AMICO as dPar. "
+            "Defined in the recon spec as dPar. "
+            "Stored in the metadata as ParallelDiffusivity."
+        ),
+        doc=ConditionalDoc("The parallel diffusivity constant was set to {value} mm^2/s."),
+    )
+    dIso = traits.Float(
+        mandatory=True,
+        desc=(
+            "Isotropic diffusivity constant in mm^2/s. "
+            "Passed to AMICO as dIso. "
+            "Defined in the recon spec as dIso. "
+            "Stored in the metadata as IsotropicDiffusivity."
+        ),
+        doc=ConditionalDoc("The isotropic diffusivity constant was set to {value} mm^2/s."),
+    )
+    b0_threshold = traits.Float(
+        50.0,
+        usedefault=True,
+        desc="Threshold below which a b-value is considered a b0.",
+        doc=ConditionalDoc("All b-values were rounded to the closest {value} s/mm²."),
+    )
+    isExvivo = traits.Bool(
+        False,
+        usedefault=True,
+        desc=(
+            "Flag indicating whether acquired data is ex vivo or fixed tissue. "
+            "Fixed tissue requires an additional dot compartment estimation."
+        ),
+        doc=ConditionalDoc(
+            if_true=(
+                "An additional dot compartment was computed "
+                "to account for hindered diffusivity in fixed tissue."
+            ),
+        ),
+    )
+    doNormalize = traits.Bool(
+        True,
+        usedefault=True,
+        desc=("Flag indicating whether to normalize the data during fitting. Default: True."),
+        doc=ConditionalDoc(
+            if_true=(
+                "Diffusion-weighted images were normalized to the mean non-diffusion-weighted "
+                "(b0) signal to reduce intensity variation across volumes. For each voxel, "
+                "the mean signal intensity was computed across all b0 volumes identified in "
+                "the acquisition scheme. Voxelwise normalization factors were then defined as "
+                "the reciprocal of these mean b0 values. To prevent division by noise-dominated "
+                "or near-zero intensities, voxels with mean b0 signal below a fixed threshold "
+                "(defined as b0 x mean of all positive b0 values) were excluded from "
+                "normalization by setting their factors to zero. The resulting normalization "
+                "factors were applied to each diffusion-weighted volume by voxelwise "
+                "multiplication, yielding data expressed as signal intensity relative "
+                "to the mean b0 image."
+            ),
+        ),
+    )
+    rmse = traits.Bool(
+        True,
+        usedefault=True,
+        desc=(
+            "Flag indicating whether to compute the root mean square error "
+            "(RMSE) between the measured and fitted signals. Default: True."
+        ),
+        doc=ConditionalDoc(
+            if_true="The root mean square error (RMSE) between the measured "
+            "and fitted signals was computed."
+        ),
+    )
+    nrmse = traits.Bool(
+        True,
+        usedefault=True,
+        desc=(
+            "Flag indicating whether to compute the normalized root mean square error"
+            " (NRMSE) between the measured and fitted signals. "
+            "Default: True."
+        ),
+        doc=ConditionalDoc(
+            if_true=(
+                "The normalized root mean square error (NRMSE) "
+                "between the measured and fitted signals was computed."
+            ),
+        ),
+    )
+    saveModulatedMaps = traits.Bool(
+        True,
+        usedefault=True,
+        desc=("Flag indicating whether to save modulated maps for ICVF and ODI. Default: True."),
+        doc=ConditionalDoc(
+            if_true=(
+                "Intracellular volume fraction (ICVF) and Orientation dispersion maps "
+                "were multipled by the tissue fraction (1 - isotropic volume fraction) "
+                "in AMICO to produce tissue fraction modulated maps (@parker2021not)."
+            ),
+        ),
+    )
+    fitMethod = traits.Enum(
+        "OLS",
+        "WLS",
+        usedefault=True,
+        desc=(
+            "Fitting method to use. Options are 'OLS' (Ordinary Least Squares) "
+            "or 'WLS' (Weighted Least Squares). "
+            "Default: 'OLS'."
+        ),
+        doc=ConditionalDoc(
+            "Peak directions were estimated from a diffusion tensor model "
+            "using {value} fitting in DIPY (@dipy)."
+        ),
+    )
     num_threads = traits.Int(1, usedefault=True, nohash=True)
 
 
 class NODDIOutputSpec(AmicoOutputSpec):
-    directions_image = File()
-    icvf_image = File()
-    od_image = File()
-    isovf_image = File()
-    modulated_icvf_image = File()
-    modulated_od_image = File()
-    rmse_image = File()
-    nrmse_image = File()
+    directions = File()
+    directions_metadata = traits.Dict()
+    icvf = File()
+    icvf_metadata = traits.Dict()
+    od = File()
+    od_metadata = traits.Dict()
+    isovf = File()
+    isovf_metadata = traits.Dict()
+    modulated_icvf = File()
+    modulated_icvf_metadata = traits.Dict()
+    modulated_od = File()
+    modulated_od_metadata = traits.Dict()
+    rmse = File()
+    rmse_metadata = traits.Dict()
+    nrmse = File()
+    nrmse_metadata = traits.Dict()
     config_file = File()
 
 
@@ -186,9 +305,11 @@ class NODDI(AmicoReconInterface):
         # Set global configuration
         aeval.set_config("BLAS_nthreads", 1)
         aeval.set_config("nthreads", self.inputs.num_threads)
-        aeval.set_config("doSaveModulatedMaps", True)
-        aeval.set_config("doComputeRMSE", True)
-        aeval.set_config("doComputeNRMSE", True)
+        aeval.set_config("doSaveModulatedMaps", self.inputs.saveModulatedMaps)
+        aeval.set_config("doComputeRMSE", self.inputs.rmse)
+        aeval.set_config("doComputeNRMSE", self.inputs.nrmse)
+        aeval.set_config("doNormalize", self.inputs.doNormalize)
+        aeval.set_config("DTI_fit_method", self.inputs.fitMethod)
 
         # Set model parameters
         aeval.model.dPar = self.inputs.dPar
@@ -202,26 +323,61 @@ class NODDI(AmicoReconInterface):
 
         # Write the results
         aeval.save_results()
-        self._results["directions_image"] = shim_dir + "/AMICO/NODDI/fit_dir.nii.gz"
-        self._results["icvf_image"] = shim_dir + "/AMICO/NODDI/fit_NDI.nii.gz"
-        self._results["od_image"] = shim_dir + "/AMICO/NODDI/fit_ODI.nii.gz"
-        self._results["isovf_image"] = shim_dir + "/AMICO/NODDI/fit_FWF.nii.gz"
-        self._results["modulated_od_image"] = shim_dir + "/AMICO/NODDI/fit_ODI_modulated.nii.gz"
-        self._results["modulated_icvf_image"] = shim_dir + "/AMICO/NODDI/fit_NDI_modulated.nii.gz"
-        self._results["rmse_image"] = shim_dir + "/AMICO/NODDI/fit_RMSE.nii.gz"
-        self._results["nrmse_image"] = shim_dir + "/AMICO/NODDI/fit_NRMSE.nii.gz"
+        self._results["directions"] = shim_dir + "/AMICO/NODDI/fit_dir.nii.gz"
+        self._results["icvf"] = shim_dir + "/AMICO/NODDI/fit_NDI.nii.gz"
+        self._results["od"] = shim_dir + "/AMICO/NODDI/fit_ODI.nii.gz"
+        self._results["isovf"] = shim_dir + "/AMICO/NODDI/fit_FWF.nii.gz"
+
+        if self.inputs.saveModulatedMaps:
+            self._results["modulated_od"] = shim_dir + "/AMICO/NODDI/fit_ODI_modulated.nii.gz"
+            self._results["modulated_icvf"] = shim_dir + "/AMICO/NODDI/fit_NDI_modulated.nii.gz"
+
+        if self.inputs.rmse:
+            self._results["rmse"] = shim_dir + "/AMICO/NODDI/fit_RMSE.nii.gz"
+
+        if self.inputs.nrmse:
+            self._results["nrmse"] = shim_dir + "/AMICO/NODDI/fit_NRMSE.nii.gz"
+
         self._results["config_file"] = shim_dir + "/AMICO/NODDI/config.pickle"
 
         return runtime
 
+    def _list_outputs(self):
+        base_metadata = {
+            "Model": {
+                "Parameters": {
+                    "ParallelDiffusivity": self.inputs.dPar,
+                    "IsotropicDiffusivity": self.inputs.dIso,
+                    "isExvivo": self.inputs.isExvivo,
+                    "saveModulatedMaps": self.inputs.saveModulatedMaps,
+                    "b0_threshold": self.inputs.b0_threshold,
+                    "fitMethod": self.inputs.fitMethod,
+                    "doNormalize": self.inputs.doNormalize,
+                    "rmse": self.inputs.rmse,
+                    "nrmse": self.inputs.nrmse,
+                },
+            },
+        }
+        outputs = super()._list_outputs()
+        file_outputs = [
+            name for name in self.output_spec().get() if not name.endswith("_metadata")
+        ]
+        for file_output in file_outputs:
+            # Patch in model and parameter information to metadata dictionaries
+            metadata_output = file_output + "_metadata"
+            if metadata_output in self.output_spec().get():
+                outputs[metadata_output] = base_metadata
+
+        return outputs
+
 
 class _NODDITissueFractionInputSpec(BaseInterfaceInputSpec):
-    isovf_image = File(exists=True, mandatory=True)
+    isovf = File(exists=True, mandatory=True)
     mask_image = File(exists=True, mandatory=True)
 
 
 class _NODDITissueFractionOutputSpec(TraitedSpec):
-    tf_image = File()
+    tf = File()
 
 
 class NODDITissueFraction(SimpleInterface):
@@ -229,11 +385,11 @@ class NODDITissueFraction(SimpleInterface):
     output_spec = _NODDITissueFractionOutputSpec
 
     def _run_interface(self, runtime):
-        isovf_image = self.inputs.isovf_image
+        isovf = self.inputs.isovf
         mask_image = self.inputs.mask_image
 
-        tf_image = nim.math_img("(1 - isovf) * mask", isovf=isovf_image, mask=mask_image)
-        out_file = fname_presuffix(isovf_image, suffix="_tf", newpath=runtime.cwd)
-        tf_image.to_filename(out_file)
-        self._results["tf_image"] = out_file
+        tf_file = nim.math_img("(1 - isovf) * mask", isovf=isovf, mask=mask_image)
+        out_file = fname_presuffix(isovf, suffix="_tf", newpath=runtime.cwd)
+        tf_file.to_filename(out_file)
+        self._results["tf"] = out_file
         return runtime

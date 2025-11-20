@@ -22,36 +22,59 @@ li_file:
         param: li
     metadata:
         Description: LI from a tensor fit
+md:
+    bids:
+        model: tensor
+        param: md
+    metadata:
+        Description: Mean Diffusivity from a tensor fit
+        Model:
+            Description: Custom Python code implementing the formula (ad + (2 * rd)) / 3
 ng_file:
     bids:
         model: mapmri
         param: ng
     metadata:
         Description: Non-Gaussianity from MAPMRI
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
 ngpar_file:
     bids:
         model: mapmri
         param: ngpar
     metadata:
         Description: Non-Gaussianity parallel from MAPMRI
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
 ngperp_file:
     bids:
         model: mapmri
         param: ngperp
     metadata:
         Description: Non-Gaussianity perpendicular from MAPMRI
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
 pa_file:
     bids:
         model: mapmri
         param: pa
     metadata:
         Description: PA from MAPMRI
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
 path_file:
     bids:
         model: mapmri
         param: path
     metadata:
-        Description: PAth from MAPMRI
+        Description: Path from MAPMRI
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
 rd_file:
     bids:
         model: tensor
@@ -64,15 +87,24 @@ rtap_file:
         param: rtap
     metadata:
         Description: Return to axis probability from MAPMRI
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
 rtop_file:
     bids:
         model: mapmri
         param: rtop
     metadata:
         Description: Return to origin probability from MAPMRI
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
 rtpp_file:
     bids:
         model: mapmri
         param: rtpp
     metadata:
         Description: Return to plane probability from MAPMRI
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016

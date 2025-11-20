@@ -10,7 +10,7 @@ nodes:
         # Calculate MSDKI metrics
         msdki: false
         # Calculate microstructural metrics
-        wmti: true
+        wmti: false
         write_fibgz: false
         write_mif: false
     qsirecon_suffix: DIPYDKI

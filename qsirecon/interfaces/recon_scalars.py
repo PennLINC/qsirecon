@@ -30,7 +30,7 @@ from nipype.interfaces.base import (
 )
 
 from ..utils.bids import _get_bidsuris
-from ..utils.misc import load_yaml
+from ..utils.misc import deep_update_dict, load_yaml
 from .bids import get_recon_output_name
 from qsirecon.data import load as load_data
 
@@ -69,8 +69,9 @@ class ReconScalars(SimpleInterface):
 
     def _validate_scalar_metadata(self):
         for input_key in self.inputs.editable_traits():
-            if input_key in self._ignore_traits:
+            if (input_key in self._ignore_traits) or input_key.endswith("_metadata"):
                 continue
+
             if input_key not in self.scalar_metadata:
                 raise Exception(
                     f"No entry found for {input_key} in ``scalar_metadata`` in this class."
@@ -78,7 +79,7 @@ class ReconScalars(SimpleInterface):
 
             # Check that BIDS attributes are defined
             if "bids" not in self.scalar_metadata[input_key]:
-                raise Exception(f"Missing BIDS metadata for {input_key}")
+                raise Exception(f"Missing BIDS entities for {input_key}")
 
     def _run_interface(self, runtime):
         results = []
@@ -92,10 +93,19 @@ class ReconScalars(SimpleInterface):
         file_traits = [
             name for name in self.inputs.editable_traits() if name not in self._ignore_traits
         ]
+        file_traits = [name for name in file_traits if not name.endswith("_metadata")]
 
         for input_name in file_traits:
             if not isdefined(inputs[input_name]):
                 continue
+
+            # Get the run-specific metadata for the scalar file
+            metadata_name = input_name + "_metadata"
+            metadata = inputs.get(metadata_name, {})
+            # account for Undefined or None values
+            if not isdefined(metadata) or metadata is None:
+                metadata = {}
+
             result = self.scalar_metadata[input_name].copy()
             result["path"] = os.path.abspath(inputs[input_name])
             result["qsirecon_suffix"] = self.inputs.qsirecon_suffix
@@ -107,7 +117,13 @@ class ReconScalars(SimpleInterface):
                 raise Exception(
                     f"BIDS fields for {input_name} conflict with source file BIDS {bids_overlap}"
                 )
+
+            # Update the metadata with the run-specific metadata.
+            # This is done recursively across all levels of the metadata dictionary.
+            deep_update_dict(result["metadata"], metadata)
+
             results.append(result)
+
         self._results["scalar_info"] = results
         return runtime
 
@@ -258,6 +274,7 @@ class _TORTOISEReconScalarInputSpec(ReconScalarsInputSpec):
 
 for input_name in tortoise_scalars:
     _TORTOISEReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    _TORTOISEReconScalarInputSpec.add_class_trait(f"{input_name}_metadata", traits.Dict())
 
 
 class TORTOISEReconScalars(ReconScalars):
@@ -275,6 +292,7 @@ class _AMICOReconScalarInputSpec(ReconScalarsInputSpec):
 
 for input_name in amico_scalars:
     _AMICOReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    _AMICOReconScalarInputSpec.add_class_trait(f"{input_name}_metadata", traits.Dict())
 
 
 class AMICOReconScalars(ReconScalars):
@@ -292,6 +310,7 @@ class _DSIStudioReconScalarInputSpec(ReconScalarsInputSpec):
 
 for input_name in dsistudio_scalars:
     _DSIStudioReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    _DSIStudioReconScalarInputSpec.add_class_trait(f"{input_name}_metadata", traits.Dict())
 
 
 class DSIStudioReconScalars(ReconScalars):
@@ -308,6 +327,7 @@ class _DIPYDKIReconScalarInputSpec(ReconScalarsInputSpec):
 
 for input_name in dipy_dki_scalars:
     _DIPYDKIReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    _DIPYDKIReconScalarInputSpec.add_class_trait(f"{input_name}_metadata", traits.Dict())
 
 
 class DIPYDKIReconScalars(ReconScalars):
@@ -325,6 +345,7 @@ class _DIPYMAPMRIReconScalarInputSpec(ReconScalarsInputSpec):
 
 for input_name in dipy_mapmri_scalars:
     _DIPYMAPMRIReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    _DIPYMAPMRIReconScalarInputSpec.add_class_trait(f"{input_name}_metadata", traits.Dict())
 
 
 class DIPYMAPMRIReconScalars(ReconScalars):
@@ -342,6 +363,10 @@ class _BrainSuite3dSHOREReconScalarInputSpec(ReconScalarsInputSpec):
 
 for input_name in brainsuite_3dshore_scalars:
     _BrainSuite3dSHOREReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    _BrainSuite3dSHOREReconScalarInputSpec.add_class_trait(
+        f"{input_name}_metadata",
+        traits.Dict(),
+    )
 
 
 class BrainSuite3dSHOREReconScalars(ReconScalars):
