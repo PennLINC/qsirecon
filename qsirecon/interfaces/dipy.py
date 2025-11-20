@@ -15,7 +15,7 @@ import numpy as np
 from dipy.core.gradients import gradient_table
 from dipy.core.sphere import HemiSphere
 from dipy.io.utils import nifti1_symmat
-from dipy.reconst import dki, dki_micro, dti, mapmri
+from dipy.reconst import dki, dki_micro, dti, mapmri, msdki
 from dipy.segment.mask import median_otsu
 from nipype import logging
 from nipype.interfaces.base import (
@@ -914,6 +914,63 @@ class KurtosisReconstructionMicrostructure(DipyReconInterface):
             out_name = fname_presuffix(
                 self.inputs.dwi_file,
                 suffix="DKIMicro" + metric,
+                newpath=runtime.cwd,
+                use_ext=True,
+            )
+            nb.Nifti1Image(data, dwi_img.affine).to_filename(out_name)
+            self._results[metric] = out_name
+
+        return runtime
+
+
+class _KurtosisReconstructionMSDKIInputSpec(DipyReconInputSpec):
+    kurtosis_clip_min = traits.Float(-0.42857142857142855, usedefault=True)
+    kurtosis_clip_max = traits.Float(10.0, usedefault=True)
+
+
+class _KurtosisReconstructionMSDKIOutputSpec(DipyReconOutputSpec):
+    msd = File()
+    msk = File()
+    di = File()
+    awf = File()
+    mfa = File()
+
+
+class KurtosisReconstructionMSDKI(DipyReconInterface):
+    input_spec = _KurtosisReconstructionMSDKIInputSpec
+    output_spec = _KurtosisReconstructionMSDKIOutputSpec
+
+    def _run_interface(self, runtime):
+        gtab = self._get_gtab()
+        dwi_img = nb.load(self.inputs.dwi_file)
+        dwi_data = dwi_img.get_fdata(dtype="float32")
+        mask_img, mask_array = self._get_mask(dwi_img, gtab)
+
+        # Fit it
+        dkimodel = msdki.MeanDiffusionKurtosisModel(gtab)
+        dkifit = dkimodel.fit(dwi_data, mask_array)
+
+        # MSD MSK DI AWF MFA
+        metric_attrs = {
+            "msd": "msd",
+            "msk": "msk",
+            "di": "smt2di",
+            "awf": "smt2f",
+            "mfa": "smt2uFA",
+        }
+        base_metrics = [
+            "msd",
+            "msk",
+            "di",
+            "awf",
+            "mfa",
+        ]
+        for metric in base_metrics:
+            metric_attr = metric_attrs.get(metric, metric)
+            data = np.nan_to_num(getattr(dkifit, metric_attr).astype("float32"), 0)
+            out_name = fname_presuffix(
+                self.inputs.dwi_file,
+                suffix="MSDKI" + metric,
                 newpath=runtime.cwd,
                 use_ext=True,
             )
