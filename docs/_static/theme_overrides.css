@@ -20,3 +20,59 @@ code.literal {
    color: #404040 !important;
    background-color: #fbfbfb !important;
 }
+
+/* Recon Spec Options custom blocks */
+.recon-spec-list {
+   display: grid;
+   grid-template-columns: 1fr; /* stack vertically */
+   gap: 0.5rem;
+   margin: 0.5rem 0 1rem;
+}
+.recon-spec-item {
+   border: 1px solid #e6e6e6;
+   border-radius: 6px;
+   padding: 0.75rem 0.9rem;
+   background: #fff;
+}
+.recon-spec-item:nth-child(even) {
+   background: #f7f9fc; /* light alternate row color */
+}
+.recon-spec-name {
+   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+   font-weight: 600;
+   font-size: 1.14em;
+   line-height: 1.35;
+   margin-bottom: 0.35rem;
+}
+.recon-spec-type {
+   color: #666;
+   font-weight: 400;
+   font-size: 0.7em;
+   margin-left: 0.25rem;
+}
+.recon-spec-desc {
+   font-size: 0.95em;
+   line-height: 1.5;
+   margin: 0.25rem 0 0.4rem;
+}
+.recon-spec-cli {
+   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+   font-size: 0.9em;
+   color: #444;
+   background: #f8f8f8;
+   display: inline-block;
+   padding: 0.1rem 0.35rem;
+   border-radius: 4px;
+}
+.recon-spec-default {
+   margin-top: 0.35rem;
+   font-size: 0.9em;
+   color: #555;
+}
+.recon-label {
+   font-size: 0.75em;
+   color: #666;
+   text-transform: uppercase;
+   letter-spacing: 0.02em;
+   margin-right: 0.4rem;
+}
