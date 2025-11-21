@@ -11,6 +11,7 @@ from copy import deepcopy
 from glob import glob
 
 import nipype.pipeline.engine as pe
+import numpy as np
 import yaml
 from bids.layout import Query
 from dipy import __version__ as dipy_ver
@@ -76,6 +77,7 @@ def init_single_subject_recon_wf(subject_id):
         Single subject label
     """
     from ..interfaces.bids import DerivativesDataSink
+    from ..interfaces.gradients import _classify_shell_scheme
     from ..interfaces.ingress import QSIPrepDWIIngress
     from ..interfaces.interchange import (
         ReconWorkflowInputs,
@@ -263,6 +265,11 @@ to workflows in *QSIRecon*'s documentation]\
             "dwi_metadata": config.execution.layout.get_metadata(dwi_file),
             **dwi_available_anatomical_data,
         }
+        # Load bval file and determine number of shells
+        bval_file = config.execution.layout.get_bval(dwi_file)
+        bval_data = np.loadtxt(bval_file)
+        shell_scheme = _classify_shell_scheme(bval_data, 5)
+        inputs_dict["shell_scheme"] = shell_scheme
 
         # This node holds all the inputs that will go to the recon workflow.
         # It is the definitive place to check what the input files are
