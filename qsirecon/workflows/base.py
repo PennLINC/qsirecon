@@ -11,7 +11,6 @@ from copy import deepcopy
 from glob import glob
 
 import nipype.pipeline.engine as pe
-import numpy as np
 import yaml
 from bids.layout import Query
 from dipy import __version__ as dipy_ver
