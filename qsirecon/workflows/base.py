@@ -267,8 +267,7 @@ to workflows in *QSIRecon*'s documentation]\
         }
         # Load bval file and determine number of shells
         bval_file = config.execution.layout.get_bval(dwi_file)
-        bval_data = np.loadtxt(bval_file)
-        shell_scheme = _classify_shell_scheme(bval_data, 5)
+        shell_scheme = _classify_shell_scheme(bval_file, 5)
         inputs_dict["shell_scheme"] = shell_scheme
 
         # This node holds all the inputs that will go to the recon workflow.
