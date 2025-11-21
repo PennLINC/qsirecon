@@ -1,6 +1,8 @@
 .. include:: ../links.rst
 
 .. _dki_model:
+=======
+
 
 ##################################
 Diffusional kurtosis imaging (DKI)
