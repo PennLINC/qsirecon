@@ -19,7 +19,7 @@ It established the idea that tensors encode more microstructural information
 than single-direction diffusivities.
 
 **Anisotropy quantification**: Pierpaoli and Basser defined fractional anisotropy 
-(FA), a normalized 0–1 index quantifying how anisotropic (directionally dependent)
+(FA), a normalized 0-1 index quantifying how anisotropic (directionally dependent)
 diffusion is :cite:p:`pierpaolibasser1996`. 
 They demonstrated that earlier methods (diffusion measured in just a few directions) 
 underestimated anisotropy, and introduced rotationally invariant metrics (FA, relative 
@@ -44,7 +44,7 @@ can provide pathologically specific insights :cite:p:`song2002`.
 In a mouse model of demyelination, RD increased with myelin loss while AD stayed 
 constant (since axons remained intact). This seminal finding 
 established that increases in RD selectively indicate myelin degeneration, whereas 
-decreases in AD are more tied to axonal injury – a distinction that has since 
+decreases in AD are more tied to axonal injury - a distinction that has since 
 informed numerous neuroimaging studies of white matter diseases.
 
 DTI Studies Across The Lifespan
@@ -54,7 +54,7 @@ The tensor model has been used extensively in the human brain
 :cite:p:`pierpaoli1996` including developmental neuroscience.
 
 **Neonatal Diffusivity**:  Neil et al. reported neonatal 
-mean diffusivity values 1.5–2 times higher than in adults, with very low 
+mean diffusivity values 1.5-2 times higher than in adults, with very low 
 white-matter anisotropy :cite:p:`neil1998`. This reflects abundant free water and 
 unmyelinated fibers at birth. Diffusivity drops and anisotropy rises steeply 
 in the first postnatal months as the brain matures. Water compartmentalizes and 
@@ -72,8 +72,8 @@ and cognitive abilities in late adolescence.
 
 **Whole Lifespan Trajectories**: Cross-sectional analyses across the lifespan find 
 that FA follows an "inverted U" trajectory: increasing from childhood to a peak 
-in the 20s–30s, then declining with older age. In a sample of 430 subjects 
-aged 8–85 :cite:p:`westlye2010`, fractional anisotropy plateaus by the early 30s 
+in the 20s-30s, then declining with older age. In a sample of 430 subjects 
+aged 8-85 :cite:p:`westlye2010`, fractional anisotropy plateaus by the early 30s 
 and slowly falls thereafter, while mean and radial diffusivities do the reverse 
 (minimal in young adults, then rising in aging). Interestingly, this large study 
 found no simple "last-in-first-out" pattern although late-maturing frontal tracts 
@@ -104,7 +104,7 @@ DTI Methodological Warnings and Caveats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Single Tensor Limitations (Crossing Fibers)**: The basic DTI model assumes one 
-dominant fiber orientation per voxel – an assumption often violated in the brain. 
+dominant fiber orientation per voxel - an assumption often violated in the brain. 
 In regions with crossing, kissing, or branching fibers, the tensor model yields 
 an average that can underestimate anisotropy and obscure fiber directions. For 
 instance, a voxel containing two crossing tracts will show an artificially low 
@@ -132,7 +132,7 @@ histopathology.
 **Partial Volume and Free Water Contamination**: DTI metrics can be skewed by 
 mixing of tissue with free water (cerebrospinal fluid or edema). A small amount 
 of free water in a voxel drastically lowers FA and raises diffusivity, since free 
-water diffusion is fast and isotropic. This can mask true tissue changes – for 
+water diffusion is fast and isotropic. This can mask true tissue changes - for 
 example, a remyelinating lesion adjacent to CSF might still show low FA due to 
 CSF contamination. Methods like the free-water elimination model address this by 
 fitting a two-component model :cite:p:`pierpaoli2004`, 
@@ -157,15 +157,16 @@ artifacts.
 
 **Acquisition and Analysis Choices**: The choice of diffusion gradient directions 
 and b-value can influence DTI metrics. A minimal 6-direction tensor encoding is 
-insufficient for reliable quantitative work – more directions (20–30+) are 
+insufficient for reliable quantitative work - more directions (20-30+) are 
 recommended to stabilize FA/MD measures and reduce variability :cite:p:`jones2004-hs`.
 Similarly, moderate b-values (~1000 s/mm²) are typically chosen to balance SNR and 
-sensitivity; very high b-values can introduce bias in tensor-fitting, due to higher sensitivity to non-Gaussian diffusion -- and 
-require other models, such as DKI. During analysis, image alignment (registration) 
+sensitivity; very high b-values can introduce bias in tensor-fitting,
+due to higher sensitivity to non-Gaussian diffusion -- 
+and require other models, such as DKI. During analysis, image alignment (registration) 
 and smoothing can also introduce caveats: misregistration across subjects can 
 blur tract-specific values, and heavy smoothing can artificially decrease FA 
 in partial volume voxels. The key caveat is that DTI analyses involve many 
-processing steps, each of which must be done carefully – otherwise, errors can 
+processing steps, each of which must be done carefully - otherwise, errors can 
 propagate and lead to incorrect conclusions. Community guidelines and 
 detailed "pitfall" checklists (e.g., :cite:p:`jones2010`) are valuable 
 resources to ensure methodological rigor in DTI studies.

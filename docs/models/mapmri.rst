@@ -1,5 +1,7 @@
 .. include:: ../links.rst
 
+.. _mapmri_model:
+
 ######################################
 Mean Apparent Propagator MRI (MAP-MRI)
 ######################################
@@ -7,7 +9,8 @@ Mean Apparent Propagator MRI (MAP-MRI)
 MAP-MRI Foundational Papers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**MAP-MRI Framework and Novel Diffusion Metrics**: :cite:t:`ozarslan2013` introduced MAP-MRI as a comprehensive 3D 
+**MAP-MRI Framework and Novel Diffusion Metrics**: 
+:cite:t:`ozarslan2013` introduced MAP-MRI as a comprehensive 3D 
 q-space model that fits the diffusion signal with Hermite basis functions, 
 enabling the direct computation of the ensemble average propagator in voxel-wise 
 fashion :cite:p:`ozarslan2013`. This foundational work defined new scalar indices 
@@ -51,7 +54,7 @@ axon diameter from AxCaliber, neurite density from NODDI) by using
 the regularized MAP signal as a starting point.
 
 **Derivatives and Extensions**: Collectively, these foundational works established 
-the MAP-MRI model and its key derivative metrics. They set the stage for MAP-MRI’s 
+the MAP-MRI model and its key derivative metrics. They set the stage for MAP-MRI's 
 adoption in advanced neuroimaging by defining how to obtain scalar maps of mean 
 squared displacement (MSD) and q-space inverse variance (QIV, measures of diffusion 
 dispersion), Laplacian norm (quantifying propagator roughness for regularization), 
@@ -62,8 +65,9 @@ and interpretable for general use.
 MAP-MRI Studies Across The Lifespan
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**White Matter Maturation vs. Aging**: In white matter, MAP-MRI indices have 
-highlighted distinct patterns of change. Propagator anisotropy (PA) – 
+**White Matter Maturation vs. Aging**: 
+In white matter, MAP-MRI indices have highlighted distinct patterns of change. 
+Propagator anisotropy (PA) – 
 a microscale analog of anisotropy – typically peaks in early-to-mid adulthood 
 and then decreases with advanced age, indicating a loss of fiber organization 
 and coherence in aging white matter :cite:p:`bouhrara2023`. Conversely, the non-Gaussianity (NG) of 
@@ -154,24 +158,25 @@ tissue's NG and RTOP values (see also
 
 **Comparison with Other Models**: Another caveat is how MAP-MRI metrics relate 
 to more familiar diffusion metrics. There is often moderate correlation between 
-MAP-MRI indices and DTI/DKI indices (e.g., PA correlates with FA, NG correlates 
-with mean kurtosis), meaning they are not independent. However, MAP-MRI can 
-capture extremes where DTI fails (e.g., very complex fiber regions or very 
+MAP-MRI indices and :ref:`DTI <dti_model>`/:ref:`DKI <dki_model>` 
+indices (e.g., PA correlates with FA, NG correlates 
+with mean kurtosis), meaning they are not independent. However, MAP-MRI can potentially
+capture extremes where :ref:`DTI <dti_model>` fails (e.g., very complex fiber regions or very 
 restrictive environments). Still, when a simpler model explains the data well 
 (like in a single fiber population), MAP-MRI might not offer significantly 
-different insights, and could even fit noise. It's best used when diffusion 
+different insights. It's best used when diffusion 
 data are sufficiently rich (multi-shell, high b) and the tissue complexity 
 merits a detailed characterization. In situations with limited data or very 
 homogeneous fiber architecture, simpler models might be more parsimonious.
 
 **Best Practices**: In summary, general neuroimaging users applying MAP-MRI 
 should (a) ensure high-quality, multi-shell diffusion acquisitions (and be 
-cautious with fast imaging techniques that haven’t been validated for propagator 
+cautious with fast imaging techniques that haven't been validated for propagator 
 analysis), (b) use available regularization and constraints to obtain physically 
 plausible propagators, (c) consider quantifying the uncertainty of the resulting 
 metrics (e.g., via bootstrap or repeated scans) especially for clinical or 
 single-subject interpretations, and (d) avoid over-interpreting the metrics in 
-isolation – where possible, integrate MAP-MRI findings with orthogonal measures 
+isolation. Where possible, integrate MAP-MRI findings with other measures 
 (DTI, myelin imaging, etc.) for a more reliable understanding of the underlying biology.
 
 

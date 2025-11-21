@@ -1,5 +1,7 @@
 .. include:: ../links.rst
 
+.. _noddi_model:
+
 ##########################################################
 Neurite Orientation Dispersion and Density Imaging (NODDI)
 ##########################################################
