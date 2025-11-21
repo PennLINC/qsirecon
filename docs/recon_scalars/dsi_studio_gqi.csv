@@ -1,20 +1,20 @@
-gqi,gfa,Generalized Fractional Anisotropy from a GQI fit
-gqi,iso,Isotropic Diffusion from a GQI fit
-gqi,qa,Quantitative Anisotropy from a GQI fit
-gqi,rdi,Restricted diffusion imagimg from a GQI fit
-gqi,nrdi02L,Non-restricted diffusion at 0.2 diffusion sampling length from a GQI fit
-gqi,nrdi04L,Non-restricted diffusion at 0.4 diffusion sampling length from a GQI fit
-gqi,nrdi06L,Non-restricted diffusion at 0.6 diffusion sampling length from a GQI fit
-tensor,ad,Axial Diffusivity (first eigenvalue) from a tensor fit
-tensor,fa,Radial Diffusivity from a tensor fit
-tensor,ha,Helix Angle from a tensor fit
-tensor,md,Mean Diffusivity from a tensor fit
-tensor,rd,Radial Diffusivity from a tensor fit
-tensor,rd1,Lambda 2 (second eigenvalue) from a tensor fit
-tensor,rd2,Lambda 3 (third eigenvalue) from a tensor fit
-tensor,txx,Tensor fit txx
-tensor,txy,Tensor fit txy
-tensor,txz,Tensor fit txz
-tensor,tyy,Tensor fit tyy
-tensor,tyz,Tensor fit tyz
-tensor,tzz,Tensor fit tzz
+gqi,gfa,Yes,Yes,Generalized Fractional Anisotropy from a GQI fit
+gqi,iso,Yes,Yes,Isotropic Diffusion from a GQI fit
+gqi,qa,Yes,Yes,Quantitative Anisotropy from a GQI fit
+gqi,rdi,Yes,Yes,Restricted diffusion imagimg from a GQI fit
+gqi,nrdi02L,No,Yes,Non-restricted diffusion at 0.2 diffusion sampling length from a GQI fit
+gqi,nrdi04L,No,Yes,Non-restricted diffusion at 0.4 diffusion sampling length from a GQI fit
+gqi,nrdi06L,No,Yes,Non-restricted diffusion at 0.6 diffusion sampling length from a GQI fit
+tensor,ad,Yes,Yes,Axial Diffusivity (first eigenvalue) from a tensor fit
+tensor,fa,Yes,Yes,Radial Diffusivity from a tensor fit
+tensor,ha,Yes,Yes,Helix Angle from a tensor fit
+tensor,md,Yes,Yes,Mean Diffusivity from a tensor fit
+tensor,rd,Yes,Yes,Radial Diffusivity from a tensor fit
+tensor,rd1,Yes,Yes,Lambda 2 (second eigenvalue) from a tensor fit
+tensor,rd2,Yes,Yes,Lambda 3 (third eigenvalue) from a tensor fit
+tensor,txx,Yes,Yes,Tensor fit txx
+tensor,txy,Yes,Yes,Tensor fit txy
+tensor,txz,Yes,Yes,Tensor fit txz
+tensor,tyy,Yes,Yes,Tensor fit tyy
+tensor,tyz,Yes,Yes,Tensor fit tyz
+tensor,tzz,Yes,Yes,Tensor fit tzz
