@@ -230,15 +230,15 @@ Additionally, a number of anisotropy scalar images are produced such as QA, GFA 
 Scalar Maps
 -----------
 .. csv-table::
-   :header: "Model", "Parameter", "Description"
+   :header: "Model", "Parameter", "Single Shell", "Multi Shell", "Description"
    :file: recon_scalars/dsi_studio_gqi.csv
-   :widths: 15, 10, 30
+   :widths: 15, 10, 10, 10, 30
 
 Other Outputs
 -------------
 .. csv-table::
    :header: "File Name", "Description"
-   :file: nonscalars/dsistudio_gqi.csv
+   :file: nonscalars/dsi_studio_gqi.csv
    :widths: 15, 30
 
 
@@ -268,15 +268,15 @@ an AutoTrackGQI.csv file.
 Scalar Maps
 -----------
 .. csv-table::
-   :header: "Model", "Parameter", "Description"
+   :header: "Model", "Parameter", "Single Shell", "Multi Shell", "Description"
    :file: recon_scalars/dsi_studio_gqi.csv
-   :widths: 15, 10, 30
+   :widths: 15, 10, 10, 10, 30
 
 Other Outputs
 -------------
 .. csv-table::
    :header: "File Name", "Description"
-   :file: nonscalars/dsistudio_autotrack.csv
+   :file: nonscalars/dsi_studio_autotrack.csv
    :widths: 15, 30
 
 

@@ -1,3 +1,2 @@
 \*_connectivity.mat,MATLAB format mat file containing connectivity matrices for all the selected atlases. This is an hdf5-format file and can be read using ``scipy.io.matlab.loadmat`` in Python. 
-\*space-ACPC|T1w\*_dwimap.fib.gz,DSI Studio fib format containing the GQI ODFs used for AutoTrack. 
-\*space-ACPC|T1w\*_dwimap.map.gz,Mapping file produced by DSI Studio.
+\*space-ACPC|T1w\*_dwimap.fib.gz,DSI Studio fib format containing the GQI ODFs used for AutoTrack. This also contains all of the scalar maps for use with tracking.

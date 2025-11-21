@@ -686,7 +686,15 @@ def init_dsi_studio_export_wf(
         "rd",
         "gfa",
         "iso",
+        "rdi",
     ]
+    if inputs_dict.get("shell_scheme") == "multishell":
+        scalar_names += [
+            "nrdi02L",
+            "nrdi04L",
+            "nrdi06L",
+        ]
+
     outputnode = pe.Node(
         niu.IdentityInterface(
             fields=[name + "_file" for name in scalar_names] + ["recon_scalars"]

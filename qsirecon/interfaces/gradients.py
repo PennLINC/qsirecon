@@ -165,16 +165,11 @@ def _parse_shell_selection(requested_bvals, bval_df, max_distance):
 def _find_shells(bvals, max_distance):
 
     import pandas as pd
-    from sklearn.cluster import AgglomerativeClustering
     from sklearn.metrics import silhouette_score
 
     X = bvals.reshape(-1, 1)
-    agg_cluster = AgglomerativeClustering(
-        n_clusters=None,
-        distance_threshold=2 * max_distance,
-        linkage="complete",
-    ).fit(X)
-    shells = agg_cluster.labels_
+    shells = _cluster_bvals(bvals, max_distance)
+    n_clusters = len(np.unique(shells))
 
     # Introduce a new check:
     score = silhouette_score(X, shells)
@@ -183,7 +178,7 @@ def _find_shells(bvals, max_distance):
 
     # Do the same check as mrtrix
     max_shells = np.sqrt(np.sum(bvals > max_distance))
-    if agg_cluster.n_clusters_ > max_shells:
+    if n_clusters > max_shells:
         raise Exception("Too many possible shells detected.")
 
     bval_df = pd.DataFrame({"bvalue": bvals, "assignment": shells})
@@ -195,6 +190,19 @@ def _find_shells(bvals, max_distance):
     bval_df.drop(columns=["assignment"], inplace=True)
 
     return bval_df
+
+
+def _cluster_bvals(bvals, max_distance):
+    """Cluster bvals into shells."""
+    from sklearn.cluster import AgglomerativeClustering
+
+    X = bvals.reshape(-1, 1)
+    agg_cluster = AgglomerativeClustering(
+        n_clusters=None,
+        distance_threshold=2 * max_distance,
+        linkage="complete",
+    ).fit(X)
+    return agg_cluster.labels_
 
 
 class _RemoveDuplicatesInputSpec(BaseInterfaceInputSpec):
@@ -403,3 +411,28 @@ def _select_lines(in_file, out_file, indices):
 
     with open(out_file, "w") as out_f:
         out_f.writelines(new_lines)
+
+
+def _classify_shell_scheme(bval_file, max_distance=5):
+    """Classify a shell scheme into a known type."""
+    from sklearn.metrics import silhouette_score
+
+    bvals = np.loadtxt(bval_file)
+    X = bvals.reshape(-1, 1)
+    shells = _cluster_bvals(bvals, max_distance)
+    n_clusters = len(np.unique(shells))
+
+    # Check if it's a DSI protocol
+    score = silhouette_score(X, shells)
+    if score < 0.8:
+        return "spectrum"
+
+    # Do the same check as mrtrix
+    max_shells = np.sqrt(np.sum(bvals > max_distance))
+    if n_clusters > max_shells:
+        return "spectrum"
+
+    if n_clusters <= 2:
+        return "singleshell"
+    else:
+        return "multishell"

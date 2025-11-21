@@ -1,5 +1,4 @@
 \*_streamlines.tck.gz,One tck.gz per bundle. The bundle represented by this file is specified in the ``bundle-`` tag. 
-\*bundles-DSIStudio\*_scalarstats.csv,Statistics on scalars produced by this workflow 
+\*bundles-DSIStudio\*_scalarstats.tsv,Statistics on scalars produced by this workflow 
 \*bundles-DSIStudio\*_tdistats.tsv,Statistics on streamline density in voxels
 \*space-ACPC|T1w\*_dwimap.fib.gz,DSI Studio fib format containing the GQI ODFs used for AutoTrack. 
-\*space-ACPC|T1w\*_dwimap.map.gz,Mapping file produced by DSI Studio.
