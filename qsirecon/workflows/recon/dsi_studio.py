@@ -686,6 +686,10 @@ def init_dsi_studio_export_wf(
         "rd",
         "gfa",
         "iso",
+        "rdi",
+        "nrdi02L",
+        "nrdi04L",
+        "nrdi06L",
     ]
     outputnode = pe.Node(
         niu.IdentityInterface(

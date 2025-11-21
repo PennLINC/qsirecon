@@ -1,9 +1,13 @@
-gqi,gfa,Generalized Fractional Anisotropy
-gqi,iso,Isotropic Diffusion from GQI
+gqi,gfa,Generalized Fractional Anisotropy from a GQI fit
+gqi,iso,Isotropic Diffusion from a GQI fit
 gqi,qa,Quantitative Anisotropy from a GQI fit
+gqi,rdi,Restricted diffusion imagimg from a GQI fit
+gqi,nrdi02L,Non-restricted diffusion at 0.2 diffusion sampling length from a GQI fit
+gqi,nrdi04L,Non-restricted diffusion at 0.4 diffusion sampling length from a GQI fit
+gqi,nrdi06L,Non-restricted diffusion at 0.6 diffusion sampling length from a GQI fit
 tensor,ad,Axial Diffusivity (first eigenvalue) from a tensor fit
 tensor,fa,Radial Diffusivity from a tensor fit
-tensor,ha,Helix Angle from tensor fit
+tensor,ha,Helix Angle from a tensor fit
 tensor,md,Mean Diffusivity from a tensor fit
 tensor,rd,Radial Diffusivity from a tensor fit
 tensor,rd1,Lambda 2 (second eigenvalue) from a tensor fit
