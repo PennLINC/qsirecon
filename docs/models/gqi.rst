@@ -1,4 +1,4 @@
-.. include:: links.rst
+.. include:: ../links.rst
 
 ####################################
 Generalized q-Sampling Imaging (GQI)
@@ -89,9 +89,8 @@ GQI Methodological Warnings and Caveats
   their biological specificity is still under investigation.
 
 
-**********
 References
-**********
+~~~~~~~~~~
 
 .. bibliography::
    :style: unsrt
