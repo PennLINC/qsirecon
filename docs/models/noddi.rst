@@ -25,7 +25,7 @@ Notably, AMICO does not alter NODDI's metrics; it accelerates their computation.
 **Partial Volume Correction**: 
 A known issue is that CSF partial-volume can lead to underestimation of neurite density in voxels near ventricles or cortex. 
 In 2021, :cite:t:`parker2021not` introduced tissue-fraction-modulated ICVF and ODI, 
-scaling NODDI metrics by the tissue signal fraction (1 - ISOVF) :cite:p:`Zhao2021BrainDevelopment`. 
+scaling NODDI metrics by the tissue signal fraction (1 - ISOVF). 
 This adjustment was shown to remove artifactual group differences that were driven by differing CSF contamination rather than true tissue changes :cite:p:`parker2021not`. 
 Tissue modulated maps are produced by default in QSIRecon.
 
@@ -90,10 +90,10 @@ In reality, these assumptions are often violated:
 gray matter neurites have slower diffusion, 
 pathology can alter compartment diffusivities, 
 and multiple fiber populations can exist. 
-As a result, NODDI parameter estimates may be biased if these conditions aren't met :cite:p:`Zhao2021BrainDevelopment`. 
+As a result, NODDI parameter estimates may be biased if these conditions aren't met :cite:p:`guerrero2019optimizing`. 
 For example, 
 using the default d‖ in cortical gray matter can lead to overestimation of ICVF (since true diffusion is slower).
-Investigators have to adjust this value for different tissues or accept some bias :cite:p:`Zhao2021BrainDevelopment`. 
+Investigators have to adjust this value for different tissues or accept some bias :cite:p:`guerrero2019optimizing`. 
 Simplifying assumptions are necessary to keep NODDI practical, 
 but users should understand they introduce systematic errors in certain contexts.
 
