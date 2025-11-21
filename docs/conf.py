@@ -428,7 +428,6 @@ suppress_warnings = ["image.nonlocal_uri"]
 # -----------------------------------------------------------------------------
 bibtex_bibfiles = [
     "../qsirecon/data/boilerplate.bib",
-    "../qsirecon/data/models.bib",
 ]
 bibtex_style = "unsrt"
 
