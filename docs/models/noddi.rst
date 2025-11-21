@@ -103,10 +103,7 @@ A fundamental challenge with multi-compartment models like NODDI is that differe
 There is a trade-off between neurite density and dispersion, 
 for instance: 
 a voxel with fewer, well-aligned axons can have a similar diffusion profile to one with more axons that are highly dispersed. 
-This can lead to degenerate solutions where the fitting algorithm might converge on one of several "equivalent" parameter sets :cite:p:`jelescu2017design`. 
-In practice, 
-it means NODDI outputs are not always unique, 
-especially if data quality (SNR, number of diffusion directions, b-values) is limited. 
+This can lead to degenerate solutions where the fitting algorithm might converge on one of several "equivalent" parameter sets :cite:p:`jelescu2017design`.
 
 
 **Interpretational Specificity**: 
