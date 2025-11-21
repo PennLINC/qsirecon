@@ -1,5 +1,7 @@
 .. include:: ../links.rst
 
+.. _gqi_model:
+
 ####################################
 Generalized q-Sampling Imaging (GQI)
 ####################################
