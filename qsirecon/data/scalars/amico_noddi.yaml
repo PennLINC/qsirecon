@@ -89,7 +89,8 @@ rmse:
             Description: Neurite Orientation Dispersion and Density Imaging (NODDI)
             URL: https://pubmed.ncbi.nlm.nih.gov/25462697
     figure:
-        vmin: 0
+        vmin: 0%
+        vmax: 98%
 nrmse:
     bids:
         model: noddi
