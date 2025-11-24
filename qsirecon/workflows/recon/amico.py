@@ -38,7 +38,7 @@ def init_amico_noddi_fit_wf(
         Parameters for the NODDI model.
         See :class:`qsirecon.interfaces.amico.NODDI` for more details.
 
-        Additionally, the following parameters are supported::
+        Additionally, the following parameters are supported:
 
         -   ``saveModulatedMaps``: boolean. Whether to save modulated maps for ICVF and ODI.
         -   ``rmse``: boolean. Whether to compute the root mean square error between predicted
