@@ -425,12 +425,12 @@ def _classify_shell_scheme(bval_file, max_distance=5):
     # Check if it's a DSI protocol
     score = silhouette_score(X, shells)
     if score < 0.8:
-        return "spectrum"
+        return "non-shelled"
 
     # Do the same check as mrtrix
     max_shells = np.sqrt(np.sum(bvals > max_distance))
     if n_clusters > max_shells:
-        return "spectrum"
+        return "non-shelled"
 
     if n_clusters <= 2:
         return "singleshell"
