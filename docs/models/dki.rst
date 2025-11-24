@@ -80,5 +80,5 @@ References
 **********
 
 .. bibliography::
-   :style: uns
+   :style: unsrt
    :cited:
