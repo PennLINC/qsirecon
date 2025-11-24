@@ -224,9 +224,39 @@ dkimicro_trace:
         model: dkimicro
         param: trace
     metadata:
-        Description: DKI Microstructural trace
+        Description: DKI Microstructural Trace
         Model:
             Description: Diffusion Kurtosis Microstructural Imaging (DKI-MICRO)
             URL: https://pubmed.ncbi.nlm.nih.gov/34349631/
         ParameterURL: https://pubmed.ncbi.nlm.nih.gov/21699989/
         Units: mm^2/s
+msdki_msd:
+    bids:
+        model: msdki
+        param: msd
+    metadata:
+        Description: MSDKI Mean Signal Diffusivity
+msdki_msk:
+    bids:
+        model: msdki
+        param: msk
+    metadata:
+        Description: MSDKI Mean Signal Kurtosis
+msdki_di:
+    bids:
+        model: msdki
+        param: di
+    metadata:
+        Description: MSDKI intrinsic diffusivity from the mean signal diffusional kurtosis parameters assuming the 2-compartmental spherical mean technique model.
+msdki_awf:
+    bids:
+        model: msdki
+        param: awf
+    metadata:
+        Description: MSDKI Axonal Water Fraction from the mean signal diffusional kurtosis parameters assuming the 2-compartmental spherical mean technique model.
+msdki_mfa:
+    bids:
+        model: msdki
+        param: mfa
+    metadata:
+        Description: MSDKI Microscopic Fractional Anisotropy from the mean signal diffusional kurtosis parameters assuming the 2-compartmental spherical mean technique model.

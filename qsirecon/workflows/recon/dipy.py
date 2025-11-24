@@ -21,6 +21,7 @@ from ...interfaces.dipy import (
     BrainSuiteShoreReconstruction,
     KurtosisReconstruction,
     KurtosisReconstructionMicrostructure,
+    KurtosisReconstructionMSDKI,
     MAPMRIReconstruction,
 )
 from ...interfaces.interchange import recon_workflow_input_fields
@@ -726,6 +727,12 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
                 "dkimicro_rde",
                 "dkimicro_tortuosity",
                 "dkimicro_trace",
+                # Only if msdki is True
+                "msdki_msd",
+                "msdki_msk",
+                "msdki_di",
+                "msdki_awf",
+                "msdki_mfa",
                 # Aggregated scalars
                 "recon_scalars",
             ]
@@ -742,6 +749,7 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
 
     plot_reports = not config.execution.skip_odf_reports
     micro_metrics = params.pop("wmti", False)
+    msdki_metrics = params.pop("msdki", False)
 
     recon_dki = pe.Node(KurtosisReconstruction(**params), name="recon_dki")
 
@@ -821,6 +829,35 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
                 ('rde', 'dkimicro_rde'),
                 ('tortuosity', 'dkimicro_tortuosity'),
                 ('trace', 'dkimicro_trace'),
+            ]),
+        ])  # fmt:skip
+
+    if msdki_metrics:
+        recon_msdki = pe.Node(
+            KurtosisReconstructionMSDKI(**params),
+            name="recon_msdki",
+        )
+        # Only produce MSDKI metrics if msdki is True
+        workflow.connect([
+            (inputnode, recon_msdki, [
+                ('dwi_file', 'dwi_file'),
+                ('bval_file', 'bval_file'),
+                ('bvec_file', 'bvec_file'),
+                ('dwi_mask', 'mask_file'),
+            ]),
+            (recon_msdki, outputnode, [
+                ('msd', 'msdki_msd'),
+                ('msk', 'msdki_msk'),
+                ('di', 'msdki_di'),
+                ('awf', 'msdki_awf'),
+                ('mfa', 'msdki_mfa'),
+            ]),
+            (recon_msdki, recon_scalars, [
+                ('msd', 'msdki_msd'),
+                ('msk', 'msdki_msk'),
+                ('di', 'msdki_di'),
+                ('awf', 'msdki_awf'),
+                ('mfa', 'msdki_mfa'),
             ]),
         ])  # fmt:skip
 
