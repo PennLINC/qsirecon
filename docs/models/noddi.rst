@@ -128,5 +128,3 @@ References
 **********
 
 .. footbibliography::
-   :style: unsrt
-   :filter: cited
