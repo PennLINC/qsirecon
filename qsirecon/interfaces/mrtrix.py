@@ -403,7 +403,15 @@ class EstimateFOD(MRTrix3Base):
         responses = [
             ("White matter", "wm"),
         ]
+        reference_url = (
+            "https://mrtrix.readthedocs.io/en/latest/"
+            "constrained_spherical_deconvolution/constrained_spherical_deconvolution.html"
+        )
+        description = "Constrained Spherical Deconvolution (CSD)"
         if self.inputs.algorithm in ("msmt_csd", "ss3t"):
+            description = (
+                "Multi-Shell Multi-Tissue (MSMT) Constrained Spherical Deconvolution (CSD)"
+            )
             outputs["gm_odf"] = op.abspath(self._gen_filename("gm_odf"))
             outputs["csf_odf"] = op.abspath(self._gen_filename("csf_odf"))
             responses.extend(
@@ -412,20 +420,18 @@ class EstimateFOD(MRTrix3Base):
                     ("Cerebrospinal fluid", "csf"),
                 ]
             )
+            reference_url = (
+                "https://mrtrix.readthedocs.io/en/latest/"
+                "constrained_spherical_deconvolution/multi_shell_multi_tissue_csd.html"
+            )
         for tissue_desc, tissue_type in responses:
             response_function = getattr(self.inputs, tissue_type + "_txt")
             response_function_data = response_function_to_bids(response_function)
 
             outputs[tissue_type + "_odf_metadata"] = {
                 "Model": {
-                    "Description": (
-                        "Multi-Shell Multi-Tissue (MSMT) "
-                        "Constrained Spherical Deconvolution (CSD)"
-                    ),
-                    "URL": (
-                        "https://mrtrix.readthedocs.io/en/latest/"
-                        "constrained_spherical_deconvolution/multi_shell_multi_tissue_csd.html"
-                    ),
+                    "Description": description,
+                    "URL": reference_url,
                 },
                 "Description": tissue_desc,
                 "NonNegativity": "constrained",
