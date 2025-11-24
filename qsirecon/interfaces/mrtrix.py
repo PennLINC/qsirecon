@@ -401,7 +401,7 @@ class EstimateFOD(MRTrix3Base):
         outputs = self.output_spec().get()
         outputs["wm_odf"] = op.abspath(self._gen_filename("wm_odf"))
         responses = [
-            ("White matter", "wm")
+            ("White matter", "wm"),
         ]
         if self.inputs.algorithm in ("msmt_csd", "ss3t"):
             outputs["gm_odf"] = op.abspath(self._gen_filename("gm_odf"))
