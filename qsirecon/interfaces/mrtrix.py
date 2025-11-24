@@ -428,7 +428,7 @@ class EstimateFOD(MRTrix3Base):
                 "OrientationEncoding": {
                     "EncodingAxis": 3,
                     "Reference": "xyz",
-                    "SphericalHarmonicBasis": "MRtrix3",
+                    "SphericalHarmonicBasis": "mrtrix3",
                     "SphericalHarmonicDegree": self.inputs.max_sh if tissue_type == "wm" else 0,
                     "Type": "sh",
                 },
@@ -492,7 +492,7 @@ class SS3TEstimateFOD(SS3TBase, EstimateFOD):
                 "OrientationEncoding": {
                     "EncodingAxis": 3,
                     "Reference": "xyz",
-                    "SphericalHarmonicBasis": "MRtrix3",
+                    "SphericalHarmonicBasis": "mrtrix3",
                     "SphericalHarmonicDegree": 8 if tissue_type == "wm" else 0,
                     "Type": "sh",
                 },
