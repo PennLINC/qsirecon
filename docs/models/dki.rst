@@ -81,4 +81,4 @@ References
 
 .. bibliography::
    :style: unsrt
-   :cited:
+   :filter: docname in docnames
