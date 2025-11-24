@@ -149,11 +149,13 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
     Inputs
     ------
     - qsirecon multi shell results (data/DSDTI_fmap)
+    - custom atlases (data/custom_atlases)
     """
     TEST_NAME = "mrtrix_singleshell_ss3t_noact"
 
     dataset_dir = download_test_data("singleshell_output", data_dir)
     dataset_dir = os.path.join(dataset_dir, "qsiprep")
+    custom_atlases_dir = download_test_data("custom_atlases", data_dir)
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -166,7 +168,9 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
         "--recon-spec=mrtrix_singleshell_ss3t_noACT",
         "--atlases",
         "AAL116",
+        "carpet",
         "--report-output-level=subject",
+        f"--datasets={custom_atlases_dir}",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -399,6 +403,38 @@ def test_autotrack(data_dir, output_dir, working_dir):
 
 
 @pytest.mark.integration
+@pytest.mark.dsi_studio_gqi_recon
+def test_dsi_studio_gqi_recon(data_dir, output_dir, working_dir):
+    """Test the DSI Studio GQI recon workflow
+    All supported reconstruction workflows get tested
+    Inputs
+    ------
+    - qsirecon multi shell results (data/DSDTI_fmap)
+    """
+    TEST_NAME = "dsi_studio_gqi_recon"
+
+    dataset_dir = download_test_data("multishell_output", data_dir)
+    # XXX: Having to modify dataset_dirs is suboptimal.
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    out_dir = os.path.join(output_dir, TEST_NAME)
+    work_dir = os.path.join(working_dir, TEST_NAME)
+
+    parameters = [
+        dataset_dir,
+        out_dir,
+        "participant",
+        f"-w={work_dir}",
+        "--sloppy",
+        "--recon-spec=dsi_studio_gqi",
+        "--atlases",
+        "4S156Parcels",
+        "Brainnetome246Ext"
+    ]
+
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
+
+
+@pytest.mark.integration
 @pytest.mark.dipy_mapmri
 def test_dipy_mapmri(data_dir, output_dir, working_dir):
     """Run reconstruction workflow test.
@@ -509,6 +545,9 @@ def test_scalar_mapper(data_dir, output_dir, working_dir):
         "--recon-spec=test_scalar_maps",
         "--output-resolution=3.5",
         "--nthreads=1",
+        "--atlases",
+        "4S156Parcels",
+        "Brainnetome246Ext",
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -653,6 +692,40 @@ def test_tortoise_recon(data_dir, output_dir, working_dir):
     _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
+@pytest.mark.integration
+@pytest.mark.dsi_studio_gqi_recon
+def test_dsi_studio_gqi_recon(data_dir, output_dir, working_dir):
+    """Test the DSI Studio GQI recon workflow
+
+    All supported reconstruction workflows get tested
+
+    Inputs
+    ------
+    - qsirecon multi shell results (data/DSDTI_fmap)
+    """
+    TEST_NAME = "dsi_studio_gqi_recon"
+
+    dataset_dir = download_test_data("multishell_output", data_dir)
+    # XXX: Having to modify dataset_dirs is suboptimal.
+    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    out_dir = os.path.join(output_dir, TEST_NAME)
+    work_dir = os.path.join(working_dir, TEST_NAME)
+
+    parameters = [
+        dataset_dir,
+        out_dir,
+        "participant",
+        f"-w={work_dir}",
+        "--sloppy",
+        "--recon-spec=dsi_studio_gqi",
+        "--atlases",
+        "4S156Parcels",
+        "Brainnetome246Ext",
+    ]
+
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
+
+
 def _run_and_generate(test_name, parameters, test_main=False):
     from qsirecon import config
 
@@ -689,7 +762,6 @@ def _run_and_generate(test_name, parameters, test_main=False):
         write_derivative_description(
             config.execution.bids_dir,
             config.execution.output_dir,
-            atlases=config.execution.atlases,
             dataset_links=config.execution.dataset_links,
         )
 
@@ -731,7 +803,6 @@ def _run_and_generate(test_name, parameters, test_main=False):
             write_derivative_description(
                 config.execution.bids_dir,
                 suffix_dir,
-                atlases=config.execution.atlases,
                 dataset_links=dataset_links,
             )
             write_bidsignore(suffix_dir)

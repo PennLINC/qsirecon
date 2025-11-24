@@ -22,3 +22,9 @@ logs/CITATION.html
 logs/CITATION.md
 logs/CITATION.tex
 sub-PNC
+sub-PNC/ses-1
+sub-PNC/ses-1/dwi
+sub-PNC/ses-1/dwi/sub-PNC_ses-1_acq-realistic_space-ACPC_desc-brain_mask.nii.gz
+sub-PNC/ses-2
+sub-PNC/ses-2/dwi
+sub-PNC/ses-2/dwi/sub-PNC_ses-2_acq-realistic_space-ACPC_desc-brain_mask.nii.gz

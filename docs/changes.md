@@ -1,10 +1,83 @@
 # What's New
 
-## 1.0.0rc1
+## 1.1.1
 
-This is a prerelease for the version that will be used by the HBCD project for their first data release.
+This release fixes a major bug in QSIRecon's handling of multi-session and multi-run datasets.
+When processing multiple sessions or runs in a single QSIRecon call, the reconstruction workflow was being modified in place,
+such that the first session/run was processed correctly, but subsequent sessions/runs were processed with global default values.
+This bug primarily affected custom reconstruction workflows.
+The built-in workflows should be largely unaffected.
 
-We plan to not introduce any backwards-incompatible changes for a while.
+### 🎉 Exciting New Features
+
+* Parcellate scalars and write out brain mask by @tsalo in https://github.com/PennLINC/qsirecon/pull/251
+* Use deltas in DIPY interfaces by @tsalo in https://github.com/PennLINC/qsirecon/pull/259
+
+### 🐛 Bug Fixes
+
+* Upgrade DIPY, pyAFQ by @36000 in https://github.com/PennLINC/qsirecon/pull/235
+* Fix handling of atlas labels with spaces and test custom atlas handling by @tsalo in https://github.com/PennLINC/qsirecon/pull/248
+* Remove background label from atlases before calculating connectivity by @tsalo in https://github.com/PennLINC/qsirecon/pull/249
+* Fix collection of longitudinal anatomical outputs by @tsalo in https://github.com/PennLINC/qsirecon/pull/253
+* Write out ACPC-space scalars from TORTOISE node if estimate_mapmri is False by @tsalo in https://github.com/PennLINC/qsirecon/pull/254
+* Prevent workflow spec dictionary from being modified in place during build process by @tsalo in https://github.com/PennLINC/qsirecon/pull/263
+
+### Other Changes
+
+* Update boilerplate.bib for mrtrix reference by @chiuhoward in https://github.com/PennLINC/qsirecon/pull/239
+* Update descriptions of scalar map parameters by @tsalo in https://github.com/PennLINC/qsirecon/pull/225
+* Generate figure showing scalar maps by @tsalo in https://github.com/PennLINC/qsirecon/pull/246
+* Remove outdated admonition by @tsalo in https://github.com/PennLINC/qsirecon/pull/257
+* Add missing workflows to "which workflows are appropriate" table by @tsalo in https://github.com/PennLINC/qsirecon/pull/258
+* Fix table borders by @tsalo in https://github.com/PennLINC/qsirecon/pull/260
+* Add unused `plot_reports` input to `_KurtosisReconstructionInputSpec` by @tsalo in https://github.com/PennLINC/qsirecon/pull/262
+
+## New Contributors
+* @36000 made their first contribution in https://github.com/PennLINC/qsirecon/pull/235
+
+**Full Changelog**: https://github.com/PennLINC/qsirecon/compare/1.1.0...1.1.1
+
+
+## 1.1.0
+
+### 🎉 Exciting New Features
+
+* Tissue fraction modulated ICVF and OD maps by @araikes in https://github.com/PennLINC/qsirecon/pull/218
+* Calculate kurtosis microstructure scalars with new `DKI_reconstruction` parameter by @tsalo in https://github.com/PennLINC/qsirecon/pull/223
+
+### Other Changes
+
+* Add `smoothing` and `otsu_threshold` autotrack arguments by @smeisler in https://github.com/PennLINC/qsirecon/pull/219
+* Allow desc entity in recon scalar derivatives by @tsalo in https://github.com/PennLINC/qsirecon/pull/220
+
+## New Contributors
+
+* @araikes made their first contribution in https://github.com/PennLINC/qsirecon/pull/218
+
+**Full Changelog**: https://github.com/PennLINC/qsirecon/compare/1.0.1...1.1.0
+
+## 1.0.1
+
+### 🎉 Exciting New Features
+
+* Add DSIQ5 extrapolation option by @tsalo in https://github.com/PennLINC/qsirecon/pull/214
+
+### 🐛 Bug Fixes
+
+* Clip negative values in extrapolation interfaces by @tsalo in https://github.com/PennLINC/qsirecon/pull/213
+
+### Other Changes
+
+* Fixes small docs typo: "scelar" => "scalar" by @arokem in https://github.com/PennLINC/qsirecon/pull/203
+* Fix FA description in DSIStudio outputs by @smeisler in https://github.com/PennLINC/qsirecon/pull/198
+
+### New Contributors
+
+* @arokem made their first contribution in https://github.com/PennLINC/qsirecon/pull/203
+
+**Full Changelog**: https://github.com/PennLINC/qsirecon/compare/1.0.0...1.0.1
+
+## 1.0.0
 
 ### 🛠 Breaking Changes
 
@@ -89,4 +162,4 @@ We plan to not introduce any backwards-incompatible changes for a while.
 * @ameliecr made their first contribution in https://github.com/PennLINC/qsirecon/pull/116
 * @chiuhoward made their first contribution in https://github.com/PennLINC/qsirecon/pull/150
 
-**Full Changelog**: https://github.com/PennLINC/qsirecon/commits/1.0.0rc1
+**Full Changelog**: https://github.com/PennLINC/qsirecon/commits/1.0.0

@@ -10,6 +10,7 @@ Contents
 
    installation
    quickstart
+   models
    builtin_workflows
    building_workflows
    outputs
@@ -18,3 +19,4 @@ Contents
    comparisons
    help
    license
+   api_reference

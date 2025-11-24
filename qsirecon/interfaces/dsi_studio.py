@@ -41,11 +41,7 @@ DSI_STUDIO_TEMPLATES = [
 ]
 
 
-class DSIStudioCommandLineInputSpec(CommandLineInputSpec):
-    num_threads = traits.Int(1, usedefault=True, argstr="--thread_count=%d", nohash=True)
-
-
-class DSIStudioCreateSrcInputSpec(DSIStudioCommandLineInputSpec):
+class DSIStudioCreateSrcInputSpec(CommandLineInputSpec):
     test_trait = traits.Bool()
     input_nifti_file = File(desc="DWI Nifti file", argstr="--source=%s")
     input_dicom_dir = File(
@@ -130,7 +126,7 @@ class DSIStudioCreateSrc(CommandLine):
 
 
 # Step 2 reonstruct ODFs
-class DSIStudioReconstructionInputSpec(DSIStudioCommandLineInputSpec):
+class DSIStudioReconstructionInputSpec(CommandLineInputSpec):
     input_src_file = File(
         desc="DSI Studio src file",
         mandatory=True,
@@ -144,8 +140,7 @@ class DSIStudioReconstructionInputSpec(DSIStudioCommandLineInputSpec):
     grad_dev = File(
         desc="Gradient deviation file", exists=True, copyfile=True, position=-1, argstr="#%s"
     )
-    thread_count = traits.Int(1, usedefault=True, argstr="--thread_count=%d", nohash=True)
-
+    num_threads = traits.Int(1, usedefault=True, argstr="--thread_count=%d", nohash=True)
     dti_no_high_b = traits.Bool(
         True,
         usedefault=True,
@@ -183,13 +178,6 @@ class DSIStudioReconstructionInputSpec(DSIStudioCommandLineInputSpec):
         desc="Check if btable matches nifti orientation (not foolproof)",
     )
 
-    num_fibers = traits.Int(
-        3,
-        usedefault=True,
-        argstr="--num_fiber=%d",
-        desc="number of fiber populations estimated at each voxel",
-    )
-
 
 class DSIStudioReconstructionOutputSpec(TraitedSpec):
     output_fib = File(desc="Output File", exists=True)
@@ -209,9 +197,10 @@ class DSIStudioReconstruction(CommandLine):
     _cmd = "dsi_studio --action=rec "
 
 
-class DSIStudioGQIReconstruction(DSIStudioReconstruction):
-    _cmd = "dsi_studio --action=rec --method=4"
+class DSIStudioGQIReconstruction(CommandLine):
     input_spec = DSIStudioGQIReconstructionInputSpec
+    output_spec = DSIStudioReconstructionOutputSpec
+    _cmd = "dsi_studio --action=rec --method=4"
 
     def _list_outputs(self):
         outputs = self.output_spec().get()
@@ -228,12 +217,12 @@ class DSIStudioGQIReconstruction(DSIStudioReconstruction):
         return outputs
 
 
-class DSIStudioExportInputSpec(DSIStudioCommandLineInputSpec):
+class DSIStudioExportInputSpec(CommandLineInputSpec):
     input_file = File(exists=True, argstr="--source=%s", mandatory=True, copyfile=False)
     to_export = traits.Str(mandatory=True, argstr="--export=%s")
 
 
-class DSIStudioExportOutputSpec(DSIStudioCommandLineInputSpec):
+class DSIStudioExportOutputSpec(TraitedSpec):
     qa_file = File(desc="Exported scalar nifti")
     color_file = File(desc="Exported scalar nifti")
     dti_fa_file = File(desc="Exported scalar nifti")
@@ -284,7 +273,7 @@ class DSIStudioExport(CommandLine):
         return outputs
 
 
-class DSIStudioConnectivityMatrixInputSpec(DSIStudioCommandLineInputSpec):
+class DSIStudioConnectivityMatrixInputSpec(CommandLineInputSpec):
     trk_file = File(exists=True, argstr="--tract=%s", copyfile=False)
     input_fib = File(exists=True, argstr="--source=%s", mandatory=True, copyfile=False)
     fiber_count = traits.Int(xor=["seed_count"], argstr="--fiber_count=%d")
@@ -317,7 +306,7 @@ class DSIStudioConnectivityMatrixInputSpec(DSIStudioCommandLineInputSpec):
     smoothing = traits.CFloat(argstr="--smoothing=%.2f")
     min_length = traits.CInt(argstr="--min_length=%d")
     max_length = traits.CInt(argstr="--max_length=%d")
-    thread_count = traits.Int(1, argstr="--thread_count=%d", usedefault=True, nohash=True)
+    num_threads = traits.Int(1, argstr="--thread_count=%d", usedefault=True, nohash=True)
 
     # Non-command-line arguments
     atlas_name = traits.Str()
@@ -339,11 +328,16 @@ class DSIStudioConnectivityMatrix(CommandLine):
         atlas_name = self.inputs.atlas_name
         atlas_labels_df = pd.read_table(self.inputs.atlas_labels_file)
 
+        atlas_labels_df["index"] = atlas_labels_df["index"].astype(int)
+        if 0 in atlas_labels_df["index"].values:
+            print(f"WARNING: Atlas {atlas_name} has a 0 index. This index will be dropped.")
+            atlas_labels_df = atlas_labels_df.loc[atlas_labels_df["index"] != 0]
+
         # Aggregate the connectivity/network data from DSI Studio
-        official_labels = atlas_labels_df["index"].values.astype(int)
+        official_labels = atlas_labels_df["label"].values
         connectivity_data = {
-            f"atlas_{atlas_name}_region_ids": official_labels,
-            f"atlas_{atlas_name}_region_labels": atlas_labels_df["label"].values,
+            f"atlas_{atlas_name}_region_ids": atlas_labels_df["index"].values,
+            f"atlas_{atlas_name}_region_labels": official_labels,
         }
 
         # Gather the connectivity matrices
@@ -401,11 +395,15 @@ class DSIStudioAtlasGraph(SimpleInterface):
         ifargs.pop("connectivity")
         ifargs.pop("atlas_name")
         ifargs.pop("atlas_labels_file")
-        ifargs["thread_count"] = 1
 
         # Get number of parallel jobs
         num_threads = ifargs.pop("num_threads")
+
+        # Get atlas configs
         atlas_configs = ifargs.pop("atlas_configs")
+
+        # Get number of threads to pass to each job
+        threads_per_atlas = max(1, num_threads // len(atlas_configs))
         workflow = pe.Workflow(name="dsistudio_atlasgraph")
         nodes = []
         merge_mats = pe.Node(niu.Merge(len(atlas_configs)), name="merge_mats")
@@ -420,6 +418,7 @@ class DSIStudioAtlasGraph(SimpleInterface):
                         atlas_name=atlas_name,
                         atlas_labels_file=atlas_config["labels"],
                         connectivity=atlas_config["dwi_resolution_file"],
+                        num_threads=threads_per_atlas,
                         **node_args,
                     ),
                     name=atlas_name,
@@ -457,6 +456,19 @@ class DSIStudioAtlasGraph(SimpleInterface):
 
 
 def _parse_network_file(txtfile):
+    """Parse a DSI Studio network text file into a dictionary.
+
+    Parameters
+    ----------
+    txtfile : str
+        Path to the text file containing network measures.
+
+    Returns
+    -------
+    network_data : dict
+        Dictionary of parsed network measures keyed by measure name.
+    """
+
     with open(txtfile, "r") as f:
         lines = f.readlines()
     network_data = {}
@@ -465,10 +477,12 @@ def _parse_network_file(txtfile):
         tokens = sanitized_line.split("\t")
         measure_name = tokens[0]
         if measure_name == "network_measures":
-            network_data["region_ids"] = [token.split("_")[-1] for token in tokens[1:]]
+            network_data["region_ids"] = tokens[1:]
             continue
+        else:
+            # Make sure that strings don't get cast as floats
+            values = list(map(float, tokens[1:]))
 
-        values = list(map(float, tokens[1:]))
         if len(values) == 1:
             network_data[measure_name] = values[0]
         else:
@@ -478,7 +492,15 @@ def _parse_network_file(txtfile):
 
 
 def _merge_conmats(matfile_lists, outfile):
-    """Merge the many matfiles output by dsi studio and ensure they conform"""
+    """Merge multiple DSI Studio connectivity matfiles into one and ensure they conform.
+
+    Parameters
+    ----------
+    matfile_lists : list of str
+        Paths to matfiles to merge.
+    outfile : str
+        Output path for the combined matfile.
+    """
     connectivity_values = {}
     for matfile in matfile_lists:
         connectivity_values.update(loadmat(matfile))
@@ -494,8 +516,9 @@ def _sanitized_connectivity_matrix(conmat, official_labels):
         conmat : str
             Path to a connectivity matfile from DSI Studio
         official_labels : ndarray (M,)
-            Array of official ROI labels. The matrix in conmat will be reordered to
-            match the ROI labels in this array
+            Array of official ROI labels (i.e., the names of the ROIs).
+            The matrix in conmat will be reordered to match the ROI labels
+            in this array.
 
     Returns:
     --------
@@ -503,20 +526,38 @@ def _sanitized_connectivity_matrix(conmat, official_labels):
             The DSI Studio data reordered to match official_labels
     """
     m = loadmat(conmat)
-    n_atlas_labels = len(official_labels)
-    # Column names are binary strings. Very confusing.
-    column_names = "".join([s.decode("UTF-8") for s in m["name"].squeeze().view("S1")]).split(
-        "\n"
-    )[:-1]
-    matfile_region_ids = np.array([int(name.split("_")[-1]) for name in column_names])
-
-    # Where does each column go? Make an index array
     connectivity = m["connectivity"]
+    n_atlas_labels = len(official_labels)
+
+    # Column names are binary strings
+    column_names = "".join(s.decode("UTF-8") for s in m["name"].squeeze().view("S1")).split("\n")[
+        :-1
+    ]
+
+    matfile_region_ids = np.array(column_names)
     in_this_mask = np.isin(official_labels, matfile_region_ids)
     truncated_labels = official_labels[in_this_mask]
-    assert np.all(truncated_labels == matfile_region_ids)
+
+    if not np.all(truncated_labels == matfile_region_ids):
+        if len(official_labels) == len(matfile_region_ids):
+            LOGGER.warn(
+                "Atlas/matfile string labels mismatch but lengths match — "
+                "falling back to order-based mapping."
+            )
+            # fallback: trust the order, ignore mask
+            new_row = np.arange(len(official_labels))
+            in_this_mask = np.ones_like(official_labels, dtype=bool)
+        else:
+            raise AssertionError("Atlas and matfile label names mismatch and lengths differ.")
+    else:
+        # Direct lookup for string IDs
+        label_to_index = {name: i for i, name in enumerate(official_labels)}
+        try:
+            new_row = np.array([label_to_index[name] for name in matfile_region_ids])
+        except KeyError as e:
+            raise KeyError(f"String region name '{e.args[0]}' not found in atlas labels")
+
     output = np.zeros((n_atlas_labels, n_atlas_labels))
-    new_row = np.searchsorted(official_labels, matfile_region_ids)
 
     for row_index, conn in zip(new_row, connectivity):
         tmp = np.zeros(n_atlas_labels)
@@ -535,38 +576,62 @@ def _sanitized_network_measures(network_txt, official_labels, atlas_name, measur
         network_txt : str
             Path to a network text file from DSI Studio
         official_labels : ndarray (M,)
-            Array of official ROI labels. The matrix in conmat will be reordered to
-            match the ROI labels in this array
+            Array of official ROI labels (i.e., parcel names). The matrix in conmat will be
+            reordered to match the ROI labels in this array
         atlas_name : str
             Name of the atlas used
         measure : the name of the connectivity measure
 
     Returns:
     --------
-        connectivity_matrix : ndarray (M, M)
-            The DSI Studio data reordered to match official_labels
+        network_values : dict
+            Dictionary mapping variable names (e.g., "atlas_{atlas_name}_{measure}_{metric}")
+            to arrays or scalar values reordered to match official_labels
     """
     network_values = {}
     n_atlas_labels = len(official_labels)
     network_data = _parse_network_file(network_txt)
     # Make sure to get the full atlas
-    network_region_ids = np.array(network_data["region_ids"]).astype(int)
-    # If all the regions are found
+    network_regions = network_data["region_ids"]
+
+    network_region_ids = np.array(network_regions)
     in_this_mask = np.isin(official_labels, network_region_ids)
-    if np.all(in_this_mask):
-        truncated_labels = official_labels
+    truncated_labels = official_labels[in_this_mask]
+
+    if not np.all(truncated_labels == network_region_ids):
+        if len(official_labels) == len(network_region_ids):
+            LOGGER.warning(
+                "Atlas/matfile string labels mismatch but lengths match — "
+                "falling back to order-based mapping."
+            )
+            # fallback: trust the order, ignore mask
+            truncated_labels = official_labels
+            in_this_mask = np.ones_like(official_labels, dtype=bool)
+            # Because DSI Studio will create bogus region names for ROI
+            # indices not in the TSV, replace the region ids for the output
+            # file with the official label names if and only if the number
+            # of region ids matches the number of official labels.
+            network_data["region_ids"] = official_labels
+        else:
+            raise AssertionError("Atlas and matfile label names mismatch and lengths differ.")
     else:
         truncated_labels = official_labels[in_this_mask]
-    assert np.all(truncated_labels == network_region_ids)
 
     for net_measure_name, net_measure_data in network_data.items():
         net_measure_name = net_measure_name.replace("-", "_")
         measure_name = measure.replace("-", "_")
         variable_name = f"atlas_{atlas_name}_{measure_name}_{net_measure_name}"
         if type(net_measure_data) is np.ndarray:
-            tmp = np.zeros(n_atlas_labels)
-            tmp[in_this_mask] = net_measure_data
-            network_values[variable_name] = tmp
+            if np.issubdtype(net_measure_data.dtype, np.number):
+                tmp = np.zeros(n_atlas_labels)
+                tmp[in_this_mask] = net_measure_data
+                network_values[variable_name] = tmp
+            else:
+                # Region names are not numeric
+                # Ensure cellstr output type for MATLAB compatibility
+                network_values[variable_name] = np.array(
+                    [[t] for t in net_measure_data], dtype=object
+                )
         else:
             network_values[variable_name] = net_measure_data
 
@@ -586,6 +651,8 @@ class DSIStudioTrackingInputSpec(DSIStudioConnectivityMatrixInputSpec):
         argstr="--output=%s",
         name_source="input_fib",
     )
+    # Unused for now, but could be used to plot reports
+    plot_reports = traits.Bool(False, usedefault=True)
 
 
 class DSIStudioTrackingOutputSpec(TraitedSpec):
@@ -665,7 +732,7 @@ class FixDSIStudioExportHeader(SimpleInterface):
         return runtime
 
 
-class _AutoTrackInputSpec(DSIStudioCommandLineInputSpec):
+class _AutoTrackInputSpec(CommandLineInputSpec):
     fib_file = File(exists=True, mandatory=True, copyfile=False, argstr="--source=%s")
     map_file = File(exists=True, copyfile=False)
     track_id = traits.Str(
@@ -722,6 +789,21 @@ class _AutoTrackInputSpec(DSIStudioCommandLineInputSpec):
     template = traits.Int(
         0, usedefault=True, argstr="--template=%d", desc="Must be 0 for autotrack"
     )
+    smoothing = traits.Float(
+        0,
+        usedefault=False,
+        argstr="--smoothing=%.10f",
+        desc="Smoothing",
+    )
+    otsu_threshold = traits.Float(
+        0.6,
+        usedefault=False,
+        argstr="--otsu_threshold=%.10f",
+        desc="The ratio of otsu threshold to derive default anisotropy threshold.",
+    )
+    num_threads = traits.Int(1, usedefault=True, argstr="--thread_count=%d", nohash=True)
+    # Unused for now, but could be used to plot reports
+    plot_reports = traits.Bool(False, usedefault=True)
     _boilerplate_traits = [
         "track_id",
         "track_voxel_ratio",

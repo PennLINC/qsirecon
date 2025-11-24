@@ -36,7 +36,7 @@ from ...interfaces.dsi_studio import (
 )
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import DSIStudioReconScalars
-from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport
+from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport, ScalarReport
 from ...utils.bids import clean_datasinks
 from ...utils.misc import remove_non_alphanumeric
 from .utils import init_scalar_output_wf
@@ -87,7 +87,7 @@ def init_dsi_studio_recon_wf(inputs_dict, name="dsi_studio_recon", qsirecon_suff
     )
     desc += """\
 Diffusion orientation distribution functions (ODFs) were reconstructed using
-generalized q-sampling imaging (GQI, @yeh2010gqi) with a ratio of mean diffusion
+generalized q-sampling imaging (GQI, @yeh2010) with a ratio of mean diffusion
 distance of %02f in DSI Studio (version %s). """ % (
         romdd,
         DSI_STUDIO_VERSION,
@@ -236,7 +236,7 @@ def init_dsi_studio_tractography_wf(
     desc = (
         "#### DSI Studio Tractography\n\nTractography was run in DSI Studio "
         "(version %s) using a deterministic algorithm "
-        "[@yeh2013deterministic]. " % DSI_STUDIO_VERSION
+        "[@yeh2013]. " % DSI_STUDIO_VERSION
     )
     tracking = pe.Node(
         DSIStudioTracking(num_threads=omp_nthreads, **params),
@@ -376,6 +376,20 @@ def init_dsi_studio_autotrack_wf(
         yield_rate: float
             This rate will be used to terminate tracking early if DSI Studio finds that the
             fiber tracking is not generating results. (default: 0.00001)
+
+        smoothing: float
+            Smoothing serves like a “momentum”. For example, if smoothing is 0, the
+            propagation direction is independent of the previous incoming direction.
+            If the smoothing is 0.5, each moving direction remains 50% of the “momentum”,
+            which is the previous propagation vector. This function makes the tracks
+            appear smoother. In implementation detail, there is a weighting sum on every
+            two consecutive moving directions. For smoothing value 0.2, each subsequent
+            direction has 0.2 weightings contributed from the previous moving direction
+            and 0.8 contributed from the income direction. To disable smoothing set
+            its value to 0. Assign 1.0 to do a random selection of the value from 0% to 95%.
+
+        otsu_threshold: float
+            The ratio of otsu threshold to derive default anisotropy threshold.
 
         model_name: str
             The name of the model used for ODFs (default "gqi")
@@ -682,7 +696,9 @@ def init_dsi_studio_export_wf(
     workflow = pe.Workflow(name=name)
     export = pe.Node(DSIStudioExport(to_export=",".join(scalar_names)), name="export")
     recon_scalars = pe.Node(
-        DSIStudioReconScalars(qsirecon_suffix=qsirecon_suffix), name="recon_scalars", n_procs=1
+        DSIStudioReconScalars(qsirecon_suffix=qsirecon_suffix),
+        name="recon_scalars",
+        n_procs=1,
     )
     fixhdr_nodes = {}
     for scalar_name in scalar_names:
@@ -701,11 +717,39 @@ def init_dsi_studio_export_wf(
         workflow.connect([
             (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
             (recon_scalars, scalar_output_wf, [("scalar_info", "inputnode.scalar_configs")]),
+            (scalar_output_wf, outputnode, [("outputnode.scalar_configs", "recon_scalars")]),
         ])  # fmt:skip
 
-    workflow.connect([
-        (inputnode, export, [('fibgz', 'input_file')]),
-        (recon_scalars, outputnode, [("scalar_info", "recon_scalars")])
-    ])  # fmt:skip
+        plot_scalars = pe.Node(
+            ScalarReport(),
+            name="plot_scalars",
+            n_procs=1,
+        )
+        workflow.connect([
+            (inputnode, plot_scalars, [
+                ("acpc_preproc", "underlay"),
+                ("acpc_seg", "dseg"),
+                ("dwi_mask", "mask_file"),
+            ]),
+            (recon_scalars, plot_scalars, [("scalar_info", "scalar_metadata")]),
+            (scalar_output_wf, plot_scalars, [("outputnode.scalar_files", "scalar_maps")]),
+        ])  # fmt:skip
+
+        ds_report_scalars = pe.Node(
+            DerivativesDataSink(
+                datatype="figures",
+                desc="scalars",
+                suffix="dwimap",
+                dismiss_entities=["dsistudiotemplate"],
+            ),
+            name="ds_report_scalars",
+            run_without_submitting=True,
+        )
+        workflow.connect([(plot_scalars, ds_report_scalars, [("out_report", "in_file")])])
+    else:
+        # If not writing out scalar files, pass the working directory scalar configs
+        workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
+
+    workflow.connect([(inputnode, export, [("fibgz", "input_file")])])
 
     return clean_datasinks(workflow, qsirecon_suffix)

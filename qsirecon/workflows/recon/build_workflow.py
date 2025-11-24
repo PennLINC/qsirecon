@@ -1,3 +1,7 @@
+"""This module contains the functions that build the nipype workflows from the workflow specs."""
+
+from copy import deepcopy
+
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
@@ -25,7 +29,11 @@ from .mrtrix import (
     init_mrtrix_csd_recon_wf,
     init_mrtrix_tractography_wf,
 )
-from .scalar_mapping import init_scalar_to_bundle_wf, init_scalar_to_template_wf
+from .scalar_mapping import (
+    init_scalar_to_atlas_wf,
+    init_scalar_to_bundle_wf,
+    init_scalar_to_template_wf,
+)
 from .steinhardt import init_steinhardt_order_param_wf
 from .tortoise import init_tortoise_estimator_wf
 from .utils import (
@@ -66,6 +74,8 @@ def init_dwi_recon_workflow(
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
     )
+    # We don't want to modify the original workflow spec
+    workflow_spec = deepcopy(workflow_spec)
     # Read nodes from workflow spec, make sure we can implement them
     nodes_to_add = []
     workflow_metadata_nodes = {}
@@ -260,7 +270,10 @@ def workflow_from_spec(inputs_dict, node_spec):
         "params": parameters,
     }
     if node_spec["action"] == "connectivity" and not config.execution.atlases:
-        raise ValueError("Connectivity requires atlases.")
+        raise ValueError(
+            "Connectivity estimation requires atlases. "
+            "Please set the `--atlases` flag in your qsirecon command."
+        )
 
     # DSI Studio operations
     if software == "DSI Studio":
@@ -334,6 +347,8 @@ def workflow_from_spec(inputs_dict, node_spec):
             return init_test_wf(**kwargs)
         if node_spec["action"] == "fod_fib_merge":
             return init_fod_fib_wf(**kwargs)
+        if node_spec["action"] == "parcellate_scalars":
+            return init_scalar_to_atlas_wf(**kwargs)
 
     raise Exception("Unknown node %s" % node_spec)
 

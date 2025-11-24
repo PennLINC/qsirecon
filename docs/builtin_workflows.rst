@@ -17,8 +17,6 @@ for the various steps in that workflow. Workflows can be customized
 (see :ref:`building_workflows`).
 
 
-
-
 *********
 Workflows
 *********
@@ -49,6 +47,7 @@ structural connectivity matrix.
   enough. We strongly recommend the ``hsvs`` segmentation if you're going to
   use ACT. Note that this requires ``--fs-subjects-dir``
 
+
 .. _mrtrix_dwi_outputs:
 
 MRtrix3 DWI Outputs
@@ -59,6 +58,7 @@ These files are located in the ``dwi/`` directories.
    :header: "File Name", "Description"
    :file: nonscalars/mrtrix_dwi.csv
    :widths: 15, 30
+
 
 .. _mrtrix_anatomical_outputs:
 
@@ -71,8 +71,8 @@ These files are located ``anat/`` directories.
    :file: nonscalars/mrtrix_anat.csv
    :widths: 15, 30
 
-.. _mrtrix_multishell_msmt_ACT-hsvs:
 
+.. _mrtrix_multishell_msmt_ACT-hsvs:
 
 ``mrtrix_multishell_msmt_ACT-hsvs``
 ===================================
@@ -122,8 +122,8 @@ This workflow produces :ref:`mrtrix_dwi_outputs` and :ref:`mrtrix_anatomical_out
 
 .. _mrtrix_singleshell_ss3t_ACT-fast:
 
-``mrtrix_multishell_msmt_ACT-fast``
-===================================
+``mrtrix_singleshell_ss3t_ACT-fast``
+====================================
 
 Identical to :ref:`mrtrix_singleshell_ss3t_ACT-hsvs` except FSL's FAST is used for
 tissue segmentation. This workflow is not recommended.
@@ -159,7 +159,7 @@ PyAFQ Outputs
 +------------------------+-------------------------------------------+
 
 
-.. _pyafq_input_trk:
+.. _mrtrix_multishell_msmt_pyafq_tractometry:
 
 ``mrtrix_multishell_msmt_pyafq_tractometry``
 ============================================
@@ -179,16 +179,21 @@ PyAFQ Outputs
 | sub-* (directory)      | PyAFQ results direcrory for each subject  |
 +------------------------+-------------------------------------------+
 
+
 .. _amico_noddi:
 
 ``amico_noddi``
 ===============
 
 This workflow estimates the NODDI :footcite:p:`noddi` model using the implementation from
-AMICO :footcite:p:`amico`. Images with intra-cellular volume fraction (ICVF), isotropic volume
-fraction (ISOVF), orientation dispersion (OD) are written to outputs. Additionally, a DSI
-Studio fib file is created using the peak directions and ICVF as a stand-in for QA to be
+AMICO :footcite:p:`amico` and tissue fraction modulation described in :footcite:p:`parker2021not`.
+Images with (modulated) intra-cellular volume fraction (ICVF), isotropic volume fraction (ISOVF),
+(modulated) orientation dispersion (OD), root mean square error (RMSE) and normalized RMSE are written to outputs.
+Additionally, a DSI Studio fib file is created using the peak directions and ICVF as a stand-in for QA to be
 used for tractography.
+
+Please see Parker 2021 :footcite:p:`parker2021not` for a detailed description of use and application of the
+tissue fraction modulated outputs.
 
 Scalar Maps
 -----------
@@ -204,12 +209,13 @@ Other Outputs
    :file: nonscalars/amico_noddi.csv
    :widths: 15, 30
 
+
 .. _dsi_studio_gqi:
 
 ``dsi_studio_gqi``
 ==================
 
-Here the standard GQI plus deterministic tractography pipeline is used :footcite:p:`yeh2013deterministic`.
+Here the standard GQI plus deterministic tractography pipeline is used :footcite:p:`yeh2013`.
 GQI works on
 almost any imaginable sampling scheme because DSI Studio will internally interpolate the q-space
 data so  symmetry requirements are met. GQI models the water diffusion ODF, so ODF peaks are much
@@ -234,6 +240,7 @@ Other Outputs
    :header: "File Name", "Description"
    :file: nonscalars/dsistudio_gqi.csv
    :widths: 15, 30
+
 
 .. _dsi_studio_autotrack:
 
@@ -304,6 +311,7 @@ Other Outputs
    :file: nonscalars/ss3t_fod_autotrack.csv
    :widths: 15, 30
 
+
 .. _tortoise:
 
 ``TORTOISE``
@@ -325,6 +333,7 @@ Other Outputs
    :header: "File Name", "Description"
    :file: nonscalars/tortoise.csv
    :widths: 15, 30
+
 
 .. _dipy_mapmri:
 
@@ -372,6 +381,7 @@ Other Outputs
    :header: "File Name", "Description"
    :file: nonscalars/dipy_dki.csv
    :widths: 15, 30
+
 
 .. _dipy_3dshore:
 
@@ -434,13 +444,12 @@ Other Outputs
 ``hbcd_scalar_maps``
 ====================
 
-Designed to run on [HBCD](https://hbcdstudy.org/) data, this is also a general-purpose
+Designed to run on `HBCD <https://hbcdstudy.org/>`_ data, this is also a general-purpose
 way to get many multishell-supported fitting methods, including
 
   * :ref:`dipy_dki`
   * :ref:`TORTOISE` (model-MAPMRI)
   * :ref:`TORTOISE` (model-tensor using only b<4000)
-  * :ref:`amico_noddi`
   * :ref:`dsi_studio_gqi`
 
 Bundles are generated using :ref:`dsi_studio_autotrack`.
@@ -462,8 +471,35 @@ Other Outputs
 -------------
 .. csv-table::
    :header: "File Name", "Description"
-   :file: nonscalars/dsistudio_gqi.csv
+   :file: nonscalars/hbcd_scalar_maps.csv
    :widths: 15, 30
+
+
+.. _multishell_scalarfest:
+
+``multishell_scalarfest``
+=========================
+
+This is a general-purpose way to get scalar maps from many multishell-supported fitting methods,
+including:
+
+  * :ref:`dipy_dki`
+  * :ref:`TORTOISE` (model-MAPMRI)
+  * :ref:`TORTOISE` (model-tensor using only b<4000)
+  * :ref:`dsi_studio_gqi`
+  * :ref:`amico_noddi`
+
+Scalar Maps
+-----------
+.. csv-table::
+   :header: "Model", "Parameter", "Description"
+   :file: recon_scalars/multishell_scalarfest.csv
+   :widths: 15, 10, 30
+
+Other Outputs
+-------------
+
+No other outputs are produced.
 
 .. _appropriate_schemes:
 
@@ -474,45 +510,49 @@ Which workflows are appropriate for your dMRI data?
 Most reconstruction workflows will fit a model to the dMRI data. Listed below are
 the model-fitting workflows and which sampling schemes work with them.
 
-+-------------------------------------------+-------------+------------+-----------------+
-| Name                                      | MultiShell  | Cartesian  |   SingleShell   |
-+===========================================+=============+============+=================+
-|:ref:`mrtrix_multishell_msmt_ACT-fast`\*   |     Yes     |    No      |      No         |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`mrtrix_multishell_msmt_ACT-hsvs`     |     Yes     |    No      |      No         |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`mrtrix_multishell_msmt_noACT`        |     Yes     |    No      |      No         |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`mrtrix_singleshell_ss3t_noACT`       |     No      |    No      |      Yes        |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`mrtrix_singleshell_ss3t_ACT-hsvs`    |     No      |    No      |      Yes        |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`mrtrix_singleshell_ss3t_ACT-fast`\*  |     No      |    No      |      Yes        |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`ss3t_fod_autotrack`                  |     Yes     |    No      |      Yes        |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`pyafq_tractometry`                   |     Yes     |    No      |      Yes        |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`pyafq_input_trk`                     |     Yes     |    No      |      Yes        |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`amico_noddi`                         |     Yes     |    No      |      No         |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`TORTOISE`                            |     Yes     |    No      |      No         |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`dsi_studio_gqi`                      |     Yes     |   Yes      |    Yes*         |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`dsi_studio_autotrack`                |     Yes     |   Yes      |    Yes          |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`dipy_mapmri`                         |     Yes     |   Yes      |      No         |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`dipy_dki`                            |     Yes     |    No      |      No         |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`dipy_3dshore`                        |     Yes     |   Yes      |      No         |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`csdsi_3dshore`                       |     Yes     |   Yes      |      No         |
-+-------------------------------------------+-------------+------------+-----------------+
-|:ref:`hbcd_scalar_maps`                    |     Yes     |    No      |      No         |
-+-------------------------------------------+-------------+------------+-----------------+
++------------------------------------------------+-------------+------------+-----------------+
+| Name                                           | MultiShell  | Cartesian  |   SingleShell   |
++================================================+=============+============+=================+
+|:ref:`amico_noddi`                              |     Yes     |    No      |      No         |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`csdsi_3dshore`                            |     Yes     |    Yes     |      No         |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`dipy_3dshore`                             |     Yes     |    Yes     |      No         |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`dipy_dki`                                 |     Yes     |    No      |      No         |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`dipy_mapmri`                              |     Yes     |    Yes     |      No         |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`dsi_studio_autotrack`                     |     Yes     |    Yes     |      Yes        |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`dsi_studio_gqi`                           |     Yes     |    Yes     |      Yes*       |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`hbcd_scalar_maps`                         |     Yes     |    No      |      No         |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`mrtrix_multishell_msmt_ACT-fast`\*        |     Yes     |    No      |      No         |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`mrtrix_multishell_msmt_ACT-hsvs`          |     Yes     |    No      |      No         |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`mrtrix_multishell_msmt_noACT`             |     Yes     |    No      |      No         |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`mrtrix_multishell_msmt_pyafq_tractometry` |     Yes     |    No      |      Yes        |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`mrtrix_singleshell_ss3t_ACT-fast`\*       |     No      |    No      |      Yes        |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`mrtrix_singleshell_ss3t_ACT-hsvs`         |     No      |    No      |      Yes        |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`mrtrix_singleshell_ss3t_noACT`            |     No      |    No      |      Yes        |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`multishell_scalarfest`                    |     Yes     |    No      |      No         |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`pyafq_tractometry`                        |     Yes     |    No      |      Yes        |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`reorient_fslstd`                          |     Yes     |    Yes     |      Yes        |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`ss3t_fod_autotrack`                       |     Yes     |    No      |      Yes        |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`TORTOISE`                                 |     Yes     |    No      |      No         |
++------------------------------------------------+-------------+------------+-----------------+
 
 \* Not recommended
 
@@ -555,7 +595,7 @@ If you use one of them please be sure to cite the relevant publication.
  * ``AAL116``: :footcite:t:`tzourio2002automated`
 
 The *QSIRecon* atlas set can be downloaded directly from
-`box  <https://upenn.box.com/shared/static/8k17yt2rfeqm3emzol5sa0j9fh3dhs0i.xz>`_.
+`box <https://upenn.box.com/shared/static/5k1tvg6soelxdhi9nvrkry6w0z49ctne.xz>`_.
 
 The 4S atlas combines the Schaefer 2018 cortical atlas (version v0143) :footcite:p:`Schaefer_2017`
 at 10 different resolutions (100, 200, 300, 400, 500, 600, 700, 800, 900, and 1000 parcels) with
