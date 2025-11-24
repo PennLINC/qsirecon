@@ -1,60 +1,90 @@
-lapnorm_file:
+lapnorm:
     bids:
         model: mapmri
         param: lapnorm
     metadata:
         Description: Laplacian norm from regularized MAPMRI (MAPL)
-mapcoeffs_file:
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
+mapcoeffs:
     bids:
         model: mapmri
         param: mapcoeffs
     metadata:
         Description: MAPMRI coefficients
-msd_file:
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
+msd:
     bids:
         model: mapmri
         param: msd
     metadata:
-        Description: mean square displacement from MAPMRI
-ng_file:
+        Description: Mean square displacement from MAPMRI
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
+ng:
     bids:
         model: mapmri
         param: ng
     metadata:
         Description: Non-Gaussianity from MAPMRI
-ngpar_file:
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
+ngpar:
     bids:
         model: mapmri
         param: ngpar
     metadata:
         Description: Non-Gaussianity parallel from MAPMRI
-ngperp_file:
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
+ngperp:
     bids:
         model: mapmri
         param: ngperp
     metadata:
         Description: Non-Gaussianity perpendicular from MAPMRI
-qiv_file:
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
+qiv:
     bids:
         model: mapmri
         param: qiv
     metadata:
         Description: q-space inverse variance from MAPMRI
-rtap_file:
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
+rtap:
     bids:
         model: mapmri
         param: rtap
     metadata:
         Description: Return to axis probability from MAPMRI
-rtop_file:
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
+rtop:
     bids:
         model: mapmri
         param: rtop
     metadata:
         Description: Return to origin probability from MAPMRI
-rtpp_file:
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
+rtpp:
     bids:
         model: mapmri
         param: rtpp
     metadata:
         Description: Return to plane probability from MAPMRI
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016

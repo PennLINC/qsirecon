@@ -75,6 +75,7 @@ class TckGenInputSpec(TractographyInputSpec):
             "selected and written to the output file"
         ),
     )
+    downsample = traits.CInt(argstr="-downsample %d")
     n_tracks = traits.Int(desc="NOT supported, do not use")
     quiet = traits.Bool(argstr="-quiet")
 

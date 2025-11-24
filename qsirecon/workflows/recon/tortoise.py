@@ -28,6 +28,7 @@ from qsirecon.interfaces.tortoise import (
     ComputeMAPMRI_NG,
     ComputeMAPMRI_PA,
     ComputeMAPMRI_RTOP,
+    ComputeMDMap,
     ComputeRDMap,
     EstimateMAPMRI,
     EstimateTensor,
@@ -101,8 +102,9 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
         name="recon_scalars",
     )
     omp_nthreads = config.nipype.omp_nthreads
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
     desc = (
-        "#### TORTOISE Reconstruction\n\n"
+        f"\n\n#### TORTOISE Reconstruction{suffix_str}\n\n"
         + "Methods implemented in TORTOISE (@tortoisev3) were used for reconstruction. "
     )
 
@@ -156,6 +158,12 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
         desc += build_documentation(compute_dt_ad) + " "
         compute_dt_li = pe.Node(ComputeLIMap(), name="compute_dt_li")
         desc += build_documentation(compute_dt_li) + " "
+        compute_md = pe.Node(ComputeMDMap(), name="compute_md")
+        desc += (
+            "\n\nTORTOISE does not compute a mean diffusivity. "
+            "Therefore, mean diffusivity was separately computed from the axial diffusivity and "
+            "radial diffusivity using custom Python code. "
+        )
         workflow.connect([
             (tortoise_convert, estimate_tensor, [
                 ("dwi_file", "in_file"),
@@ -177,10 +185,20 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
             (compute_dt_fa, recon_scalars, [("fa_file", "fa_file")]),
             (compute_dt_rd, recon_scalars, [("rd_file", "rd_file")]),
             (compute_dt_ad, recon_scalars, [("ad_file", "ad_file")]),
-            (compute_dt_li, recon_scalars, [("li_file", "li_file")])
+            (compute_dt_li, recon_scalars, [("li_file", "li_file")]),
+            (compute_dt_ad, compute_md, [("ad_file", "ad")]),
+            (compute_dt_rd, compute_md, [("rd_file", "rd")]),
+            (compute_md, recon_scalars, [
+                ("md", "md"),
+                ("md_metadata", "md_metadata"),
+            ]),
         ])  # fmt:skip
 
     mapmri_opts = params.get("estimate_mapmri", {})
+    if tensor_opts and mapmri_opts:
+        # Split up the sections
+        desc += "\n\n"
+
     if mapmri_opts:
         # MAPMRI-only steps
         # Set deltas if we have them. Prevent only one from being defined

@@ -321,9 +321,14 @@ def _build_parser(**kwargs):
     g_fs.add_argument(
         "--fs-license-file",
         metavar="PATH",
-        type=Path,
-        help="Path to FreeSurfer license key file. Get it (for free) by registering "
-        "at https://surfer.nmr.mgh.harvard.edu/registration.html",
+        type=IsFile,
+        help=(
+            "Path to FreeSurfer license key file. Get it (for free) by registering "
+            "at https://surfer.nmr.mgh.harvard.edu/registration.html. "
+            "If not provided, QSIRecon will look for a license file in the following "
+            "locations: 1) ``$FS_LICENSE`` environment variable; "
+            "and 2) the ``$FREESURFER_HOME/license.txt`` path."
+        ),
     )
 
     # arguments for reconstructing QSI data
@@ -470,6 +475,24 @@ def parse_args(args=None, namespace=None):
                 opts.datasets["qsirecon4s"] = Path(
                     os.getenv("QSIRECON_ATLASPACK", "/atlas/AtlasPack")
                 )
+
+    if opts.fs_license_file is not None:
+        opts.fs_license_file = opts.fs_license_file.resolve()
+        if opts.fs_license_file.is_file():
+            os.environ["FS_LICENSE"] = str(opts.fs_license_file)
+
+        else:
+            parser.error(f"Freesurfer license DNE: {opts.fs_license_file}.")
+    else:
+        fs_home = os.getenv("FREESURFER_HOME")
+        fs_license_file = os.environ.get("FS_LICENSE", str(Path(fs_home) / "license.txt"))
+        if not Path(fs_license_file).is_file():
+            parser.error(
+                "A valid FreeSurfer license file is required. "
+                "Set the FS_LICENSE environment variable or use the '--fs-license-file' flag."
+            )
+
+        os.environ["FS_LICENSE"] = str(fs_license_file)
 
     config.execution.log_level = int(max(25 - 5 * opts.verbose_count, logging.DEBUG))
     config.from_dict(vars(opts), init=["nipype"])

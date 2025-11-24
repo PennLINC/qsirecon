@@ -87,7 +87,7 @@ def init_dsi_studio_recon_wf(inputs_dict, name="dsi_studio_recon", qsirecon_suff
     )
     desc += """\
 Diffusion orientation distribution functions (ODFs) were reconstructed using
-generalized q-sampling imaging (GQI, @yeh2010gqi) with a ratio of mean diffusion
+generalized q-sampling imaging (GQI, @yeh2010) with a ratio of mean diffusion
 distance of %02f in DSI Studio (version %s). """ % (
         romdd,
         DSI_STUDIO_VERSION,
@@ -236,7 +236,7 @@ def init_dsi_studio_tractography_wf(
     desc = (
         "#### DSI Studio Tractography\n\nTractography was run in DSI Studio "
         "(version %s) using a deterministic algorithm "
-        "[@yeh2013deterministic]. " % DSI_STUDIO_VERSION
+        "[@yeh2013]. " % DSI_STUDIO_VERSION
     )
     tracking = pe.Node(
         DSIStudioTracking(num_threads=omp_nthreads, **params),
@@ -686,7 +686,15 @@ def init_dsi_studio_export_wf(
         "rd",
         "gfa",
         "iso",
+        "rdi",
     ]
+    if inputs_dict.get("shell_scheme") == "multishell":
+        scalar_names += [
+            "nrdi02L",
+            "nrdi04L",
+            "nrdi06L",
+        ]
+
     outputnode = pe.Node(
         niu.IdentityInterface(
             fields=[name + "_file" for name in scalar_names] + ["recon_scalars"]

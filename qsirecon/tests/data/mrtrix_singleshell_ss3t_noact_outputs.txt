@@ -45,8 +45,10 @@ sub-PNC
 sub-PNC/dwi
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-AAL116_dseg.mif.gz
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-AAL116_dseg.nii.gz
+sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-AAL116_desc-mrtrix_dseg.txt
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-AAL116_dseg.txt
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-carpet_dseg.mif.gz
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-carpet_dseg.nii.gz
+sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-carpet_desc-mrtrix_dseg.txt
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-carpet_dseg.txt
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_desc-brain_mask.nii.gz

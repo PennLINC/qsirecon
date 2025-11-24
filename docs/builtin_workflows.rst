@@ -123,7 +123,7 @@ This workflow produces :ref:`mrtrix_dwi_outputs` and :ref:`mrtrix_anatomical_out
 .. _mrtrix_singleshell_ss3t_ACT-fast:
 
 ``mrtrix_singleshell_ss3t_ACT-fast``
-===================================
+====================================
 
 Identical to :ref:`mrtrix_singleshell_ss3t_ACT-hsvs` except FSL's FAST is used for
 tissue segmentation. This workflow is not recommended.
@@ -215,7 +215,7 @@ Other Outputs
 ``dsi_studio_gqi``
 ==================
 
-Here the standard GQI plus deterministic tractography pipeline is used :footcite:p:`yeh2013deterministic`.
+Here the standard GQI plus deterministic tractography pipeline is used :footcite:p:`yeh2013`.
 GQI works on
 almost any imaginable sampling scheme because DSI Studio will internally interpolate the q-space
 data so  symmetry requirements are met. GQI models the water diffusion ODF, so ODF peaks are much
@@ -230,15 +230,15 @@ Additionally, a number of anisotropy scalar images are produced such as QA, GFA 
 Scalar Maps
 -----------
 .. csv-table::
-   :header: "Model", "Parameter", "Description"
+   :header: "Model", "Parameter", "Single Shell", "Multi Shell", "Description"
    :file: recon_scalars/dsi_studio_gqi.csv
-   :widths: 15, 10, 30
+   :widths: 15, 10, 10, 10, 30
 
 Other Outputs
 -------------
 .. csv-table::
    :header: "File Name", "Description"
-   :file: nonscalars/dsistudio_gqi.csv
+   :file: nonscalars/dsi_studio_gqi.csv
    :widths: 15, 30
 
 
@@ -268,15 +268,15 @@ an AutoTrackGQI.csv file.
 Scalar Maps
 -----------
 .. csv-table::
-   :header: "Model", "Parameter", "Description"
+   :header: "Model", "Parameter", "Single Shell", "Multi Shell", "Description"
    :file: recon_scalars/dsi_studio_gqi.csv
-   :widths: 15, 10, 30
+   :widths: 15, 10, 10, 10, 30
 
 Other Outputs
 -------------
 .. csv-table::
    :header: "File Name", "Description"
-   :file: nonscalars/dsistudio_autotrack.csv
+   :file: nonscalars/dsi_studio_autotrack.csv
    :widths: 15, 30
 
 
@@ -595,7 +595,7 @@ If you use one of them please be sure to cite the relevant publication.
  * ``AAL116``: :footcite:t:`tzourio2002automated`
 
 The *QSIRecon* atlas set can be downloaded directly from
-`box  <https://upenn.box.com/shared/static/8k17yt2rfeqm3emzol5sa0j9fh3dhs0i.xz>`_.
+`box <https://upenn.box.com/shared/static/5k1tvg6soelxdhi9nvrkry6w0z49ctne.xz>`_.
 
 The 4S atlas combines the Schaefer 2018 cortical atlas (version v0143) :footcite:p:`Schaefer_2017`
 at 10 different resolutions (100, 200, 300, 400, 500, 600, 700, 800, 900, and 1000 parcels) with

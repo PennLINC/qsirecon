@@ -7,3 +7,6 @@ scalarstats:
         Description: |
             MAPMRI scalars summarized within WM bundles. The name of the method
             used to create the bundles is specified after ``bundles-``.
+        Model:
+            Description: Mean Apparent Propagator MRI (MAPMRI) with Laplacian regularization
+            URL: https://doi.org/10.1016/j.neuroimage.2013.04.016
