@@ -32,32 +32,52 @@ def init_amico_noddi_fit_wf(
 ):
     """Reconstruct NODDI scalars using AMICO.
 
-    Inputs
+    Parameters
+    ----------
+    params : dict
+        Parameters for the NODDI model.
+        See :class:`qsirecon.interfaces.amico.NODDI` for more details.
 
-        *qsirecon outputs*
+        Additionally, the following parameters are supported::
+
+        -   ``saveModulatedMaps``: boolean. Whether to save modulated maps for ICVF and ODI.
+        -   ``rmse``: boolean. Whether to compute the root mean square error between predicted
+            and measured signal.
+        -   ``nrmse``: boolean. Whether to compute the normalized root mean square error between
+            the predicted and measured signal (normalized by the mean of the measured signal).
+        -   ``plot_reports``: boolean. Whether to plot reports for the NODDI model.
+
+    Inputs
+    ------
+    *qsirecon outputs*
 
     Outputs
+    -------
+    directions
+        Image of directions
+    icvf
+        Voxelwise ICVF.
+    od
+        Voxelwise Orientation Dispersion
+    isovf
+        Voxelwise ISOVF
+    modulated_icvf
+        Voxelwise modulated ICVF (ICVF * (1 - ISOVF))
+    modulated_od
+        Voxelwise modulated Orientation Dispersion  (OD * (1 - ISOVF))
+    rmse
+        Voxelwise root mean square error between predicted and measured signal
+    nrmse
+        Voxelwise normalized root mean square error between predicted and measured signal
+    config
+        Pickle file with model configurations in it
+    fibgz
 
-        directions
-            Image of directions
-        icvf
-            Voxelwise ICVF.
-        od
-            Voxelwise Orientation Dispersion
-        isovf
-            Voxelwise ISOVF
-        modulated_icvf
-            Voxelwise modulated ICVF (ICVF * (1 - ISOVF))
-        modulated_od
-            Voxelwise modulated Orientation Dispersion  (OD * (1 - ISOVF))
-        rmse
-            Voxelwise root mean square error between predicted and measured signal
-        nrmse
-            Voxelwise normalized root mean square error between predicted and measured signal
-        config
-            Pickle file with model configurations in it
-        fibgz
-
+    See Also
+    --------
+    :class:`qsirecon.interfaces.amico.NODDI`
+    :class:`qsirecon.interfaces.amico.NODDITissueFraction`
+    :class:`qsirecon.interfaces.amico.AMICOReconScalars`
     """
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields + ["odf_rois"]),
