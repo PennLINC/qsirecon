@@ -400,15 +400,17 @@ class EstimateFOD(MRTrix3Base):
     def _list_outputs(self):
         outputs = self.output_spec().get()
         outputs["wm_odf"] = op.abspath(self._gen_filename("wm_odf"))
+        responses = [
+            ("White matter", "wm")
+        ]
         if self.inputs.algorithm in ("msmt_csd", "ss3t"):
             outputs["gm_odf"] = op.abspath(self._gen_filename("gm_odf"))
             outputs["csf_odf"] = op.abspath(self._gen_filename("csf_odf"))
-
-        for tissue_desc, tissue_type in (
-            ("White matter", "wm"),
-            ("Gray matter", "gm"),
-            ("Cerebrospinal fluid", "csf"),
-        ):
+            responses.extend([
+                ("Gray matter", "gm"),
+                ("Cerebrospinal fluid", "csf"),
+            ])
+        for tissue_desc, tissue_type, lmax in responses:
             response_function = getattr(self.inputs, tissue_type + "_txt")
             response_function_data = response_function_to_bids(response_function)
 
