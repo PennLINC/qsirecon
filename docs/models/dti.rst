@@ -183,4 +183,4 @@ References
 
 .. bibliography::
    :style: unsrt
-   :filter: cited
+   :filter: docname in docnames
