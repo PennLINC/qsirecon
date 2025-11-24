@@ -123,7 +123,7 @@ This workflow produces :ref:`mrtrix_dwi_outputs` and :ref:`mrtrix_anatomical_out
 .. _mrtrix_singleshell_ss3t_ACT-fast:
 
 ``mrtrix_singleshell_ss3t_ACT-fast``
-===================================
+====================================
 
 Identical to :ref:`mrtrix_singleshell_ss3t_ACT-hsvs` except FSL's FAST is used for
 tissue segmentation. This workflow is not recommended.
@@ -215,7 +215,7 @@ Other Outputs
 ``dsi_studio_gqi``
 ==================
 
-Here the standard GQI plus deterministic tractography pipeline is used :footcite:p:`yeh2013deterministic`.
+Here the standard GQI plus deterministic tractography pipeline is used :footcite:p:`yeh2013`.
 GQI works on
 almost any imaginable sampling scheme because DSI Studio will internally interpolate the q-space
 data so  symmetry requirements are met. GQI models the water diffusion ODF, so ODF peaks are much

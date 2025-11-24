@@ -1,11 +1,11 @@
-.. include:: links.rst
+.. include:: ../links.rst
 
-#####################################
+######################################
 Mean Apparent Propagator MRI (MAP-MRI)
-#####################################
+######################################
 
 MAP-MRI Foundational Papers
-===========================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **MAP-MRI Framework and Novel Diffusion Metrics**: :cite:t:`ozarslan2013` introduced MAP-MRI as a comprehensive 3D 
 q-space model that fits the diffusion signal with Hermite basis functions, 
@@ -60,7 +60,7 @@ and directional metrics addressed early limitations, making MAP-MRI more robust
 and interpretable for general use.
 
 MAP-MRI Studies Across The Lifespan
-===================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **White Matter Maturation vs. Aging**: In white matter, MAP-MRI indices have 
 highlighted distinct patterns of change. Propagator anisotropy (PA) – 
@@ -87,7 +87,7 @@ more significant age-related remodeling :cite:p:`bouhrara2023`.
 
 
 MAP-MRI Methodological Warnings and Caveats
-===========================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Data Requirements and Sampling Bias**: :cite:t:`muftuler2021` demonstrated that 
 diffusion propagator metrics, including those derived from MAP-MRI, can be biased 
@@ -174,9 +174,9 @@ single-subject interpretations, and (d) avoid over-interpreting the metrics in
 isolation – where possible, integrate MAP-MRI findings with orthogonal measures 
 (DTI, myelin imaging, etc.) for a more reliable understanding of the underlying biology.
 
-**********
+
 References
-**********
+~~~~~~~~~~
 
 .. bibliography::
    :style: unsrt

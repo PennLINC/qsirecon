@@ -1,11 +1,14 @@
-.. include:: links.rst
+.. include:: ../links.rst
+
+
+.. _dti_model:
 
 ##############################
 Diffusion tensor imaging (DTI)
 ##############################
 
 DTI Foundational Papers
-=======================
+~~~~~~~~~~~~~~~~~~~~~~~
 
 **DTI Concept Introduction**: Basser et al. introduced DTI as a new modeling 
 framework that computes a Gaussian diffusion tensor per voxel, yielding eigenvalues 
@@ -45,7 +48,7 @@ decreases in AD are more tied to axonal injury – a distinction that has since
 informed numerous neuroimaging studies of white matter diseases.
 
 DTI Studies Across The Lifespan
-===============================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The tensor model has been used extensively in the human brain 
 :cite:p:`pierpaoli1996` including developmental neuroscience.
@@ -98,7 +101,7 @@ executive function decline in many studies, highlighting DTI's value in tracking
 brain aging and its cognitive consequences.
 
 DTI Methodological Warnings and Caveats
-=======================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **Single Tensor Limitations (Crossing Fibers)**: The basic DTI model assumes one 
 dominant fiber orientation per voxel – an assumption often violated in the brain. 
@@ -156,7 +159,7 @@ artifacts.
 and b-value can influence DTI metrics. A minimal 6-direction tensor encoding is 
 insufficient for reliable quantitative work – more directions (20–30+) are 
 recommended to stabilize FA/MD measures and reduce variability :cite:p:`jones2004-hs`.
- Similarly, moderate b-values (~1000 s/mm²) are typically chosen to balance SNR and 
+Similarly, moderate b-values (~1000 s/mm²) are typically chosen to balance SNR and 
 sensitivity; very high b-values can introduce bias in tensor-fitting, due to higher sensitivity to non-Gaussian diffusion -- and 
 require other models, such as DKI. During analysis, image alignment (registration) 
 and smoothing can also introduce caveats: misregistration across subjects can 
@@ -167,9 +170,8 @@ propagate and lead to incorrect conclusions. Community guidelines and
 detailed "pitfall" checklists (e.g., :cite:p:`jones2010`) are valuable 
 resources to ensure methodological rigor in DTI studies.
 
-**********
 References
-**********
+~~~~~~~~~~
 
 .. bibliography::
    :style: unsrt
