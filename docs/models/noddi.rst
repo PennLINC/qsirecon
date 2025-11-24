@@ -127,6 +127,6 @@ NODDI is best used to compare groups or conditions, rather than to obtain exact 
 References
 **********
 
-.. bibliography::
+.. footbibliography::
    :style: unsrt
    :filter: cited
