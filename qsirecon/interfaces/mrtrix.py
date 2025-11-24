@@ -410,7 +410,7 @@ class EstimateFOD(MRTrix3Base):
                 ("Gray matter", "gm"),
                 ("Cerebrospinal fluid", "csf"),
             ])
-        for tissue_desc, tissue_type, lmax in responses:
+        for tissue_desc, tissue_type in responses:
             response_function = getattr(self.inputs, tissue_type + "_txt")
             response_function_data = response_function_to_bids(response_function)
 
