@@ -65,7 +65,7 @@ The entry for this in the ``"nodes"`` list could look like:
 *QSIRecon* figures out which software to use based on the values specified
 for ``"software"`` and ``"action"``. The full list of recognized actions
 for each software package can be found in
-:meth:`qsirecon.workflows.build_workflow.workflow_from_spec`.
+:func:`qsirecon.workflows.recon.build_workflow.workflow_from_spec`.
 All nodes must have a ``name`` element, this serves
 as an id for this node and is used for :ref:`passing_downstream`.
 

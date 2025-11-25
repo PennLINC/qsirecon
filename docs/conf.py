@@ -204,8 +204,6 @@ apidoc_excluded_paths += [
     "config.py",
     # Skip problematic utils/shm.py from docs
     "utils/shm.py",
-    # Avoid duplicate/invalid module references from package docstring
-    "workflows/recon/__init__.py",
 ]
 apidoc_separate_modules = True
 apidoc_extra_args = ["--module-first", "-d 1", "-T"]
