@@ -68,7 +68,7 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
             -   method_5tt : str. The method to use for 5tt segmentation.
                 Supported values are "hsvs".
         -   fod : dict. Parameters for dwi2fod. The following keys are supported:
-            Parameters for dwi2fod. The following keys are supported:
+
             -   algorithm : str. The algorithm to use for FOD estimation.
                 Supported values are "msmt_csd" and "ss3t_csd".
             -   max_sh : list. The maximum harmonic degree of the response function.
@@ -97,6 +97,14 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
         FOD SH coefficients for CSF
     fod_sh_mif
         The same file as wm_fod.
+
+    See Also
+    --------
+    :class:`qsirecon.interfaces.mrtrix.MRTrixIngress`
+    :class:`qsirecon.interfaces.mrtrix.EstimateFOD`
+    :class:`qsirecon.interfaces.mrtrix.SS3TDwi2Response`
+    :class:`qsirecon.interfaces.mrtrix.SS3TEstimateFOD`
+    :class:`qsirecon.interfaces.mrtrix.MTNormalize`
     """
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"

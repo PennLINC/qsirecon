@@ -38,8 +38,6 @@ from nipype.interfaces.mrtrix3.utils import Generate5ttInputSpec
 from nipype.utils.filemanip import fname_presuffix, split_filename, which
 from scipy.io.matlab import loadmat, savemat
 
-from ..utils.boilerplate import ConditionalDoc
-
 LOGGER = logging.getLogger("nipype.interface")
 RC3_ROOT = which("average_response")  # Only exists in RC3
 if RC3_ROOT is not None:
@@ -203,9 +201,11 @@ class Dwi2ResponseInputSpec(ResponseSDInputSpec):
         argstr="-lmax %s",
         sep=",",
         desc=(
-            "maximum harmonic degree of response function - single value for "
-            "single-shell response, list for multi-shell response"
+            "Maximum harmonic degree of response function - a single value for "
+            "single-shell response, list for multi-shell response. "
+            "This can be set with fod['max_sh'] in the reconstruction specification."
         ),
+        recon_spec_accessible=True,
     )
 
 
@@ -345,10 +345,6 @@ class EstimateFODInputSpec(MRTrix3BaseInputSpec):
         desc=(
             "FOD algorithm. This can be set with fod['algorithm'] in the reconstruction "
             "specification."
-        ),
-        doc=ConditionalDoc(
-            "FOD algorithm was set to {value}.",
-            if_false="FOD algorithm was set to the default value of 'csd'.",
         ),
         recon_spec_accessible=True,
     )
