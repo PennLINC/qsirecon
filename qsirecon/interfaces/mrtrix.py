@@ -56,6 +56,14 @@ else:
     SS3T_ROOT = os.path.split(_SS3T_EXE)[0]
 
 
+def response_function_to_bids(response_function_file):
+    """Load a response function from MRtrix3 and convert to JSON-compatible format."""
+    response_data = np.loadtxt(response_function_file)
+    if response_data.ndim == 1:
+        return [[value] for value in response_data]
+    return [row.tolist() for row in response_data]
+
+
 class TckGenInputSpec(TractographyInputSpec):
     power = traits.CFloat(argstr="-power %f")
     select = traits.CInt(argstr="-select %d")
@@ -373,8 +381,11 @@ class EstimateFODInputSpec(MRTrix3BaseInputSpec):
 
 class EstimateFODOutputSpec(TraitedSpec):
     wm_odf = File(desc="output WM ODF")
+    wm_odf_metadata = traits.Dict(desc="metadata for the WM FOD")
     gm_odf = File(desc="output GM ODF")
+    gm_odf_metadata = traits.Dict(desc="metadata for the GM FOD")
     csf_odf = File(desc="output CSF ODF")
+    csf_odf_metadata = traits.Dict(desc="metadata for the CSF FOD")
 
 
 class EstimateFOD(MRTrix3Base):
@@ -389,9 +400,54 @@ class EstimateFOD(MRTrix3Base):
     def _list_outputs(self):
         outputs = self.output_spec().get()
         outputs["wm_odf"] = op.abspath(self._gen_filename("wm_odf"))
+        responses = [
+            ("White matter", "wm"),
+        ]
+        reference_url = (
+            "https://mrtrix.readthedocs.io/en/latest/"
+            "constrained_spherical_deconvolution/constrained_spherical_deconvolution.html"
+        )
+        description = "Constrained Spherical Deconvolution (CSD)"
         if self.inputs.algorithm in ("msmt_csd", "ss3t"):
+            description = (
+                "Multi-Shell Multi-Tissue (MSMT) Constrained Spherical Deconvolution (CSD)"
+            )
             outputs["gm_odf"] = op.abspath(self._gen_filename("gm_odf"))
             outputs["csf_odf"] = op.abspath(self._gen_filename("csf_odf"))
+            responses.extend(
+                [
+                    ("Gray matter", "gm"),
+                    ("Cerebrospinal fluid", "csf"),
+                ]
+            )
+            reference_url = (
+                "https://mrtrix.readthedocs.io/en/latest/"
+                "constrained_spherical_deconvolution/multi_shell_multi_tissue_csd.html"
+            )
+        for tissue_desc, tissue_type in responses:
+            response_function = getattr(self.inputs, tissue_type + "_txt")
+            response_function_data = response_function_to_bids(response_function)
+
+            outputs[tissue_type + "_odf_metadata"] = {
+                "Model": {
+                    "Description": description,
+                    "URL": reference_url,
+                },
+                "Description": tissue_desc,
+                "NonNegativity": "constrained",
+                "OrientationEncoding": {
+                    "EncodingAxis": 3,
+                    "Reference": "xyz",
+                    "SphericalHarmonicBasis": "mrtrix3",
+                    "SphericalHarmonicDegree": self.inputs.max_sh if tissue_type == "wm" else 0,
+                    "Type": "sh",
+                },
+                "ParameterURL": (
+                    "http://www.sciencedirect.com/science/article/pii/S1053811911012092"
+                ),
+                "ResponseFunction": {"Coefficients": response_function_data, "Type": "zsh"},
+            }
+
         return outputs
 
     def _format_arg(self, name, spec, value):
@@ -425,6 +481,37 @@ class SS3TEstimateFOD(SS3TBase, EstimateFOD):
         outputs["wm_odf"] = op.abspath(self._gen_filename("wm_odf"))
         outputs["gm_odf"] = op.abspath(self._gen_filename("gm_odf"))
         outputs["csf_odf"] = op.abspath(self._gen_filename("csf_odf"))
+
+        for tissue_desc, tissue_type in (
+            ("White matter", "wm"),
+            ("Gray matter", "gm"),
+            ("Cerebrospinal fluid", "csf"),
+        ):
+            response_function = getattr(self.inputs, tissue_type + "_txt")
+            response_function_data = response_function_to_bids(response_function)
+
+            outputs[tissue_type + "_odf_metadata"] = {
+                "Model": {
+                    "Description": (
+                        "Single-Shell 3-Tissue (SS3T) Constrained Spherical Deconvolution (CSD)"
+                    ),
+                    "URL": "https://3Tissue.github.io",
+                },
+                "Description": tissue_desc,
+                "NonNegativity": "constrained",
+                "OrientationEncoding": {
+                    "EncodingAxis": 3,
+                    "Reference": "xyz",
+                    "SphericalHarmonicBasis": "mrtrix3",
+                    "SphericalHarmonicDegree": 8 if tissue_type == "wm" else 0,
+                    "Type": "sh",
+                },
+                "ParameterURL": (
+                    "http://www.sciencedirect.com/science/article/pii/S1053811911012092"
+                ),
+                "ResponseFunction": {"Coefficients": response_function_data, "Type": "zsh"},
+            }
+
         return outputs
 
     def _gen_filename(self, name):
