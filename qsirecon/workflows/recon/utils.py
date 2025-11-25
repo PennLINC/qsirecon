@@ -78,9 +78,11 @@ def init_discard_repeated_samples_wf(
     )
     workflow = Workflow(name=name)
     workflow.__desc__ = (
-        "Volumes in the dMRI data were discarded if a similar direction/gradient has already been sampled. "
-        "A volume was classified as a duplicate if the distance between its scaled gradient vector and a "
-        f"previous volume's was less than {params.get('distance_cutoff', 5.0)} s / mm^2."
+        "Volumes in the dMRI data were discarded if a similar direction/gradient has already been "
+        "sampled. "
+        "A volume was classified as a duplicate if the distance between its scaled gradient "
+        f"vector and a previous volume's was less than {params.get('distance_cutoff', 5.0)} "
+        "s / mm^2."
     )
 
     discard_repeats = pe.Node(RemoveDuplicates(**params), name="discard_repeats")
