@@ -692,6 +692,8 @@ def test_tortoise_recon(data_dir, output_dir, working_dir):
     _run_and_generate(TEST_NAME, parameters, test_main=False)
 
 
+@pytest.mark.integration
+@pytest.mark.mrtrix3_recon_with_response_functions
 def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir):
     """Test the MRtrix3 recon workflow with response functions.
 
