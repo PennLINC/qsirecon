@@ -7,16 +7,18 @@ Neurite Orientation Dispersion and Density Imaging (NODDI)
 ##########################################################
 
 
+*****************
 NODDI in QSIRecon
-~~~~~~~~~~~~~~~~~
+*****************
 
 QSIRecon supports NODDI reconstruction using the AMICO package: see :func:`~qsirecon.workflows.recon.amico.init_amico_noddi_fit_wf`.
 This is accessible in a reconstruction specification by using a node with ``action: fit_noddi`` and ``software: AMICO``.
 Also see :class:`~qsirecon.interfaces.amico.NODDI`.
 
 
+*************************
 NODDI Foundational Papers
-~~~~~~~~~~~~~~~~~~~~~~~~~
+*************************
 
 **Multi-Compartment Modeling**:
 NODDI is a three-compartment diffusion MRI model that separates intra-neurite, extra-neurite, and CSF water signals.
@@ -40,8 +42,9 @@ This adjustment was shown to remove artifactual group differences that were driv
 Tissue modulated maps are produced by default in QSIRecon.
 
 
+*********************************
 NODDI Studies Across the Lifespan
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*********************************
 
 **Early Development (Infancy)**:
 NODDI studies in infants show dramatic microstructural maturation within the first years of life.
@@ -88,8 +91,9 @@ whereas rising ODI in late life correlates with cognitive slowing and increased 
 Importantly, NDI has been found to be a better predictor of chronological age than standard DTI measures in youth :cite:p:`Genc2017NDIAgeDevelopment`.
 
 
+*****************************************
 NODDI Methodological Warnings and Caveats
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*****************************************
 
 **Model Assumptions and Biases**:
 NODDI relies on several fixed model assumption.
@@ -107,14 +111,12 @@ Investigators have to adjust this value for different tissues or accept some bia
 Simplifying assumptions are necessary to keep NODDI practical,
 but users should understand they introduce systematic errors in certain contexts.
 
-
 **Degeneracy and Parameter Coupling**:
 A fundamental challenge with multi-compartment models like NODDI is that different parameter combinations can produce very similar diffusion signals.
 There is a trade-off between neurite density and dispersion,
 for instance:
 a voxel with fewer, well-aligned axons can have a similar diffusion profile to one with more axons that are highly dispersed.
 This can lead to degenerate solutions where the fitting algorithm might converge on one of several "equivalent" parameter sets :cite:p:`jelescu2017design`.
-
 
 **Interpretational Specificity**:
 While NODDI's indices are more directly linked to microstructure than DTI's, they are not one-to-one with histology.
@@ -130,9 +132,10 @@ mimicking axonal loss.
 NODDI is best used to compare groups or conditions, rather than to obtain exact "neurite counts".
 
 
+**********
 References
-~~~~~~~~~~
+**********
 
 .. bibliography::
    :style: unsrt
-   :filter: cited
+   :filter: docname in docnames
