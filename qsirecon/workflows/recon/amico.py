@@ -59,6 +59,13 @@ def init_amico_noddi_fit_wf(
         fibgz
 
     """
+    workflow = Workflow(name=name)
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    workflow.__desc__ = (
+        f"\n\n#### NODDI Reconstruction{suffix_str}\n\n"
+        "The NODDI model (@noddi) was fit using the AMICO implementation (@amico). "
+    )
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields + ["odf_rois"]),
         name="inputnode",
@@ -83,14 +90,8 @@ def init_amico_noddi_fit_wf(
         name="outputnode",
     )
     omp_nthreads = config.nipype.omp_nthreads
-    workflow = Workflow(name=name)
 
     plot_reports = params.pop("plot_reports", True)
-    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
-    desc = (
-        f"\n\n#### NODDI Reconstruction{suffix_str}\n\n"
-        "The NODDI model (@noddi) was fit using the AMICO implementation (@amico). "
-    )
 
     recon_scalars = pe.Node(
         AMICOReconScalars(
@@ -101,11 +102,11 @@ def init_amico_noddi_fit_wf(
         run_without_submitting=True,
     )
     noddi_fit = pe.Node(NODDI(**params), name="recon_noddi", n_procs=omp_nthreads)
-    desc += build_documentation(noddi_fit) + " "
+    workflow.__desc__ += build_documentation(noddi_fit) + " "
 
     if params.get("saveModulatedMaps", True):
         noddi_tissue_fraction = pe.Node(NODDITissueFraction(), name="noddi_tissue_fraction")
-        desc += (
+        workflow.__desc__ += (
             "AMICO does not save the tissue fraction map. Therefore, "
             "the output tissue fraction map was separately reconstructed using "
             "custom Python code matching the AMICO implementation. "
@@ -263,7 +264,5 @@ def init_amico_noddi_fit_wf(
     else:
         # If not writing out scalar files, pass the working directory scalar configs
         workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
-
-    workflow.__desc__ = desc
 
     return clean_datasinks(workflow, qsirecon_suffix)

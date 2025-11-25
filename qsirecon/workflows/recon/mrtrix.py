@@ -96,6 +96,10 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
 
 
     """
+    workflow = Workflow(name=name)
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    workflow.__desc__ = f"\n\n#### MRtrix3 Reconstruction{suffix_str}\n\n"
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
     )
@@ -114,11 +118,8 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
         ),
         name="outputnode",
     )
-    workflow = Workflow(name=name)
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
-    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
-    desc = f"\n\n#### MRtrix3 Reconstruction{suffix_str}\n\n"
 
     # Response estimation
     response = params.get("response", {})
@@ -139,7 +140,7 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
 
     LOGGER.info("Response configuration: %s", response)
 
-    desc += f"""{tissue_str} fiber response functions were estimated using
+    workflow.__desc__ += f"""{tissue_str} fiber response functions were estimated using
 the {response_algorithm} algorithm. FODs were estimated via constrained
 spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}"""
 
@@ -171,10 +172,10 @@ spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}"""
 
     if fod_algorithm in ("msmt_csd", "csd"):
         estimate_fod = pe.Node(EstimateFOD(**fod), name="estimate_fod", n_procs=omp_nthreads)
-        desc += " Reconstruction was done using MRtrix3 (@mrtrix3)."
+        workflow.__desc__ += " Reconstruction was done using MRtrix3 (@mrtrix3)."
     elif fod_algorithm == "ss3t":
         estimate_fod = pe.Node(SS3TEstimateFOD(**fod), name="estimate_fod", n_procs=omp_nthreads)
-        desc += """ A single-shell-optimized multi-tissue CSD was performed using MRtrix3Tissue
+        workflow.__desc__ += """ A single-shell-optimized multi-tissue CSD was performed using MRtrix3Tissue
 (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
 
     workflow.connect([
@@ -220,7 +221,7 @@ spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}"""
                                           ("gm_normed_odf", "gm_odf"),
                                           ("csf_normed_odf", "csf_odf")])
         ])  # fmt:skip
-        desc += " FODs were intensity-normalized using mtnormalize (@mtnormalize)."
+        workflow.__desc__ += " FODs were intensity-normalized using mtnormalize (@mtnormalize)."
 
     if not config.execution.skip_odf_reports:
         # Make a visual report of the model
@@ -391,8 +392,6 @@ spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}"""
                 workflow.connect(intensity_norm, "inlier_mask",
                                  ds_inlier_mask, "in_file")  # fmt:skip
 
-    workflow.__desc__ = desc
-
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
@@ -424,6 +423,9 @@ def init_global_tractography_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffi
 
 
     """
+    workflow = pe.Workflow(name=name)
+    workflow.__desc__ = "Global tractography was performed using MRtrix3's 'tckglobal' command."
+
     inputnode = pe.Node(
         niu.IdentityInterface(
             fields=recon_workflow_input_fields + ["gm_txt", "wm_txt", "csf_txt"]
@@ -436,9 +438,6 @@ def init_global_tractography_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffi
         ),
         name="outputnode",
     )
-
-    workflow = pe.Workflow(name=name)
-    workflow.__desc__ = "Global tractography was performed using MRtrix3's 'tckglobal' command."
 
     outputnode.inputs.recon_scalars = []
 
@@ -540,6 +539,9 @@ def init_mrtrix_tractography_wf(
 
 
     """
+    workflow = pe.Workflow(name=name)
+    workflow.__desc__ = "Tractography was performed using MRtrix3's 'tckgen' command."
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields + ["fod_sh_mif"]),
         name="inputnode",
@@ -548,9 +550,6 @@ def init_mrtrix_tractography_wf(
         niu.IdentityInterface(fields=["tck_file", "sift_weights", "mu", "recon_scalars"]),
         name="outputnode",
     )
-
-    workflow = pe.Workflow(name=name)
-    workflow.__desc__ = "Tractography was performed using MRtrix3's 'tckgen' command."
 
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads

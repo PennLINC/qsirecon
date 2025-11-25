@@ -25,6 +25,9 @@ from ...utils.bids import clean_datasinks
 def init_conform_dwi_wf(inputs_dict, name="conform_dwi", qsirecon_suffix="", params={}):
     """If data were preprocessed elsewhere, ensure the gradients and images
     conform to LPS+ before running other parts of the pipeline."""
+    workflow = Workflow(name=name)
+    workflow.__desc__ = "The dMRI data were conformed to LPS+ orientation."
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
     )
@@ -32,8 +35,6 @@ def init_conform_dwi_wf(inputs_dict, name="conform_dwi", qsirecon_suffix="", par
         niu.IdentityInterface(fields=["dwi_file", "bval_file", "bvec_file", "b_file"]),
         name="outputnode",
     )
-    workflow = Workflow(name=name)
-    workflow.__desc__ = "The dMRI data were conformed to LPS+ orientation."
 
     conform = pe.Node(ConformDwi(), name="conform_dwi")
     grad_table = pe.Node(MRTrixGradientTable(), name="grad_table")
@@ -60,6 +61,15 @@ def init_discard_repeated_samples_wf(
     params={},
 ):
     """Remove a sample if a similar direction/gradient has already been sampled."""
+    workflow = Workflow(name=name)
+    workflow.__desc__ = (
+        "Volumes in the dMRI data were discarded if a similar direction/gradient has already been "
+        "sampled. "
+        "A volume was classified as a duplicate if the distance between its scaled gradient "
+        f"vector and a previous volume's was less than {params.get('distance_cutoff', 5.0)} "
+        "s / mm^2."
+    )
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
     )
@@ -75,14 +85,6 @@ def init_discard_repeated_samples_wf(
             ]
         ),
         name="outputnode",
-    )
-    workflow = Workflow(name=name)
-    workflow.__desc__ = (
-        "Volumes in the dMRI data were discarded if a similar direction/gradient has already been "
-        "sampled. "
-        "A volume was classified as a duplicate if the distance between its scaled gradient "
-        f"vector and a previous volume's was less than {params.get('distance_cutoff', 5.0)} "
-        "s / mm^2."
     )
 
     discard_repeats = pe.Node(RemoveDuplicates(**params), name="discard_repeats")
@@ -111,6 +113,9 @@ def init_gradient_select_wf(
     params={},
 ):
     """Remove a sample if a similar direction/gradient has already been sampled."""
+    workflow = Workflow(name=name)
+    workflow.__desc__ = "Gradients were selected based on the requested shells."
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
     )
@@ -127,8 +132,6 @@ def init_gradient_select_wf(
         ),
         name="outputnode",
     )
-    workflow = Workflow(name=name)
-    workflow.__desc__ = "Gradients were selected based on the requested shells."
 
     gradient_select = pe.Node(GradientSelect(**params), name="gradient_select")
     workflow.connect([
@@ -153,6 +156,8 @@ def init_scalar_output_wf(
     name="scalar_output_wf",
 ):
     """Write out reconstructed scalar maps."""
+    workflow = Workflow(name=name)
+
     inputnode = pe.Node(
         niu.IdentityInterface(
             fields=[
@@ -168,7 +173,6 @@ def init_scalar_output_wf(
         niu.IdentityInterface(fields=["scalar_files", "scalar_configs"]),
         name="outputnode",
     )
-    workflow = Workflow(name=name)
 
     organize_scalar_data = pe.MapNode(
         OrganizeScalarData(),
@@ -219,17 +223,18 @@ def init_scalar_output_wf(
 
 def init_test_wf(inputs_dict, name="test_wf", qsirecon_suffix="test", params={}):
     """A workflow for testing how derivatives will be saved."""
+    workflow = Workflow(name=name)
+    workflow.__desc__ = (
+        "\n\n#### Testing Workflow\n\nThis workflow tests boilerplate, figures and derivatives."
+    )
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
     )
     outputnode = pe.Node(
         niu.IdentityInterface(fields=["fibgz", "recon_scalars"]), name="outputnode"
     )
-    workflow = Workflow(name=name)
     outputnode.inputs.recon_scalars = []
-    workflow.__desc__ = (
-        "\n\n#### Testing Workflow\n\nThis workflow tests boilerplate, figures and derivatives."
-    )
 
     write_metadata = pe.Node(WriteSidecar(metadata=inputs_dict), name="write_metadata")
     plot_image = pe.Node(TestReportPlot(), name="plot_image")

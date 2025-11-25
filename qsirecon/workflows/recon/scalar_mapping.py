@@ -48,6 +48,9 @@ def init_scalar_to_bundle_wf(inputs_dict, name="scalar_to_bundle", qsirecon_suff
             summary statistics in tsv format
 
     """
+    workflow = Workflow(name=name)
+    workflow.__desc__ = "Scalar NIfTI files were mapped to bundles."
+
     inputnode = pe.Node(
         niu.IdentityInterface(
             fields=recon_workflow_input_fields
@@ -56,8 +59,6 @@ def init_scalar_to_bundle_wf(inputs_dict, name="scalar_to_bundle", qsirecon_suff
         name="inputnode",
     )
     outputnode = pe.Node(niu.IdentityInterface(fields=["bundle_summary"]), name="outputnode")
-    workflow = Workflow(name=name)
-    workflow.__desc__ = "Scalar NIfTI files were mapped to bundles."
 
     bundle_mapper = pe.Node(BundleMapper(**params), name="bundle_mapper")
     ds_bundle_mapper = pe.Node(
@@ -108,6 +109,9 @@ def init_scalar_to_atlas_wf(
         atlas_configs
             Dictionary containing atlas configuration information.
     """
+    workflow = Workflow(name=name)
+    workflow.__desc__ = "Scalar NIfTI files were parcellated using atlases."
+
     input_fields = recon_workflow_input_fields + [
         "recon_scalars",
         "collected_scalars",
@@ -117,8 +121,6 @@ def init_scalar_to_atlas_wf(
         niu.IdentityInterface(fields=input_fields),
         name="inputnode",
     )
-    workflow = Workflow(name=name)
-    workflow.__desc__ = "Scalar NIfTI files were parcellated using atlases."
 
     split_atlas_configs = pe.Node(
         SplitAtlasConfigs(),
@@ -185,6 +187,12 @@ def init_scalar_to_template_wf(
             List of transformed files
 
     """
+    workflow = Workflow(name=name)
+    workflow.__desc__ = (
+        f"Scalar NIfTI files were warped to {inputs_dict['template_output_space']} "
+        "template space."
+    )
+
     inputnode = pe.Node(
         niu.IdentityInterface(
             fields=recon_workflow_input_fields + ["recon_scalars", "collected_scalars"],
@@ -201,11 +209,6 @@ def init_scalar_to_template_wf(
             ],
         ),
         name="outputnode",
-    )
-    workflow = Workflow(name=name)
-    workflow.__desc__ = (
-        f"Scalar NIfTI files were warped to {inputs_dict['template_output_space']} "
-        "template space."
     )
 
     template_mapper = pe.Node(

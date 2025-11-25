@@ -28,6 +28,9 @@ def init_steinhardt_order_param_wf(inputs_dict, name="sop_recon", qsirecon_suffi
         q8_file
 
     """
+    workflow = Workflow(name=name)
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    workflow.__desc__ = f"\n\n#### Steinhardt Order Parameter Calculation{suffix_str}\n\n"
 
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields + ["fod_sh_mif"]),
@@ -38,19 +41,14 @@ def init_steinhardt_order_param_wf(inputs_dict, name="sop_recon", qsirecon_suffi
         name="outputnode",
     )
 
-    workflow = Workflow(name=name)
     sop_order = params.get("order", 8)
-    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
-    desc = f"\n\n#### Steinhardt Order Parameter Calculation{suffix_str}\n\n"
     sh_mif_to_nifti = pe.Node(
         MRConvert(out_file="SH.nii", args="-strides -1,-2,3"), name="sh_mif_to_nifti"
     )
     calc_sop = pe.Node(CalculateSOP(**params), name="calc_sop")
-    desc += """\
-A series of Steinhardt order parameters (up to order %d) were calculated.
-""" % (
-        sop_order
-    )
+    workflow.__desc__ += f"""\
+A series of Steinhardt order parameters (up to order {sop_order}) were calculated.
+"""
 
     workflow.connect([
         (inputnode, sh_mif_to_nifti, [('fod_sh_mif', 'in_file')]),
@@ -78,7 +76,5 @@ A series of Steinhardt order parameters (up to order %d) were calculated.
                 run_without_submitting=True,
             )
             workflow.connect(outputnode, key, sop_sinks[key], 'in_file')  # fmt:skip
-
-    workflow.__desc__ = desc
 
     return clean_datasinks(workflow, qsirecon_suffix)
