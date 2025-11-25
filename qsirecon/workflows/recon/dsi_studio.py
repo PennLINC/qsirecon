@@ -584,6 +584,11 @@ def init_dsi_studio_connectivity_wf(
     plot_reports = not config.execution.skip_odf_reports
 
     workflow = pe.Workflow(name=name)
+    workflow.__desc__ = (
+        "Streamline-based connectivity matrices were calculated using DSI Studio's "
+        "'atlasgraph' command."
+    )
+
     calc_connectivity = pe.Node(
         DSIStudioAtlasGraph(num_threads=omp_nthreads, **params),
         name="calc_connectivity",
@@ -700,6 +705,11 @@ def init_dsi_studio_export_wf(
         name="outputnode",
     )
     workflow = pe.Workflow(name=name)
+    workflow.__desc__ = (
+        "Scalar maps were exported from a DSI Studio fib file into NIfTI files with correct "
+        "headers."
+    )
+
     export = pe.Node(DSIStudioExport(to_export=",".join(scalar_names)), name="export")
     recon_scalars = pe.Node(
         DSIStudioReconScalars(qsirecon_suffix=qsirecon_suffix),

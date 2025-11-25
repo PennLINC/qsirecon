@@ -33,6 +33,8 @@ def init_conform_dwi_wf(inputs_dict, name="conform_dwi", qsirecon_suffix="", par
         name="outputnode",
     )
     workflow = Workflow(name=name)
+    workflow.__desc__ = "The dMRI data were conformed to LPS+ orientation."
+
     conform = pe.Node(ConformDwi(), name="conform_dwi")
     grad_table = pe.Node(MRTrixGradientTable(), name="grad_table")
     workflow.connect([
@@ -75,6 +77,11 @@ def init_discard_repeated_samples_wf(
         name="outputnode",
     )
     workflow = Workflow(name=name)
+    workflow.__desc__ = (
+        "Volumes in the dMRI data were discarded if a similar direction/gradient has already been sampled. "
+        "A volume was classified as a duplicate if the distance between its scaled gradient vector and a "
+        f"previous volume's was less than {params.get('distance_cutoff', 5.0)} s / mm^2."
+    )
 
     discard_repeats = pe.Node(RemoveDuplicates(**params), name="discard_repeats")
     workflow.connect([
@@ -119,6 +126,7 @@ def init_gradient_select_wf(
         name="outputnode",
     )
     workflow = Workflow(name=name)
+    workflow.__desc__ = "Gradients were selected based on the requested shells."
 
     gradient_select = pe.Node(GradientSelect(**params), name="gradient_select")
     workflow.connect([

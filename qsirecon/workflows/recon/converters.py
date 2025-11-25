@@ -49,6 +49,8 @@ def init_mif_to_fibgz_wf(inputs_dict, name="mif_to_fibgz", qsirecon_suffix="", p
     )
     outputnode.inputs.recon_scalars = []
     workflow = Workflow(name=name)
+    workflow.__desc__ = "The MRTrix mif file was converted to a DSI Studio fib file."
+
     convert_to_fib = pe.Node(FODtoFIBGZ(), name="convert_to_fib")
     workflow.connect([
         (inputnode, convert_to_fib, [('fod_sh_mif', 'mif_file')]),
@@ -125,6 +127,9 @@ def init_fod_fib_wf(inputs_dict, name="fod_fib", qsirecon_suffix="", params={}):
     )
     outputnode.inputs.recon_scalars = []
     workflow = Workflow(name=name)
+    workflow.__desc__ = (
+        "The MRTrix FODs were converted to a DSI Studio fib file for the FOD-AutoTrack method."
+    )
 
     # Convert the FOD sh nifti into a valid fib file
     convert_fod_to_fib = pe.Node(FODtoFIBGZ(), name="convert_fod_to_fib")
@@ -173,6 +178,8 @@ def init_qsirecon_to_fsl_wf(inputs_dict, name="qsirecon_to_fsl", qsirecon_suffix
     to_reorient = ["mask_file", "dwi_file", "bval_file", "bvec_file", "recon_scalars"]
     outputnode = pe.Node(niu.IdentityInterface(fields=to_reorient), name="outputnode")
     workflow = Workflow(name=name)
+    workflow.__desc__ = "The QSIRecon outputs were converted to FSL standard orientation."
+
     outputnode.inputs.recon_scalars = []
 
     convert_dwi_to_fsl = pe.Node(ConformDwi(orientation="LAS"), name="convert_to_fsl")

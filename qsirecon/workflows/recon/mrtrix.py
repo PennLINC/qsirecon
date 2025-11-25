@@ -438,6 +438,8 @@ def init_global_tractography_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffi
     )
 
     workflow = pe.Workflow(name=name)
+    workflow.__desc__ = "Global tractography was performed using MRtrix3's 'tckglobal' command."
+
     outputnode.inputs.recon_scalars = []
 
     create_mif = pe.Node(MRTrixIngress(), name="create_mif")
@@ -548,6 +550,8 @@ def init_mrtrix_tractography_wf(
     )
 
     workflow = pe.Workflow(name=name)
+    workflow.__desc__ = "Tractography was performed using MRtrix3's 'tckgen' command."
+
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
     # Resample anat mask
@@ -572,6 +576,8 @@ def init_mrtrix_tractography_wf(
         method_5tt = "hsvs"
 
     if use_5tt:
+        workflow.__desc__ += " 5TT image was used for tractography."
+
         if method_5tt == "hsvs":
             connect_5tt = "qsiprep_5tt_hsvs"
         else:
@@ -579,6 +585,8 @@ def init_mrtrix_tractography_wf(
         workflow.connect(inputnode, connect_5tt, tracking, "act_file")
 
     if use_sift2:
+        workflow.__desc__ += " SIFT2 weights were calculated."
+
         tck_sift2 = pe.Node(SIFT2(**sift_params), name="tck_sift2", n_procs=omp_nthreads)
         workflow.connect([
             (inputnode, tck_sift2, [("fod_sh_mif", "in_fod")]),
@@ -602,7 +610,6 @@ def init_mrtrix_tractography_wf(
             )
             workflow.connect(outputnode, "sift_weights", ds_sift_weights, "in_file")
 
-        if qsirecon_suffix:
             ds_mu_file = pe.Node(
                 DerivativesDataSink(
                     dismiss_entities=("desc",),
@@ -637,7 +644,7 @@ def init_mrtrix_tractography_wf(
 
 def init_mrtrix_connectivity_wf(
     inputs_dict,
-    name="mrtrix_connectiity",
+    name="mrtrix_connectivity",
     params={},
     qsirecon_suffix="",
 ):
@@ -655,6 +662,9 @@ def init_mrtrix_connectivity_wf(
             atlas.
     """
     workflow = pe.Workflow(name=name)
+    workflow.__desc__ = (
+        "Connectivity matrices were calculated using MRtrix3's 'tck2connectome' command."
+    )
 
     inputnode = pe.Node(
         niu.IdentityInterface(
