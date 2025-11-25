@@ -268,7 +268,7 @@ def init_dipy_brainsuite_shore_recon_wf(
             name="ds_bsshore_rtop",
             run_without_submitting=True,
         )
-        workflow.connect([(outputnode, ds_rtop, [('rtop_image', 'in_file')])])
+        workflow.connect([(outputnode, ds_rtop, [("rtop_image", "in_file")])])
 
         ds_coeff = pe.Node(
             DerivativesDataSink(
@@ -279,7 +279,7 @@ def init_dipy_brainsuite_shore_recon_wf(
             name="ds_bsshore_coeff",
             run_without_submitting=True,
         )
-        workflow.connect([(outputnode, ds_coeff, [('shore_coeffs_image', 'in_file')])])
+        workflow.connect([(outputnode, ds_coeff, [("shore_coeffs_image", "in_file")])])
 
         ds_alpha = pe.Node(
             DerivativesDataSink(
@@ -290,7 +290,7 @@ def init_dipy_brainsuite_shore_recon_wf(
             name="ds_bsshore_alpha",
             run_without_submitting=True,
         )
-        workflow.connect([(outputnode, ds_alpha, [('alpha_image', 'in_file')])])
+        workflow.connect([(outputnode, ds_alpha, [("alpha_image", "in_file")])])
 
         ds_r2 = pe.Node(
             DerivativesDataSink(
@@ -301,7 +301,7 @@ def init_dipy_brainsuite_shore_recon_wf(
             name="ds_bsshore_r2",
             run_without_submitting=True,
         )
-        workflow.connect([(outputnode, ds_r2, [('r2_image', 'in_file')])])
+        workflow.connect([(outputnode, ds_r2, [("r2_image", "in_file")])])
 
         ds_cnr = pe.Node(
             DerivativesDataSink(
@@ -312,7 +312,7 @@ def init_dipy_brainsuite_shore_recon_wf(
             name="ds_bsshore_cnr",
             run_without_submitting=True,
         )
-        workflow.connect([(outputnode, ds_cnr, [('cnr_image', 'in_file')])])
+        workflow.connect([(outputnode, ds_cnr, [("cnr_image", "in_file")])])
 
         ds_regl = pe.Node(
             DerivativesDataSink(
@@ -323,7 +323,7 @@ def init_dipy_brainsuite_shore_recon_wf(
             name="ds_bsshore_regl",
             run_without_submitting=True,
         )
-        workflow.connect([(outputnode, ds_regl, [('regularization_image', 'in_file')])])
+        workflow.connect([(outputnode, ds_regl, [("regularization_image", "in_file")])])
 
         if doing_extrapolation:
             ds_extrap_dwi = pe.Node(
@@ -335,7 +335,7 @@ def init_dipy_brainsuite_shore_recon_wf(
                 name="ds_extrap_dwi",
                 run_without_submitting=True,
             )
-            workflow.connect([(outputnode, ds_extrap_dwi, [('dwi_file', 'in_file')])])
+            workflow.connect([(outputnode, ds_extrap_dwi, [("dwi_file", "in_file")])])
 
             ds_extrap_bval = pe.Node(
                 DerivativesDataSink(
@@ -345,7 +345,7 @@ def init_dipy_brainsuite_shore_recon_wf(
                 name="ds_extrap_bval",
                 run_without_submitting=True,
             )
-            workflow.connect([(outputnode, ds_extrap_bval, [('bval_file', 'in_file')])])
+            workflow.connect([(outputnode, ds_extrap_bval, [("bval_file", "in_file")])])
 
             ds_extrap_bvec = pe.Node(
                 DerivativesDataSink(
@@ -355,7 +355,7 @@ def init_dipy_brainsuite_shore_recon_wf(
                 name="ds_extrap_bvec",
                 run_without_submitting=True,
             )
-            workflow.connect([(outputnode, ds_extrap_bvec, [('bvec_file', 'in_file')])])
+            workflow.connect([(outputnode, ds_extrap_bvec, [("bvec_file", "in_file")])])
 
             ds_extrap_b = pe.Node(
                 DerivativesDataSink(
@@ -365,7 +365,7 @@ def init_dipy_brainsuite_shore_recon_wf(
                 name="ds_extrap_b",
                 run_without_submitting=True,
             )
-            workflow.connect([(outputnode, ds_extrap_b, [('b_file', 'in_file')])])
+            workflow.connect([(outputnode, ds_extrap_b, [("b_file", "in_file")])])
 
     return clean_datasinks(workflow, qsirecon_suffix)
 

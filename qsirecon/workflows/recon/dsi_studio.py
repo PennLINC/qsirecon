@@ -153,7 +153,7 @@ distance of {romdd} in DSI Studio (version {DSI_STUDIO_VERSION}). """
             name="ds_gqi_fibgz",
             run_without_submitting=True,
         )
-        workflow.connect([(gqi_recon, ds_gqi_fibgz, [('output_fib', 'in_file')])])
+        workflow.connect([(gqi_recon, ds_gqi_fibgz, [("output_fib", "in_file")])])
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
@@ -262,7 +262,7 @@ def init_dsi_studio_tractography_wf(
             name="ds_" + name,
             run_without_submitting=True,
         )
-        workflow.connect([(tracking, ds_tracking, [('output_trk', 'in_file')])])
+        workflow.connect([(tracking, ds_tracking, [("output_trk", "in_file")])])
 
     return clean_datasinks(workflow, qsirecon_suffix)
 

@@ -69,7 +69,7 @@ def init_mif_to_fibgz_wf(inputs_dict, name="mif_to_fibgz", qsirecon_suffix="", p
             name="ds_fibgz",
             run_without_submitting=True,
         )
-        workflow.connect([(convert_to_fib, ds_fibgz, [('fib_file', 'in_file')])])
+        workflow.connect([(convert_to_fib, ds_fibgz, [("fib_file", "in_file")])])
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
@@ -167,7 +167,7 @@ def init_fod_fib_wf(inputs_dict, name="fod_fib", qsirecon_suffix="", params={}):
             name="ds_fibgz",
             run_without_submitting=True,
         )
-        workflow.connect([(outputnode, ds_fibgz, [('fibgz', 'in_file')])])
+        workflow.connect([(outputnode, ds_fibgz, [("fibgz", "in_file")])])
 
     return clean_datasinks(workflow, qsirecon_suffix)
 

@@ -175,33 +175,41 @@ spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}"""
         workflow.__desc__ += " Reconstruction was done using MRtrix3 (@mrtrix3)."
     elif fod_algorithm == "ss3t":
         estimate_fod = pe.Node(SS3TEstimateFOD(**fod), name="estimate_fod", n_procs=omp_nthreads)
-        workflow.__desc__ += """ A single-shell-optimized multi-tissue CSD was performed using MRtrix3Tissue
-(https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
+        workflow.__desc__ += """ A single-shell-optimized multi-tissue CSD was performed using
+MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
 
     workflow.connect([
-        (estimate_response, estimate_fod, [("wm_file", "wm_txt"),
-                                           ("gm_file", "gm_txt"),
-                                           ("csf_file", "csf_txt")]),
-        (inputnode, create_mif, [("dwi_file", "dwi_file"),
-                                 ("bval_file", "bval_file"),
-                                 ("bvec_file", "bvec_file"),
-                                 ("b_file", "b_file")]),
+        (estimate_response, estimate_fod, [
+            ("wm_file", "wm_txt"),
+            ("gm_file", "gm_txt"),
+            ("csf_file", "csf_txt"),
+        ]),
+        (inputnode, create_mif, [
+            ("dwi_file", "dwi_file"),
+            ("bval_file", "bval_file"),
+            ("bvec_file", "bvec_file"),
+            ("b_file", "b_file"),
+        ]),
         (create_mif, estimate_fod, [("mif_file", "in_file")]),
         (inputnode, estimate_fod, [("dwi_mask", "mask_file")]),
         (create_mif, estimate_response, [("mif_file", "in_file")]),
-        (estimate_response, outputnode, [("wm_file", "wm_txt"),
-                                         ("gm_file", "gm_txt"),
-                                         ("csf_file", "csf_txt")]),
+        (estimate_response, outputnode, [
+            ("wm_file", "wm_txt"),
+            ("gm_file", "gm_txt"),
+            ("csf_file", "csf_txt"),
+        ]),
         (inputnode, estimate_response, [("dwi_mask", "in_mask")])
     ])  # fmt:skip
 
     if not run_mtnormalize:
         workflow.connect([
             # (estimate_fod, plot_peaks, [("wm_odf", "mif_file")]),
-            (estimate_fod, outputnode, [("wm_odf", "fod_sh_mif"),
-                                        ("wm_odf", "wm_odf"),
-                                        ("gm_odf", "gm_odf"),
-                                        ("csf_odf", "csf_odf")])
+            (estimate_fod, outputnode, [
+                ("wm_odf", "fod_sh_mif"),
+                ("wm_odf", "wm_odf"),
+                ("gm_odf", "gm_odf"),
+                ("csf_odf", "csf_odf"),
+            ]),
         ])  # fmt:skip
     else:
         intensity_norm = pe.Node(
@@ -213,13 +221,17 @@ spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}"""
         )
         workflow.connect([
             (inputnode, intensity_norm, [("dwi_mask", "mask_file")]),
-            (estimate_fod, intensity_norm, [("wm_odf", "wm_odf"),
-                                            ("gm_odf", "gm_odf"),
-                                            ("csf_odf", "csf_odf")]),
-            (intensity_norm, outputnode, [("wm_normed_odf", "fod_sh_mif"),
-                                          ("wm_normed_odf", "wm_odf"),
-                                          ("gm_normed_odf", "gm_odf"),
-                                          ("csf_normed_odf", "csf_odf")])
+            (estimate_fod, intensity_norm, [
+                ("wm_odf", "wm_odf"),
+                ("gm_odf", "gm_odf"),
+                ("csf_odf", "csf_odf"),
+            ]),
+            (intensity_norm, outputnode, [
+                ("wm_normed_odf", "fod_sh_mif"),
+                ("wm_normed_odf", "wm_odf"),
+                ("gm_normed_odf", "gm_odf"),
+                ("csf_normed_odf", "csf_odf"),
+            ]),
         ])  # fmt:skip
         workflow.__desc__ += " FODs were intensity-normalized using mtnormalize (@mtnormalize)."
 
@@ -264,8 +276,7 @@ spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}"""
         fod_source, fod_key = (
             (estimate_fod, "wm_odf") if not run_mtnormalize else (intensity_norm, "wm_normed_odf")
         )
-        workflow.connect(fod_source, fod_key,
-                         plot_peaks, "mif_file")  # fmt:skip
+        workflow.connect([(fod_source, plot_peaks, [(fod_key, "mif_file")])])
 
     if qsirecon_suffix:
         model_name = remove_non_alphanumeric(fod_algorithm).lower()
@@ -286,6 +297,7 @@ spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}"""
             (outputnode, ds_wm_odf, [("wm_odf", "in_file")]),
             (estimate_fod, ds_wm_odf, [("wm_odf_metadata", "meta_dict")]),
         ])  # fmt:skip
+
         ds_wm_txt = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=("desc",),
@@ -389,8 +401,7 @@ spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}"""
                     name="ds_inlier_mask",
                     run_without_submitting=True,
                 )
-                workflow.connect(intensity_norm, "inlier_mask",
-                                 ds_inlier_mask, "in_file")  # fmt:skip
+                workflow.connect([(intensity_norm, ds_inlier_mask, [("inlier_mask", "in_file")])])
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
@@ -450,7 +461,8 @@ def init_global_tractography_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffi
             ("dwi_file", "dwi_file"),
             ("bval_file", "bval_file"),
             ("bvec_file", "bvec_file"),
-            ("b_file", "b_file")]),
+            ("b_file", "b_file"),
+        ]),
         (create_mif, tck_global, [("mif_file", "dwi_file")]),
         (inputnode, tck_global, [("dwi_mask", "mask")]),
         (inputnode, tck_global, [
@@ -462,7 +474,8 @@ def init_global_tractography_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffi
             ("isotropic_fraction", "isotropic_fraction"),
             ("tck_file", "tck_file"),
             ("residual_energy", "residual_energy"),
-            ("wm_odf", "fod_sh_mif")])
+            ("wm_odf", "fod_sh_mif"),
+        ]),
     ])  # fmt:skip
 
     if qsirecon_suffix:

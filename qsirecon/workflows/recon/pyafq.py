@@ -65,7 +65,7 @@ def init_pyafq_wf(inputs_dict, name="afq", qsirecon_suffix="", params={}):
     suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
     workflow.__desc__ = (
         f"\n\n#### PyAFQ{suffix_str}\n\n"
-        "PyAFQ run on version {AFQ.__version__} with the following configuration: "
+        f"PyAFQ run on version {AFQ.__version__} with the following configuration: "
     )
 
     inputnode = pe.Node(
@@ -86,7 +86,7 @@ def init_pyafq_wf(inputs_dict, name="afq", qsirecon_suffix="", params={}):
     )
 
     if params.get("use_external_tracking", False):
-        workflow.connect([(inputnode, run_afq, [('tck_file', 'tck_file')])])
+        workflow.connect([(inputnode, run_afq, [("tck_file", "tck_file")])])
 
     workflow.connect([
         (inputnode, run_afq, [
