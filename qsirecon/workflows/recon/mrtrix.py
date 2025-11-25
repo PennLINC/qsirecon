@@ -159,9 +159,9 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
 
         load_response_functions = pe.Node(
             LoadResponseFunctions(
-                wm_txt=response["wm_txt"],
-                gm_txt=response.get("gm_txt", None),
-                csf_txt=response.get("csf_txt", None),
+                wm_file=response["wm_txt"],
+                gm_file=response.get("gm_txt", None),
+                csf_file=response.get("csf_txt", None),
                 using_multitissue=using_multitissue,
                 input_dir=config.execution.recon_spec_aux_files,
             ),
