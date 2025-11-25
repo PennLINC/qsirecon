@@ -593,8 +593,8 @@ class workflow(_Config):
 
         pipeline_spec = _load_recon_spec(cls.recon_spec)
         qsirecon_suffixes = []
-        for node_spec in pipeline_spec["nodes"]:
-            qsirecon_suffix = node_spec.get("qsirecon_suffix", None)
+        for subworkflow_spec in pipeline_spec["workflows"]:
+            qsirecon_suffix = subworkflow_spec.get("qsirecon_suffix", None)
             qsirecon_suffixes += [qsirecon_suffix] if qsirecon_suffix else []
 
         cls.qsirecon_suffixes = sorted(list(set(qsirecon_suffixes)))

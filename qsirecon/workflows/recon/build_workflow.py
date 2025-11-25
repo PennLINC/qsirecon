@@ -76,49 +76,49 @@ def init_dwi_recon_workflow(
     )
     # We don't want to modify the original workflow spec
     pipeline_spec = deepcopy(pipeline_spec)
-    # Read nodes from workflow spec, make sure we can implement them
-    nodes_to_add = []
+    # Read subworkflows from pipeline spec, make sure we can implement them
+    subworkflows_to_add = []
     workflow_metadata_nodes = {}
-    for node_spec in pipeline_spec["nodes"]:
-        if not node_spec.get("name"):
-            raise Exception(f"Node has no name [{node_spec}]")
+    for subworkflow in pipeline_spec["workflows"]:
+        if not subworkflow.get("name"):
+            raise Exception(f"Node has no name [{subworkflow}]")
 
-        new_node = workflow_from_spec(
+        new_subworkflow = workflow_from_spec(
             inputs_dict=inputs_dict,
-            node_spec=node_spec,
+            subworkflow=subworkflow,
         )
-        if new_node is None:
-            raise Exception(f"Unable to create a node for {node_spec}")
+        if new_subworkflow is None:
+            raise Exception(f"Unable to create a workflow for {subworkflow}")
 
-        nodes_to_add.append(new_node)
+        subworkflows_to_add.append(new_subworkflow)
 
         # Make an identity interface that just has the info of this node
-        workflow_metadata_nodes[node_spec["name"]] = pe.Node(
+        workflow_metadata_nodes[subworkflow["name"]] = pe.Node(
             niu.IdentityInterface(fields=["input_metadata"]),
-            name=f"{node_spec['name']}_spec",
+            name=f"{subworkflow['name']}_spec",
         )
-        workflow_metadata_nodes[node_spec["name"]].inputs.input_metadata = node_spec
-        nodes_to_add.append(workflow_metadata_nodes[node_spec["name"]])
+        workflow_metadata_nodes[subworkflow["name"]].inputs.input_metadata = subworkflow
+        subworkflows_to_add.append(workflow_metadata_nodes[subworkflow["name"]])
 
-    workflow.add_nodes(nodes_to_add)
+    workflow.add_nodes(subworkflows_to_add)
     _check_repeats(workflow.list_node_names())
 
-    # Now that all nodes are in the workflow, connect them
-    for node_spec in pipeline_spec["nodes"]:
+    # Now that all subworkflows are in the workflow, connect them
+    for subworkflow in pipeline_spec["workflows"]:
         # get the nipype node object
-        node_name = node_spec["name"]
-        node = workflow.get_node(node_name)
+        subworkflow_name = subworkflow["name"]
+        subworkflow = workflow.get_node(subworkflow_name)
 
-        # If this node is consuming scalar images from other nodes, add them to the input.
-        # We can't collect scalars from this node or it would create a cycle in the graph.
-        scalar_source = node_spec.get("scalars_from", None)
+        # If this subworkflow is consuming scalar images from other subworkflows, add them to the input.
+        # We can't collect scalars from this subworkflow or it would create a cycle in the graph.
+        scalar_source = subworkflow.get("scalars_from", None)
         if scalar_source:
             found = False
-            for in_node_spec in pipeline_spec["nodes"]:
-                if in_node_spec["name"] == scalar_source:
-                    in_node = workflow.get_node(in_node_spec["name"])
+            for in_subworkflow_spec in pipeline_spec["workflows"]:
+                if in_subworkflow_spec["name"] == scalar_source:
+                    in_subworkflow = workflow.get_node(in_subworkflow_spec["name"])
                     workflow.connect([
-                        (in_node, node, [
+                        (in_subworkflow, subworkflow, [
                             ("outputnode.recon_scalars", "inputnode.collected_scalars"),
                         ]),
                     ])  # fmt:skip
@@ -126,28 +126,28 @@ def init_dwi_recon_workflow(
 
             if not found:
                 raise ValueError(
-                    f"Node {node_name} requires scalars from {scalar_source}, "
-                    f"but {scalar_source} is not in the workflow"
+                    f"Subworkflow '{subworkflow_name}' requires scalars from '{scalar_source}', "
+                    f"but '{scalar_source}' is not in the workflow"
                 )
 
         # If there is no input specified OR if "qsirecon", there are no upstream nodes
-        if node_spec.get("input", "qsirecon") == "qsirecon":
-            # directly connect all the qsirecon outputs to every node
+        if subworkflow.get("input", "qsirecon") == "qsirecon":
+            # directly connect all the qsirecon outputs to every subworkflow
             workflow.connect([
                 (
                     inputnode,
-                    node,
+                    subworkflow,
                     _as_connections(recon_workflow_input_fields, dest_prefix='inputnode.'),
                 ),
             ])  # fmt:skip
 
-        # connect the outputs from the upstream node to this node
+        # connect the outputs from the upstream subworkflow to this subworkflow
         else:
-            upstream_node = workflow.get_node(node_spec["input"])
-            upstream_outputnode_name = node_spec["input"] + ".outputnode"
+            upstream_subworkflow = workflow.get_node(subworkflow["input"])
+            upstream_outputnode_name = subworkflow["input"] + ".outputnode"
             upstream_outputnode = workflow.get_node(upstream_outputnode_name)
             upstream_outputs = set(upstream_outputnode.outputs.get().keys())
-            downstream_inputnode_name = node_name + ".inputnode"
+            downstream_inputnode_name = subworkflow_name + ".inputnode"
             downstream_inputnode = workflow.get_node(downstream_inputnode_name)
             downstream_inputs = set(downstream_inputnode.outputs.get().keys())
 
@@ -155,12 +155,12 @@ def init_dwi_recon_workflow(
             connect_from_qsirecon = default_input_set - connect_from_upstream
 
             config.loggers.workflow.debug(
-                "connecting %s from %s to %s", connect_from_qsirecon, inputnode, node
+                "connecting %s from %s to %s", connect_from_qsirecon, inputnode, subworkflow
             )
             workflow.connect([
                 (
                     inputnode,
-                    node,
+                    subworkflow,
                     _as_connections(
                         connect_from_qsirecon - set(("mapping_metadata",)),
                         dest_prefix='inputnode.',
@@ -177,8 +177,8 @@ def init_dwi_recon_workflow(
             )
             workflow.connect([
                 (
-                    upstream_node,
-                    node,
+                    upstream_subworkflow,
+                    subworkflow,
                     _as_connections(
                         connect_from_upstream - set(("mapping_metadata",)),
                         src_prefix='outputnode.',
@@ -188,24 +188,24 @@ def init_dwi_recon_workflow(
             ])  # fmt:skip
             _check_repeats(workflow.list_node_names())
 
-            # Send metadata about the upstream node into the downstream node
+            # Send metadata about the upstream subworkflow into the downstream subworkflow
             workflow.connect(
-                workflow_metadata_nodes[node_spec['input']],
+                workflow_metadata_nodes[subworkflow['input']],
                 "input_metadata",
-                node,
+                subworkflow,
                 "inputnode.mapping_metadata")  # fmt:skip
 
-        # There are some special cases where we need a second input node.
-        if "csd_input" in node_spec:
-            csd_input = node_spec["csd_input"]
-            config.loggers.workflow.info(f"Using csd inputs from {csd_input} in {node_name}.")
+        # There are some special cases where we need a second input subworkflow.
+        if "csd_input" in subworkflow:
+            csd_input = subworkflow["csd_input"]
+            config.loggers.workflow.info(f"Using csd inputs from {csd_input} in {subworkflow_name}.")
 
-            special_upstream_node = workflow.get_node(csd_input)
+            special_upstream_subworkflow = workflow.get_node(csd_input)
             special_upstream_outputnode_name = f"{csd_input}.outputnode"
             special_upstream_outputnode = workflow.get_node(special_upstream_outputnode_name)
             special_upstream_outputs = set(special_upstream_outputnode.outputs.get().keys())
 
-            downstream_inputnode_name = f"{node_name}.inputnode"
+            downstream_inputnode_name = f"{subworkflow_name}.inputnode"
             downstream_inputnode = workflow.get_node(downstream_inputnode_name)
             downstream_inputs = set(downstream_inputnode.outputs.get().keys())
 
@@ -215,13 +215,13 @@ def init_dwi_recon_workflow(
             config.loggers.workflow.info(
                 "connecting %s from %s to %s",
                 connect_from_special_upstream,
-                special_upstream_node,
-                node,
+                special_upstream_subworkflow,
+                subworkflow,
             )
             workflow.connect([
                 (
-                    special_upstream_node,
-                    node,
+                    special_upstream_subworkflow,
+                    subworkflow,
                     _as_connections(
                         connect_from_special_upstream - set(("mapping_metadata",)),
                         src_prefix='outputnode.',
@@ -233,8 +233,8 @@ def init_dwi_recon_workflow(
 
     # Set the source_file for any datasinks
     for node in workflow.list_node_names():
-        node_name = node.split(".")[-1]
-        if node_name.startswith("ds_") or node_name.startswith("recon_scalars"):
+        subworkflow_name = node.split(".")[-1]
+        if subworkflow_name.startswith("ds_") or subworkflow_name.startswith("recon_scalars"):
             workflow.connect([
                 (inputnode, workflow.get_node(node), [("dwi_file", "source_file")]),
             ])  # fmt:skip
@@ -242,34 +242,34 @@ def init_dwi_recon_workflow(
     return workflow
 
 
-def workflow_from_spec(inputs_dict, node_spec):
+def workflow_from_spec(inputs_dict, subworkflow):
     """Build a nipype workflow based on a json file."""
-    software = node_spec.get("software", "qsirecon")
-    qsirecon_suffix = node_spec.get("qsirecon_suffix", "")
-    node_name = node_spec.get("name", None)
-    parameters = node_spec.get("parameters", {})
+    software = subworkflow.get("software", "qsirecon")
+    qsirecon_suffix = subworkflow.get("qsirecon_suffix", "")
+    subworkflow_name = subworkflow.get("name", None)
+    parameters = subworkflow.get("parameters", {})
 
     # It makes more sense intuitively to have scalars_from in the
     # root of a recon spec "node". But to pass it to the workflow
     # it needs to go in parameters
-    if "scalars_from" in node_spec and node_spec["scalars_from"]:
+    if "scalars_from" in subworkflow and subworkflow["scalars_from"]:
         if parameters.get("scalars_from"):
             config.loggers.workflow.warning("overwriting scalars_from in parameters")
-        parameters["scalars_from"] = node_spec["scalars_from"]
+        parameters["scalars_from"] = subworkflow["scalars_from"]
 
     if config.execution.skip_odf_reports:
-        config.loggers.workflow.info("skipping ODF plots for %s", node_name)
+        config.loggers.workflow.info("skipping ODF plots for %s", subworkflow_name)
         parameters["plot_reports"] = False
 
-    if node_name is None:
-        raise Exception('Node %s must have a "name" attribute' % node_spec)
+    if subworkflow_name is None:
+        raise Exception('Workflow "%s" must have a "name" attribute' % subworkflow)
     kwargs = {
         "inputs_dict": inputs_dict,
-        "name": node_name,
+        "name": subworkflow_name,
         "qsirecon_suffix": qsirecon_suffix,
         "params": parameters,
     }
-    if node_spec["action"] == "connectivity" and not config.execution.atlases:
+    if subworkflow["action"] == "connectivity" and not config.execution.atlases:
         raise ValueError(
             "Connectivity estimation requires atlases. "
             "Please set the `--atlases` flag in your qsirecon command."
@@ -277,80 +277,80 @@ def workflow_from_spec(inputs_dict, node_spec):
 
     # DSI Studio operations
     if software == "DSI Studio":
-        if node_spec["action"] == "reconstruction":
+        if subworkflow["action"] == "reconstruction":
             return init_dsi_studio_recon_wf(**kwargs)
-        if node_spec["action"] == "export":
+        if subworkflow["action"] == "export":
             return init_dsi_studio_export_wf(**kwargs)
-        if node_spec["action"] == "tractography":
+        if subworkflow["action"] == "tractography":
             return init_dsi_studio_tractography_wf(**kwargs)
-        if node_spec["action"] == "connectivity":
+        if subworkflow["action"] == "connectivity":
             return init_dsi_studio_connectivity_wf(**kwargs)
-        if node_spec["action"] == "autotrack_registration":
+        if subworkflow["action"] == "autotrack_registration":
             return init_dsi_studio_autotrack_registration_wf(**kwargs)
-        if node_spec["action"] == "autotrack":
+        if subworkflow["action"] == "autotrack":
             return init_dsi_studio_autotrack_wf(**kwargs)
 
     # MRTrix3 operations
     elif software == "MRTrix3":
-        if node_spec["action"] == "csd":
+        if subworkflow["action"] == "csd":
             return init_mrtrix_csd_recon_wf(**kwargs)
-        if node_spec["action"] == "global_tractography":
+        if subworkflow["action"] == "global_tractography":
             return init_global_tractography_wf(**kwargs)
-        if node_spec["action"] == "tractography":
+        if subworkflow["action"] == "tractography":
             return init_mrtrix_tractography_wf(**kwargs)
-        if node_spec["action"] == "connectivity":
+        if subworkflow["action"] == "connectivity":
             return init_mrtrix_connectivity_wf(**kwargs)
 
     # Dipy operations
     elif software == "Dipy":
-        if node_spec["action"] == "3dSHORE_reconstruction":
+        if subworkflow["action"] == "3dSHORE_reconstruction":
             return init_dipy_brainsuite_shore_recon_wf(**kwargs)
-        if node_spec["action"] == "MAPMRI_reconstruction":
+        if subworkflow["action"] == "MAPMRI_reconstruction":
             return init_dipy_mapmri_recon_wf(**kwargs)
-        if node_spec["action"] == "DKI_reconstruction":
+        if subworkflow["action"] == "DKI_reconstruction":
             return init_dipy_dki_recon_wf(**kwargs)
 
     # AMICO operations
     elif software == "AMICO":
-        if node_spec["action"] == "fit_noddi":
+        if subworkflow["action"] == "fit_noddi":
             return init_amico_noddi_fit_wf(**kwargs)
 
     elif software == "pyAFQ":
         from .pyafq import init_pyafq_wf
 
-        if node_spec["action"] == "pyafq_tractometry":
+        if subworkflow["action"] == "pyafq_tractometry":
             return init_pyafq_wf(**kwargs)
 
     elif software == "TORTOISE":
-        if node_spec["action"] == "estimate":
+        if subworkflow["action"] == "estimate":
             return init_tortoise_estimator_wf(**kwargs)
 
     # qsirecon operations
     else:
-        if node_spec["action"] == "discard_repeated_samples":
+        if subworkflow["action"] == "discard_repeated_samples":
             return init_discard_repeated_samples_wf(**kwargs)
-        if node_spec["action"] == "select_gradients":
+        if subworkflow["action"] == "select_gradients":
             return init_gradient_select_wf(**kwargs)
-        if node_spec["action"] == "conform":
+        if subworkflow["action"] == "conform":
             return init_conform_dwi_wf(**kwargs)
-        if node_spec["action"] == "mif_to_fib":
+        if subworkflow["action"] == "mif_to_fib":
             return init_mif_to_fibgz_wf(**kwargs)
-        if node_spec["action"] == "reorient_fslstd":
+        if subworkflow["action"] == "reorient_fslstd":
             return init_qsirecon_to_fsl_wf(**kwargs)
-        if node_spec["action"] == "steinhardt_order_parameters":
+        if subworkflow["action"] == "steinhardt_order_parameters":
             return init_steinhardt_order_param_wf(**kwargs)
-        if node_spec["action"] == "bundle_map":
+        if subworkflow["action"] == "bundle_map":
             return init_scalar_to_bundle_wf(**kwargs)
-        if node_spec["action"] == "template_map":
+        if subworkflow["action"] == "template_map":
             return init_scalar_to_template_wf(**kwargs)
-        if node_spec["action"] == "test_workflow":
+        if subworkflow["action"] == "test_workflow":
             return init_test_wf(**kwargs)
-        if node_spec["action"] == "fod_fib_merge":
+        if subworkflow["action"] == "fod_fib_merge":
             return init_fod_fib_wf(**kwargs)
-        if node_spec["action"] == "parcellate_scalars":
+        if subworkflow["action"] == "parcellate_scalars":
             return init_scalar_to_atlas_wf(**kwargs)
 
-    raise Exception("Unknown node %s" % node_spec)
+    raise Exception("Unknown workflow '%s'" % subworkflow)
 
 
 def _as_connections(attr_list, src_prefix="", dest_prefix=""):

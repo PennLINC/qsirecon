@@ -1,6 +1,6 @@
 description: Reconstruct dwis using Dipy, then convert to mrtrix and dsi studio formats
 name: dipy_mapmri
-nodes:
+workflows:
 -   action: MAPMRI_reconstruction
     input: qsirecon
     name: mapmri_recon

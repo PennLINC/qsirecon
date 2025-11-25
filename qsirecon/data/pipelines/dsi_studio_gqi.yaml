@@ -1,5 +1,5 @@
 name: dsistudio_pipeline
-nodes:
+workflows:
 -   action: reconstruction
     input: qsirecon
     name: dsistudio_gqi

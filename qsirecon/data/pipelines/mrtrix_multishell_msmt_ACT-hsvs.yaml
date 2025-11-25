@@ -1,7 +1,7 @@
 anatomical:
 - mrtrix_5tt_hsvs
 name: mrtrix_multishell_msmt_hsvs
-nodes:
+workflows:
 -   action: csd
     input: qsirecon
     name: msmt_csd

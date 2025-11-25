@@ -1,7 +1,7 @@
 anatomical:
 - mrtrix_5tt
 name: convert_shore_recons
-nodes:
+workflows:
 -   action: 3dSHORE_reconstruction
     input: qsirecon
     name: csdsi_3dshore

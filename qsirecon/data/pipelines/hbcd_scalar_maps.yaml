@@ -1,7 +1,7 @@
 anatomical: []
 name: hbcd_postproc_beta
 space: T1w
-nodes:
+workflows:
 
 -   action: DKI_reconstruction
     input: qsirecon

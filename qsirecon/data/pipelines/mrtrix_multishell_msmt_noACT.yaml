@@ -1,6 +1,6 @@
 anatomical: []
 name: mrtrix_multishell_msmt_noACT
-nodes:
+workflows:
 -   action: csd
     input: qsirecon
     name: msmt_csd

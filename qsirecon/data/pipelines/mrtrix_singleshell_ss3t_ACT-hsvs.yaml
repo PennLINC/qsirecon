@@ -1,7 +1,7 @@
 anatomical:
 - mrtrix_5tt_hsvs
 name: mrtrix_singleshell_ss3_hsvst
-nodes:
+workflows:
 -   action: select_gradients
     input: qsirecon
     name: select_single_shell

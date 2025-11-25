@@ -1,6 +1,6 @@
 description: Runs the AMICO implementation of NODDI
 name: amico_noddi
-nodes:
+workflows:
 -   action: fit_noddi
     input: qsirecon
     name: fit_noddi

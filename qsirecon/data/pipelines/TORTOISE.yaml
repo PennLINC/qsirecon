@@ -1,6 +1,6 @@
 anatomical: []
 name: tortoise_recon
-nodes:
+workflows:
 -   action: estimate
     input: qsirecon
     name: tortoise_dtmapmri

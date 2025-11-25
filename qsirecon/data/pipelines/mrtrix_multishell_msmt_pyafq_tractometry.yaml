@@ -1,7 +1,7 @@
 description: Use pyAFQ to perform the Tractometry pipeline, with tractography from
     qsirecon
 name: mrtrix_multishell_msmt_pyafq_tractometry
-nodes:
+workflows:
 -   action: csd
     input: qsirecon
     name: msmt_csd

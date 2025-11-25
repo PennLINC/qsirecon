@@ -1,7 +1,7 @@
 anatomical:
 - mrtrix_5tt_fast
 name: mrtrix_singleshell_ss3t_fast
-nodes:
+workflows:
 
 -   action: select_gradients
     input: qsirecon
