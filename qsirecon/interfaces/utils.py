@@ -430,7 +430,10 @@ class _LoadResponseFunctionsInputSpec(BaseInterfaceInputSpec):
         File(
             exists=False,
             mandatory=False,
-            desc="GM response function file. Only MRtrix-format txt files are currently supported.",
+            desc=(
+                "GM response function file. Only MRtrix-format txt files are currently "
+                "supported."
+            ),
         ),
     )
     csf_file = traits.Either(
@@ -438,7 +441,10 @@ class _LoadResponseFunctionsInputSpec(BaseInterfaceInputSpec):
         File(
             exists=False,
             mandatory=False,
-            desc="CSF response function file. Only MRtrix-format txt files are currently supported.",
+            desc=(
+                "CSF response function file. Only MRtrix-format txt files are currently "
+                "supported."
+            ),
         ),
     )
     using_multitissue = traits.Bool(desc="Whether to use multitissue response functions or not.")
