@@ -152,6 +152,7 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
         niu.IdentityInterface(fields=["wm_txt", "gm_txt", "csf_txt"]),
         name="response_buffer",
     )
+    seg_str = ""
     if response_algorithm == "precomputed":
         workflow.__desc__ += (
             f"{tissue_str} fiber response functions were loaded from precomputed files."
@@ -175,9 +176,9 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
             ]),
         ])  # fmt:skip
     else:
-        seg_str = f"using an unsupervised multi-tissue method {CITATIONS[response_algorithm]}."
+        seg_str = f" using an unsupervised multi-tissue method {CITATIONS[response_algorithm]}"
         if response_algorithm == "msmt_5tt":
-            seg_str = f"using a T1w-based segmentation {CITATIONS[response_algorithm]}."
+            seg_str = f" using a T1w-based segmentation {CITATIONS[response_algorithm]}"
 
         workflow.__desc__ += (
             f"{tissue_str} fiber response functions were estimated using "
@@ -208,7 +209,7 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
                 raise Exception("Unrecognized 5tt method: " + method_5tt)
 
     workflow.__desc__ += f"""FODs were estimated via constrained
-spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}
+spherical deconvolution (CSD, @originalcsd, @tournier2008csd){seg_str}.
 """
 
     create_mif = pe.Node(MRTrixIngress(), name="create_mif")
