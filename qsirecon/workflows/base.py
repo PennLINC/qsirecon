@@ -101,7 +101,7 @@ def init_single_subject_recon_wf(subject_id):
     workflow.__desc__ = f"""
 Reconstruction was
 performed using *QSIRecon* {config.__version__} (@cieslak2021qsiprep),
-according to the {spec.get("name", "UNKNOWN")} pipeline.{spec_desc}
+according to the "{spec.get("name", "UNKNOWN")}" pipeline.{spec_desc}
 
 """
     workflow.__postdesc__ = f"""
@@ -110,9 +110,9 @@ Many internal operations of *QSIRecon* use
 *Nipype* {nipype_ver} (@nipype1; @nipype2; RRID:SCR_002502),
 *Nilearn* {nilearn_ver} [@nilearn, RRID:SCR_001362], and
 *Dipy* {dipy_ver} [@dipy].
-For more details of the pipeline, see [the section corresponding
+For more details on the pipeline, see [the section corresponding
 to workflows in *QSIRecon*'s documentation]\
-(https://qsirecon.readthedocs.io/en/latest/workflows.html).
+(https://qsirecon.readthedocs.io/en/latest/builtin_workflows.html).
 
 
 ### References
