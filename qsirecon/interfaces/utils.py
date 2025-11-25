@@ -417,3 +417,55 @@ class RecombineAtlasConfigs(SimpleInterface):
         self._results["atlas_configs"] = atlas_configs
 
         return runtime
+
+
+class _LoadResponseFunctionsInputSpec(BaseInterfaceInputSpec):
+    wm_txt = File(exists=False, mandatory=True)
+    gm_txt = traits.Either(
+        None,
+        File(exists=False, mandatory=False)
+    )
+    csf_txt = traits.Either(
+        None,
+        File(exists=False, mandatory=False)
+    )
+    using_multitissue = traits.Bool()
+    input_dir = traits.Directory(exists=True, mandatory=True)
+
+
+class _LoadResponseFunctionsOutputSpec(TraitedSpec):
+    wm_txt = File(exists=True)
+    gm_txt = File(exists=True)
+    csf_txt = File(exists=True)
+
+
+class LoadResponseFunctions(SimpleInterface):
+    input_spec = _LoadResponseFunctionsInputSpec
+    output_spec = _LoadResponseFunctionsOutputSpec
+
+    def _run_interface(self, runtime):
+        self._results["wm_txt"] = os.path.abspath(
+            os.path.join(self.inputs.input_dir, self.inputs.wm_txt),
+        )
+        if not os.path.exists(self._results["wm_txt"]):
+            raise FileNotFoundError(f"WM response text file {self._results['wm_txt']} not found")
+
+        if self.inputs.gm_txt and self.inputs.using_multitissue:
+            self._results["gm_txt"] = os.path.abspath(
+                os.path.join(self.inputs.input_dir, self.inputs.gm_txt),
+            )
+            if not os.path.exists(self._results["gm_txt"]):
+                raise FileNotFoundError(f"GM response text file {self._results['gm_txt']} not found")
+        elif self.inputs.using_multitissue:
+            raise ValueError("gm_txt is required when using multitissue response functions")
+
+        if self.inputs.csf_txt and self.inputs.using_multitissue:
+            self._results["csf_txt"] = os.path.abspath(
+                os.path.join(self.inputs.input_dir, self.inputs.csf_txt)
+            )
+            if not os.path.exists(self._results["csf_txt"]):
+                raise FileNotFoundError(f"CSF response text file {self._results['csf_txt']} not found")
+        elif self.inputs.using_multitissue:
+            raise ValueError("csf_txt is required when using multitissue response functions")
+
+        return runtime

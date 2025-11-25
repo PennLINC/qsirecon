@@ -36,6 +36,7 @@ from ...interfaces.mrtrix import (
     TckGen,
 )
 from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport
+from ...interfaces.utils import LoadResponseFunctions
 from ...utils.bids import clean_datasinks
 from ...utils.misc import remove_non_alphanumeric
 
@@ -134,15 +135,7 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
     if response_algorithm == "csd":
         tissue_str = "Single-tissue "
 
-    seg_str = f"using an unsupervised multi-tissue method {CITATIONS[response_algorithm]}."
-    if response_algorithm == "msmt_5tt":
-        seg_str = f"using a T1w-based segmentation {CITATIONS[response_algorithm]}."
-
     LOGGER.info("Response configuration: %s", response)
-
-    workflow.__desc__ += f"""{tissue_str} fiber response functions were estimated using
-the {response_algorithm} algorithm. FODs were estimated via constrained
-spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}"""
 
     # FOD estimation
     fod = params.get("fod", {})
@@ -155,20 +148,70 @@ spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}"""
     # Intensity normalize?
     run_mtnormalize = params.get("mtnormalize", True) and using_multitissue
 
-    create_mif = pe.Node(MRTrixIngress(), name="create_mif")
-    method_5tt = response.pop("method_5tt", "dhollander")
-    # Use dwi2response from 3Tissue for updated dhollander
-    estimate_response = pe.Node(
-        SS3TDwi2Response(**response), name="estimate_response", n_procs=omp_nthreads
+    response_buffer = pe.Node(
+        niu.IdentityInterface(fields=["wm_txt", "gm_txt", "csf_txt"]),
+        name="response_buffer",
     )
+    if response_algorithm == "precomputed":
+        workflow.__desc__ += (
+            f"{tissue_str} fiber response functions were loaded from precomputed files."
+        )
 
-    if response_algorithm == "msmt_5tt":
-        if method_5tt == "hsvs":
-            workflow.connect([
-                (inputnode, estimate_response, [("qsiprep_5tt_hsvs", "mtt_file")])
-            ])  # fmt:skip
-        else:
-            raise Exception("Unrecognized 5tt method: " + method_5tt)
+        load_response_functions = pe.Node(
+            LoadResponseFunctions(
+                wm_txt=response["wm_txt"],
+                gm_txt=response.get("gm_txt", None),
+                csf_txt=response.get("csf_txt", None),
+                using_multitissue=using_multitissue,
+                input_dir=config.execution.recon_spec_aux_files,
+            ),
+            name="load_response_functions",
+        )
+        workflow.connect([
+            (load_response_functions, response_buffer, [
+                ("wm_txt", "wm_txt"),
+                ("gm_txt", "gm_txt"),
+                ("csf_txt", "csf_txt"),
+            ]),
+        ])  # fmt:skip
+    else:
+        seg_str = f"using an unsupervised multi-tissue method {CITATIONS[response_algorithm]}."
+        if response_algorithm == "msmt_5tt":
+            seg_str = f"using a T1w-based segmentation {CITATIONS[response_algorithm]}."
+
+        workflow.__desc__ += (
+            f"{tissue_str} fiber response functions were estimated using "
+            f"the {response_algorithm} algorithm. "
+        )
+
+        method_5tt = response.pop("method_5tt", "dhollander")
+        # Use dwi2response from 3Tissue for updated dhollander
+        estimate_response = pe.Node(
+            SS3TDwi2Response(**response),
+            name="estimate_response",
+            n_procs=omp_nthreads,
+        )
+        workflow.connect([
+            (estimate_response, response_buffer, [
+                ("wm_file", "wm_txt"),
+                ("gm_file", "gm_txt"),
+                ("csf_file", "csf_txt"),
+            ]),
+        ])  # fmt:skip
+
+        if response_algorithm == "msmt_5tt":
+            if method_5tt == "hsvs":
+                workflow.connect([
+                    (inputnode, estimate_response, [("qsiprep_5tt_hsvs", "mtt_file")])
+                ])  # fmt:skip
+            else:
+                raise Exception("Unrecognized 5tt method: " + method_5tt)
+
+    workflow.__desc__ += f"""FODs were estimated via constrained
+spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}
+"""
+
+    create_mif = pe.Node(MRTrixIngress(), name="create_mif")
 
     if fod_algorithm in ("msmt_csd", "csd"):
         estimate_fod = pe.Node(EstimateFOD(**fod), name="estimate_fod", n_procs=omp_nthreads)
@@ -179,10 +222,10 @@ spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}"""
 MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
 
     workflow.connect([
-        (estimate_response, estimate_fod, [
-            ("wm_file", "wm_txt"),
-            ("gm_file", "gm_txt"),
-            ("csf_file", "csf_txt"),
+        (response_buffer, estimate_fod, [
+            ("wm_txt", "wm_txt"),
+            ("gm_txt", "gm_txt"),
+            ("csf_txt", "csf_txt"),
         ]),
         (inputnode, create_mif, [
             ("dwi_file", "dwi_file"),
