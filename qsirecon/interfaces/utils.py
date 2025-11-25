@@ -421,14 +421,8 @@ class RecombineAtlasConfigs(SimpleInterface):
 
 class _LoadResponseFunctionsInputSpec(BaseInterfaceInputSpec):
     wm_txt = File(exists=False, mandatory=True)
-    gm_txt = traits.Either(
-        None,
-        File(exists=False, mandatory=False)
-    )
-    csf_txt = traits.Either(
-        None,
-        File(exists=False, mandatory=False)
-    )
+    gm_txt = traits.Either(None, File(exists=False, mandatory=False))
+    csf_txt = traits.Either(None, File(exists=False, mandatory=False))
     using_multitissue = traits.Bool()
     input_dir = traits.Directory(exists=True, mandatory=True)
 
@@ -455,7 +449,9 @@ class LoadResponseFunctions(SimpleInterface):
                 os.path.join(self.inputs.input_dir, self.inputs.gm_txt),
             )
             if not os.path.exists(self._results["gm_txt"]):
-                raise FileNotFoundError(f"GM response text file {self._results['gm_txt']} not found")
+                raise FileNotFoundError(
+                    f"GM response text file {self._results['gm_txt']} not found"
+                )
         elif self.inputs.using_multitissue:
             raise ValueError("gm_txt is required when using multitissue response functions")
 
@@ -464,7 +460,9 @@ class LoadResponseFunctions(SimpleInterface):
                 os.path.join(self.inputs.input_dir, self.inputs.csf_txt)
             )
             if not os.path.exists(self._results["csf_txt"]):
-                raise FileNotFoundError(f"CSF response text file {self._results['csf_txt']} not found")
+                raise FileNotFoundError(
+                    f"CSF response text file {self._results['csf_txt']} not found"
+                )
         elif self.inputs.using_multitissue:
             raise ValueError("csf_txt is required when using multitissue response functions")
 
