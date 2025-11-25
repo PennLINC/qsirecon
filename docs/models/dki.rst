@@ -9,6 +9,16 @@ Diffusional kurtosis imaging (DKI)
 ##################################
 
 
+DKI in QSIRecon
+~~~~~~~~~~~~~~~
+
+DKI reconstruction is supported in QSIRecon using the DIPY package: see :func:`~qsirecon.workflows.recon.dipy.init_dipy_dki_recon_wf`.
+This is accessible in a reconstruction specification by using a node with ``action: DKI_reconstruction`` and ``software: Dipy``.
+Also see :class:`qsirecon.interfaces.dipy.KurtosisReconstruction` (primary DKI node),
+:class:`qsirecon.interfaces.dipy.KurtosisReconstructionMicrostructure` (when ``wmti`` is set to ``true``),
+and :class:`qsirecon.interfaces.dipy.KurtosisReconstructionMSDKI` (when ``msdki`` is set to ``true``).
+
+
 DKI Foundational Papers
 ~~~~~~~~~~~~~~~~~~~~~~~
 
