@@ -148,10 +148,28 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
     # Intensity normalize?
     run_mtnormalize = params.get("mtnormalize", True) and using_multitissue
 
+    create_mif = pe.Node(MRTrixIngress(), name="create_mif")
+    workflow.connect([
+        (inputnode, create_mif, [
+            ("dwi_file", "dwi_file"),
+            ("bval_file", "bval_file"),
+            ("bvec_file", "bvec_file"),
+            ("b_file", "b_file"),
+        ]),
+    ])  # fmt:skip
+
     response_buffer = pe.Node(
         niu.IdentityInterface(fields=["wm_txt", "gm_txt", "csf_txt"]),
         name="response_buffer",
     )
+    workflow.connect([
+        (response_buffer, outputnode, [
+            ("wm_txt", "wm_txt"),
+            ("gm_txt", "gm_txt"),
+            ("csf_txt", "csf_txt"),
+        ]),
+    ])  # fmt:skip
+
     seg_str = ""
     if response_algorithm == "precomputed":
         workflow.__desc__ += (
@@ -193,6 +211,8 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
             n_procs=omp_nthreads,
         )
         workflow.connect([
+            (inputnode, estimate_response, [("dwi_mask", "in_mask")]),
+            (create_mif, estimate_response, [("mif_file", "in_file")]),
             (estimate_response, response_buffer, [
                 ("wm_file", "wm_txt"),
                 ("gm_file", "gm_txt"),
@@ -212,8 +232,6 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
 spherical deconvolution (CSD, @originalcsd, @tournier2008csd){seg_str}.
 """
 
-    create_mif = pe.Node(MRTrixIngress(), name="create_mif")
-
     if fod_algorithm in ("msmt_csd", "csd"):
         estimate_fod = pe.Node(EstimateFOD(**fod), name="estimate_fod", n_procs=omp_nthreads)
         workflow.__desc__ += " Reconstruction was done using MRtrix3 (@mrtrix3)."
@@ -223,26 +241,13 @@ spherical deconvolution (CSD, @originalcsd, @tournier2008csd){seg_str}.
 MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
 
     workflow.connect([
+        (inputnode, estimate_fod, [("dwi_mask", "mask_file")]),
+        (create_mif, estimate_fod, [("mif_file", "in_file")]),
         (response_buffer, estimate_fod, [
             ("wm_txt", "wm_txt"),
             ("gm_txt", "gm_txt"),
             ("csf_txt", "csf_txt"),
         ]),
-        (inputnode, create_mif, [
-            ("dwi_file", "dwi_file"),
-            ("bval_file", "bval_file"),
-            ("bvec_file", "bvec_file"),
-            ("b_file", "b_file"),
-        ]),
-        (create_mif, estimate_fod, [("mif_file", "in_file")]),
-        (inputnode, estimate_fod, [("dwi_mask", "mask_file")]),
-        (create_mif, estimate_response, [("mif_file", "in_file")]),
-        (response_buffer, outputnode, [
-            ("wm_txt", "wm_txt"),
-            ("gm_txt", "gm_txt"),
-            ("csf_txt", "csf_txt"),
-        ]),
-        (inputnode, estimate_response, [("dwi_mask", "in_mask")])
     ])  # fmt:skip
 
     if not run_mtnormalize:
@@ -258,7 +263,9 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
     else:
         intensity_norm = pe.Node(
             MTNormalize(
-                nthreads=omp_nthreads, inlier_mask="inliers.nii.gz", norm_image="norm.nii.gz"
+                nthreads=omp_nthreads,
+                inlier_mask="inliers.nii.gz",
+                norm_image="norm.nii.gz",
             ),
             name="intensity_norm",
             n_procs=omp_nthreads,
