@@ -368,6 +368,16 @@ def _build_parser(**kwargs):
         default=False,
         help="run only reconstruction, assumes preprocessing has already completed.",
     )
+    g_recon.add_argument(
+        "--recon-spec-aux-files",
+        action="store",
+        type=PathExists,
+        help=(
+            "Path to a directory containing auxiliary files for the reconstruction pipeline. "
+            "This is currently only used to provide common response functions for a subset of "
+            "the built-in recon specs."
+        ),
+    )
 
     g_parcellation = parser.add_argument_group("Parcellation options")
     g_parcellation.add_argument(
