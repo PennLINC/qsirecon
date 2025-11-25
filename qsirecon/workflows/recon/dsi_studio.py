@@ -76,7 +76,7 @@ def init_dsi_studio_recon_wf(inputs_dict, name="dsi_studio_recon", qsirecon_suff
     plot_reports = not config.execution.skip_odf_reports
     omp_nthreads = config.nipype.omp_nthreads
     suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
-    desc = f"\n\n####DSI Studio Reconstruction{suffix_str}\n\n"
+    desc = f"\n\n#### DSI Studio Reconstruction{suffix_str}\n\n"
     create_src = pe.Node(DSIStudioCreateSrc(), name="create_src")
     romdd = params.get("ratio_of_mean_diffusion_distance", 1.25)
     gqi_recon = pe.Node(
@@ -231,7 +231,7 @@ def init_dsi_studio_tractography_wf(
     workflow = Workflow(name=name)
     suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
     desc = (
-        f"#### DSI Studio Tractography{suffix_str}\n\n"
+        f"\n\n#### DSI Studio Tractography{suffix_str}\n\n"
         f"Tractography was run in DSI Studio (version {DSI_STUDIO_VERSION}) using a "
         "deterministic algorithm [@yeh2013]. "
     )
@@ -402,7 +402,7 @@ def init_dsi_studio_autotrack_wf(
     outputnode.inputs.recon_scalars = []
     suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
     desc = (
-        f"####DSI Studio Automatic Tractography{suffix_str}\n\n"
+        f"\n\n#### DSI Studio Automatic Tractography{suffix_str}\n\n"
         f"Automatic Tractography was run in DSI Studio (version {DSI_STUDIO_VERSION}) "
         "and bundle shape statistics were calculated [@autotrack]. "
     )

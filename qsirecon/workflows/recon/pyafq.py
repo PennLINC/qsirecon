@@ -103,7 +103,7 @@ def init_pyafq_wf(inputs_dict, name="afq", qsirecon_suffix="", params={}):
         workflow.connect(run_afq, "afq_dir", ds_afq, "in_file")
 
     suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
-    workflow.__desc__ = f"""\n\n####PyAFQ{suffix_str}\n
+    workflow.__desc__ = f"""\n\n#### PyAFQ{suffix_str}\n
 PyAFQ run on version {AFQ.__version__} with the following configuration: {str(kwargs)}.
 """
 

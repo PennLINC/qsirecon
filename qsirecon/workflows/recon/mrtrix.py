@@ -118,7 +118,7 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
     suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
-    desc = f"\n\n####MRtrix3 Reconstruction{suffix_str}\n\n"
+    desc = f"\n\n#### MRtrix3 Reconstruction{suffix_str}\n\n"
 
     # Response estimation
     response = params.get("response", {})
