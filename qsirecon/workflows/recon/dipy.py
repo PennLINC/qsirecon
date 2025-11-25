@@ -129,6 +129,10 @@ def init_dipy_brainsuite_shore_recon_wf(
             Radius for EAP estimation (default=20e-03)
 
     """
+    workflow = Workflow(name=name)
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    workflow.__desc__ = f"\n\n#### Dipy Reconstruction{suffix_str}\n\n"
+
     omp_nthreads = config.nipype.omp_nthreads
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
@@ -154,8 +158,6 @@ def init_dipy_brainsuite_shore_recon_wf(
         name="outputnode",
     )
     plot_reports = not config.execution.skip_odf_reports
-    workflow = Workflow(name=name)
-    desc = "#### Dipy Reconstruction\n\n"
 
     # Do we have deltas?
     deltas = (params.get("big_delta", None), params.get("small_delta", None))
@@ -187,7 +189,8 @@ def init_dipy_brainsuite_shore_recon_wf(
             ('dwi_file', 'dwi_file'),
             ('bval_file', 'bval_file'),
             ('bvec_file', 'bvec_file'),
-            ('dwi_mask', 'mask_file')]),
+            ('dwi_mask', 'mask_file'),
+        ]),
         (recon_shore, outputnode, [
             ('shore_coeffs_image', 'shore_coeffs_image'),
             ('rtop_image', 'rtop_image'),
@@ -200,14 +203,16 @@ def init_dipy_brainsuite_shore_recon_wf(
             ('extrapolated_dwi', 'dwi_file'),
             ('extrapolated_bvals', 'bval_file'),
             ('extrapolated_bvecs', 'bvec_file'),
-            ('extrapolated_b', 'b_file')]),
+            ('extrapolated_b', 'b_file'),
+        ]),
         (recon_shore, recon_scalars, [
             ('rtop_image', 'rtop_file'),
             ('alpha_image', 'alpha_image'),
             ('r2_image', 'r2_image'),
             ('cnr_image', 'cnr_image'),
-            ('regularization_image', 'regularization_image')]),
-        (recon_scalars, outputnode, [("scalar_info", "recon_scalars")])
+            ('regularization_image', 'regularization_image'),
+        ]),
+        (recon_scalars, outputnode, [("scalar_info", "recon_scalars")]),
     ])  # fmt:skip
 
     if plot_reports:
@@ -263,8 +268,7 @@ def init_dipy_brainsuite_shore_recon_wf(
             name="ds_bsshore_rtop",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, 'rtop_image',
-                         ds_rtop, 'in_file')  # fmt:skip
+        workflow.connect([(outputnode, ds_rtop, [("rtop_image", "in_file")])])
 
         ds_coeff = pe.Node(
             DerivativesDataSink(
@@ -275,8 +279,7 @@ def init_dipy_brainsuite_shore_recon_wf(
             name="ds_bsshore_coeff",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, 'shore_coeffs_image',
-                         ds_coeff, 'in_file')  # fmt:skip
+        workflow.connect([(outputnode, ds_coeff, [("shore_coeffs_image", "in_file")])])
 
         ds_alpha = pe.Node(
             DerivativesDataSink(
@@ -287,8 +290,7 @@ def init_dipy_brainsuite_shore_recon_wf(
             name="ds_bsshore_alpha",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, 'alpha_image',
-                         ds_alpha, 'in_file')  # fmt:skip
+        workflow.connect([(outputnode, ds_alpha, [("alpha_image", "in_file")])])
 
         ds_r2 = pe.Node(
             DerivativesDataSink(
@@ -299,8 +301,7 @@ def init_dipy_brainsuite_shore_recon_wf(
             name="ds_bsshore_r2",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, 'r2_image',
-                         ds_r2, 'in_file')  # fmt:skip
+        workflow.connect([(outputnode, ds_r2, [("r2_image", "in_file")])])
 
         ds_cnr = pe.Node(
             DerivativesDataSink(
@@ -311,8 +312,7 @@ def init_dipy_brainsuite_shore_recon_wf(
             name="ds_bsshore_cnr",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, 'cnr_image',
-                         ds_cnr, 'in_file')  # fmt:skip
+        workflow.connect([(outputnode, ds_cnr, [("cnr_image", "in_file")])])
 
         ds_regl = pe.Node(
             DerivativesDataSink(
@@ -323,8 +323,8 @@ def init_dipy_brainsuite_shore_recon_wf(
             name="ds_bsshore_regl",
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, 'regularization_image',
-                         ds_regl, 'in_file')  # fmt:skip
+        workflow.connect([(outputnode, ds_regl, [("regularization_image", "in_file")])])
+
         if doing_extrapolation:
             ds_extrap_dwi = pe.Node(
                 DerivativesDataSink(
@@ -335,8 +335,8 @@ def init_dipy_brainsuite_shore_recon_wf(
                 name="ds_extrap_dwi",
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, 'dwi_file',
-                             ds_extrap_dwi, 'in_file')  # fmt:skip
+            workflow.connect([(outputnode, ds_extrap_dwi, [("dwi_file", "in_file")])])
+
             ds_extrap_bval = pe.Node(
                 DerivativesDataSink(
                     desc="extrapolated",
@@ -345,8 +345,8 @@ def init_dipy_brainsuite_shore_recon_wf(
                 name="ds_extrap_bval",
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, 'bval_file',
-                             ds_extrap_bval, 'in_file')  # fmt:skip
+            workflow.connect([(outputnode, ds_extrap_bval, [("bval_file", "in_file")])])
+
             ds_extrap_bvec = pe.Node(
                 DerivativesDataSink(
                     desc="extrapolated",
@@ -355,8 +355,8 @@ def init_dipy_brainsuite_shore_recon_wf(
                 name="ds_extrap_bvec",
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, 'bvec_file',
-                             ds_extrap_bvec, 'in_file')  # fmt:skip
+            workflow.connect([(outputnode, ds_extrap_bvec, [("bvec_file", "in_file")])])
+
             ds_extrap_b = pe.Node(
                 DerivativesDataSink(
                     desc="extrapolated",
@@ -365,9 +365,7 @@ def init_dipy_brainsuite_shore_recon_wf(
                 name="ds_extrap_b",
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, 'b_file',
-                             ds_extrap_b, 'in_file')  # fmt:skip
-    workflow.__desc__ = desc
+            workflow.connect([(outputnode, ds_extrap_b, [("b_file", "in_file")])])
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
@@ -451,6 +449,13 @@ def init_dipy_mapmri_recon_wf(
             details.
             Default: None (cvxpy chooses its own solver)
     """
+    workflow = Workflow(name=name)
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    workflow.__desc__ = (
+        f"\n\n#### DIPY Reconstruction{suffix_str}\n\n"
+        "Mean Apparent Propagator MRI (MAPMRI) reconstruction was performed with "
+        f"DIPY {dipy_version} [@dipy]."
+    )
 
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
@@ -476,24 +481,16 @@ def init_dipy_mapmri_recon_wf(
         name="outputnode",
     )
 
-    workflow = Workflow(name=name)
-    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
-    desc = (
-        f"\n\n#### DIPY Reconstruction{suffix_str}\n\n"
-        "Mean Apparent Propagator MRI (MAPMRI) reconstruction was performed with "
-        f"DIPY {dipy_version} [@dipy]."
-    )
-
     # Do we have deltas?
     deltas, deltas_string = infer_deltas(inputs_dict.get("dwi_metadata", {}), params)
-    desc += deltas_string
+    workflow.__desc__ += deltas_string
     if deltas is not None:
         params["big_delta"], params["small_delta"] = deltas
 
     plot_reports = not config.execution.skip_odf_reports
     omp_nthreads = config.nipype.omp_nthreads
     recon_map = pe.Node(MAPMRIReconstruction(**params), name="recon_map")
-    desc += " " + build_documentation(recon_map)
+    workflow.__desc__ += " " + build_documentation(recon_map)
     recon_scalars = pe.Node(
         DIPYMAPMRIReconScalars(dismiss_entities=["desc"], qsirecon_suffix=name),
         name="recon_scalars",
@@ -623,8 +620,6 @@ def init_dipy_mapmri_recon_wf(
         # If not writing out scalar files, pass the working directory scalar configs
         workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
 
-    workflow.__desc__ = desc
-
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
@@ -695,6 +690,9 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
     :class:`qsirecon.interfaces.dipy.KurtosisReconstructionMicrostructure`
     :class:`qsirecon.interfaces.recon_scalars.DIPYDKIReconScalars`
     """
+    workflow = Workflow(name=name)
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    workflow.__desc__ = f"\n\n#### Dipy Reconstruction{suffix_str}\n\n"
 
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
@@ -744,8 +742,6 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
         run_without_submitting=True,
         name="recon_scalars",
     )
-    workflow = Workflow(name=name)
-    desc = "#### Dipy Reconstruction\n\n"
 
     plot_reports = not config.execution.skip_odf_reports
     micro_metrics = params.pop("wmti", False)
@@ -928,8 +924,6 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
     else:
         # If not writing out scalar files, pass the working directory scalar configs
         workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
-
-    workflow.__desc__ = desc
 
     return clean_datasinks(workflow, qsirecon_suffix)
 

@@ -1,5 +1,8 @@
 anatomical: []
 name: hbcd_postproc_beta
+description: |
+    hbcd_postproc_beta is the pipeline used by the HEALthy Brain and Child Development Study
+    to process diffusion MRI data [@cieslak2025diffusion].
 space: T1w
 workflows:
 
