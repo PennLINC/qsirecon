@@ -1,6 +1,6 @@
 description: Reconstruct dwis using Dipy, then convert to mrtrix and dsi studio formats
 name: convert_shore_recons
-nodes:
+workflows:
 -   action: 3dSHORE_reconstruction
     input: qsirecon
     name: recon_3dshore

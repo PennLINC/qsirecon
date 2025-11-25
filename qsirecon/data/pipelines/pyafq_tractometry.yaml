@@ -1,6 +1,6 @@
 description: Use pyAFQ to perform the full Tractometry pipeline
 name: pyafq_tractometry
-nodes:
+workflows:
 -   action: pyafq_tractometry
     input: qsirecon
     name: pyafq_tractometry

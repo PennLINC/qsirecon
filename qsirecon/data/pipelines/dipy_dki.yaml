@@ -1,6 +1,6 @@
 description: Reconstruct dwis using Dipy, then convert to mrtrix and dsi studio formats
 name: dipy_dki_recon
-nodes:
+workflows:
 -   action: DKI_reconstruction
     input: qsirecon
     name: dki_recon

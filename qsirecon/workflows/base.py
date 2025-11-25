@@ -79,7 +79,7 @@ def init_single_subject_recon_wf(subject_id):
     from ..interfaces.gradients import _classify_shell_scheme
     from ..interfaces.ingress import QSIPrepDWIIngress
     from ..interfaces.interchange import (
-        ReconWorkflowInputs,
+        ReconPipelineInputs,
         anatomical_workflow_outputs,
         qsiprep_output_names,
         recon_workflow_anatomical_input_fields,
@@ -112,7 +112,7 @@ Many internal operations of *QSIRecon* use
 *Dipy* {dipy_ver} [@dipy].
 For more details on the pipeline, see [the section corresponding
 to workflows in *QSIRecon*'s documentation]\
-(https://qsirecon.readthedocs.io/en/latest/builtin_workflows.html).
+(https://qsirecon.readthedocs.io/en/latest/builtin_pipelines.html).
 
 
 ### References
@@ -273,14 +273,14 @@ to workflows in *QSIRecon*'s documentation]\
         # This node holds all the inputs that will go to the recon workflow.
         # It is the definitive place to check what the input files are
         recon_full_inputs[dwi_file] = pe.Node(
-            ReconWorkflowInputs(),
+            ReconPipelineInputs(),
             name=f"{wf_name}_recon_inputs",
         )
 
         # This is the actual recon workflow for this dwi file
         dwi_recon_wfs[dwi_file] = init_dwi_recon_workflow(
             inputs_dict=inputs_dict,
-            workflow_spec=spec,
+            pipeline_spec=spec,
             name=f"{wf_name}_recon_wf",
         )
 
@@ -417,24 +417,31 @@ def _load_recon_spec(spec_name):
         config.loggers.workflow.warning("Forcing reconstruction to use unrealistic parameters")
         spec = make_sloppy(spec)
 
-    # Expand any "scalars_from" lists into separate nodes
+    if "nodes" in spec:
+        config.loggers.workflow.warning("The 'nodes' key is deprecated. Use 'workflows' instead.")
+        spec["workflows"] = spec["nodes"]
+        del spec["nodes"]
+
+    # Expand any "scalars_from" lists into separate workflows
     orig_spec = deepcopy(spec)
-    spec["nodes"] = []
-    for node in orig_spec["nodes"]:
-        if "scalars_from" in node.keys() and isinstance(node["scalars_from"], list):
-            for scalar_source in node["scalars_from"]:
-                new_node = node.copy()
-                new_node["name"] = f"{node['name']}_{scalar_source}"
-                new_node["scalars_from"] = scalar_source
-                if "qsirecon_suffix" not in new_node.keys():
-                    # Infer the suffix from the source node
-                    for temp_node in spec["nodes"]:
-                        if temp_node["name"] == scalar_source:
-                            new_node["qsirecon_suffix"] = temp_node["qsirecon_suffix"]
+    spec["workflows"] = []
+    for subworkflow in orig_spec["workflows"]:
+        if "scalars_from" in subworkflow.keys() and isinstance(subworkflow["scalars_from"], list):
+            for scalar_source in subworkflow["scalars_from"]:
+                new_subworkflow = subworkflow.copy()
+                new_subworkflow["name"] = f"{subworkflow['name']}_{scalar_source}"
+                new_subworkflow["scalars_from"] = scalar_source
+                if "qsirecon_suffix" not in new_subworkflow.keys():
+                    # Infer the suffix from the source subworkflow
+                    for temp_subworkflow in spec["workflows"]:
+                        if temp_subworkflow["name"] == scalar_source:
+                            new_subworkflow["qsirecon_suffix"] = temp_subworkflow[
+                                "qsirecon_suffix"
+                            ]
                             continue
 
-                spec["nodes"].append(new_node)
+                spec["workflows"].append(new_subworkflow)
         else:
-            spec["nodes"].append(node)
+            spec["workflows"].append(subworkflow)
 
     return spec

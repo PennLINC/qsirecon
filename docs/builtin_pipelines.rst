@@ -1,30 +1,30 @@
 .. include:: links.rst
 
-.. _builtin_workflows:
+.. _builtin_pipelines:
 
 #################################
-Built-In Reconstruction Workflows
+Built-In Reconstruction Pipelines
 #################################
 
-The Built-In recon workflows can be easily selected by specifying their name
+The Built-In recon pipelines can be easily selected by specifying their name
 after the ``--recon-spec`` flag (e.g. ``--recon-spec amico_noddi``).
-Many of these workflows were originally described in :footcite:t:`cieslak2021qsiprep`.
-Not all workflows are suitable for all kinds of dMRI data.
+Many of these pipelines were originally described in :footcite:t:`cieslak2021qsiprep`.
+Not all pipelines are suitable for all kinds of dMRI data.
 Be sure to check :ref:`appropriate_schemes`.
 
 By specifying just a name for ``--recon_spec``, you will be using all the default arguments
-for the various steps in that workflow. Workflows can be customized
-(see :ref:`building_workflows`).
+for the various steps in that pipeline. Pipelines can be customized
+(see :ref:`building_pipelines`).
 
 
 *********
-Workflows
+Pipelines
 *********
 
-MRtrix3-based Workflows
+MRtrix3-based Pipelines
 =======================
 
-The MRtrix workflows are identical up to the FOD estimation. In each case the fiber response
+The MRtrix pipelines are identical up to the FOD estimation. In each case the fiber response
 function is estimated using ``dwi2response dhollander`` :footcite:p:`dhollander2019response`
 with a mask based on the T1w.
 The main differences are in
@@ -77,12 +77,12 @@ These files are located ``anat/`` directories.
 ``mrtrix_multishell_msmt_ACT-hsvs``
 ===================================
 
-This workflow uses the ``msmt_csd`` algorithm :footcite:p:`msmt5tt` to estimate FODs for white matter,
+This pipeline uses the ``msmt_csd`` algorithm :footcite:p:`msmt5tt` to estimate FODs for white matter,
 gray matter and cerebrospinal fluid using *multi-shell acquisitions*. The white matter FODs are
 used for tractography and the T1w segmentation is used for anatomical constraints :footcite:p:`smith2012anatomically`.
 The T1w segmentation uses the hybrid surface volume segmentation (hsvs) :footcite:p:`smith2020hybrid` and
 requires ``--fs-subjects-dir``.
-This workflow produces :ref:`mrtrix_dwi_outputs` and :ref:`mrtrix_anatomical_outputs`.
+This pipeline produces :ref:`mrtrix_dwi_outputs` and :ref:`mrtrix_anatomical_outputs`.
 
 .. _mrtrix_multishell_msmt_ACT-fast:
 
@@ -90,8 +90,8 @@ This workflow produces :ref:`mrtrix_dwi_outputs` and :ref:`mrtrix_anatomical_out
 ===================================
 
 Identical to :ref:`mrtrix_multishell_msmt_ACT-hsvs` except FSL's FAST is used for
-tissue segmentation. This workflow is not recommended.
-This workflow produces :ref:`mrtrix_dwi_outputs`.
+tissue segmentation. This pipeline is not recommended.
+This pipeline produces :ref:`mrtrix_dwi_outputs`.
 
 
 .. _mrtrix_multishell_msmt_noACT:
@@ -100,10 +100,10 @@ This workflow produces :ref:`mrtrix_dwi_outputs`.
 ``mrtrix_multishell_msmt_noACT``
 ================================
 
-This workflow uses the ``msmt_csd`` algorithm :footcite:p:`msmt5tt` to estimate FODs for white matter,
+This pipeline uses the ``msmt_csd`` algorithm :footcite:p:`msmt5tt` to estimate FODs for white matter,
 gray matter and cerebrospinal fluid using *multi-shell acquisitions*. The white matter FODs are
 used for tractography with no T1w-based anatomical constraints.
-This workflow produces :ref:`mrtrix_dwi_outputs`.
+This pipeline produces :ref:`mrtrix_dwi_outputs`.
 
 
 .. _mrtrix_singleshell_ss3t_ACT-hsvs:
@@ -112,13 +112,13 @@ This workflow produces :ref:`mrtrix_dwi_outputs`.
 ``mrtrix_singleshell_ss3t_ACT-hsvs``
 ====================================
 
-This workflow uses the ``ss3t_csd_beta1`` algorithm :footcite:p:`dhollander2016novel`
+This pipeline uses the ``ss3t_csd_beta1`` algorithm :footcite:p:`dhollander2016novel`
 to estimate FODs for white matter,
 and cerebrospinal fluid using *single shell (DTI) acquisitions*. The white matter FODs are
 used for tractography and the T1w segmentation is used for anatomical constraints :footcite:p:`smith2012anatomically`.
 The T1w segmentation uses the hybrid surface volume segmentation (hsvs) :footcite:p:`smith2020hybrid` and
 requires ``--fs-subjects-dir``.
-This workflow produces :ref:`mrtrix_dwi_outputs` and :ref:`mrtrix_anatomical_outputs`.
+This pipeline produces :ref:`mrtrix_dwi_outputs` and :ref:`mrtrix_anatomical_outputs`.
 
 .. _mrtrix_singleshell_ss3t_ACT-fast:
 
@@ -126,26 +126,26 @@ This workflow produces :ref:`mrtrix_dwi_outputs` and :ref:`mrtrix_anatomical_out
 ====================================
 
 Identical to :ref:`mrtrix_singleshell_ss3t_ACT-hsvs` except FSL's FAST is used for
-tissue segmentation. This workflow is not recommended.
-This workflow produces :ref:`mrtrix_dwi_outputs`.
+tissue segmentation. This pipeline is not recommended.
+This pipeline produces :ref:`mrtrix_dwi_outputs`.
 
 .. _mrtrix_singleshell_ss3t_noACT:
 
 ``mrtrix_singleshell_ss3t_noACT``
 =================================
 
-This workflow uses the ``ss3t_csd_beta1`` algorithm :footcite:p:`dhollander2016novel`
+This pipeline uses the ``ss3t_csd_beta1`` algorithm :footcite:p:`dhollander2016novel`
 to estimate FODs for white matter,
 and cerebrospinal fluid using *single shell (DTI) acquisitions*. The white matter FODs are
 used for tractography with no T1w-based anatomical constraints.
-This workflow produces :ref:`mrtrix_dwi_outputs`.
+This pipeline produces :ref:`mrtrix_dwi_outputs`.
 
 .. _pyafq_tractometry:
 
 ``pyafq_tractometry``
 =====================
 
-This workflow uses the AFQ :footcite:p:`pyafq2` implemented in Python :footcite:p:`pyafq` to recognize
+This pipeline uses the AFQ :footcite:p:`pyafq2` implemented in Python :footcite:p:`pyafq` to recognize
 major white matter pathways within the tractography, and then extract tissue properties along
 those pathways. See the `pyAFQ documentation <https://yeatmanlab.github.io/pyAFQ/>`_ .
 
@@ -168,7 +168,7 @@ Identical to :ref:`pyafq_tractometry` except that tractography generated using I
 instead of using pyAFQ's default DIPY tractography.
 This can also be used as an example for how to import tractographies from other
 reconstruciton pipelines to pyAFQ.
-This workflow produces :ref:`mrtrix_dwi_outputs`.
+This pipeline produces :ref:`mrtrix_dwi_outputs`.
 
 PyAFQ Outputs
 -------------
@@ -185,7 +185,7 @@ PyAFQ Outputs
 ``amico_noddi``
 ===============
 
-This workflow estimates the NODDI :footcite:p:`noddi` model using the implementation from
+This pipeline estimates the NODDI :footcite:p:`noddi` model using the implementation from
 AMICO :footcite:p:`amico` and tissue fraction modulation described in :footcite:p:`parker2021not`.
 Images with (modulated) intra-cellular volume fraction (ICVF), isotropic volume fraction (ISOVF),
 (modulated) orientation dispersion (OD), root mean square error (RMSE) and normalized RMSE are written to outputs.
@@ -247,7 +247,7 @@ Other Outputs
 ``dsi_studio_autotrack``
 ========================
 
-This workflow implements DSI Studio's q-space diffeomorphic reconstruction (QSDR), the MNI space
+This pipeline implements DSI Studio's q-space diffeomorphic reconstruction (QSDR), the MNI space
 (ICBM-152) version of GQI, followed by automatic fiber tracking (autotrack) :footcite:p:`autotrack,yeh2022population`
 of 56 white matter pathways. Autotrack uses a population-averaged tractography atlas
 (based on HCP-Young Adult data) to identify tracts of interest in individual subject's data.
@@ -285,7 +285,7 @@ Other Outputs
 ``ss3t_fod_autotrack``
 ======================
 
-This workflow is identical to :ref:`dsi_studio_autotrack`, except it substitutes
+This pipeline is identical to :ref:`dsi_studio_autotrack`, except it substitutes
 the GQI fit with the ``ss3t_csd_beta1`` algorithm :footcite:p:`dhollander2016novel`
 to estimate FODs for white matter.
 
@@ -294,7 +294,7 @@ The QA and ISO images from GQI are used to register the ACPC data to DSI Studio'
 The GQI-based registration is used to transform the template bundles to subject ACPC space,
 where the SS3T-based FODs are used for tractography.
 
-This is a good workflow for doing tractometry on low-quality single shell data.
+This is a good pipeline for doing tractometry on low-quality single shell data.
 If more than one shell is present in the input data, only the highest b-value shell is used.
 
 Scalar Maps
@@ -318,7 +318,7 @@ Other Outputs
 ============
 
 The TORTOISE :footcite:p:`tortoisev3` software can calculate Tensor and MAPMRI fits,
-along with their many associated scalar maps. This workflow only produces scalar maps.
+along with their many associated scalar maps. This pipeline only produces scalar maps.
 
 Scalar Maps
 -----------
@@ -458,7 +458,7 @@ All the scalars generated by these models are then mapped
   1. Into template space
   2. On to the bundles from :ref:`dsi_studio_autotrack`
 
-In total, the scalars estimated by this workflow are:
+In total, the scalars estimated by this pipeline are:
 
 Scalar Maps
 -----------
@@ -504,11 +504,11 @@ No other outputs are produced.
 .. _appropriate_schemes:
 
 ***************************************************
-Which workflows are appropriate for your dMRI data?
+Which pipelines are appropriate for your dMRI data?
 ***************************************************
 
-Most reconstruction workflows will fit a model to the dMRI data. Listed below are
-the model-fitting workflows and which sampling schemes work with them.
+Most reconstruction pipelines will fit a model to the dMRI data. Listed below are
+the model-fitting pipelines and which sampling schemes work with them.
 
 +------------------------------------------------+-------------+------------+-----------------+
 | Name                                           | MultiShell  | Cartesian  |   SingleShell   |
@@ -570,7 +570,7 @@ these pipelines and only look at those numbers.
 If you look at more than one weighting method be sure to adjust your statistics for the
 additional comparisons.
 
-To skip this step in your workflow, you can modify an existing recon pipeline by removing the
+To skip this step in your pipeline, you can modify an existing recon pipeline by removing the
 ``action: connectivity`` section from the yaml file.
 
 .. _connectivity_atlases:
@@ -582,7 +582,7 @@ The following atlases are included in *QSIRecon*.
 This means you do not need to add a ``--datasets`` argument to your command line,
 and can instead select them just with ``--atlases``.
 
-If you previously were using the default atlases in a "connectivity matrix" workflow,
+If you previously were using the default atlases in a "connectivity matrix" pipeline,
 you can match the previous behavior by adding
 
 ``--atlases 4S156Parcels 4S256Parcels 4S456Parcels Brainnetome246Ext AICHA384Ext Gordon333Ext AAL116``
@@ -622,7 +622,7 @@ Atlases are written out to the ``atlases`` subfolder, following
             atlas-<label>_dseg.tsv
 
 Additionally, each atlas is warped to the subject's anatomical space and written out in the
-associated reconstruction workflows dataset.
+associated reconstruction pipelines dataset.
 
 .. code-block::
 
@@ -692,7 +692,7 @@ the ``.mat`` file will contain the following keys:
 MRtrix3 Connectivity Measures
 -----------------------------
 
-MRtrix3 connectivity workflows produce 4 structural connectome outputs for each atlas.
+MRtrix3 connectivity pipelines produce 4 structural connectome outputs for each atlas.
 The 4 connectivity matrix outputs are
 
    * *atlas_<atlas>_radius<N>.count.connectivity*: raw streamline count based matrix

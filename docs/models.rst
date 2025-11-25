@@ -11,7 +11,7 @@ voxel’s value reflects a specific property of the diffusion process.
 
 As each model often estimates several diffusion properties, at present these models
 yield over 40 whole-brain parametric microstructure maps per dMRI imaging session.
-Below we describe the five models that are fit as part of the qsirecon workflow and
+Below we describe the five models that are fit as part of the qsirecon pipeline and
 their associated scalar maps:
 
 .. toctree::

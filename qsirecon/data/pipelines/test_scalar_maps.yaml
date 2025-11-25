@@ -1,6 +1,6 @@
 anatomical: []
 name: bundle_scalar_map
-nodes:
+workflows:
 -   action: DKI_reconstruction
     input: qsirecon
     name: dipy_dki

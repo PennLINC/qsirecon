@@ -48,11 +48,11 @@ subject-space atlas files, along with the `MRtrix3-specific renumbering <https:/
 
 Within the output directory, you will also find a "derivatives" directory containing
 a separate self-contained derivatives dataset for each reconstruction method used by the
-reconstruction workflow.
+reconstruction pipeline.
 
 Each dataset will have its own set of HTML reports summarizing the results of the
 associated reconstruction method.
-Here is an example output structure from a reconstruction workflow with two reconstruction methods:
+Here is an example output structure from a reconstruction pipeline with two reconstruction methods:
 DKI and TORTOISE::
 
    qsirecon/

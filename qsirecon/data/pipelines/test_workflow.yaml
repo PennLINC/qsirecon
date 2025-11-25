@@ -2,7 +2,7 @@ description: |
     test_workflow is a workflow that writes empty files.
     It is useful for testing.
 name: test_workflow
-nodes:
+workflows:
 -   action: test_workflow
     input: qsirecon
     name: test_workflow

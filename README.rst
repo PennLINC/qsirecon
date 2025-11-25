@@ -39,13 +39,13 @@ Full documentation at https://qsirecon.readthedocs.io
 About
 *****
 
-QSIRecon builds post-processing workflows that produce many of the biologically-interesting dMRI
+QSIRecon builds post-processing pipelines that produce many of the biologically-interesting dMRI
 derivatives used for hypothesis testing. The main goal of QSIRecon is to make the state-of-the-art
 methods available in Dipy_, MRTrix_, `DSI Studio`_, PyAFQ_  and other software packages easy to apply on
 preprocessed dMRI data. QSIRecon is companion software for `XCP-D <https://xcp-d.readthedocs.io>`_,
 doing for dMRI what XCP-D does for BOLD.
 
-QSIRecon workflows can produce outputs such as
+QSIRecon pipelines can produce outputs such as
 
  * ODF/FOD reconstruction
  * Model fits and parameter estimation

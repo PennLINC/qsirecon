@@ -1,6 +1,6 @@
 anatomical: []
 name: multishell_scalarfest
-nodes:
+workflows:
 -   action: csd
     input: qsirecon
     name: msmt_csd

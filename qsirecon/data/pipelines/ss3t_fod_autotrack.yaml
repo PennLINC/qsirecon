@@ -1,5 +1,5 @@
 name: FODAutoTrack
-nodes:
+workflows:
 
     # Fit the actual GQI model to the data
 -   action: reconstruction

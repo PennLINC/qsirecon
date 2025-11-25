@@ -1,6 +1,6 @@
 anatomical: []
 name: mrtrix_singleshell_ss3t_noACT
-nodes:
+workflows:
 
 -   action: select_gradients
     input: qsirecon

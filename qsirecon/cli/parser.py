@@ -134,7 +134,7 @@ def _build_parser(**kwargs):
     is_release = not any((currentv.is_devrelease, currentv.is_prerelease, currentv.is_postrelease))
 
     parser = ArgumentParser(
-        description=f"{verstr}: q-Space Image Reconstruction Workflows",
+        description=f"{verstr}: q-Space Image Reconstruction Pipelines",
         formatter_class=ArgumentDefaultsHelpFormatter,
         **kwargs,
     )
@@ -292,7 +292,7 @@ def _build_parser(**kwargs):
         "subject or session directory.",
     )
 
-    g_conf = parser.add_argument_group("Workflow configuration")
+    g_conf = parser.add_argument_group("Pipeline configuration")
     g_conf.add_argument(
         "--infant", action="store_true", help="configure pipelines to process infant brains"
     )
@@ -332,7 +332,7 @@ def _build_parser(**kwargs):
     )
 
     # arguments for reconstructing QSI data
-    g_recon = parser.add_argument_group("Options for recon workflows")
+    g_recon = parser.add_argument_group("Options for recon pipelines")
     g_recon.add_argument(
         "--recon-spec",
         action="store",

@@ -62,17 +62,17 @@ default_input_set = set(recon_workflow_input_fields)
 default_connections = [(trait, trait) for trait in recon_workflow_input_fields]
 
 
-class _ReconWorkflowInputsInputSpec(BaseInterfaceInputSpec):
+class _ReconPipelineInputsInputSpec(BaseInterfaceInputSpec):
     pass
 
 
-class _ReconWorkflowInputsOutputSpec(TraitedSpec):
+class _ReconPipelineInputsOutputSpec(TraitedSpec):
     pass
 
 
-class ReconWorkflowInputs(SimpleInterface):
-    input_spec = _ReconWorkflowInputsInputSpec
-    output_spec = _ReconWorkflowInputsOutputSpec
+class ReconPipelineInputs(SimpleInterface):
+    input_spec = _ReconPipelineInputsInputSpec
+    output_spec = _ReconPipelineInputsOutputSpec
 
     def _run_interface(self, runtime):
         inputs = self.inputs.get()
@@ -82,8 +82,8 @@ class ReconWorkflowInputs(SimpleInterface):
 
 
 for name in recon_workflow_input_fields:
-    _ReconWorkflowInputsInputSpec.add_class_trait(name, traits.Any)
-    _ReconWorkflowInputsOutputSpec.add_class_trait(name, traits.Any)
+    _ReconPipelineInputsInputSpec.add_class_trait(name, traits.Any)
+    _ReconPipelineInputsOutputSpec.add_class_trait(name, traits.Any)
 
 
 class _ReconAnatomicalDataInputSpec(BaseInterfaceInputSpec):

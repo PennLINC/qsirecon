@@ -11,8 +11,8 @@ Contents
    installation
    quickstart
    models
-   builtin_workflows
-   building_workflows
+   builtin_pipelines
+   building_pipelines
    outputs
    contributors
    changes
