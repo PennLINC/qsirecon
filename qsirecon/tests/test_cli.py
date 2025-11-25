@@ -732,9 +732,9 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
             estimate_dir,
             "derivatives",
             "qsirecon-MRtrix3_act-None_response-subject",
-            "sub-PNC",
+            "sub-ABCD",
             "dwi",
-            f"sub-PNC_acq-realistic_space-T1w_model-ss3t_param-fod_label-{label}_dwimap.json",
+            f"sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-{label}_dwimap.json",
         )
         assert os.path.exists(json_file)
         with open(json_file, "r") as f:
