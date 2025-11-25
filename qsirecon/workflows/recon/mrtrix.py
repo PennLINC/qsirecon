@@ -236,10 +236,10 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
         (create_mif, estimate_fod, [("mif_file", "in_file")]),
         (inputnode, estimate_fod, [("dwi_mask", "mask_file")]),
         (create_mif, estimate_response, [("mif_file", "in_file")]),
-        (estimate_response, outputnode, [
-            ("wm_file", "wm_txt"),
-            ("gm_file", "gm_txt"),
-            ("csf_file", "csf_txt"),
+        (response_buffer, outputnode, [
+            ("wm_txt", "wm_txt"),
+            ("gm_txt", "gm_txt"),
+            ("csf_txt", "csf_txt"),
         ]),
         (inputnode, estimate_response, [("dwi_mask", "in_mask")])
     ])  # fmt:skip
