@@ -38,6 +38,8 @@ from nipype.interfaces.mrtrix3.utils import Generate5ttInputSpec
 from nipype.utils.filemanip import fname_presuffix, split_filename, which
 from scipy.io.matlab import loadmat, savemat
 
+from ..utils.boilerplate import ConditionalDoc
+
 LOGGER = logging.getLogger("nipype.interface")
 RC3_ROOT = which("average_response")  # Only exists in RC3
 if RC3_ROOT is not None:
@@ -335,7 +337,20 @@ class MTNormalize(SS3TBase):
 
 class EstimateFODInputSpec(MRTrix3BaseInputSpec):
     algorithm = traits.Enum(
-        "csd", "msmt_csd", argstr="%s", position=-8, mandatory=True, desc="FOD algorithm"
+        "csd",
+        "msmt_csd",
+        argstr="%s",
+        position=-8,
+        mandatory=True,
+        desc=(
+            "FOD algorithm. This can be set with fod['algorithm'] in the reconstruction "
+            "specification."
+        ),
+        doc=ConditionalDoc(
+            "FOD algorithm was set to {value}.",
+            if_false="FOD algorithm was set to the default value of 'csd'.",
+        ),
+        recon_spec_accessible=True,
     )
     in_file = File(exists=True, argstr="%s", position=-7, mandatory=True, desc="input DWI image")
     wm_txt = File(argstr="%s", position=-6, mandatory=True, desc="WM response text file")
