@@ -117,11 +117,8 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
     workflow = Workflow(name=name)
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
-    desc = """
-
-#### MRtrix3 Reconstruction
-
-"""
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    desc = f"\n\n####MRtrix3 Reconstruction{suffix_str}\n\n"
 
     # Response estimation
     response = params.get("response", {})
@@ -132,26 +129,21 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
 
     response["algorithm"] = response_algorithm
     response["nthreads"] = omp_nthreads
+    tissue_str = "Multi-tissue "
     if response_algorithm == "csd":
-        desc += "Single-tissue "
-    else:
-        desc += "Multi-tissue "
+        tissue_str = "Single-tissue "
+
+    seg_str = "using an unsupervised multi-tissue method {}.".format(
+        CITATIONS[response_algorithm]
+    )
+    if response_algorithm == "msmt_5tt":
+        seg_str = "using a T1w-based segmentation {}.".format(CITATIONS[response_algorithm])
+
     LOGGER.info("Response configuration: %s", response)
 
-    desc += "\n".join(
-        [
-            "fiber response functions were estimated using the {} algorithm. ",
-            "FODs were estimated via constrained spherical deconvolution ",
-            "(CSD, @originalcsd, @tournier2008csd) ",
-        ]
-    ).format(response_algorithm)
-
-    if response_algorithm == "msmt_5tt":
-        desc += "using a T1w-based segmentation {}.".format(CITATIONS[response_algorithm])
-    else:
-        desc += "using an unsupervised multi-tissue method {}.".format(
-            CITATIONS[response_algorithm]
-        )
+    desc += f"""{tissue_str} fiber response functions were estimated using
+the {response_algorithm} algorithm. FODs were estimated via constrained
+spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}"""
 
     # FOD estimation
     fod = params.get("fod", {})
@@ -168,14 +160,15 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
     method_5tt = response.pop("method_5tt", "dhollander")
     # Use dwi2response from 3Tissue for updated dhollander
     estimate_response = pe.Node(
-        SS3TDwi2Response(**response), name="estimate_response", n_procs=omp_nthreads
+        SS3TDwi2Response(**response),
+        name="estimate_response",
+        n_procs=omp_nthreads
     )
 
     if response_algorithm == "msmt_5tt":
         if method_5tt == "hsvs":
             workflow.connect([
-                (inputnode, estimate_response, [
-                    ("qsiprep_5tt_hsvs", "mtt_file")])
+                (inputnode, estimate_response, [("qsiprep_5tt_hsvs", "mtt_file")])
             ])  # fmt:skip
         else:
             raise Exception("Unrecognized 5tt method: " + method_5tt)
@@ -185,12 +178,8 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
         desc += " Reconstruction was done using MRtrix3 (@mrtrix3)."
     elif fod_algorithm == "ss3t":
         estimate_fod = pe.Node(SS3TEstimateFOD(**fod), name="estimate_fod", n_procs=omp_nthreads)
-        desc += "\n".join(
-            [
-                "A single-shell-optimized multi-tissue CSD was performed using MRtrix3Tissue",
-                "(https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)",
-            ]
-        )
+        desc += """ A single-shell-optimized multi-tissue CSD was performed using MRtrix3Tissue
+(https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
 
     workflow.connect([
         (estimate_response, estimate_fod, [("wm_file", "wm_txt"),

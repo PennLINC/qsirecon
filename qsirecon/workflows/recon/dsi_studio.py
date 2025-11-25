@@ -75,9 +75,8 @@ def init_dsi_studio_recon_wf(inputs_dict, name="dsi_studio_recon", qsirecon_suff
     outputnode.inputs.recon_scalars = []
     plot_reports = not config.execution.skip_odf_reports
     omp_nthreads = config.nipype.omp_nthreads
-    desc = """DSI Studio Reconstruction
-
-: """
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    desc = f"\n\n####DSI Studio Reconstruction{suffix_str}\n\n"
     create_src = pe.Node(DSIStudioCreateSrc(), name="create_src")
     romdd = params.get("ratio_of_mean_diffusion_distance", 1.25)
     gqi_recon = pe.Node(
@@ -85,13 +84,10 @@ def init_dsi_studio_recon_wf(inputs_dict, name="dsi_studio_recon", qsirecon_suff
         name="gqi_recon",
         n_procs=omp_nthreads,
     )
-    desc += """\
+    desc += f"""\
 Diffusion orientation distribution functions (ODFs) were reconstructed using
 generalized q-sampling imaging (GQI, @yeh2010) with a ratio of mean diffusion
-distance of %02f in DSI Studio (version %s). """ % (
-        romdd,
-        DSI_STUDIO_VERSION,
-    )
+distance of {romdd} in DSI Studio (version {DSI_STUDIO_VERSION}). """
 
     workflow.connect([
         (inputnode, create_src, [
@@ -233,10 +229,11 @@ def init_dsi_studio_tractography_wf(
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
     workflow = Workflow(name=name)
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
     desc = (
-        "#### DSI Studio Tractography\n\nTractography was run in DSI Studio "
-        "(version %s) using a deterministic algorithm "
-        "[@yeh2013]. " % DSI_STUDIO_VERSION
+        f"#### DSI Studio Tractography{suffix_str}\n\n"
+        f"Tractography was run in DSI Studio (version {DSI_STUDIO_VERSION}) using a "
+        "deterministic algorithm [@yeh2013]. "
     )
     tracking = pe.Node(
         DSIStudioTracking(num_threads=omp_nthreads, **params),
@@ -403,10 +400,11 @@ def init_dsi_studio_autotrack_wf(
         name="outputnode",
     )
     outputnode.inputs.recon_scalars = []
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
     desc = (
-        "#### DSI Studio Automatic Tractography\n\nAutomatic Tractography was run in "
-        "DSI Studio (version %s) and bundle shape statistics were calculated [@autotrack]. "
-        % DSI_STUDIO_VERSION
+        f"####DSI Studio Automatic Tractography{suffix_str}\n\n"
+        f"Automatic Tractography was run in DSI Studio (version {DSI_STUDIO_VERSION}) "
+        "and bundle shape statistics were calculated [@autotrack]. "
     )
     model_name = params.pop("model", "gqi")
     omp_nthreads = config.nipype.omp_nthreads

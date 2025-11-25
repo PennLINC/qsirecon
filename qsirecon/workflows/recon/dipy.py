@@ -155,7 +155,8 @@ def init_dipy_brainsuite_shore_recon_wf(
     )
     plot_reports = not config.execution.skip_odf_reports
     workflow = Workflow(name=name)
-    desc = "#### Dipy Reconstruction\n\n"
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    desc = f"\n\n####Dipy Reconstruction{suffix_str}\n\n"
 
     # Do we have deltas?
     deltas = (params.get("big_delta", None), params.get("small_delta", None))
@@ -745,7 +746,8 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
         name="recon_scalars",
     )
     workflow = Workflow(name=name)
-    desc = "#### Dipy Reconstruction\n\n"
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    desc = f"\n\n####Dipy Reconstruction{suffix_str}\n\n"
 
     plot_reports = not config.execution.skip_odf_reports
     micro_metrics = params.pop("wmti", False)

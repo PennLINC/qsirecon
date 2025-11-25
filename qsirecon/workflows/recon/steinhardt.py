@@ -40,9 +40,8 @@ def init_steinhardt_order_param_wf(inputs_dict, name="sop_recon", qsirecon_suffi
 
     workflow = Workflow(name=name)
     sop_order = params.get("order", 8)
-    desc = """Steinhardt Order Parameter Calculation:
-
-: """
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    desc = f"\n\n####Steinhardt Order Parameter Calculation{suffix_str}\n\n"
     sh_mif_to_nifti = pe.Node(
         MRConvert(out_file="SH.nii", args="-strides -1,-2,3"), name="sh_mif_to_nifti"
     )

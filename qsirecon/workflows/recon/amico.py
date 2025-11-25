@@ -86,9 +86,10 @@ def init_amico_noddi_fit_wf(
     workflow = Workflow(name=name)
 
     plot_reports = params.pop("plot_reports", True)
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
     desc = (
-        "\n\n#### NODDI Reconstruction\n\n"
-        + "The NODDI model (@noddi) was fit using the AMICO implementation (@amico). "
+        f"\n\n#### NODDI Reconstruction{suffix_str}\n\n"
+        "The NODDI model (@noddi) was fit using the AMICO implementation (@amico). "
     )
 
     recon_scalars = pe.Node(
