@@ -40,9 +40,7 @@ class QSINipypeDocstring(BaseNipypeDocstring):
 class QSIInterfaceDocstring(BaseNipypeDocstring):
     """Custom Interface docstring that lists only recon-spec-accessible inputs."""
 
-    def __init__(
-        self, docstring, config=None, app=None, what="", name="", obj=None, options=None
-    ):
+    def __init__(self, docstring, config=None, app=None, what="", name="", obj=None, options=None):
         # Initialize with the NipypeDocstring behavior (not InterfaceDocstring) to avoid
         # the default mandatory/optional sections.
         super().__init__(docstring, config, app, what, name, obj, options)
@@ -91,7 +89,9 @@ class QSIInterfaceDocstring(BaseNipypeDocstring):
 
                 # Always include developer information content; only show its heading
                 # when Recon Spec Options are present
-                self._parsed_lines += _format_developer_information(obj, include_heading=bool(all_items))
+                self._parsed_lines += _format_developer_information(
+                    obj, include_heading=bool(all_items)
+                )
         except Exception:
             # Never fail the build due to docstring processing
             pass
@@ -153,7 +153,6 @@ def setup(app):
     app.connect("autodoc-skip-member", nipype_skip_member)
 
     return {"version": NIPYPE_VERSION, "parallel_read_safe": True}
-
 
 
 def _format_recon_spec_item(inputs, name, spec):
@@ -275,7 +274,7 @@ def _format_recon_spec_card(inputs, name, spec):
         if getattr(spec, "usedefault", False):
             default = spec.default_value()[1]
             if isinstance(default, (bytes, str)) and not default:
-                default = '\"\"'
+                default = '""'
             lines += [f"      :bdg-info:`Default` {str(default)}"]
     except Exception:
         pass
@@ -483,4 +482,3 @@ def _format_recon_spec_blocks(inputs, items):
     ]
 
     return lines
-

@@ -158,9 +158,7 @@ spherical deconvolution (CSD, @originalcsd, @tournier2008csd) {seg_str}"""
     method_5tt = response.pop("method_5tt", "dhollander")
     # Use dwi2response from 3Tissue for updated dhollander
     estimate_response = pe.Node(
-        SS3TDwi2Response(**response),
-        name="estimate_response",
-        n_procs=omp_nthreads
+        SS3TDwi2Response(**response), name="estimate_response", n_procs=omp_nthreads
     )
 
     if response_algorithm == "msmt_5tt":
