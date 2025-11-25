@@ -280,7 +280,7 @@ to workflows in *QSIRecon*'s documentation]\
         # This is the actual recon workflow for this dwi file
         dwi_recon_wfs[dwi_file] = init_dwi_recon_workflow(
             inputs_dict=inputs_dict,
-            workflow_spec=spec,
+            pipeline_spec=spec,
             name=f"{wf_name}_recon_wf",
         )
 
