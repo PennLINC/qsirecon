@@ -199,7 +199,9 @@ def init_dwi_recon_workflow(
         # There are some special cases where we need a second input subworkflow.
         if "csd_input" in subworkflow:
             csd_input = subworkflow["csd_input"]
-            config.loggers.workflow.info(f"Using csd inputs from {csd_input} in {subworkflow_name}.")
+            config.loggers.workflow.info(
+                f"Using csd inputs from {csd_input} in {subworkflow_name}."
+            )
 
             special_upstream_subworkflow = workflow.get_node(csd_input)
             special_upstream_outputnode_name = f"{csd_input}.outputnode"

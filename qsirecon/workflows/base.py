@@ -435,7 +435,9 @@ def _load_recon_spec(spec_name):
                     # Infer the suffix from the source subworkflow
                     for temp_subworkflow in spec["workflows"]:
                         if temp_subworkflow["name"] == scalar_source:
-                            new_subworkflow["qsirecon_suffix"] = temp_subworkflow["qsirecon_suffix"]
+                            new_subworkflow["qsirecon_suffix"] = temp_subworkflow[
+                                "qsirecon_suffix"
+                            ]
                             continue
 
                 spec["workflows"].append(new_subworkflow)
