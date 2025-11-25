@@ -110,7 +110,8 @@ def init_dwi_recon_workflow(
         subworkflow_name = subworkflow["name"]
         subworkflow = workflow.get_node(subworkflow_name)
 
-        # If this subworkflow is consuming scalar images from other subworkflows, add them to the input.
+        # If this subworkflow is consuming scalar images from other subworkflows,
+        # add them to the input.
         # We can't collect scalars from this subworkflow or it would create a cycle in the graph.
         scalar_source = subworkflow.get("scalars_from", None)
         if scalar_source:
