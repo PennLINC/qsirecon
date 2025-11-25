@@ -112,7 +112,7 @@ Many internal operations of *QSIRecon* use
 *Dipy* {dipy_ver} [@dipy].
 For more details on the pipeline, see [the section corresponding
 to workflows in *QSIRecon*'s documentation]\
-(https://qsirecon.readthedocs.io/en/latest/builtin_workflows.html).
+(https://qsirecon.readthedocs.io/en/latest/builtin_pipelines.html).
 
 
 ### References
