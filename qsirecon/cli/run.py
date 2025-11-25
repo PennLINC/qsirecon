@@ -22,7 +22,7 @@
 #
 #     https://www.nipreps.org/community/licensing/
 #
-"""q-Space Image reconstruction workflows."""
+"""q-Space Image reconstruction pipelines."""
 
 from .. import config
 
