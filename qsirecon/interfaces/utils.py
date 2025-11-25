@@ -425,16 +425,22 @@ class _LoadResponseFunctionsInputSpec(BaseInterfaceInputSpec):
         mandatory=True,
         desc="WM response function file. Only MRtrix-format txt files are currently supported.",
     )
-    gm_file = traits.Either(None, File(
-        exists=False,
-        mandatory=False,
-        desc="GM response function file. Only MRtrix-format txt files are currently supported.",
-    ))
-    csf_file = traits.Either(None, File(
-        exists=False,
-        mandatory=False,
-        desc="CSF response function file. Only MRtrix-format txt files are currently supported.",
-    ))
+    gm_file = traits.Either(
+        None,
+        File(
+            exists=False,
+            mandatory=False,
+            desc="GM response function file. Only MRtrix-format txt files are currently supported.",
+        ),
+    )
+    csf_file = traits.Either(
+        None,
+        File(
+            exists=False,
+            mandatory=False,
+            desc="CSF response function file. Only MRtrix-format txt files are currently supported.",
+        ),
+    )
     using_multitissue = traits.Bool(desc="Whether to use multitissue response functions or not.")
     input_dir = traits.Directory(
         exists=True,
@@ -454,6 +460,7 @@ class LoadResponseFunctions(SimpleInterface):
 
     TODO: Support BEP016-format JSON files.
     """
+
     input_spec = _LoadResponseFunctionsInputSpec
     output_spec = _LoadResponseFunctionsOutputSpec
 
