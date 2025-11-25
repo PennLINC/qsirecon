@@ -218,7 +218,7 @@ def init_test_wf(inputs_dict, name="test_wf", qsirecon_suffix="test", params={})
     workflow = Workflow(name=name)
     outputnode.inputs.recon_scalars = []
     workflow.__desc__ = (
-        "Testing Workflow\n\n: This workflow tests boilerplate, figures and derivatives"
+        "\n\n#### Testing Workflow\n\nThis workflow tests boilerplate, figures and derivatives."
     )
 
     write_metadata = pe.Node(WriteSidecar(metadata=inputs_dict), name="write_metadata")
