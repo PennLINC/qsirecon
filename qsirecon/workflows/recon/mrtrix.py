@@ -133,11 +133,9 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
     if response_algorithm == "csd":
         tissue_str = "Single-tissue "
 
-    seg_str = "using an unsupervised multi-tissue method {}.".format(
-        CITATIONS[response_algorithm]
-    )
+    seg_str = f"using an unsupervised multi-tissue method {CITATIONS[response_algorithm]}."
     if response_algorithm == "msmt_5tt":
-        seg_str = "using a T1w-based segmentation {}.".format(CITATIONS[response_algorithm])
+        seg_str = f"using a T1w-based segmentation {CITATIONS[response_algorithm]}."
 
     LOGGER.info("Response configuration: %s", response)
 
