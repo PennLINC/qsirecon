@@ -3,7 +3,7 @@
 .. _`BIDS Derivatives`: https://docs.google.com/document/d/1Wwc4A6Mow4ZPPszDIWfCUCRNstn7d_zzaWPcfcHmgI4/edit
 .. _Usage: usage.html
 .. _Installation: installation.html
-.. _workflows: workflows.html
+.. _pipelines: builtin_pipelines.html
 .. _Dipy: https://dipy.org
 .. _ANTs: https://stnava.github.io/ANTs/
 .. _`DSI Studio`: http://dsi-studio.labsolver.org/

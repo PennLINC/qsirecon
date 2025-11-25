@@ -150,7 +150,7 @@ jobs:
           key: singleshell_output-02
       - run: *runinstall
       - run:
-          name: Test the SS3T AutoTrack workflow
+          name: Test the SS3T AutoTrack pipeline
           no_output_timeout: 1h
           command: |
             pytest -rP -o log_cli=true -m "ss3t_fod_autotrack" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
@@ -174,7 +174,7 @@ jobs:
           key: singleshell_output-02
       - run: *runinstall
       - run:
-          name: Test the 3Tissue recon workflows
+          name: Test the 3Tissue recon pipelines
           no_output_timeout: 1h
           command: |
             pytest -rP -o log_cli=true -m "mrtrix_singleshell_ss3t_act" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
@@ -200,7 +200,7 @@ jobs:
           key: custom_atlases-02
       - run: *runinstall
       - run:
-          name: Test the 3Tissue recon workflows
+          name: Test the 3Tissue recon pipelines
           no_output_timeout: 1h
           command: |
             pytest -rP -o log_cli=true -m "mrtrix_singleshell_ss3t_noact" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
@@ -224,7 +224,7 @@ jobs:
           key: hsvs_data-02
       - run: *runinstall
       - run:
-          name: Test the HSVS recon workflows
+          name: Test the HSVS recon pipelines
           no_output_timeout: 1h
           command: |
             pytest -rP -o log_cli=true -m "mrtrix_multishell_msmt_hsvs" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
@@ -319,7 +319,7 @@ jobs:
           key: multishell_output-03
       - run: *runinstall
       - run:
-          name: Test the CSD recon workflows
+          name: Test the CSD recon pipelines
           no_output_timeout: 1h
           command: |
             pytest -rP -o log_cli=true -m "mrtrix3_recon" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
@@ -343,7 +343,7 @@ jobs:
           key: multishell_output-03
       - run: *runinstall
       - run:
-          name: Test the AutoTrack workflow
+          name: Test the AutoTrack pipeline
           no_output_timeout: 1h
           command: |
             pytest -rP -o log_cli=true -m "autotrack" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
@@ -367,7 +367,7 @@ jobs:
           key: multishell_output-03
       - run: *runinstall
       - run:
-          name: Test the TORTOISE recon workflow
+          name: Test the TORTOISE recon pipeline
           no_output_timeout: 1h
           command: |
             pytest -rP -o log_cli=true -m "tortoise_recon" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
@@ -391,7 +391,7 @@ jobs:
           key: multishell_output-03
       - run: *runinstall
       - run:
-          name: Test the DSI Studio GQI recon workflow
+          name: Test the DSI Studio GQI recon pipeline
           no_output_timeout: 1h
           command: |
             pytest -rP -o log_cli=true -m "dsi_studio_gqi_recon" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
@@ -415,7 +415,7 @@ jobs:
           key: multishell_output-03
       - run: *runinstall
       - run:
-          name: Test the DIPY recon workflows
+          name: Test the DIPY recon pipelines
           no_output_timeout: 1h
           command: |
             pytest -rP -o log_cli=true -m "dipy_mapmri" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
@@ -439,7 +439,7 @@ jobs:
           key: multishell_output-03
       - run: *runinstall
       - run:
-          name: Test the DIPY recon workflows
+          name: Test the DIPY recon pipelines
           no_output_timeout: 1h
           command: |
             pytest -rP -o log_cli=true -m "dipy_dki" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
@@ -463,7 +463,7 @@ jobs:
           key: multishell_output-03
       - run: *runinstall
       - run:
-          name: Test the PYAFQ standalone recon workflow
+          name: Test the PYAFQ standalone recon pipeline
           no_output_timeout: 1h
           command: |
             pytest -rP -o log_cli=true -m "pyafq_recon_full" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
@@ -487,7 +487,7 @@ jobs:
           key: multishell_output-03
       - run: *runinstall
       - run:
-          name: Test the PYAFQ workflow with mrtrix tractography
+          name: Test the PYAFQ pipeline with mrtrix tractography
           no_output_timeout: 1h
           command: |
             pytest -rP -o log_cli=true -m "pyafq_recon_external_trk" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
@@ -511,7 +511,7 @@ jobs:
           key: multishell_output-03
       - run: *runinstall
       - run:
-          name: Test scalar_mapping workflow
+          name: Test scalar_mapping pipeline
           no_output_timeout: 1h
           command: |
             pytest -rP -o log_cli=true -m "scalar_mapper" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
@@ -538,7 +538,7 @@ jobs:
           key: singleshell_output-02
       - run: *runinstall
       - run:
-          name: Test the DIPY recon workflows
+          name: Test the DIPY recon pipelines
           command: |
             pytest -rP -o log_cli=true -m "amico_noddi" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
             mkdir /src/coverage

@@ -41,7 +41,7 @@ closely as possible (likely imperfectly). In this case, the FreeSurfer
 skull-stripped ``brain.mgz`` is rigidly registered to ``dwiref`` of each
 preprocessed DWI. The FreeSurfer brain mask is resampled to the grid of the DWI.
 
-If structural connectivity is calculated during the reconstruction workflow
+If structural connectivity is calculated during the reconstruction pipeline
 (or any atlases are specified with the ``--atlases`` parameter),
 the coregistered-to-DWI ``brain.mgz`` image will be
 normalized to the MNI152NLin2009cAsym template using ``antsRegistration``.
@@ -56,7 +56,7 @@ Using Data Preprocessed by Other Pipelines
 Many open datasets are provided in minimally preprocessed form. Most of these have a
 bespoke processing pipeline and in many cases these pipelines are very similar to
 *QSIRecon*. Instead of preprocessing these from scratch, you can run reconstruction
-workflows on the minimally preprocessed data by specifying the pipeline that was
+pipelines on the minimally preprocessed data by specifying the pipeline that was
 used for preprocessing.
 
 UK BioBank Preprocessed Data
@@ -65,7 +65,7 @@ UK BioBank Preprocessed Data
 To use the UK BioBank preprocessed dMRI data, specify ``--input-type ukb``.
 Note that the transforms to/from MNI space are not able to be used at this time.
 This means that a new spatial normalization will have to be estimated in order to
-use any of the workflows that require one.
+use any of the pipelines that require one.
 Also note that only DSI_Studio recon-specs have been tested for UKB inputs.
 
 HCP Young Adult Preprocessed Data
@@ -80,11 +80,11 @@ and be mindful about how you mount the directory in Docker/Apptainer.
 .. _anat_reqs:
 
 ********************************************
-Anatomical Data for Reconstruction Workflows
+Anatomical Data for Reconstruction Pipelines
 ********************************************
 
-Some reconstruction workflows require additional anatomical data to work properly.
-This table shows which reconstruction workflows depend on the availibility of
+Some reconstruction pipelines require additional anatomical data to work properly.
+This table shows which reconstruction pipelines depend on the availibility of
 anatomical data:
 
 

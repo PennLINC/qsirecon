@@ -1,15 +1,15 @@
 .. include:: links.rst
 
-.. _building_workflows:
+.. _building_pipelines:
 
 ###############################
-Custom Reconstruction Workflows
+Custom Reconstruction Pipelines
 ###############################
 
-*QSIRecon* workflows are defined in ``YAML`` files. The :ref:`builtin_workflows`
+*QSIRecon* pipelines are defined in ``YAML`` files. The :ref:`builtin_pipelines`
 can be found in the *QSIRecon* ``YAML`` format on
 `github <https://github.com/PennLINC/qsirecon/tree/main/qsirecon/data/pipelines>`_,
-and are a great place to get started with customizing parts of these workflows.
+and are a great place to get started with customizing parts of these pipelines.
 
 This format has a few key parts.
 
@@ -65,7 +65,7 @@ The entry for this in the ``"nodes"`` list could look like:
 *QSIRecon* figures out which software to use based on the values specified
 for ``"software"`` and ``"action"``. The full list of recognized actions
 for each software package can be found in
-:meth:`qsirecon.workflows.build_workflow.workflow_from_spec`.
+:meth:`qsirecon.workflows.recon.build_workflow.workflow_from_spec`.
 All nodes must have a ``name`` element, this serves
 as an id for this node and is used for :ref:`passing_downstream`.
 
@@ -112,7 +112,7 @@ to MRtrix3 tractography.
 Mapping scalar data to different output spaces
 ----------------------------------------------
 
-Most workflows produce interesting maps of model-derived parameters.
+Most pipelines produce interesting maps of model-derived parameters.
 These parameters are calculated in subject native space, which is not
 particularly useful for statistics. You can map these scalars to standard
 spaces with a "template mapper". Suppose I wanted to fit a NODDI model and

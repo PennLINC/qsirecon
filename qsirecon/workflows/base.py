@@ -79,7 +79,7 @@ def init_single_subject_recon_wf(subject_id):
     from ..interfaces.gradients import _classify_shell_scheme
     from ..interfaces.ingress import QSIPrepDWIIngress
     from ..interfaces.interchange import (
-        ReconWorkflowInputs,
+        ReconPipelineInputs,
         anatomical_workflow_outputs,
         qsiprep_output_names,
         recon_workflow_anatomical_input_fields,
@@ -272,7 +272,7 @@ to workflows in *QSIRecon*'s documentation]\
         # This node holds all the inputs that will go to the recon workflow.
         # It is the definitive place to check what the input files are
         recon_full_inputs[dwi_file] = pe.Node(
-            ReconWorkflowInputs(),
+            ReconPipelineInputs(),
             name=f"{wf_name}_recon_inputs",
         )
 

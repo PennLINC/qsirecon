@@ -581,7 +581,7 @@ class workflow(_Config):
     input_type = None
     """Specifies which pipeline was used to preprocess data in ``bids_dir``."""
     recon_spec = None
-    """Recon workflow specification."""
+    """Recon pipeline specification."""
     output_resolution = None
     """Isotropic voxel size for outputs."""
     qsirecon_suffixes = []
@@ -591,9 +591,9 @@ class workflow(_Config):
     def init(cls):
         from .workflows.base import _load_recon_spec
 
-        workflow_spec = _load_recon_spec(cls.recon_spec)
+        pipeline_spec = _load_recon_spec(cls.recon_spec)
         qsirecon_suffixes = []
-        for node_spec in workflow_spec["nodes"]:
+        for node_spec in pipeline_spec["nodes"]:
             qsirecon_suffix = node_spec.get("qsirecon_suffix", None)
             qsirecon_suffixes += [qsirecon_suffix] if qsirecon_suffix else []
 

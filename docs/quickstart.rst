@@ -13,9 +13,9 @@ a high performance computing cluster, so we will assume Apptainer is being
 used throughout this documentation. See :ref:`install_qsirecon` on how to create
 a `sif` file or pull the image with Docker.
 
-Next, you need to decide which workflow you'd like to run. You can pick
-from any of the :ref:`builtin_workflows` or :ref:`building_workflows`.
-Here we'll pick the ``dsi_studio_autotrack`` workflow.
+Next, you need to decide which pipeline you'd like to run. You can pick
+from any of the :ref:`builtin_pipelines` or :ref:`building_pipelines`.
+Here we'll pick the ``dsi_studio_autotrack`` pipeline.
 
 Finally, you'll need to craft a command to set up your *QSIRecon* run.
 Suppose you're in a directory where there are some qsiprep results in
@@ -42,7 +42,7 @@ You will find errors (if any occurred) and configuration files for each subject
 directly under ``results/sub-*``. Each analysis also creates its own directory that
 contains results per subject. In the case of ``dsi_studio_autotrack`` we will see
 ``results/qsirecon-DSIStudio/sub-*`` containing the outputs from the ss3t_autotrack
-workflow. Some workflows produce multiple directories, particularly when multiple
+pipeline. Some pipelines produce multiple directories, particularly when multiple
 models are fit.
 
 **********************

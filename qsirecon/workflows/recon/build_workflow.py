@@ -52,18 +52,18 @@ def _check_repeats(nodelist):
 
 
 def init_dwi_recon_workflow(
-    workflow_spec,
+    pipeline_spec,
     inputs_dict,
     name="recon_wf",
 ):
-    """Convert a workflow spec into a nipype workflow.
+    """Convert a pipeline spec into a nipype workflow.
 
     Parameters
     ----------
-    workflow_spec : dict
-        A dictionary that describes the workflow to be built.
+    pipeline_spec : dict
+        A dictionary that describes the pipeline to be built.
     inputs_dict : dict
-        A dictionary of inputs to the workflow.
+        A dictionary of inputs to the pipeline.
         Keys include "dwi_file" (path to the DWI file),
         "dwi_metadata" (metadata for the DWI file),
         and the keys from the ``status`` output of
@@ -75,11 +75,11 @@ def init_dwi_recon_workflow(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
     )
     # We don't want to modify the original workflow spec
-    workflow_spec = deepcopy(workflow_spec)
+    pipeline_spec = deepcopy(pipeline_spec)
     # Read nodes from workflow spec, make sure we can implement them
     nodes_to_add = []
     workflow_metadata_nodes = {}
-    for node_spec in workflow_spec["nodes"]:
+    for node_spec in pipeline_spec["nodes"]:
         if not node_spec.get("name"):
             raise Exception(f"Node has no name [{node_spec}]")
 
@@ -104,7 +104,7 @@ def init_dwi_recon_workflow(
     _check_repeats(workflow.list_node_names())
 
     # Now that all nodes are in the workflow, connect them
-    for node_spec in workflow_spec["nodes"]:
+    for node_spec in pipeline_spec["nodes"]:
         # get the nipype node object
         node_name = node_spec["name"]
         node = workflow.get_node(node_name)
@@ -114,7 +114,7 @@ def init_dwi_recon_workflow(
         scalar_source = node_spec.get("scalars_from", None)
         if scalar_source:
             found = False
-            for in_node_spec in workflow_spec["nodes"]:
+            for in_node_spec in pipeline_spec["nodes"]:
                 if in_node_spec["name"] == scalar_source:
                     in_node = workflow.get_node(in_node_spec["name"])
                     workflow.connect([
