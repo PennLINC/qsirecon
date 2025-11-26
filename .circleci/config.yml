@@ -553,6 +553,32 @@ jobs:
       - store_artifacts:
           path: /src/qsirecon/.circleci/out/amico_noddi/
 
+  mrtrix3_recon_with_response_functions:
+    <<: *dockersetup
+    resource_class: medium+
+    environment:
+      CIRCLE_CPUS: 3
+    steps:
+      - checkout
+      - restore_cache:
+          key: multishell_output-03
+      - run: *runinstall
+      - run:
+          name: Test the MRtrix3 recon workflow with response functions
+          command: |
+            pytest -rP -o log_cli=true -m "mrtrix3_recon_with_response_functions" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
+            mkdir /src/coverage
+            mv /src/qsirecon/.coverage /src/coverage/.coverage.mrtrix3_recon_with_response_functions
+            # remove nifti files before uploading artifacts
+            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
+            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
+      - persist_to_workspace:
+          root: /src/coverage/
+          paths:
+            - .coverage.mrtrix3_recon_with_response_functions
+      - store_artifacts:
+          path: /src/qsirecon/.circleci/out/mrtrix3_recon_with_response_functions/
+
   merge_coverage:
     <<: *dockersetup
     steps:
@@ -782,6 +808,13 @@ workflows:
             tags:
               only: /.*/
 
+      - mrtrix3_recon_with_response_functions:
+          requires:
+            - download_multishell_output
+          filters:
+            tags:
+              only: /.*/
+
       - Recon_PYAFQ:
           requires:
             - download_multishell_output
@@ -816,6 +849,7 @@ workflows:
             - Recon_DIPY_MAPMRI
             - Recon_DIPY_DKI
             - Recon_AMICO
+            - mrtrix3_recon_with_response_functions
             - Recon_PYAFQ
             - Recon_PYAFQExternalTrk
             - Recon_ScalarMap
@@ -844,6 +878,7 @@ workflows:
             - Recon_DIPY_MAPMRI
             - Recon_DIPY_DKI
             - Recon_AMICO
+            - mrtrix3_recon_with_response_functions
             - Recon_PYAFQ
             - Recon_PYAFQExternalTrk
             - Recon_ScalarMap

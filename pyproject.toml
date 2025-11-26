@@ -188,6 +188,7 @@ markers = [
     "multises_post1_qsiprep: test 25",
     "multises_pre1_qsiprep: test 26",
     "interfaces: test 27",
+    "mrtrix3_recon_with_response_functions: test 28",
 ]
 env = [
     "RUNNING_PYTEST = 1",

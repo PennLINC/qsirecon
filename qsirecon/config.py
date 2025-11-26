@@ -446,6 +446,8 @@ class execution(_Config):
     """List of participant identifiers that are to be preprocessed."""
     processing_list = []
     """List of (dwi_file, corresponding_anat) that need to be processed."""
+    recon_spec_aux_files = None
+    """Path to a directory containing auxiliary files for the reconstruction pipeline."""
     session_id = None
     """List of session identifiers that are to be preprocessed"""
     templateflow_home = _templateflow_home
@@ -473,6 +475,7 @@ class execution(_Config):
         "layout",
         "log_dir",
         "output_dir",
+        "recon_spec_aux_files",
         "templateflow_home",
         "work_dir",
     )
@@ -562,6 +565,9 @@ class execution(_Config):
 
         if cls.atlases:
             dataset_links["atlas"] = cls.output_dir / "atlases"
+
+        if cls.recon_spec_aux_files:
+            dataset_links["aux"] = cls.recon_spec_aux_files
 
         for dset_name, dset_path in cls.datasets.items():
             dataset_links[dset_name] = dset_path
