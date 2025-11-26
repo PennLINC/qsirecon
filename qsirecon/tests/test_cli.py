@@ -721,8 +721,6 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
         f"-w={estimate_work_dir}",
         "--sloppy",
         "--recon-spec=mrtrix_multishell_msmt_noACT_estimate",
-        "--atlases",
-        "Gordon333Ext",
     ]
 
     _run_and_generate(f"{TEST_NAME}_estimate", parameters, test_main=False)
@@ -758,6 +756,8 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
         "--recon-spec=mrtrix_multishell_msmt_noACT_apply",
         "--recon-spec-aux-files",
         test_dir,
+        "--atlases",
+        "Gordon333Ext",
     ]
     _run_and_generate(f"{TEST_NAME}_apply", parameters, test_main=False)
 
