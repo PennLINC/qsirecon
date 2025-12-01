@@ -406,7 +406,7 @@ def test_response_function_conversion(tmp_path_factory):
 
     json_file = tmp_path_factory.mktemp("test_response_function_conversion") / "test.json"
     with open(json_file, "w") as f:
-        json.dump({"ResponseFunction": {"Coefficients": arr.tolist()}}, f)
+        json.dump({"ResponseFunction": {"Coefficients": arr}}, f)
 
     arr2 = bids_response_function_to_mrtrix(json_file)
     assert np.allclose(arr2, response_function)
