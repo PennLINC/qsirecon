@@ -14,6 +14,15 @@ of parametric microstructure maps such as generalized fractional anisotropy (GFA
 quantitative anisotropy (QA), and isotropic component (ISO) :cite:p:`yeh2013`.
 
 
+***************
+GQI in QSIRecon
+***************
+
+GQI reconstruction is supported in QSIRecon using the DSI Studio package: see :func:`~qsirecon.workflows.recon.dsi_studio.init_dsi_studio_recon_wf`.
+This is accessible in a reconstruction specification by using a node with ``action: reconstruction``, ``software: DSI Studio``, and ``parameters: method: gqi``.
+Also see :class:`qsirecon.interfaces.dsi_studio.DSIStudioGQIReconstruction`.
+
+
 ***********************
 GQI Foundational Papers
 ***********************
