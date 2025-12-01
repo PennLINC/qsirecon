@@ -22,6 +22,7 @@ from qsirecon.utils.bids import (
     write_bidsignore,
     write_derivative_description,
 )
+from qsirecon.utils.misc import bids_response_function_to_mrtrix
 
 nipype_config.enable_debug_mode()
 
@@ -737,12 +738,10 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
             f"sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-{label}_dwimap.json",
         )
         assert os.path.exists(json_file)
-        with open(json_file, "r") as f:
-            json_data = json.load(f)
-        txt_data = np.array(json_data["ResponseFunction"]["Coefficients"])
+        arr = bids_response_function_to_mrtrix(json_file)
         txt_file = os.path.join(test_dir, f"{tissue}.txt")
         with open(txt_file, "w") as f:
-            np.savetxt(f, txt_data)
+            np.savetxt(f, arr)
 
     # Now apply the response functions
     apply_work_dir = os.path.join(working_dir, f"{TEST_NAME}_apply")
@@ -760,8 +759,6 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
         "Gordon333Ext",
     ]
     _run_and_generate(f"{TEST_NAME}_apply", parameters, test_main=False)
-
-
 
 
 def _run_and_generate(test_name, parameters, test_main=False):

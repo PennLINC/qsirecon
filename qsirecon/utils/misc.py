@@ -67,3 +67,25 @@ def deep_update_dict(base_dict, update_dict):
             # Otherwise, set or overwrite the value
             base_dict[key] = value
     return base_dict
+
+
+def bids_response_function_to_mrtrix(json_file):
+    """Convert a JSON response function to an MRtrix format."""
+    import json
+
+    import numpy as np
+
+    with open(json_file, "r") as f:
+        json_data = json.load(f)
+
+    return np.array(json_data["ResponseFunction"]["Coefficients"])
+
+
+def mrtrix_response_function_to_bids(response_function_file):
+    """Load a response function from MRtrix3 and convert to JSON-compatible format."""
+    import numpy as np
+
+    response_data = np.loadtxt(response_function_file)
+    if response_data.ndim == 1:
+        return [[value] for value in response_data]
+    return [row.tolist() for row in response_data]
