@@ -387,6 +387,8 @@ def test_build_documentation():
 
 def test_response_function_conversion(tmp_path_factory):
     """Test response function conversion."""
+    import json
+
     import numpy as np
 
     from qsirecon.utils.misc import (
@@ -402,5 +404,9 @@ def test_response_function_conversion(tmp_path_factory):
     arr = mrtrix_response_function_to_bids(txt_file)
     assert np.allclose(arr, response_function)
 
-    arr2 = bids_response_function_to_mrtrix(arr)
+    json_file = tmp_path_factory.mktemp("test_response_function_conversion") / "test.json"
+    with open(json_file, "w") as f:
+        json.dump({"ResponseFunction": {"Coefficients": arr.tolist()}}, f)
+
+    arr2 = bids_response_function_to_mrtrix(json_file)
     assert np.allclose(arr2, response_function)
