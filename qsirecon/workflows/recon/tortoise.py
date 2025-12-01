@@ -75,6 +75,13 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
             and ``"estimate_mapmri"``.
 
     """
+    workflow = Workflow(name=name)
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    workflow.__desc__ = (
+        f"\n\n#### TORTOISE Reconstruction{suffix_str}\n\n"
+        + "Methods implemented in TORTOISE (@tortoisev3) were used for reconstruction. "
+    )
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
     )
@@ -96,17 +103,12 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
         ),
         name="outputnode",
     )
-    workflow = Workflow(name=name)
+
     recon_scalars = pe.Node(
         TORTOISEReconScalars(qsirecon_suffix=qsirecon_suffix),
         name="recon_scalars",
     )
     omp_nthreads = config.nipype.omp_nthreads
-    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
-    desc = (
-        f"\n\n#### TORTOISE Reconstruction{suffix_str}\n\n"
-        + "Methods implemented in TORTOISE (@tortoisev3) were used for reconstruction. "
-    )
 
     tensor_opts = params.get("estimate_tensor", {})
     estimate_tensor_separately = params.get("estimate_tensor_separately", False)
@@ -146,20 +148,20 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
         )
 
         # Model description
-        desc += "A diffusion tensor model was fit using ``EstimateTensor``. "
-        desc += build_documentation(estimate_tensor) + " "
+        workflow.__desc__ += "A diffusion tensor model was fit using ``EstimateTensor``. "
+        workflow.__desc__ += build_documentation(estimate_tensor) + " "
 
         # Set up datasinks
         compute_dt_fa = pe.Node(ComputeFAMap(), name="compute_dt_fa")
-        desc += build_documentation(compute_dt_fa) + " "
+        workflow.__desc__ += build_documentation(compute_dt_fa) + " "
         compute_dt_rd = pe.Node(ComputeRDMap(), name="compute_dt_rd")
-        desc += build_documentation(compute_dt_rd) + " "
+        workflow.__desc__ += build_documentation(compute_dt_rd) + " "
         compute_dt_ad = pe.Node(ComputeADMap(), name="compute_dt_ad")
-        desc += build_documentation(compute_dt_ad) + " "
+        workflow.__desc__ += build_documentation(compute_dt_ad) + " "
         compute_dt_li = pe.Node(ComputeLIMap(), name="compute_dt_li")
-        desc += build_documentation(compute_dt_li) + " "
+        workflow.__desc__ += build_documentation(compute_dt_li) + " "
         compute_md = pe.Node(ComputeMDMap(), name="compute_md")
-        desc += (
+        workflow.__desc__ += (
             "\n\nTORTOISE does not compute a mean diffusivity. "
             "Therefore, mean diffusivity was separately computed from the axial diffusivity and "
             "radial diffusivity using custom Python code. "
@@ -197,7 +199,7 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
     mapmri_opts = params.get("estimate_mapmri", {})
     if tensor_opts and mapmri_opts:
         # Split up the sections
-        desc += "\n\n"
+        workflow.__desc__ += "\n\n"
 
     if mapmri_opts:
         # MAPMRI-only steps
@@ -312,7 +314,5 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
     else:
         # If not writing out scalar files, pass the working directory scalar configs
         workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
-
-    workflow.__desc__ = desc
 
     return clean_datasinks(workflow, qsirecon_suffix)

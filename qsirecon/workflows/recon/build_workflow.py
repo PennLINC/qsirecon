@@ -1,6 +1,7 @@
 """This module contains the functions that build the nipype workflows from the workflow specs."""
 
 from copy import deepcopy
+from pprint import pformat
 
 import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
@@ -350,7 +351,7 @@ def workflow_from_spec(inputs_dict, node_spec):
         if node_spec["action"] == "parcellate_scalars":
             return init_scalar_to_atlas_wf(**kwargs)
 
-    raise Exception("Unknown node %s" % node_spec)
+    raise Exception("Unknown node %s" % pformat(node_spec))
 
 
 def _as_connections(attr_list, src_prefix="", dest_prefix=""):
