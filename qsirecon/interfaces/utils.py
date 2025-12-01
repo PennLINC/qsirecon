@@ -464,6 +464,9 @@ class _LoadResponseFunctionsOutputSpec(TraitedSpec):
 class LoadResponseFunctions(SimpleInterface):
     """Collect response function files from the input directory.
 
+    The names of the response function files are specified in the reconstruction specification,
+    and must be located in the recon_spec_aux_files directory.
+
     TODO: Support BEP016-format JSON files.
     """
 

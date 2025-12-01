@@ -16,7 +16,6 @@ nodes:
             - 8
             - 8
             - 8
-        mtnormalize: true
         response:
             algorithm: dhollander
     qsirecon_suffix: MRtrix3_act-None_response-subject
