@@ -173,7 +173,7 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
     seg_str = ""
     if response_algorithm == "precomputed":
         workflow.__desc__ += (
-            f"{tissue_str} fiber response functions were loaded from precomputed files."
+            f"{tissue_str} fiber response functions were loaded from precomputed files. "
         )
 
         load_response_functions = pe.Node(
