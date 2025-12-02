@@ -383,3 +383,30 @@ def test_build_documentation():
         "Free water diffusivity was set to 3000 (mu m)^2/s. "
         "Tensor fitting was performed with DIAG regularization."
     )
+
+
+def test_response_function_conversion(tmp_path_factory):
+    """Test response function conversion."""
+    import json
+
+    import numpy as np
+
+    from qsirecon.utils.misc import (
+        bids_response_function_to_mrtrix,
+        mrtrix_response_function_to_bids,
+    )
+
+    response_function = np.random.random((6, 5))
+    txt_file = tmp_path_factory.mktemp("test_response_function_conversion") / "test.txt"
+    with open(txt_file, "w") as f:
+        np.savetxt(f, response_function)
+
+    arr = mrtrix_response_function_to_bids(txt_file)
+    assert np.allclose(arr, response_function)
+
+    json_file = tmp_path_factory.mktemp("test_response_function_conversion") / "test.json"
+    with open(json_file, "w") as f:
+        json.dump({"ResponseFunction": {"Coefficients": arr}}, f)
+
+    arr2 = bids_response_function_to_mrtrix(json_file)
+    assert np.allclose(arr2, response_function)
