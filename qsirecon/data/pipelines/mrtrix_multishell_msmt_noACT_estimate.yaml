@@ -1,0 +1,22 @@
+name: mrtrix_multishell_msmt_noACT_estimate
+description: |
+    This pipeline estimates the MRtrix3 multishell multi-tissue CSD reconstruction of the input data.
+    The reconstruction is then used to estimate response functions,
+    to be averaged by the user.
+anatomical: []
+space: T1w
+nodes:
+-   action: csd
+    input: qsirecon
+    name: msmt_csd
+    parameters:
+        fod:
+            algorithm: msmt_csd
+            max_sh:
+            - 8
+            - 8
+            - 8
+        response:
+            algorithm: dhollander
+    qsirecon_suffix: MRtrix3_act-None_response-subject
+    software: MRTrix3

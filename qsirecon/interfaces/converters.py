@@ -5,7 +5,9 @@ import logging
 import os
 import os.path as op
 import re
+import shutil
 import subprocess
+from pathlib import Path
 
 import nibabel as nb
 import numpy as np
@@ -40,7 +42,7 @@ class FODtoFIBGZInputSpec(BaseInterfaceInputSpec):
     mask_file = File(exists=True)
     num_fibers = traits.Int(5, usedefault=True)
     unit_odf = traits.Bool(False, usedefault=True)
-    fib_file = File()
+    output_fib_file = File()
 
 
 class FODtoFIBGZOutputSpec(TraitedSpec):
@@ -54,10 +56,14 @@ class FODtoFIBGZ(SimpleInterface):
     def _run_interface(self, runtime):
         mif_file = self.inputs.mif_file
         mask_file = self.inputs.mask_file
-        if isdefined(self.inputs.fib_file):
-            output_fib_file = self.inputs.fib_file
-            if output_fib_file.endswith(".gz"):
-                output_fib_file = output_fib_file[:-3]
+        if isdefined(self.inputs.output_fib_file):
+            output_fib_path = Path(self.inputs.output_fib_file)
+            if output_fib_path.name.endswith(".gz"):
+                LOGGER.warning("A non-gzipped output will be written.")
+                output_fib_path.name = output_fib_path.name[:-3]
+            if not output_fib_path.is_absolute():
+                output_fib_file = str(Path(runtime.cwd) / output_fib_path)
+
         else:
             output_fib_file = fname_presuffix(
                 mif_file, newpath=runtime.cwd, suffix=".fib", use_ext=False
@@ -95,7 +101,7 @@ class FODtoFIBGZ(SimpleInterface):
             num_fibers=self.inputs.num_fibers,
             unit_odf=self.inputs.unit_odf,
         )
-        os.remove("amplitudes.nii")
+        os.remove(odf_amplitudes_nii)
         return runtime
 
 
@@ -133,10 +139,12 @@ class FIBGZtoFOD(SimpleInterface):
 
 
 class NODDItoFIBGZInputSpec(BaseInterfaceInputSpec):
-    icvf_file = File(exists=True)
-    isovf_file = File(exists=True)
-    od_file = File(exists=True)
-    directions_file = File(exists=True)
+    icvf = File(exists=True)
+    isovf = File(exists=True)
+    od = File(exists=True)
+    modulated_icvf = File(exists=True, mandatory=False)
+    modulated_od = File(exists=True, mandatory=False)
+    directions = File(exists=True)
     mask_file = File(exists=True)
 
 
@@ -150,14 +158,22 @@ class NODDItoFIBGZ(SimpleInterface):
 
     def _run_interface(self, runtime):
         output_file = fname_presuffix(
-            self.inputs.icvf_file, use_ext=False, newpath=runtime.cwd, suffix=".fib"
+            self.inputs.icvf, use_ext=False, newpath=runtime.cwd, suffix=".fib"
         )
         verts, faces = get_dsi_studio_ODF_geometry("odf8")
         amico_directions_to_fibgz(
-            directions_img=nb.load(self.inputs.directions_file),
-            od_img=nb.load(self.inputs.od_file),
-            icvf_img=nb.load(self.inputs.icvf_file),
-            isovf_img=nb.load(self.inputs.isovf_file),
+            directions_img=nb.load(self.inputs.directions),
+            od_img=nb.load(self.inputs.od),
+            icvf_img=nb.load(self.inputs.icvf),
+            modulated_od_img=(
+                nb.load(self.inputs.modulated_od) if isdefined(self.inputs.modulated_od) else None
+            ),
+            modulated_icvf_img=(
+                nb.load(self.inputs.modulated_icvf)
+                if isdefined(self.inputs.modulated_icvf)
+                else None
+            ),
+            isovf_img=nb.load(self.inputs.isovf),
             odf_dirs=verts,
             odf_faces=faces,
             output_file=output_file,
@@ -211,6 +227,63 @@ class DSIStudioTrkToTck(SimpleInterface):
         return runtime
 
 
+class _MergeFODGQIFibsInputSpec(BaseInterfaceInputSpec):
+    csd_fib_file = File(exists=True, mandatory=True)
+    reference_fib_file = File(exists=True, mandatory=True)
+    fibgz_map = File(exists=True)
+
+
+class _MergeFODGQIFibsOutputSpec(TraitedSpec):
+    fibgz = File(exists=True, mandatory=True)
+    fibgz_map = File(exists=True)
+
+
+class MergeFODGQIFibs(SimpleInterface):
+    """Merge FOD and GQI fib files."""
+
+    input_spec = _MergeFODGQIFibsInputSpec
+    output_spec = _MergeFODGQIFibsOutputSpec
+
+    def _run_interface(self, runtime):
+
+        # fname presuffix doesn't work with .fib.gz
+        fib_name = Path(self.inputs.reference_fib_file).name.replace(".odf.", ".odf.FOD.")
+        merged_fib_file = str(Path(runtime.cwd) / fib_name)
+        merged_fib_file = (
+            merged_fib_file if not merged_fib_file.endswith(".gz") else merged_fib_file[:-3]
+        )
+
+        combine_gqi_and_csd_fib_files(
+            path_gqi_fib=self.inputs.reference_fib_file,
+            path_fod_fib=self.inputs.csd_fib_file,
+            merged_fib=merged_fib_file,
+        )
+
+        # gzip the merged file
+        merged_fibgz_file = merged_fib_file + ".gz"
+
+        p = subprocess.Popen(
+            ["gzip", "-v", merged_fib_file], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        response = p.communicate()
+        if not p.returncode == 0:
+            raise Exception(f"Gzip exitted with code {p.returncode}: {response}")
+        if not Path(merged_fibgz_file).exists():
+            raise Exception(f"Failed to gzip {merged_fib_file}")
+        self._results["fibgz"] = merged_fibgz_file
+
+        # Handle the map file if it was provided
+        if isdefined(self.inputs.fibgz_map):
+            LOGGER.info(f"Creating new map file to match {merged_fib_file}.")
+            # DSI Studio stores the template of the mapping file like icbm_adult.map.gz
+            dsistudiotemplate = self.inputs.fibgz_map.split(".")[-3]
+            new_mapping_file = merged_fibgz_file + f".{dsistudiotemplate}.map.gz"
+            shutil.copyfile(self.inputs.fibgz_map, new_mapping_file)
+            self._results["fibgz_map"] = new_mapping_file
+
+        return runtime
+
+
 def get_dsi_studio_ODF_geometry(odf_key):
     mat_path = pkgr("qsirecon", "data/odfs.mat")
     m = loadmat(mat_path)
@@ -224,6 +297,40 @@ def popen_run(arg_list):
     out, err = cmd.communicate()
     LOGGER.info(out)
     LOGGER.info(err)
+
+
+def combine_gqi_and_csd_fib_files(path_gqi_fib: str, path_fod_fib: str, merged_fib: str):
+    """
+    Combine the GQI and CSD .fib-files such that the new CSD fib file contains ODF information
+    from the old CSD file and DTI maps from the GQI file.
+
+    Args:
+      path_gqi_file: Full path to the GQI file
+      path_csd_file: Full path to the csd file. This will be overwritten with the updated csd file.
+    """
+
+    gqi_data = fast_load_fibgz(path_gqi_fib)
+    fod_data = fast_load_fibgz(path_fod_fib)
+    merged_data = gqi_data.copy()
+
+    for gqi_key in gqi_data:
+        if (
+            re.match(r"odf\d+", gqi_key)
+            or re.match(r"fa\d+", gqi_key)
+            or re.match(r"index\d+", gqi_key)
+        ):
+            LOGGER.info(f"Deleting {gqi_key} from GQI data")
+            del merged_data[gqi_key]
+    for fod_key in fod_data:
+        if (
+            re.match(r"odf\d+", fod_key)
+            or re.match(r"fa\d+", fod_key)
+            or re.match(r"index\d+", fod_key)
+        ):
+            LOGGER.info(f"Copying {fod_key} from FOD data")
+            merged_data[fod_key] = fod_data[fod_key]
+
+    savemat(merged_fib, merged_data, format="4", appendmat=False)
 
 
 def amplitudes_to_fibgz(
@@ -328,7 +435,16 @@ def amplitudes_to_fibgz(
 
 
 def amico_directions_to_fibgz(
-    directions_img, od_img, icvf_img, isovf_img, odf_dirs, odf_faces, output_file, mask_img
+    directions_img,
+    od_img,
+    icvf_img,
+    isovf_img,
+    odf_dirs,
+    odf_faces,
+    output_file,
+    mask_img,
+    modulated_od_img=None,
+    modulated_icvf_img=None,
 ):
     """Convert a NiftiImage of ODF amplitudes to a DSI Studio fib file.
 
@@ -354,8 +470,10 @@ def amico_directions_to_fibgz(
         Path where the output fib file will be written.
     mask_img: nb.Nifti1Image
         3d Image that is nonzero where voxels contain brain.
-    num_fibers: int
-        The maximum number of fibers/fixels stored in each voxel.
+    modulated_od_img: nb.Nifti1Image
+        modulated orientation dispersion image
+    modulated_icvf_img: nb.Nifti1Image
+        modulated icvf image
 
     Returns:
     ========
@@ -386,6 +504,14 @@ def amico_directions_to_fibgz(
     icvf_vec = icvf_img.get_fdata().flatten(order="F")
     od_vec = od_img.get_fdata().flatten(order="F")
 
+    # Convert modulated images if provided
+    if modulated_icvf_img is not None and modulated_od_img is not None:
+        mod_icvf_vec = modulated_icvf_img.get_fdata().flatten(order="F")
+        mod_od_vec = modulated_od_img.get_fdata().flatten(order="F")
+    else:
+        mod_icvf_vec = None
+        mod_od_vec = None
+
     # z0 = np.nanmax(isovf_vec)
     peak_indices = np.zeros(n_odfs)
 
@@ -403,9 +529,15 @@ def amico_directions_to_fibgz(
     dir0[flat_mask] = peak_indices
     dsi_mat["index0"] = dir0.astype("int16")
     dsi_mat["fa0"] = icvf_vec
-    dsi_mat["ICVF0"] = icvf_vec
-    dsi_mat["ISOVF0"] = isovf_vec
-    dsi_mat["OD0"] = od_vec
+    dsi_mat["icvf0"] = icvf_vec
+    dsi_mat["isovf0"] = isovf_vec
+    dsi_mat["od0"] = od_vec
+
+    # Add modulated maps if provided
+    if mod_icvf_vec is not None and mod_od_vec is not None:
+        dsi_mat["mod_icvf0"] = mod_icvf_vec
+        dsi_mat["mod_od0"] = mod_od_vec
+
     dsi_mat["odf_vertices"] = odf_dirs.T
     dsi_mat["odf_faces"] = odf_faces.T
     savemat(output_file, dsi_mat, format="4", appendmat=False)

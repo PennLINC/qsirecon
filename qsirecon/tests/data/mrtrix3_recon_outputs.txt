@@ -19,9 +19,12 @@ derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_exemplarbundles.zip
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-CSF_dwimap.mif.gz
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-CSF_dwimap.txt
+derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-CSF_dwimap.json
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-GM_dwimap.mif.gz
+derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-GM_dwimap.json
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-GM_dwimap.txt
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-WM_dwimap.mif.gz
+derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-WM_dwimap.json
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-WM_dwimap.txt
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-mtnorm_param-inliermask_dwimap.nii.gz
 derivatives/qsirecon-MRtrix3_act-FAST/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_model-mtnorm_param-norm_dwimap.nii.gz
@@ -37,4 +40,6 @@ sub-ABCD
 sub-ABCD/dwi
 sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_seg-4S156Parcels_dseg.mif.gz
 sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_seg-4S156Parcels_dseg.nii.gz
+sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_seg-4S156Parcels_desc-mrtrix_dseg.txt
 sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_seg-4S156Parcels_dseg.txt
+sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_desc-brain_mask.nii.gz

@@ -10,7 +10,7 @@ conmat:
 
 fibgz:
     bids:
-        space: T1w
+        space: ACPC|T1w
         suffix: dwimap
         extension: fib.gz
     metadata:
@@ -20,8 +20,8 @@ fibgz:
 
 mapping:
     bids:
-        space: T1w
-        suffix: mapping
+        space: ACPC|T1w
+        suffix: dwimap
         extension: map.gz
     metadata:
         Description: Mapping file produced by DSI Studio.

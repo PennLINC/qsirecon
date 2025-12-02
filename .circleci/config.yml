@@ -4,7 +4,7 @@ orbs:
 
 .dockersetup: &dockersetup
   docker:
-    - image: pennlinc/qsirecon_build:24.10.3
+    - image: pennlinc/qsirecon_build:25.1.0
   working_directory: /src/qsirecon
 
 runinstall: &runinstall
@@ -45,7 +45,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: singleshell_output-01
+          key: singleshell_output-02
       - run: *runinstall
       - run:
           name: Download singleshell_output test data
@@ -53,7 +53,7 @@ jobs:
             cd /src/qsirecon/.circleci
             python get_data.py $PWD/data singleshell_output
       - save_cache:
-          key: singleshell_output-01
+          key: singleshell_output-02
           paths:
             - /src/qsirecon/.circleci/data/singleshell_output
 
@@ -62,7 +62,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Download multishell_output test data
@@ -70,7 +70,7 @@ jobs:
             cd /src/qsirecon/.circleci
             python get_data.py $PWD/data multishell_output
       - save_cache:
-          key: multishell_output-01
+          key: multishell_output-03
           paths:
             - /src/qsirecon/.circleci/data/multishell_output
 
@@ -79,7 +79,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multises_pre1_output-01
+          key: multises_pre1_output-02
       - run: *runinstall
       - run:
           name: Download multises pre-1.0 test data
@@ -87,7 +87,7 @@ jobs:
             cd /src/qsirecon/.circleci
             python get_data.py $PWD/data multises_pre1_output
       - save_cache:
-          key: multises_pre1_output-01
+          key: multises_pre1_output-02
           paths:
             - /src/qsirecon/.circleci/data/multises_pre1_output
 
@@ -96,7 +96,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multises_post1_output-01
+          key: multises_post1_output-02
       - run: *runinstall
       - run:
           name: Download multises post-1.0 test data
@@ -104,7 +104,7 @@ jobs:
             cd /src/qsirecon/.circleci
             python get_data.py $PWD/data multises_post1_output
       - save_cache:
-          key: multises_post1_output-01
+          key: multises_post1_output-02
           paths:
             - /src/qsirecon/.circleci/data/multises_post1_output
 
@@ -113,7 +113,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: hsvs_data-01
+          key: hsvs_data-02
       - run: *runinstall
       - run:
           name: Download HSVS test input data
@@ -121,16 +121,57 @@ jobs:
             cd /src/qsirecon/.circleci
             python get_data.py $PWD/data hsvs_data
       - save_cache:
-          key: hsvs_data-01
+          key: hsvs_data-02
           paths:
             - /src/qsirecon/.circleci/data/hsvs_data
+
+  download_custom_atlases:
+    <<: *dockersetup
+    steps:
+      - checkout
+      - restore_cache:
+          key: custom_atlases-02
+      - run: *runinstall
+      - run:
+          name: Download custom atlases
+          command: |
+            cd /src/qsirecon/.circleci
+            python get_data.py $PWD/data custom_atlases
+      - save_cache:
+          key: custom_atlases-02
+          paths:
+            - /src/qsirecon/.circleci/data/custom_atlases
+
+  Recon_SS3T_FOD_AutoTrack:
+    <<: *dockersetup
+    steps:
+      - checkout
+      - restore_cache:
+          key: singleshell_output-02
+      - run: *runinstall
+      - run:
+          name: Test the SS3T AutoTrack workflow
+          no_output_timeout: 1h
+          command: |
+            pytest -rP -o log_cli=true -m "ss3t_fod_autotrack" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
+            mkdir /src/coverage
+            mv /src/qsirecon/.coverage /src/coverage/.coverage.ss3t_fod_autotrack
+            # remove nifti files before uploading artifacts
+            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
+            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
+      - persist_to_workspace:
+          root: /src/coverage/
+          paths:
+            - .coverage.ss3t_fod_autotrack
+      - store_artifacts:
+          path: /src/qsirecon/.circleci/out/ss3t_fod_autotrack/
 
   Recon_3Tissue_Singleshell_ACT:
     <<: *dockersetup
     steps:
       - checkout
       - restore_cache:
-          key: singleshell_output-01
+          key: singleshell_output-02
       - run: *runinstall
       - run:
           name: Test the 3Tissue recon workflows
@@ -154,7 +195,9 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: singleshell_output-01
+          key: singleshell_output-02
+      - restore_cache:
+          key: custom_atlases-02
       - run: *runinstall
       - run:
           name: Test the 3Tissue recon workflows
@@ -178,7 +221,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: hsvs_data-01
+          key: hsvs_data-02
       - run: *runinstall
       - run:
           name: Test the HSVS recon workflows
@@ -202,7 +245,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multises_pre1_output-01
+          key: multises_pre1_output-02
       - run: *runinstall
       - run:
           name: Test reading multi-ses data
@@ -228,7 +271,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multises_post1_output-01
+          key: multises_post1_output-02
       - run: *runinstall
       - run:
           name: Test reading multi-ses data (post 1.0.0rc0)
@@ -254,13 +297,13 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Pytest the recon interfaces
           no_output_timeout: 1h
           command: |
-            pytest -rP -o log_cli=true -m "interfaces" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
+            pytest -rP -o log_cli=true --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
             mkdir /src/coverage
             mv /src/qsirecon/.coverage /src/coverage/.coverage.recon_interfaces
       - persist_to_workspace:
@@ -273,7 +316,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the CSD recon workflows
@@ -297,7 +340,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the AutoTrack workflow
@@ -321,7 +364,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the TORTOISE recon workflow
@@ -340,12 +383,36 @@ jobs:
       - store_artifacts:
           path: /src/qsirecon/.circleci/out/tortoise_recon/
 
+  Recon_DSI_Studio_GQI:
+    <<: *dockersetup
+    steps:
+      - checkout
+      - restore_cache:
+          key: multishell_output-03
+      - run: *runinstall
+      - run:
+          name: Test the DSI Studio GQI recon workflow
+          no_output_timeout: 1h
+          command: |
+            pytest -rP -o log_cli=true -m "dsi_studio_gqi_recon" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
+            mkdir /src/coverage
+            mv /src/qsirecon/.coverage /src/coverage/.coverage.dsi_studio_gqi_recon
+            # remove nifti files before uploading artifacts
+            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
+            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
+      - persist_to_workspace:
+          root: /src/coverage/
+          paths:
+            - .coverage.dsi_studio_gqi_recon
+      - store_artifacts:
+          path: /src/qsirecon/.circleci/out/dsi_studio_gqi_recon/
+
   Recon_DIPY_MAPMRI:
     <<: *dockersetup
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the DIPY recon workflows
@@ -369,7 +436,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the DIPY recon workflows
@@ -393,7 +460,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the PYAFQ standalone recon workflow
@@ -417,7 +484,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test the PYAFQ workflow with mrtrix tractography
@@ -441,7 +508,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: multishell_output-01
+          key: multishell_output-03
       - run: *runinstall
       - run:
           name: Test scalar_mapping workflow
@@ -468,7 +535,7 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          key: singleshell_output-01
+          key: singleshell_output-02
       - run: *runinstall
       - run:
           name: Test the DIPY recon workflows
@@ -485,6 +552,32 @@ jobs:
             - .coverage.amico_noddi
       - store_artifacts:
           path: /src/qsirecon/.circleci/out/amico_noddi/
+
+  mrtrix3_recon_with_response_functions:
+    <<: *dockersetup
+    resource_class: medium+
+    environment:
+      CIRCLE_CPUS: 3
+    steps:
+      - checkout
+      - restore_cache:
+          key: multishell_output-03
+      - run: *runinstall
+      - run:
+          name: Test the MRtrix3 recon workflow with response functions
+          command: |
+            pytest -rP -o log_cli=true -m "mrtrix3_recon_with_response_functions" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
+            mkdir /src/coverage
+            mv /src/qsirecon/.coverage /src/coverage/.coverage.mrtrix3_recon_with_response_functions
+            # remove nifti files before uploading artifacts
+            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
+            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
+      - persist_to_workspace:
+          root: /src/coverage/
+          paths:
+            - .coverage.mrtrix3_recon_with_response_functions
+      - store_artifacts:
+          path: /src/qsirecon/.circleci/out/mrtrix3_recon_with_response_functions/
 
   merge_coverage:
     <<: *dockersetup
@@ -609,7 +702,21 @@ workflows:
             tags:
               only: /.*/
 
+      - download_custom_atlases:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+
       - Recon_3Tissue_Singleshell_ACT:
+          requires:
+            - download_singleshell_output
+          filters:
+            tags:
+              only: /.*/
+
+      - Recon_SS3T_FOD_AutoTrack:
           requires:
             - download_singleshell_output
           filters:
@@ -640,6 +747,7 @@ workflows:
       - Recon_3Tissue_Singleshell_NoACT:
           requires:
             - download_singleshell_output
+            - download_custom_atlases
           filters:
             tags:
               only: /.*/
@@ -672,6 +780,13 @@ workflows:
             tags:
               only: /.*/
 
+      - Recon_DSI_Studio_GQI:
+          requires:
+            - download_multishell_output
+          filters:
+            tags:
+              only: /.*/
+
       - Recon_DIPY_MAPMRI:
           requires:
             - download_multishell_output
@@ -689,6 +804,13 @@ workflows:
       - Recon_AMICO:
           requires:
             - download_singleshell_output
+          filters:
+            tags:
+              only: /.*/
+
+      - mrtrix3_recon_with_response_functions:
+          requires:
+            - download_multishell_output
           filters:
             tags:
               only: /.*/
@@ -718,13 +840,16 @@ workflows:
           requires:
             - Recon_3Tissue_Singleshell_ACT
             - Recon_3Tissue_Singleshell_NoACT
+            - Recon_SS3T_FOD_AutoTrack
             - Recon_MRtrix3
             - Recon_Interfaces
             - Recon_AutoTrack
             - Recon_Tortoise
+            - Recon_DSI_Studio_GQI
             - Recon_DIPY_MAPMRI
             - Recon_DIPY_DKI
             - Recon_AMICO
+            - mrtrix3_recon_with_response_functions
             - Recon_PYAFQ
             - Recon_PYAFQExternalTrk
             - Recon_ScalarMap
@@ -743,14 +868,17 @@ workflows:
           requires:
             - Recon_3Tissue_Singleshell_ACT
             - Recon_3Tissue_Singleshell_NoACT
+            - Recon_SS3T_FOD_AutoTrack
             - Recon_MRtrix3
             - Recon_Interfaces
             - Recon_msmt_Multishell_HSVS
             - Recon_AutoTrack
             - Recon_Tortoise
+            - Recon_DSI_Studio_GQI
             - Recon_DIPY_MAPMRI
             - Recon_DIPY_DKI
             - Recon_AMICO
+            - mrtrix3_recon_with_response_functions
             - Recon_PYAFQ
             - Recon_PYAFQExternalTrk
             - Recon_ScalarMap

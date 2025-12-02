@@ -76,6 +76,7 @@ def init_single_subject_recon_wf(subject_id):
         Single subject label
     """
     from ..interfaces.bids import DerivativesDataSink
+    from ..interfaces.gradients import _classify_shell_scheme
     from ..interfaces.ingress import QSIPrepDWIIngress
     from ..interfaces.interchange import (
         ReconWorkflowInputs,
@@ -96,21 +97,22 @@ def init_single_subject_recon_wf(subject_id):
     spec = _load_recon_spec(config.workflow.recon_spec)
     workflow = Workflow(name=f"sub-{subject_id}_{spec['name']}")
 
+    spec_desc = " " + spec.get("description", "")
     workflow.__desc__ = f"""
 Reconstruction was
 performed using *QSIRecon* {config.__version__} (@cieslak2021qsiprep),
-which is based on *Nipype* {nipype_ver}
-(@nipype1; @nipype2; RRID:SCR_002502).
+according to the "{spec.get("name", "UNKNOWN")}" pipeline.{spec_desc}
 
 """
     workflow.__postdesc__ = f"""
 
 Many internal operations of *QSIRecon* use
-*Nilearn* {nilearn_ver} [@nilearn, RRID:SCR_001362] and
-*Dipy* {dipy_ver}[@dipy].
-For more details of the pipeline, see [the section corresponding
+*Nipype* {nipype_ver} (@nipype1; @nipype2; RRID:SCR_002502),
+*Nilearn* {nilearn_ver} [@nilearn, RRID:SCR_001362], and
+*Dipy* {dipy_ver} [@dipy].
+For more details on the pipeline, see [the section corresponding
 to workflows in *QSIRecon*'s documentation]\
-(https://qsirecon.readthedocs.io/en/latest/workflows.html).
+(https://qsirecon.readthedocs.io/en/latest/builtin_workflows.html).
 
 
 ### References
@@ -132,20 +134,26 @@ to workflows in *QSIRecon*'s documentation]\
     highres_anat_wfs = {}
     highres_anat_statuses = {}
     for anat_num, anat_input_file in enumerate(anat_input_files):
-        _session_filter = (
-            None
-            if anat_input_file is None
-            else anat_input_file.entities.get("session", Query.NONE)
-        )
+        # session_id should be None if no anatomical file is found,
+        # Query.NONE if there is a file but no session is specified,
+        # and [session_id, Query.NONE] if there is a file and a session is specified.
+        if anat_input_file is None:
+            _session_filter = None
+        elif "session" not in anat_input_file.entities:
+            _session_filter = Query.NONE
+        else:
+            _session_filter = [anat_input_file.entities["session"], Query.NONE]
 
-        # We only need to process unique anat files that match dwis
         if anat_input_file.path in highres_anat_wfs:
+            # Skip if we've already processed this anatomical file
             continue
+
         anat_data, highres_anat_statuses[anat_input_file.path] = collect_anatomical_data(
             layout=config.execution.layout,
             subject_id=subject_id,
             session_id=_session_filter,
             needs_t1w_transform=bool(config.execution.atlases),
+            infant_mode=config.workflow.infant,
             bids_filters=config.execution.bids_filters or {},
         )
 
@@ -224,6 +232,7 @@ to workflows in *QSIRecon*'s documentation]\
                     name=f"datasink_atlas_labels_orig_{atlas_name}_{anat_num}",
                 )
                 workflow.add_nodes([ds_atlas_labels_orig])
+
     config.loggers.workflow.info(f"Found {len(anat_input_files)} high-res anatomicals to process")
 
     # create a processing pipeline for the dwis in each session
@@ -256,6 +265,10 @@ to workflows in *QSIRecon*'s documentation]\
             "dwi_metadata": config.execution.layout.get_metadata(dwi_file),
             **dwi_available_anatomical_data,
         }
+        # Load bval file and determine number of shells
+        bval_file = config.execution.layout.get_bval(dwi_file)
+        shell_scheme = _classify_shell_scheme(bval_file, 5)
+        inputs_dict["shell_scheme"] = shell_scheme
 
         # This node holds all the inputs that will go to the recon workflow.
         # It is the definitive place to check what the input files are

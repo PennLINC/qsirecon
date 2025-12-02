@@ -29,6 +29,7 @@ from argparse import Action
 from pathlib import Path
 
 from .. import config
+from ..utils.bids import get_iterable_dwis_and_anats
 
 
 class ToDict(Action):
@@ -320,9 +321,14 @@ def _build_parser(**kwargs):
     g_fs.add_argument(
         "--fs-license-file",
         metavar="PATH",
-        type=Path,
-        help="Path to FreeSurfer license key file. Get it (for free) by registering "
-        "at https://surfer.nmr.mgh.harvard.edu/registration.html",
+        type=IsFile,
+        help=(
+            "Path to FreeSurfer license key file. Get it (for free) by registering "
+            "at https://surfer.nmr.mgh.harvard.edu/registration.html. "
+            "If not provided, QSIRecon will look for a license file in the following "
+            "locations: 1) ``$FS_LICENSE`` environment variable; "
+            "and 2) the ``$FREESURFER_HOME/license.txt`` path."
+        ),
     )
 
     # arguments for reconstructing QSI data
@@ -361,6 +367,16 @@ def _build_parser(**kwargs):
         action="store_true",
         default=False,
         help="run only reconstruction, assumes preprocessing has already completed.",
+    )
+    g_recon.add_argument(
+        "--recon-spec-aux-files",
+        action="store",
+        type=PathExists,
+        help=(
+            "Path to a directory containing auxiliary files for the reconstruction pipeline. "
+            "This is currently only used to provide common response functions for a subset of "
+            "the built-in recon specs."
+        ),
     )
 
     g_parcellation = parser.add_argument_group("Parcellation options")
@@ -469,6 +485,24 @@ def parse_args(args=None, namespace=None):
                 opts.datasets["qsirecon4s"] = Path(
                     os.getenv("QSIRECON_ATLASPACK", "/atlas/AtlasPack")
                 )
+
+    if opts.fs_license_file is not None:
+        opts.fs_license_file = opts.fs_license_file.resolve()
+        if opts.fs_license_file.is_file():
+            os.environ["FS_LICENSE"] = str(opts.fs_license_file)
+
+        else:
+            parser.error(f"Freesurfer license DNE: {opts.fs_license_file}.")
+    else:
+        fs_home = os.getenv("FREESURFER_HOME")
+        fs_license_file = os.environ.get("FS_LICENSE", str(Path(fs_home) / "license.txt"))
+        if not Path(fs_license_file).is_file():
+            parser.error(
+                "A valid FreeSurfer license file is required. "
+                "Set the FS_LICENSE environment variable or use the '--fs-license-file' flag."
+            )
+
+        os.environ["FS_LICENSE"] = str(fs_license_file)
 
     config.execution.log_level = int(max(25 - 5 * opts.verbose_count, logging.DEBUG))
     config.from_dict(vars(opts), init=["nipype"])
@@ -615,50 +649,4 @@ def parse_args(args=None, namespace=None):
         )
 
     config.execution.participant_label = sorted(participant_label)
-    config.execution.processing_list = _get_iterable_dwis_and_anats()
-
-
-def _get_iterable_dwis_and_anats():
-    """Look through the BIDS Layout for DWIs and their corresponding anats.
-
-    Returns
-    -------
-    dwis_and_anats : list of tuple
-        List of two-element tuples where the first element is a DWI scan and the second is
-        the corresponding anatomical scan.
-    """
-    from bids.layout import Query
-
-    dwis_and_anats = []
-    dwi_files = config.execution.layout.get(
-        suffix="dwi",
-        session=Query.OPTIONAL,
-        space=["T1w", "ACPC"],
-        extension=["nii", "nii.gz"],
-    )
-
-    for dwi_scan in dwi_files:
-        subject_level_anats = config.execution.layout.get(
-            suffix=["T1w", "T2w"],
-            session=Query.NONE,
-            space=[Query.NONE, "ACPC"],
-            extension=["nii", "nii.gz"],
-        )
-
-        session_level_anats = []
-        if dwi_session := dwi_scan.entities.get("session"):
-            session_level_anats = config.execution.layout.get(
-                suffix=["T1w", "T2w"],
-                session=dwi_session,
-                space=[Query.NONE, "ACPC"],
-                extension=["nii", "nii.gz"],
-            )
-
-        if not (session_level_anats or subject_level_anats):
-            anat_scan = None
-        else:
-            best_anat_source = session_level_anats if session_level_anats else subject_level_anats
-            anat_scan = best_anat_source[0]
-
-        dwis_and_anats.append((dwi_scan, anat_scan))
-    return dwis_and_anats
+    config.execution.processing_list = get_iterable_dwis_and_anats(layout=config.execution.layout)

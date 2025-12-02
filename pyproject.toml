@@ -17,8 +17,9 @@ classifiers = [
 license = {file = "LICENSE"}
 requires-python = ">=3.10"
 dependencies = [
+    "numpy <= 1.26.3",
     'importlib_resources; python_version < "3.11"',
-    "dipy>=1.8.0,<1.9.0",
+    "dipy>=1.10.0,<1.11.0",
     "dmri-amico == 2.0.3",
     "filelock",
     "fury",
@@ -31,12 +32,11 @@ dependencies = [
     "nilearn == 0.10.1",
     "nipype == 1.9.1",
     "nireports >= 24.0.3",
-    "niworkflows >=1.9,<= 1.10",
-    "numpy <= 1.26.3",
+    "niworkflows >= 1.13,< 1.14",
     "packaging",  # for version string parsing
     "pandas < 2.0.0",
     "psutil <= 5.9.8",
-    "pyAFQ == 1.3.2",
+    "pyAFQ == 2.0",
     "pybids",
     "pyyaml",
     "scikit-image",
@@ -59,7 +59,6 @@ Paper = "https://doi.org/10.1038/s41592-022-01458-7"
 
 [project.optional-dependencies]
 doc = [
-    "dipy",
     "doctest-ignore-unicode",
     "lxml_html_clean",
     "nbsphinx",
@@ -68,10 +67,12 @@ doc = [
     "recommonmark",
     "sphinx >= 4.2.0",
     "sphinx-argparse",
-    "sphinx_markdown_tables",
+    "sphinx-markdown-tables",
     "sphinx_rtd_theme",
     "sphinxcontrib-apidoc",
     "sphinxcontrib-bibtex",
+    "sphinx_design",
+
 ]
 tests = [
     "coverage",
@@ -182,6 +183,12 @@ markers = [
     "mrtrix3_recon: test 20",
     "tortoise_recon: test 21",
     "autotrack: test 22",
+    "mrtrix_multishell_msmt_hsvs: test 23",
+    "ss3t_fod_autotrack: test 24",
+    "multises_post1_qsiprep: test 25",
+    "multises_pre1_qsiprep: test 26",
+    "interfaces: test 27",
+    "mrtrix3_recon_with_response_functions: test 28",
 ]
 env = [
     "RUNNING_PYTEST = 1",

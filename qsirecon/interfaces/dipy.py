@@ -15,7 +15,7 @@ import numpy as np
 from dipy.core.gradients import gradient_table
 from dipy.core.sphere import HemiSphere
 from dipy.io.utils import nifti1_symmat
-from dipy.reconst import dki, dti, mapmri
+from dipy.reconst import dki, dki_micro, dti, mapmri, msdki
 from dipy.segment.mask import median_otsu
 from nipype import logging
 from nipype.interfaces.base import (
@@ -30,6 +30,7 @@ from nipype.utils.filemanip import fname_presuffix
 from pkg_resources import resource_filename as pkgr
 
 from ..interfaces.mrtrix import _convert_fsl_to_mrtrix
+from ..utils.boilerplate import ConditionalDoc
 from ..utils.brainsuite_shore import BrainSuiteShoreModel, brainsuite_shore_basis
 from .converters import (
     amplitudes_to_fibgz,
@@ -47,14 +48,49 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
     dwi_file = File(exists=True, mandatory=True)
     mask_file = File(exists=True)
     local_bvec_file = File(exists=True)
-    big_delta = traits.Either(None, traits.Float(), usedefault=True)
-    little_delta = traits.Either(None, traits.Float(), usedefault=True)
-    b0_threshold = traits.CFloat(50, usedefault=True)
+    # NOTE: Do not add ConditionalDoc here because it is described in the workflow.
+    big_delta = traits.Either(
+        None,
+        traits.Float(),
+        usedefault=True,
+        desc="Large delta in seconds. Documented as 'LargeDelta' in the BIDS metadata.",
+        recon_spec_accessible=True,
+    )
+    # NOTE: Do not add ConditionalDoc here because it is described in the workflow.
+    small_delta = traits.Either(
+        None,
+        traits.Float(),
+        usedefault=True,
+        desc="Small delta in seconds. Documented as 'SmallDelta' in the BIDS metadata.",
+        recon_spec_accessible=True,
+    )
+    b0_threshold = traits.CFloat(
+        50,
+        usedefault=True,
+        desc=(
+            "B-value threshold. Any b-values below this threshold are considered b0s. "
+            "Documented as 'B0Threshold' in the BIDS metadata."
+        ),
+        doc=ConditionalDoc(
+            "B-values less than {value} were treated as b0s for the sake of modeling.",
+        ),
+        recon_spec_accessible=True,
+    )
     # Outputs
-    write_fibgz = traits.Bool(True)
-    write_mif = traits.Bool(True)
+    write_fibgz = traits.Bool(True, recon_spec_accessible=True)
+    write_mif = traits.Bool(True, recon_spec_accessible=True)
     # To extrapolate
-    extrapolate_scheme = traits.Enum("HCP", "ABCD")
+    # Currently only used by BrainSuiteShoreReconstruction.
+    extrapolate_scheme = traits.Enum(
+        "HCP",
+        "ABCD",
+        "DSIQ5",
+        desc=(
+            "Sampling scheme to extrapolate the DWI data to. "
+            "Documented as 'ExtrapolateScheme' in the BIDS metadata."
+        ),
+        recon_spec_accessible=True,
+    )
 
 
 class DipyReconOutputSpec(TraitedSpec):
@@ -73,7 +109,7 @@ class DipyReconInterface(SimpleInterface):
     output_spec = DipyReconOutputSpec
 
     def _get_gtab(self, external_bvals=None, external_bvecs=None):
-        little_delta = self.inputs.little_delta if isdefined(self.inputs.little_delta) else None
+        small_delta = self.inputs.small_delta if isdefined(self.inputs.small_delta) else None
         big_delta = self.inputs.big_delta if isdefined(self.inputs.big_delta) else None
         bval_file = self.inputs.bval_file if external_bvals is None else external_bvals
         bvec_file = self.inputs.bvec_file if external_bvecs is None else external_bvecs
@@ -82,7 +118,7 @@ class DipyReconInterface(SimpleInterface):
             bvecs=np.loadtxt(bvec_file).T,
             b0_threshold=self.inputs.b0_threshold,
             big_delta=big_delta,
-            small_delta=little_delta,
+            small_delta=small_delta,
         )
         return gtab
 
@@ -148,7 +184,7 @@ class DipyReconInterface(SimpleInterface):
             self._results["fod_sh_mif"] = output_mif_file
 
     def _extrapolate_scheme(self, scheme_name, runtime, fit_obj, mask_img):
-        if scheme_name not in ("ABCD", "HCP"):
+        if scheme_name not in ("ABCD", "HCP", "DSIQ5"):
             return
         output_dwi_file = fname_presuffix(
             self.inputs.dwi_file, suffix=scheme_name, newpath=runtime.cwd, use_ext=True
@@ -182,42 +218,226 @@ class DipyReconInterface(SimpleInterface):
         self._results["extrapolated_b"] = output_b_file
 
         gtab_to_predict = self._get_gtab(external_bvals=bval_file, external_bvecs=bvec_file)
-        new_data = fit_obj.predict(gtab_to_predict, S0=1)
+        new_data = fit_obj.predict(gtab_to_predict, S0=1000)
+        # Clip negative values
+        new_data = np.clip(new_data, 0, None)
         nb.Nifti1Image(new_data, mask_img.affine, mask_img.header).to_filename(output_dwi_file)
         self._results["extrapolated_dwi"] = output_dwi_file
 
 
 class MAPMRIInputSpec(DipyReconInputSpec):
-    radial_order = traits.Int(6, usedefault=True)
-    laplacian_regularization = traits.Bool(True, usedefault=True)
-    laplacian_weighting = traits.Either(traits.Str("GCV"), traits.Float(0.2), usedefault=True)
-    positivity_constraint = traits.Bool(False, usedefault=True)
-    pos_grid = traits.Int(15, usedefault=True)
-    pos_radius = traits.Either(
-        traits.Str("adaptive"), traits.Int(), default="adaptive", usedefault=True
+    radial_order = traits.Int(
+        6,
+        usedefault=True,
+        desc=(
+            "An even integer that represents the order of the basis. "
+            "Documented as 'RadialOrder' in the BIDS metadata."
+        ),
+        doc=ConditionalDoc("The radial order of the MAPMRI model was set to {value}."),
+        recon_spec_accessible=True,
     )
-    anisotropic_scaling = traits.Bool(True, usedefault=True)
-    eigenvalue_threshold = traits.Float(1e-04, usedefault=True)
-    bval_threshold = traits.Float()
-    dti_scale_estimation = traits.Bool(True, usedefault=True)
-    static_diffusivity = traits.Float(0.7e-3, usedefault=True)
-    cvxpy_solver = traits.Str()
+    laplacian_regularization = traits.Bool(
+        True,
+        usedefault=True,
+        desc=(
+            "Regularize using the Laplacian of the MAP-MRI basis. "
+            "Documented as 'LaplacianRegularization' in the BIDS metadata."
+        ),
+        doc=ConditionalDoc(
+            "The Laplacian of the MAP-MRI basis was used for regularization.",
+            if_false="The Laplacian of the MAP-MRI basis was not used for regularization.",
+        ),
+        recon_spec_accessible=True,
+    )
+    laplacian_weighting = traits.Either(
+        "GCV",
+        traits.List(traits.Float()),
+        traits.Float(0.2),
+        default="GCV",
+        usedefault=True,
+        desc=(
+            "The string 'GCV' makes it use generalized cross-validation to find "
+            "the regularization weight. A scalar sets the regularization weight "
+            "to that value and an array will make it selected the optimal weight "
+            "from the values in the array. "
+            "Documented as 'LaplacianWeighting' in the BIDS metadata."
+        ),
+        doc=ConditionalDoc("Laplacian weighting was set to {value}."),
+        recon_spec_accessible=True,
+    )
+    positivity_constraint = traits.Bool(
+        False,
+        usedefault=True,
+        desc=(
+            "Constrain the propagator to be positive. "
+            "Documented as 'PositivityConstraint' in the BIDS metadata."
+        ),
+        doc=ConditionalDoc(
+            "The propagator was constrained to be positive.",
+            if_false="The propagator was not constrained to be positive.",
+        ),
+        recon_spec_accessible=True,
+    )
+    global_constraints = traits.Bool(
+        False,
+        usedefault=True,
+        desc=(
+            "If set to False, positivity is enforced on a grid determined by pos_grid and "
+            "pos_radius. If set to True, positivity is enforced everywhere using the constraints "
+            "of Merlet2013. "
+            "Documented as 'GlobalConstraints' in the BIDS metadata."
+        ),
+        doc=ConditionalDoc(
+            "Positivity was enforced everywhere using the constraints of @merlet3dshore.",
+            if_false="Positivity was enforced on a grid determined by pos_grid and pos_radius.",
+        ),
+        recon_spec_accessible=True,
+    )
+    pos_grid = traits.Int(
+        15,
+        usedefault=True,
+        desc=(
+            "The number of points in the grid that is used in the local positivity constraint. "
+            "Documented as 'PositivityGrid' in the BIDS metadata."
+        ),
+        doc=ConditionalDoc("The local positivity constraint grid was set to {value} points."),
+        recon_spec_accessible=True,
+    )
+    pos_radius = traits.Either(
+        "adaptive",
+        "infinity",
+        traits.Float(),
+        default="adaptive",
+        usedefault=True,
+        desc=(
+            "If set to a float, the maximum distance the local positivity "
+            "constraint constrains to posivity is that value. If set to "
+            "'adaptive', the maximum distance is dependent on the estimated "
+            "tissue diffusivity. If 'infinity', semidefinite programming "
+            "constraints are used. "
+            "Documented as 'PositivityRadius' in the BIDS metadata."
+        ),
+        doc=ConditionalDoc("The positivity radius was set to {value}."),
+        recon_spec_accessible=True,
+    )
+    anisotropic_scaling = traits.Bool(
+        True,
+        usedefault=True,
+        desc=(
+            "If True, uses the standard anisotropic MAP-MRI basis. If False, "
+            "uses the isotropic MAP-MRI basis. "
+            "Documented as 'AnisotropicScaling' in the BIDS metadata."
+        ),
+        doc=ConditionalDoc(
+            "The anisotropic MAP-MRI basis was used.",
+            if_false="The isotropic MAP-MRI basis was used.",
+        ),
+        recon_spec_accessible=True,
+    )
+    eigenvalue_threshold = traits.Float(
+        1e-04,
+        usedefault=True,
+        desc=(
+            "Sets the minimum of the tensor eigenvalues in order to avoid stability problems. "
+            "Documented as 'EigenvalueThreshold' in the BIDS metadata."
+        ),
+        doc=ConditionalDoc("The eigenvalue threshold was set to {value}."),
+        recon_spec_accessible=True,
+    )
+    bval_threshold = traits.Float(
+        2000,
+        desc=(
+            "Sets the b-value threshold to be used in the scale factor "
+            "estimation. In order for the estimated non-Gaussianity to have "
+            "meaning this value should set to a lower value (b<2000 s/mm^2) "
+            "such that the scale factors are estimated on signal points that "
+            "reasonably represent the spins at Gaussian diffusion. "
+            "Documented as 'BValThreshold' in the BIDS metadata."
+        ),
+        doc=ConditionalDoc(
+            "The b-value threshold for scale factor estimation was set to {value}.",
+        ),
+        recon_spec_accessible=True,
+    )
+    dti_scale_estimation = traits.Bool(
+        True,
+        usedefault=True,
+        desc=(
+            "Whether or not DTI fitting is used to estimate the isotropic scale "
+            "factor for isotropic MAP-MRI. When set to False the algorithm presets "
+            "the isotropic tissue diffusivity to static_diffusivity. This vastly "
+            "increases fitting speed but at the cost of slightly reduced fitting "
+            "quality. Can still be used in combination with regularization and "
+            "constraints. "
+            "Documented as 'DTIScaleEstimation' in the BIDS metadata."
+        ),
+        doc=ConditionalDoc(
+            "DTI fitting was used to estimate the isotropic scale factor.",
+            if_false=(
+                "The isotropic tissue diffusivity was set to the static diffusivity constant."
+            ),
+        ),
+        recon_spec_accessible=True,
+    )
+    # XXX: Not stored as attribute in the model, so metadata is not available.
+    static_diffusivity = traits.Float(
+        0.7e-3,
+        usedefault=True,
+        desc=(
+            "The tissue diffusivity that is used when dti_scale_estimation is "
+            "set to False. The default is that of typical white matter "
+            "D=0.7e-3. "
+            "Documented as 'StaticDiffusivity' in the BIDS metadata."
+        ),
+        doc=ConditionalDoc("Static tissue diffusivity was set to {value}."),
+        recon_spec_accessible=True,
+    )
+    cvxpy_solver = traits.Either(
+        None,
+        traits.Str(),
+        usedefault=True,
+        desc=(
+            "cvxpy solver name. Optionally optimize the positivity constraint "
+            "with a particular cvxpy solver. See https://www.cvxpy.org/ for "
+            "details. "
+            "Documented as 'CVXPYSolver' in the BIDS metadata."
+        ),
+        doc=ConditionalDoc("CVXPY solver was set to {value}."),
+        recon_spec_accessible=True,
+    )
 
 
 class MAPMRIOutputSpec(DipyReconOutputSpec):
-    rtop = File()
-    lapnorm = File()
-    msd = File()
-    qiv = File()
-    rtap = File()
-    rtpp = File()
-    ng = File()
-    perng = File()
-    parng = File()
-    mapmri_coeffs = File()
+    rtop = File(desc="Voxelwise Return-to-origin probability.")
+    rtop_metadata = traits.Dict(desc="Metadata for the rtop file.")
+    lapnorm = File(desc="Voxelwise norm of the Laplacian.")
+    lapnorm_metadata = traits.Dict(desc="Metadata for the lapnorm file.")
+    msd = File(desc="Voxelwise MSD.")
+    msd_metadata = traits.Dict(desc="Metadata for the msd file.")
+    qiv = File(desc="Voxelwise q-space inverse variance.")
+    qiv_metadata = traits.Dict(desc="Metadata for the qiv file.")
+    rtap = File(desc="Voxelwise Return-to-axis probability.")
+    rtap_metadata = traits.Dict(desc="Metadata for the rtap file.")
+    rtpp = File(desc="Voxelwise Return-to-plane probability.")
+    rtpp_metadata = traits.Dict(desc="Metadata for the rtpp file.")
+    ng = File(desc="Voxelwise Nematic Gradient.")
+    ng_metadata = traits.Dict(desc="Metadata for the ng file.")
+    ngperp = File(desc="Voxelwise Perpendicular Nematic Gradient.")
+    ngperp_metadata = traits.Dict(desc="Metadata for the ngperp file.")
+    ngpar = File(desc="Voxelwise Parallel Nematic Gradient.")
+    ngpar_metadata = traits.Dict(desc="Metadata for the ngpar file.")
+    mapcoeffs = File(desc="Voxelwise MAPMRI coefficients.")
+    mapcoeffs_metadata = traits.Dict(desc="Metadata for the mapcoeffs file.")
 
 
 class MAPMRIReconstruction(DipyReconInterface):
+    """Apply MAPMRI reconstruction to the DWI data.
+
+    See Also
+    --------
+    :class:`dipy.reconst.mapmri.MapmriModel`
+    """
+
     input_spec = MAPMRIInputSpec
     output_spec = MAPMRIOutputSpec
 
@@ -226,50 +446,27 @@ class MAPMRIReconstruction(DipyReconInterface):
         dwi_img = nb.load(self.inputs.dwi_file)
         data = dwi_img.get_fdata(dtype="float32")
         mask_img, mask_array = self._get_mask(dwi_img, gtab)
-        weighting = (
-            "GCV" if self.inputs.laplacian_weighting == "GCV" else self.inputs.laplacian_weighting
+        kwargs = {"laplacian_weighting": None}
+        if self.inputs.laplacian_regularization:
+            kwargs["laplacian_weighting"] = self.inputs.laplacian_weighting
+
+        map_model_aniso = mapmri.MapmriModel(
+            gtab=gtab,
+            radial_order=self.inputs.radial_order,
+            laplacian_regularization=self.inputs.laplacian_regularization,
+            positivity_constraint=self.inputs.positivity_constraint,
+            global_constraints=self.inputs.global_constraints,
+            pos_grid=self.inputs.pos_grid,
+            pos_radius=self.inputs.pos_radius,
+            anisotropic_scaling=self.inputs.anisotropic_scaling,
+            eigenvalue_threshold=self.inputs.eigenvalue_threshold,
+            bval_threshold=self.inputs.bval_threshold,
+            dti_scale_estimation=self.inputs.dti_scale_estimation,
+            static_diffusivity=self.inputs.static_diffusivity,
+            cvxpy_solver=self.inputs.cvxpy_solver,
+            **kwargs,
         )
-
-        if self.inputs.laplacian_regularization and self.inputs.positivity_constraint:
-            map_model_aniso = mapmri.MapmriModel(
-                gtab,
-                radial_order=self.inputs.radial_order,
-                laplacian_regularization=True,
-                laplacian_weighting=weighting,
-                positivity_constraint=True,
-                bval_threshold=self.inputs.b0_threshold,
-                anisotropic_scaling=self.inputs.anisotropic_scaling,
-            )
-
-        elif self.inputs.positivity_constraint:
-            map_model_aniso = mapmri.MapmriModel(
-                gtab,
-                radial_order=self.inputs.radial_order,
-                laplacian_regularization=False,
-                positivity_constraint=True,
-                bval_threshold=self.inputs.b0_threshold,
-                anisotropic_scaling=self.inputs.anisotropic_scaling,
-            )
-
-        elif self.inputs.laplacian_regularization:
-            map_model_aniso = mapmri.MapmriModel(
-                gtab,
-                radial_order=self.inputs.radial_order,
-                laplacian_regularization=True,
-                laplacian_weighting=weighting,
-                bval_threshold=self.inputs.b0_threshold,
-                anisotropic_scaling=self.inputs.anisotropic_scaling,
-            )
-
-        else:
-            map_model_aniso = mapmri.MapmriModel(
-                gtab,
-                radial_order=self.inputs.radial_order,
-                laplacian_regularization=False,
-                positivity_constraint=False,
-                bval_threshold=self.inputs.b0_threshold,
-                anisotropic_scaling=self.inputs.anisotropic_scaling,
-            )
+        self._used_params = [k for k in self.inputs.get().keys() if hasattr(map_model_aniso, k)]
 
         LOGGER.info("Fitting MAPMRI Model.")
         mapfit_aniso = map_model_aniso.fit(data, mask=mask_array)
@@ -292,22 +489,75 @@ class MAPMRIReconstruction(DipyReconInterface):
         self._results["rtpp"] = self._save_scalar(rtpp, "_rtpp", runtime, dwi_img)
 
         coeffs = mapfit_aniso.mapmri_coeff
-        self._results["mapmri_coeffs"] = self._save_scalar(coeffs, "_mapcoeffs", runtime, dwi_img)
+        self._results["mapcoeffs"] = self._save_scalar(coeffs, "_mapcoeffs", runtime, dwi_img)
 
         if self.inputs.anisotropic_scaling:
             ng = mapfit_aniso.ng()
             self._results["ng"] = self._save_scalar(ng, "_ng", runtime, dwi_img)
 
-            perng = mapfit_aniso.ng_perpendicular()
-            self._results["perng"] = self._save_scalar(perng, "_perng", runtime, dwi_img)
+            ngperp = mapfit_aniso.ng_perpendicular()
+            self._results["ngperp"] = self._save_scalar(ngperp, "_ngperp", runtime, dwi_img)
 
-            parng = mapfit_aniso.ng_parallel()
-            self._results["parng"] = self._save_scalar(parng, "_parng", runtime, dwi_img)
+            ngpar = mapfit_aniso.ng_parallel()
+            self._results["ngpar"] = self._save_scalar(ngpar, "_ngpar", runtime, dwi_img)
 
         # Write DSI Studio or MRtrix
         self._write_external_formats(runtime, mapfit_aniso, mask_img, "_MAPMRI")
 
         return runtime
+
+    def _list_outputs(self):
+        inputs = self.inputs.get()
+        # Convert _Undefined values to "n/a"
+        inputs = {k: "n/a" if not isdefined(v) else v for k, v in inputs.items()}
+
+        model_params = {
+            "RadialOrder": "radial_order",
+            "LaplacianRegularization": "laplacian_regularization",
+            "LaplacianWeighting": "laplacian_weighting",
+            "PositivityConstraint": "positivity_constraint",
+            "GlobalConstraints": "global_constraints",
+            "PositivityGrid": "pos_grid",
+            "PositivityRadius": "pos_radius",
+            "AnisotropicScaling": "anisotropic_scaling",
+            "EigenvalueThreshold": "eigenvalue_threshold",
+            "BValThreshold": "bval_threshold",
+            "DTIScaleEstimation": "dti_scale_estimation",
+            "StaticDiffusivity": "static_diffusivity",
+            "CVXPYSolver": "cvxpy_solver",
+        }
+        model_params = {
+            k: inputs.get(v, "n/a") for k, v in model_params.items() if v in self._used_params
+        }
+        other_params = {
+            # Inherited from DipyReconInterface
+            "LargeDelta": inputs["big_delta"],
+            "SmallDelta": inputs["small_delta"],
+            "B0Threshold": inputs["b0_threshold"],
+            "WriteFibgz": inputs["write_fibgz"],
+            "WriteMif": inputs["write_mif"],
+        }
+
+        base_metadata = {
+            "Model": {
+                "Parameters": {
+                    **model_params,
+                    **other_params,
+                },
+            },
+        }
+
+        outputs = super()._list_outputs()
+        file_outputs = [
+            name for name in self.output_spec().get() if not name.endswith("_metadata")
+        ]
+        for file_output in file_outputs:
+            # Patch in model and parameter information to metadata dictionaries
+            metadata_output = file_output + "_metadata"
+            if metadata_output in self.output_spec().get():
+                outputs[metadata_output] = base_metadata
+
+        return outputs
 
 
 class BrainSuiteShoreReconstructionInputSpec(DipyReconInputSpec):
@@ -344,7 +594,7 @@ class BrainSuiteShoreReconstruction(DipyReconInterface):
     output_spec = BrainSuiteShoreReconstructionOutputSpec
 
     def _extrapolate_scheme(self, scheme_name, runtime, fit_obj, mask_array, mask_img):
-        if scheme_name not in ("ABCD", "HCP"):
+        if scheme_name not in ("ABCD", "HCP", "DSIQ5"):
             return
         output_dwi_file = fname_presuffix(
             self.inputs.dwi_file, suffix=scheme_name, newpath=runtime.cwd, use_ext=True
@@ -385,6 +635,8 @@ class BrainSuiteShoreReconstruction(DipyReconInterface):
         shore_array = fit_obj._shore_coef[mask_array]
         output_data = np.zeros(mask_array.shape + (len(prediction_gtab.bvals),))
         output_data[mask_array] = np.dot(shore_array, prediction_shore.T)
+        # Clip negative values
+        output_data = np.clip(output_data, 0, None)
 
         nb.Nifti1Image(output_data, mask_img.affine, mask_img.header).to_filename(output_dwi_file)
         self._results["extrapolated_dwi"] = output_dwi_file
@@ -409,7 +661,7 @@ class BrainSuiteShoreReconstruction(DipyReconInterface):
             bvecs=final_bvecs,
             b0_threshold=50,
             big_delta=self.inputs.big_delta,
-            small_delta=self.inputs.little_delta,
+            small_delta=self.inputs.small_delta,
         )
 
         # Cleanup
@@ -523,20 +775,24 @@ class TensorReconstruction(DipyReconInterface):
 class _KurtosisReconstructionInputSpec(DipyReconInputSpec):
     kurtosis_clip_min = traits.Float(-0.42857142857142855, usedefault=True)
     kurtosis_clip_max = traits.Float(10.0, usedefault=True)
+    plot_reports = traits.Bool(True, usedefault=True)
 
 
 class _KurtosisReconstructionOutputSpec(DipyReconOutputSpec):
     tensor = File()
-    fa = File()
-    md = File()
-    rd = File()
     ad = File()
-    colorFA = File()
-    kfa = File()
-    mk = File()
     ak = File()
-    rk = File()
+    colorFA = File()
+    fa = File()
+    kfa = File()
+    linearity = File()
+    md = File()
+    mk = File()
     mkt = File()
+    planarity = File()
+    rd = File()
+    rk = File()
+    sphericity = File()
 
 
 class KurtosisReconstruction(DipyReconInterface):
@@ -547,7 +803,7 @@ class KurtosisReconstruction(DipyReconInterface):
         gtab = self._get_gtab()
         dwi_img = nb.load(self.inputs.dwi_file)
         dwi_data = dwi_img.get_fdata(dtype="float32")
-        mask_img, mask_array = self._get_mask(dwi_img, gtab)
+        _, mask_array = self._get_mask(dwi_img, gtab)
 
         # Fit it
         dkimodel = dki.DiffusionKurtosisModel(gtab)
@@ -561,8 +817,22 @@ class KurtosisReconstruction(DipyReconInterface):
         self._results["tensor"] = output_tensor_file
 
         # FA MD RD and AD
-        for metric in ["fa", "md", "rd", "ad", "colorFA", "kfa"]:
-            metric_attr = metric if metric != "colorFA" else "color_fa"
+        metric_attrs = {
+            "colorFA": "color_fa",
+        }
+        base_metrics = [
+            "ad",
+            "colorFA",
+            "fa",
+            "kfa",
+            "linearity",
+            "md",
+            "planarity",
+            "rd",
+            "sphericity",
+        ]
+        for metric in base_metrics:
+            metric_attr = metric_attrs.get(metric, metric)
             data = np.nan_to_num(getattr(dkifit, metric_attr).astype("float32"), 0)
             out_name = fname_presuffix(
                 self.inputs.dwi_file, suffix="DKI" + metric, newpath=runtime.cwd, use_ext=True
@@ -571,7 +841,8 @@ class KurtosisReconstruction(DipyReconInterface):
             self._results[metric] = out_name
 
         # Get the kurtosis metrics
-        for metric in ["mk", "ak", "rk", "mkt"]:
+        kurtosis_metrics = ["ak", "mk", "mkt", "rk"]
+        for metric in kurtosis_metrics:
             data = np.nan_to_num(
                 getattr(dkifit, metric)(
                     float(self.inputs.kurtosis_clip_min), float(self.inputs.kurtosis_clip_max)
@@ -580,6 +851,128 @@ class KurtosisReconstruction(DipyReconInterface):
             )
             out_name = fname_presuffix(
                 self.inputs.dwi_file, suffix="DKI" + metric, newpath=runtime.cwd, use_ext=True
+            )
+            nb.Nifti1Image(data, dwi_img.affine).to_filename(out_name)
+            self._results[metric] = out_name
+
+        return runtime
+
+
+class _KurtosisReconstructionMicrostructureInputSpec(DipyReconInputSpec):
+    kurtosis_clip_min = traits.Float(-0.42857142857142855, usedefault=True)
+    kurtosis_clip_max = traits.Float(10.0, usedefault=True)
+
+
+class _KurtosisReconstructionMicrostructureOutputSpec(DipyReconOutputSpec):
+    ad = File()
+    ade = File()
+    awf = File()
+    axonald = File()
+    kfa = File()
+    md = File()
+    rd = File()
+    rde = File()
+    tortuosity = File()
+    trace = File()
+
+
+class KurtosisReconstructionMicrostructure(DipyReconInterface):
+    input_spec = _KurtosisReconstructionMicrostructureInputSpec
+    output_spec = _KurtosisReconstructionMicrostructureOutputSpec
+
+    def _run_interface(self, runtime):
+        gtab = self._get_gtab()
+        dwi_img = nb.load(self.inputs.dwi_file)
+        dwi_data = dwi_img.get_fdata(dtype="float32")
+        mask_img, mask_array = self._get_mask(dwi_img, gtab)
+
+        # Fit it
+        dkimodel = dki_micro.KurtosisMicrostructureModel(gtab)
+        dkifit = dkimodel.fit(dwi_data, mask_array)
+
+        # FA MD RD and AD
+        metric_attrs = {
+            "ade": "hindered_ad",
+            "rde": "hindered_rd",
+            "axonald": "axonal_diffusivity",
+        }
+        base_metrics = [
+            "ad",
+            "ade",
+            "awf",
+            "axonald",
+            "kfa",
+            "md",
+            "rd",
+            "rde",
+            "tortuosity",
+            "trace",
+        ]
+        for metric in base_metrics:
+            metric_attr = metric_attrs.get(metric, metric)
+            data = np.nan_to_num(getattr(dkifit, metric_attr).astype("float32"), 0)
+            out_name = fname_presuffix(
+                self.inputs.dwi_file,
+                suffix="DKIMicro" + metric,
+                newpath=runtime.cwd,
+                use_ext=True,
+            )
+            nb.Nifti1Image(data, dwi_img.affine).to_filename(out_name)
+            self._results[metric] = out_name
+
+        return runtime
+
+
+class _KurtosisReconstructionMSDKIInputSpec(DipyReconInputSpec):
+    kurtosis_clip_min = traits.Float(-0.42857142857142855, usedefault=True)
+    kurtosis_clip_max = traits.Float(10.0, usedefault=True)
+
+
+class _KurtosisReconstructionMSDKIOutputSpec(DipyReconOutputSpec):
+    msd = File()
+    msk = File()
+    di = File()
+    awf = File()
+    mfa = File()
+
+
+class KurtosisReconstructionMSDKI(DipyReconInterface):
+    input_spec = _KurtosisReconstructionMSDKIInputSpec
+    output_spec = _KurtosisReconstructionMSDKIOutputSpec
+
+    def _run_interface(self, runtime):
+        gtab = self._get_gtab()
+        dwi_img = nb.load(self.inputs.dwi_file)
+        dwi_data = dwi_img.get_fdata(dtype="float32")
+        mask_img, mask_array = self._get_mask(dwi_img, gtab)
+
+        # Fit it
+        dkimodel = msdki.MeanDiffusionKurtosisModel(gtab)
+        dkifit = dkimodel.fit(dwi_data, mask_array)
+
+        # MSD MSK DI AWF MFA
+        metric_attrs = {
+            "msd": "msd",
+            "msk": "msk",
+            "di": "smt2di",
+            "awf": "smt2f",
+            "mfa": "smt2uFA",
+        }
+        base_metrics = [
+            "msd",
+            "msk",
+            "di",
+            "awf",
+            "mfa",
+        ]
+        for metric in base_metrics:
+            metric_attr = metric_attrs.get(metric, metric)
+            data = np.nan_to_num(getattr(dkifit, metric_attr).astype("float32"), 0)
+            out_name = fname_presuffix(
+                self.inputs.dwi_file,
+                suffix="MSDKI" + metric,
+                newpath=runtime.cwd,
+                use_ext=True,
             )
             nb.Nifti1Image(data, dwi_img.affine).to_filename(out_name)
             self._results[metric] = out_name

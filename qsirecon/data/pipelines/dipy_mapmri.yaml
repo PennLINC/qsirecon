@@ -6,11 +6,13 @@ nodes:
     name: mapmri_recon
     parameters:
         anisotropic_scaling: false
+        big_delta: null
         bval_threshold: 2000
         dti_scale_estimation: false
         laplacian_regularization: true
         laplacian_weighting: 0.2
         radial_order: 6
+        small_delta: null
         write_fibgz: true
         write_mif: true
     qsirecon_suffix: DIPYMAPMRI

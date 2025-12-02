@@ -14,7 +14,7 @@ import nipype.pipeline.engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ...interfaces.bids import DerivativesDataSink
-from ...interfaces.converters import FODtoFIBGZ
+from ...interfaces.converters import FODtoFIBGZ, MergeFODGQIFibs
 from ...interfaces.images import ConformDwi
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...utils.bids import clean_datasinks
@@ -40,6 +40,9 @@ def init_mif_to_fibgz_wf(inputs_dict, name="mif_to_fibgz", qsirecon_suffix="", p
             DSI Studio fib file containing the FODs from the input ``mif_file``.
 
     """
+    workflow = Workflow(name=name)
+    workflow.__desc__ = "The MRTrix mif file was converted to a DSI Studio fib file."
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields + ["fod_sh_mif", "fibgz"]),
         name="inputnode",
@@ -48,12 +51,10 @@ def init_mif_to_fibgz_wf(inputs_dict, name="mif_to_fibgz", qsirecon_suffix="", p
         niu.IdentityInterface(fields=["fibgz", "recon_scalars"]), name="outputnode"
     )
     outputnode.inputs.recon_scalars = []
-    workflow = Workflow(name=name)
+
     convert_to_fib = pe.Node(FODtoFIBGZ(), name="convert_to_fib")
     workflow.connect([
-        (inputnode, convert_to_fib, [
-            ('fod_sh_mif', 'mif_file'),
-            ('fibgz', 'fib_file')]),
+        (inputnode, convert_to_fib, [('fod_sh_mif', 'mif_file')]),
         (convert_to_fib, outputnode, [('fib_file', 'fibgz')]),
     ])  # fmt:skip
 
@@ -68,14 +69,15 @@ def init_mif_to_fibgz_wf(inputs_dict, name="mif_to_fibgz", qsirecon_suffix="", p
             name="ds_fibgz",
             run_without_submitting=True,
         )
-        workflow.connect(convert_to_fib, 'fib_file',
-                         ds_fibgz, 'in_file')  # fmt:skip
+        workflow.connect([(convert_to_fib, ds_fibgz, [("fib_file", "in_file")])])
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_fibgz_to_mif_wf(name="fibgz_to_mif", qsirecon_suffix="", params={}):
     """Needs Documentation"""
+    workflow = Workflow(name=name)
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields + ["mif_file"]), name="inputnode"
     )
@@ -83,7 +85,6 @@ def init_fibgz_to_mif_wf(name="fibgz_to_mif", qsirecon_suffix="", params={}):
         niu.IdentityInterface(fields=["fib_file", "recon_scalars"]), name="outputnode"
     )
     outputnode.inputs.recon_scalars = []
-    workflow = Workflow(name=name)
     convert_to_fib = pe.Node(FODtoFIBGZ(), name="convert_to_fib")
     workflow.connect([
         (inputnode, convert_to_fib, [('mif_file', 'mif_file')]),
@@ -93,14 +94,95 @@ def init_fibgz_to_mif_wf(name="fibgz_to_mif", qsirecon_suffix="", params={}):
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
+def init_fod_fib_wf(inputs_dict, name="fod_fib", qsirecon_suffix="", params={}):
+    """Converts MRTrix FODs to a DSI Studio fib file for the FOD-AutoTrack method.
+
+    Inputs
+
+        fod_sh_mif
+            MRTrix format mif file containing sh coefficients representing FODs.
+        fibgz
+            DSI Studio file containing a standard GQI reconstruction
+        fibgz_map
+            DSI Studio spatial normalization file.
+
+    Outputs
+
+        fibgz
+            DSI Studio fib file containing the FODs from the input ``mif_file``.
+        fibgz_map
+            DSI Studio spatial normalization file. Passed through unchanged, but renamed
+            to match ``fibgz`` so it will be recognized by DSI Studio.
+        recon_scalars
+            Ununsed.
+
+    """
+    workflow = Workflow(name=name)
+    workflow.__desc__ = (
+        "The MRTrix FODs were converted to a DSI Studio fib file for the FOD-AutoTrack method."
+    )
+
+    inputnode = pe.Node(
+        niu.IdentityInterface(
+            fields=recon_workflow_input_fields + ["fod_sh_mif", "fibgz", "fibgz_map"]
+        ),
+        name="inputnode",
+    )
+    outputnode = pe.Node(
+        niu.IdentityInterface(fields=["fibgz", "fibgz_map", "recon_scalars"]), name="outputnode"
+    )
+    outputnode.inputs.recon_scalars = []
+
+    # Convert the FOD sh nifti into a valid fib file
+    convert_fod_to_fib = pe.Node(FODtoFIBGZ(), name="convert_fod_to_fib")
+    # Merge the reference fib file and the FOD fib file
+    merge_fod_and_qgi_fibs = pe.Node(MergeFODGQIFibs(), name="merge_fod_and_gqi_fibs")
+
+    workflow.connect([
+        (inputnode, convert_fod_to_fib, [
+            ('fod_sh_mif', 'mif_file'),
+            ('dwi_mask', 'mask_file'),
+        ]),
+        (inputnode, merge_fod_and_qgi_fibs, [
+            ('fibgz', 'reference_fib_file'),
+            ('fibgz_map', 'fibgz_map'),
+        ]),
+        (convert_fod_to_fib, merge_fod_and_qgi_fibs, [('fib_file', 'csd_fib_file')]),
+        (merge_fod_and_qgi_fibs, outputnode, [
+            ('fibgz_map', 'fibgz_map'),
+            ('fibgz', 'fibgz'),
+        ]),
+    ])  # fmt:skip
+
+    if qsirecon_suffix:
+        # Save the output in the outputs directory
+        ds_fibgz = pe.Node(
+            DerivativesDataSink(
+                dismiss_entities=("desc",),
+                suffix="dwimap",
+                extension=".fib.gz",
+                model=params.get("model", "csd"),
+                compress=True,
+            ),
+            name="ds_fibgz",
+            run_without_submitting=True,
+        )
+        workflow.connect([(outputnode, ds_fibgz, [("fibgz", "in_file")])])
+
+    return clean_datasinks(workflow, qsirecon_suffix)
+
+
 def init_qsirecon_to_fsl_wf(inputs_dict, name="qsirecon_to_fsl", qsirecon_suffix="", params={}):
     """Converts QSIRecon outputs (images, bval, bvec) to fsl standard orientation"""
+    workflow = Workflow(name=name)
+    workflow.__desc__ = "The QSIRecon outputs were converted to FSL standard orientation."
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
     )
     to_reorient = ["mask_file", "dwi_file", "bval_file", "bvec_file", "recon_scalars"]
     outputnode = pe.Node(niu.IdentityInterface(fields=to_reorient), name="outputnode")
-    workflow = Workflow(name=name)
+
     outputnode.inputs.recon_scalars = []
 
     convert_dwi_to_fsl = pe.Node(ConformDwi(orientation="LAS"), name="convert_to_fsl")
@@ -109,13 +191,15 @@ def init_qsirecon_to_fsl_wf(inputs_dict, name="qsirecon_to_fsl", qsirecon_suffix
         (inputnode, convert_dwi_to_fsl, [
             ('dwi_file', 'dwi_file'),
             ('bval_file', 'bval_file'),
-            ('bvec_file', 'bvec_file')]),
+            ('bvec_file', 'bvec_file'),
+        ]),
         (convert_dwi_to_fsl, outputnode, [
             ('dwi_file', 'dwi_file'),
             ('bval_file', 'bval_file'),
-            ('bvec_file', 'bvec_file')]),
+            ('bvec_file', 'bvec_file'),
+        ]),
         (inputnode, convert_mask_to_fsl, [('mask_file', 'dwi_file')]),
-        (convert_mask_to_fsl, outputnode, [('dwi_file', 'mask_file')])
+        (convert_mask_to_fsl, outputnode, [('dwi_file', 'mask_file')]),
     ])  # fmt:skip
 
     if qsirecon_suffix:
@@ -160,7 +244,7 @@ def init_qsirecon_to_fsl_wf(inputs_dict, name="qsirecon_to_fsl", qsirecon_suffix
             (convert_dwi_to_fsl, ds_bval_file, [('bval_file', 'in_file')]),
             (convert_dwi_to_fsl, ds_bvec_file, [('bvec_file', 'in_file')]),
             (convert_dwi_to_fsl, ds_dwi_file, [('dwi_file', 'in_file')]),
-            (convert_mask_to_fsl, ds_mask_file, [('dwi_file', 'in_file')])
+            (convert_mask_to_fsl, ds_mask_file, [('dwi_file', 'in_file')]),
         ])  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)
