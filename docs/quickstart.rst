@@ -28,7 +28,7 @@ have access to 8 cpus.  To run the from ``qsirecon-latest.sif`` you could use:
        --containall \
        --writable-tmpfs \
        -B "${PWD}" \
-       qsirecon.sif \
+       qsirecon-latest.sif \
        "${PWD}/inputs/qsiprep" \
        "${PWD}/results/qsirecon" \
        participant \
