@@ -478,7 +478,9 @@ class RecombineAtlasConfigs(SimpleInterface):
 
         for i_atlas, atlas_name in enumerate(self.inputs.atlases):
             if isdefined(self.inputs.nifti_files):
-                atlas_configs[atlas_name]["dwi_resolution_niigz"] = self.inputs.nifti_files[i_atlas]
+                atlas_configs[atlas_name]["dwi_resolution_niigz"] = (
+                    self.inputs.nifti_files[i_atlas]
+                )
             if isdefined(self.inputs.mif_files):
                 atlas_configs[atlas_name]["dwi_resolution_mif"] = self.inputs.mif_files[i_atlas]
             if isdefined(self.inputs.mrtrix_lut_files):
@@ -565,4 +567,23 @@ class LoadResponseFunctions(SimpleInterface):
         elif self.inputs.using_multitissue:
             raise ValueError("csf_file is required when using multitissue response functions")
 
+        return runtime
+
+
+class _MakeLUTsInputSpec(BaseInterfaceInputSpec):
+    in_file = File(mandatory=True, desc="atlas labels file")
+
+
+class _MakeLUTsOutputSpec(TraitedSpec):
+    orig_lut = File(exists=True, desc="orig lut file")
+    mrtrix_lut = File(exists=True, desc="mrtrix lut file")
+
+
+class MakeLUTs(SimpleInterface):
+    input_spec = _MakeLUTsInputSpec
+    output_spec = _MakeLUTsOutputSpec
+
+    def _run_interface(self, runtime):
+        self._results["orig_lut"] = self.inputs.in_file
+        self._results["mrtrix_lut"] = self.inputs.in_file
         return runtime

@@ -27,9 +27,10 @@ from ...interfaces.interchange import (
 )
 from ...interfaces.mrtrix import GenerateMasked5tt, ITKTransformConvert, TransformHeader
 from ...interfaces.utils import (
+    ConformAtlas,
     ExtractAtlasFiles,
+    MakeLUTs,
     RecombineAtlasConfigs,
-    WarpConnectivityAtlases,
 )
 from ...utils.bids import clean_datasinks
 from ...utils.boilerplate import describe_atlases
