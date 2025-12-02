@@ -478,9 +478,9 @@ class RecombineAtlasConfigs(SimpleInterface):
 
         for i_atlas, atlas_name in enumerate(self.inputs.atlases):
             if isdefined(self.inputs.nifti_files):
-                atlas_configs[atlas_name]["dwi_resolution_niigz"] = (
-                    self.inputs.nifti_files[i_atlas]
-                )
+                atlas_configs[atlas_name]["dwi_resolution_niigz"] = self.inputs.nifti_files[
+                    i_atlas
+                ]
             if isdefined(self.inputs.mif_files):
                 atlas_configs[atlas_name]["dwi_resolution_mif"] = self.inputs.mif_files[i_atlas]
             if isdefined(self.inputs.mrtrix_lut_files):
