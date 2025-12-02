@@ -1,4 +1,6 @@
-description: A workflow that writes empty files. Useful for testing
+description: |
+    test_workflow is a workflow that writes empty files.
+    It is useful for testing.
 name: test_workflow
 nodes:
 -   action: test_workflow

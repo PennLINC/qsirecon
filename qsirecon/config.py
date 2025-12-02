@@ -237,7 +237,9 @@ class _Config:
                 if k == "processing_list":
                     new_v = []
                     for el in v:
-                        new_v.append(el.split(":"))
+                        el_lst = el.split(":")
+                        el_lst = [val if val != "None" else None for val in el_lst]
+                        new_v.append(el_lst)
                     setattr(cls, k, new_v)
                 else:
                     setattr(cls, k, v)
@@ -270,7 +272,14 @@ class _Config:
             if isinstance(v, Reference):
                 v = str(v) or None
             if k == "processing_list":
-                v = [f"{el[0].relpath}:{el[1].relpath}" for el in v]
+                new_v = []
+                for el in v:
+                    dwi, anat = el[0], el[1]
+                    if anat:
+                        anat = anat.relpath
+
+                    new_v.append(f"{dwi.relpath}:{anat}")
+                v = new_v
             out[k] = v
         return out
 
@@ -437,6 +446,8 @@ class execution(_Config):
     """List of participant identifiers that are to be preprocessed."""
     processing_list = []
     """List of (dwi_file, corresponding_anat) that need to be processed."""
+    recon_spec_aux_files = None
+    """Path to a directory containing auxiliary files for the reconstruction pipeline."""
     session_id = None
     """List of session identifiers that are to be preprocessed"""
     templateflow_home = _templateflow_home
@@ -464,6 +475,7 @@ class execution(_Config):
         "layout",
         "log_dir",
         "output_dir",
+        "recon_spec_aux_files",
         "templateflow_home",
         "work_dir",
     )
@@ -537,9 +549,11 @@ class execution(_Config):
 
         cls._processing_list = []
         for dwi_relpath, anat_relpath in cls.processing_list:
-            cls._processing_list.append(
-                (cls.layout.get_file(dwi_relpath), cls.layout.get_file(anat_relpath))
-            )
+            # Convert relative paths to full paths if possible
+            # If the path is None, just keep it as None
+            if anat_relpath:
+                anat_relpath = cls.layout.get_file(anat_relpath)
+            cls._processing_list.append((cls.layout.get_file(dwi_relpath), anat_relpath))
         cls.processing_list = cls._processing_list
 
         dataset_links = {
@@ -551,6 +565,9 @@ class execution(_Config):
 
         if cls.atlases:
             dataset_links["atlas"] = cls.output_dir / "atlases"
+
+        if cls.recon_spec_aux_files:
+            dataset_links["aux"] = cls.recon_spec_aux_files
 
         for dset_name, dset_path in cls.datasets.items():
             dataset_links[dset_name] = dset_path

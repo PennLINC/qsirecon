@@ -1,0 +1,78 @@
+name: mrtrix_multishell_msmt_noACT_apply
+description: |
+    This pipeline applies the MRtrix3 multishell multi-tissue CSD reconstruction to the input data.
+    Connectivity matrices are estimated using a common response function
+    provided by the researcher.
+anatomical: []
+space: T1w
+nodes:
+-   action: csd
+    input: qsirecon
+    name: msmt_csd
+    parameters:
+        fod:
+            algorithm: msmt_csd
+            max_sh:
+            - 8
+            - 8
+            - 8
+        mtnormalize: true
+        response:
+            algorithm: precomputed
+            wm_txt: wm.txt
+            gm_txt: gm.txt
+            csf_txt: csf.txt
+    qsirecon_suffix: MRtrix3_act-None_response-common
+    software: MRTrix3
+-   action: tractography
+    input: msmt_csd
+    name: track_ifod2
+    parameters:
+        sift2: {}
+        tckgen:
+            algorithm: iFOD2
+            max_length: 250
+            min_length: 30
+            power: 0.33
+            quiet: true
+            select: 10000000.0
+        use_5tt: false
+        use_sift2: true
+    qsirecon_suffix: MRtrix3_act-None_response-common
+    software: MRTrix3
+-   action: connectivity
+    input: track_ifod2
+    name: mrtrix_conn
+    parameters:
+        tck2connectome:
+        -   measure: sift_invnodevol_radius2_count
+            scale_invnodevol: true
+            search_radius: 2
+            stat_edge: sum
+            symmetric: true
+            use_sift_weights: true
+            zero_diagonal: false
+        -   length_scale: length
+            measure: radius2_meanlength
+            scale_invnodevol: false
+            search_radius: 2
+            stat_edge: mean
+            symmetric: true
+            use_sift_weights: false
+            zero_diagonal: false
+        -   measure: radius2_count
+            scale_invnodevol: false
+            search_radius: 2
+            stat_edge: sum
+            symmetric: true
+            use_sift_weights: false
+            zero_diagonal: false
+        -   measure: sift_radius2_count
+            scale_invnodevol: false
+            search_radius: 2
+            stat_edge: sum
+            symmetric: true
+            use_sift_weights: true
+            zero_diagonal: false
+    qsirecon_suffix: MRtrix3_act-None_response-common
+    software: MRTrix3

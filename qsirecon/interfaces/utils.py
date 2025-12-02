@@ -100,6 +100,7 @@ class WarpConnectivityAtlases(SimpleInterface):
 
             atlas_configs[atlas_name]["dwi_resolution_niigz"] = output_nii
             atlas_configs[atlas_name]["dwi_resolution_mif"] = output_mif
+            atlas_configs[atlas_name]["orig_lut"] = output_orig_txt
             atlas_configs[atlas_name]["mrtrix_lut"] = output_mif_txt
 
             conform_atlas = ConformAtlas(in_file=atlas_config["image"], orientation="LPS")
@@ -120,9 +121,8 @@ class WarpConnectivityAtlases(SimpleInterface):
                 )
             )
             label_convert(
-                original_atlas=resampled_nii,
-                converted_mif=output_mif,
-                converted_nii=output_nii,
+                original_atlas=atlas_config["image"],
+                output_mif=output_mif,
                 orig_txt=output_orig_txt,
                 mrtrix_txt=output_mif_txt,
                 atlas_labels_file=atlas_config["labels"],
@@ -485,5 +485,84 @@ class RecombineAtlasConfigs(SimpleInterface):
                 atlas_configs[atlas_name]["mrtrix_lut"] = self.inputs.mrtrix_lut_files[i_atlas]
 
         self._results["atlas_configs"] = atlas_configs
+
+        return runtime
+
+
+class _LoadResponseFunctionsInputSpec(BaseInterfaceInputSpec):
+    wm_file = File(
+        exists=False,
+        mandatory=True,
+        desc="WM response function file. Only MRtrix-format txt files are currently supported.",
+    )
+    gm_file = traits.Either(
+        None,
+        File(
+            exists=False,
+            mandatory=False,
+            desc=(
+                "GM response function file. Only MRtrix-format txt files are currently "
+                "supported."
+            ),
+        ),
+    )
+    csf_file = traits.Either(
+        None,
+        File(
+            exists=False,
+            mandatory=False,
+            desc=(
+                "CSF response function file. Only MRtrix-format txt files are currently "
+                "supported."
+            ),
+        ),
+    )
+    using_multitissue = traits.Bool(desc="Whether to use multitissue response functions or not.")
+    input_dir = traits.Directory(
+        exists=True,
+        mandatory=True,
+        desc="Directory containing response function files.",
+    )
+
+
+class _LoadResponseFunctionsOutputSpec(TraitedSpec):
+    wm_txt = File(exists=True)
+    gm_txt = File(exists=True)
+    csf_txt = File(exists=True)
+
+
+class LoadResponseFunctions(SimpleInterface):
+    """Collect response function files from the input directory.
+
+    The names of the response function files are specified in the reconstruction specification,
+    and must be located in the recon_spec_aux_files directory.
+
+    TODO: Support BEP016-format JSON files.
+    """
+
+    input_spec = _LoadResponseFunctionsInputSpec
+    output_spec = _LoadResponseFunctionsOutputSpec
+
+    def _run_interface(self, runtime):
+        wm_file = os.path.abspath(os.path.join(self.inputs.input_dir, self.inputs.wm_file))
+        self._results["wm_txt"] = wm_file
+        if not os.path.exists(wm_file):
+            raise FileNotFoundError(f"WM response file {wm_file} not found")
+
+        if self.inputs.gm_file and self.inputs.using_multitissue:
+            gm_file = os.path.abspath(os.path.join(self.inputs.input_dir, self.inputs.gm_file))
+            if not os.path.exists(gm_file):
+                raise FileNotFoundError(f"GM response file {gm_file} not found")
+            self._results["gm_txt"] = gm_file
+        elif self.inputs.using_multitissue:
+            raise ValueError("gm_file is required when using multitissue response functions")
+
+        if self.inputs.csf_file and self.inputs.using_multitissue:
+            csf_file = os.path.abspath(os.path.join(self.inputs.input_dir, self.inputs.csf_file))
+            if not os.path.exists(csf_file):
+                raise FileNotFoundError(f"CSF response file {csf_file} not found")
+            self._results["csf_txt"] = csf_file
+        elif self.inputs.using_multitissue:
+            raise ValueError("csf_file is required when using multitissue response functions")
 
         return runtime

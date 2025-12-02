@@ -76,6 +76,7 @@ def init_single_subject_recon_wf(subject_id):
         Single subject label
     """
     from ..interfaces.bids import DerivativesDataSink
+    from ..interfaces.gradients import _classify_shell_scheme
     from ..interfaces.ingress import QSIPrepDWIIngress
     from ..interfaces.interchange import (
         ReconWorkflowInputs,
@@ -96,21 +97,22 @@ def init_single_subject_recon_wf(subject_id):
     spec = _load_recon_spec(config.workflow.recon_spec)
     workflow = Workflow(name=f"sub-{subject_id}_{spec['name']}")
 
+    spec_desc = " " + spec.get("description", "")
     workflow.__desc__ = f"""
 Reconstruction was
 performed using *QSIRecon* {config.__version__} (@cieslak2021qsiprep),
-which is based on *Nipype* {nipype_ver}
-(@nipype1; @nipype2; RRID:SCR_002502).
+according to the "{spec.get("name", "UNKNOWN")}" pipeline.{spec_desc}
 
 """
     workflow.__postdesc__ = f"""
 
 Many internal operations of *QSIRecon* use
-*Nilearn* {nilearn_ver} [@nilearn, RRID:SCR_001362] and
+*Nipype* {nipype_ver} (@nipype1; @nipype2; RRID:SCR_002502),
+*Nilearn* {nilearn_ver} [@nilearn, RRID:SCR_001362], and
 *Dipy* {dipy_ver} [@dipy].
-For more details of the pipeline, see [the section corresponding
+For more details on the pipeline, see [the section corresponding
 to workflows in *QSIRecon*'s documentation]\
-(https://qsirecon.readthedocs.io/en/latest/workflows.html).
+(https://qsirecon.readthedocs.io/en/latest/builtin_workflows.html).
 
 
 ### References
@@ -263,6 +265,10 @@ to workflows in *QSIRecon*'s documentation]\
             "dwi_metadata": config.execution.layout.get_metadata(dwi_file),
             **dwi_available_anatomical_data,
         }
+        # Load bval file and determine number of shells
+        bval_file = config.execution.layout.get_bval(dwi_file)
+        shell_scheme = _classify_shell_scheme(bval_file, 5)
+        inputs_dict["shell_scheme"] = shell_scheme
 
         # This node holds all the inputs that will go to the recon workflow.
         # It is the definitive place to check what the input files are

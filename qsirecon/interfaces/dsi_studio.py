@@ -224,7 +224,6 @@ class DSIStudioExportInputSpec(CommandLineInputSpec):
 
 class DSIStudioExportOutputSpec(TraitedSpec):
     qa_file = File(desc="Exported scalar nifti")
-    color_file = File(desc="Exported scalar nifti")
     dti_fa_file = File(desc="Exported scalar nifti")
     txx_file = File(desc="Exported scalar nifti")
     txy_file = File(desc="Exported scalar nifti")

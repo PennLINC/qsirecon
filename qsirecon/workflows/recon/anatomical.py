@@ -356,6 +356,9 @@ def init_dwi_recon_anatomical_workflow(
 
         Each value is a boolean indicating whether the data is available.
     """
+    workflow = Workflow(name=name)
+    workflow.__desc__ = "\n\n#### Anatomical data for DWI reconstruction\n\n"
+
     # Inputnode holds data from the T1w-based anatomical workflow
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields),
@@ -389,13 +392,8 @@ def init_dwi_recon_anatomical_workflow(
         niu.IdentityInterface(fields=recon_workflow_input_fields),
         name="outputnode",
     )
-    workflow = Workflow(name=name)
+
     skull_strip_method = "antsBrainExtraction"
-    desc = """
-
-#### Anatomical data for DWI reconstruction
-
-"""
 
     def _get_status():
         return {
@@ -435,7 +433,7 @@ def init_dwi_recon_anatomical_workflow(
 
     # Missing Freesurfer AND QSIPrep T1ws, or the user wants a DWI-based mask
     if not (has_qsiprep_t1w or has_freesurfer) or prefer_dwi_mask:
-        desc += (
+        workflow.__desc__ += (
             "No T1w weighted images were available for masking, so a mask "
             "was estimated based on the b=0 images in the DWI data itself. "
         )
@@ -478,7 +476,7 @@ def init_dwi_recon_anatomical_workflow(
             name="fs_source",
         )
         # Register the FreeSurfer brain to the DWI reference
-        desc += (
+        workflow.__desc__ += (
             "A brainmasked T1w image from FreeSurfer was registered to the "
             "preprocessed DWI data. Brainmasks from FreeSurfer were used in all "
             "subsequent reconstruction steps. "
@@ -544,11 +542,11 @@ def init_dwi_recon_anatomical_workflow(
             (apply_header_to_5tt_hsvs, buffernode, [("out_image", "qsiprep_5tt_hsvs")]),
             (apply_header_to_5tt_hsvs, ds_qsiprep_5tt_hsvs, [("out_image", "in_file")]),
         ])  # fmt:skip
-        desc += "A hybrid surface/volume segmentation was created [Smith 2020]. "
+        workflow.__desc__ += "A hybrid surface/volume segmentation was created [Smith 2020]. "
 
     # If we have transforms to the template space, use them to get ROIs/atlases
     # if not has_qsiprep_t1w_transforms and has_qsiprep_t1w:
-    #     desc += "In order to warp brain parcellations from template space into " \
+    #     workflow.__desc__ += "In order to warp brain parcellations from template space into " \
     #         "alignment with the DWI data, the DWI-aligned FreeSurfer brain was " \
     #         "registered to template space. "
 
@@ -574,7 +572,7 @@ def init_dwi_recon_anatomical_workflow(
     if needs_t1w_transform:
         if has_qsiprep_t1w_transforms:
             config.loggers.workflow.info("Found T1w-to-template transforms from QSIRecon")
-            desc += (
+            workflow.__desc__ += (
                 "T1w-based spatial normalization calculated during "
                 "preprocessing was used to map atlases from template space into "
                 "alignment with DWIs. "
@@ -588,7 +586,7 @@ def init_dwi_recon_anatomical_workflow(
     # Simply resample the T1w mask into the DWI resolution. This was the default
     # up to version 0.14.3
     if has_qsiprep_t1w and not prefer_dwi_mask:
-        desc += (
+        workflow.__desc__ += (
             f"Brain masks from {skull_strip_method} were used in all subsequent reconstruction "
             "steps. "
         )
@@ -644,7 +642,7 @@ def init_dwi_recon_anatomical_workflow(
         # Similarly, if we need atlases, transform them into DWI space
         if atlas_configs:
             atlas_str = describe_atlases(sorted(list(atlas_configs.keys())))
-            desc += (
+            workflow.__desc__ += (
                 f"The following atlases were used in the workflow: {atlas_str}. "
                 "Cortical parcellations were mapped from template space to DWIS "
                 "using the T1w-based spatial normalization. "
@@ -793,8 +791,6 @@ def init_dwi_recon_anatomical_workflow(
     if "mrtrix_5tt_hsvs" in extras_to_make and not has_qsiprep_5tt_hsvs:
         raise Exception("Unable to create a 5tt HSV image given input data.")
 
-    workflow.__desc__ = desc + "\n"
-
     # Directly connect anything from the inputs that we haven't created here
     workflow.connect([
         (inputnode, outputnode, [(name, name) for name in connect_from_inputnode]),
@@ -818,6 +814,7 @@ def _get_resampled(atlas_configs, atlas_name, to_retrieve):
 def init_output_grid_wf() -> Workflow:
     """Generate a non-oblique, uniform voxel-size grid around a brain."""
     workflow = Workflow(name="output_grid_wf")
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=["template_image", "input_image"]), name="inputnode"
     )

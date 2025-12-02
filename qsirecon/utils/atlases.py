@@ -108,20 +108,27 @@ def collect_atlases(datasets, atlases, bids_filters={}):
                 "metadata": atlas_metadata,
             }
 
+    errors = []
     for atlas in atlases:
         if atlas not in atlas_cache:
             LOGGER.warning(f"No atlas images found for {atlas} with query {atlas_filter}")
+            errors.append(f"No atlas images found for {atlas} with query {atlas_filter}")
 
     for atlas, atlas_info in atlas_cache.items():
         if not atlas_info["labels"]:
-            raise FileNotFoundError(f"No TSV file found for {atlas_info['image']}")
+            errors.append(f"No TSV file found for {atlas_info['image']}")
+            continue
 
         # Check the contents of the labels file
         df = pd.read_table(atlas_info["labels"])
         if "label" not in df.columns:
-            raise ValueError(f"'label' column not found in {atlas_info['labels']}")
+            errors.append(f"'label' column not found in {atlas_info['labels']}")
 
         if "index" not in df.columns:
-            raise ValueError(f"'index' column not found in {atlas_info['labels']}")
+            errors.append(f"'index' column not found in {atlas_info['labels']}")
+
+    if errors:
+        error_str = "\n\t".join(errors)
+        raise ValueError(f"Errors found in atlas collection:\n\t{error_str}")
 
     return atlas_cache

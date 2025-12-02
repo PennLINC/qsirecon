@@ -27,10 +27,13 @@ derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realisti
 derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-sift2_mu.txt
 derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-sift2_streamlineweights.csv
 derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-ss3t_param-fod_label-CSF_dwimap.mif.gz
+derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-ss3t_param-fod_label-CSF_dwimap.json
 derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-ss3t_param-fod_label-CSF_dwimap.txt
 derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-ss3t_param-fod_label-GM_dwimap.mif.gz
+derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-ss3t_param-fod_label-GM_dwimap.json
 derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-ss3t_param-fod_label-GM_dwimap.txt
 derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-ss3t_param-fod_label-WM_dwimap.mif.gz
+derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-ss3t_param-fod_label-WM_dwimap.json
 derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_model-ss3t_param-fod_label-WM_dwimap.txt
 derivatives/qsirecon-MRtrix3_fork-SS3T_act-None/sub-PNC/sub-PNC.html
 logs
@@ -43,9 +46,9 @@ sub-PNC/dwi
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-AAL116_dseg.mif.gz
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-AAL116_dseg.nii.gz
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-AAL116_desc-mrtrix_dseg.txt
-sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-AAL116_desc-dsistudio_dseg.txt
+sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-AAL116_dseg.txt
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-carpet_dseg.mif.gz
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-carpet_dseg.nii.gz
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-carpet_desc-mrtrix_dseg.txt
-sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-carpet_desc-dsistudio_dseg.txt
+sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_seg-carpet_dseg.txt
 sub-PNC/dwi/sub-PNC_acq-realistic_space-T1w_desc-brain_mask.nii.gz

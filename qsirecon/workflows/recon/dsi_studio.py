@@ -65,19 +65,20 @@ def init_dsi_studio_recon_wf(inputs_dict, name="dsi_studio_recon", qsirecon_suff
             Default 1.25. Distance to sample EAP at.
 
     """
+    workflow = Workflow(name=name)
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    workflow.__desc__ = f"\n\n#### DSI Studio Reconstruction{suffix_str}\n\n"
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields + ["odf_rois"]), name="inputnode"
     )
     outputnode = pe.Node(
         niu.IdentityInterface(fields=["fibgz", "recon_scalars"]), name="outputnode"
     )
-    workflow = Workflow(name=name)
+
     outputnode.inputs.recon_scalars = []
     plot_reports = not config.execution.skip_odf_reports
     omp_nthreads = config.nipype.omp_nthreads
-    desc = """DSI Studio Reconstruction
-
-: """
     create_src = pe.Node(DSIStudioCreateSrc(), name="create_src")
     romdd = params.get("ratio_of_mean_diffusion_distance", 1.25)
     gqi_recon = pe.Node(
@@ -85,13 +86,10 @@ def init_dsi_studio_recon_wf(inputs_dict, name="dsi_studio_recon", qsirecon_suff
         name="gqi_recon",
         n_procs=omp_nthreads,
     )
-    desc += """\
+    workflow.__desc__ += f"""\
 Diffusion orientation distribution functions (ODFs) were reconstructed using
-generalized q-sampling imaging (GQI, @yeh2010gqi) with a ratio of mean diffusion
-distance of %02f in DSI Studio (version %s). """ % (
-        romdd,
-        DSI_STUDIO_VERSION,
-    )
+generalized q-sampling imaging (GQI, @yeh2010) with a ratio of mean diffusion
+distance of {romdd} in DSI Studio (version {DSI_STUDIO_VERSION}). """
 
     workflow.connect([
         (inputnode, create_src, [
@@ -102,6 +100,7 @@ distance of %02f in DSI Studio (version %s). """ % (
         (inputnode, gqi_recon, [('dwi_mask', 'mask')]),
         (gqi_recon, outputnode, [('output_fib', 'fibgz')])
     ])  # fmt:skip
+
     if plot_reports:
         # Make a visual report of the model
         plot_peaks = pe.Node(
@@ -154,9 +153,7 @@ distance of %02f in DSI Studio (version %s). """ % (
             name="ds_gqi_fibgz",
             run_without_submitting=True,
         )
-        workflow.connect(gqi_recon, 'output_fib',
-                         ds_gqi_fibgz, 'in_file')  # fmt:skip
-    workflow.__desc__ = desc
+        workflow.connect([(gqi_recon, ds_gqi_fibgz, [("output_fib", "in_file")])])
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
@@ -224,20 +221,25 @@ def init_dsi_studio_tractography_wf(
             Maximum streamline length in millimeters.
 
     """
+    workflow = Workflow(name=name)
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    workflow.__desc__ = (
+        f"\n\n#### DSI Studio Tractography{suffix_str}\n\n"
+        f"Tractography was run in DSI Studio (version {DSI_STUDIO_VERSION}) using a "
+        "deterministic algorithm [@yeh2013]. "
+    )
+
     inputnode = pe.Node(
-        niu.IdentityInterface(fields=recon_workflow_input_fields + ["fibgz"]), name="inputnode"
+        niu.IdentityInterface(fields=recon_workflow_input_fields + ["fibgz"]),
+        name="inputnode",
     )
     outputnode = pe.Node(
-        niu.IdentityInterface(fields=["trk_file", "fibgz", "recon_scalars"]), name="outputnode"
+        niu.IdentityInterface(fields=["trk_file", "fibgz", "recon_scalars"]),
+        name="outputnode",
     )
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
-    workflow = Workflow(name=name)
-    desc = (
-        "#### DSI Studio Tractography\n\nTractography was run in DSI Studio "
-        "(version %s) using a deterministic algorithm "
-        "[@yeh2013deterministic]. " % DSI_STUDIO_VERSION
-    )
+
     tracking = pe.Node(
         DSIStudioTracking(num_threads=omp_nthreads, **params),
         name="tracking",
@@ -246,8 +248,9 @@ def init_dsi_studio_tractography_wf(
     workflow.connect([
         (inputnode, tracking, [('fibgz', 'input_fib')]),
         (tracking, outputnode, [('output_trk', 'trk_file')]),
-        (inputnode, outputnode, [('fibgz', 'fibgz')])
+        (inputnode, outputnode, [('fibgz', 'fibgz')]),
     ])  # fmt:skip
+
     if qsirecon_suffix:
         # Save the output in the outputs directory
         ds_tracking = pe.Node(
@@ -259,9 +262,7 @@ def init_dsi_studio_tractography_wf(
             name="ds_" + name,
             run_without_submitting=True,
         )
-        workflow.connect(tracking, 'output_trk',
-                         ds_tracking, 'in_file')  # fmt:skip
-    workflow.__desc__ = desc
+        workflow.connect([(tracking, ds_tracking, [("output_trk", "in_file")])])
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
@@ -294,6 +295,8 @@ def init_dsi_studio_autotrack_registration_wf(
             A map.gz file corresponding to the fibgz file
 
     """
+    workflow = Workflow(name=name)
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields + ["fibgz"]),
         name="inputnode",
@@ -305,7 +308,6 @@ def init_dsi_studio_autotrack_registration_wf(
     outputnode.inputs.recon_scalars = []
 
     omp_nthreads = config.nipype.omp_nthreads
-    workflow = Workflow(name=name)
 
     dsi_studio_version = params.pop("dsi_studio_version", "hou")
 
@@ -394,6 +396,14 @@ def init_dsi_studio_autotrack_wf(
         model_name: str
             The name of the model used for ODFs (default "gqi")
     """
+    workflow = Workflow(name=name)
+    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    workflow.__desc__ = (
+        f"\n\n#### DSI Studio Automatic Tractography{suffix_str}\n\n"
+        f"Automatic Tractography was run in DSI Studio (version {DSI_STUDIO_VERSION}) "
+        "and bundle shape statistics were calculated [@autotrack]. "
+    )
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields + ["fibgz", "fibgz_map"]),
         name="inputnode",
@@ -403,11 +413,7 @@ def init_dsi_studio_autotrack_wf(
         name="outputnode",
     )
     outputnode.inputs.recon_scalars = []
-    desc = (
-        "#### DSI Studio Automatic Tractography\n\nAutomatic Tractography was run in "
-        "DSI Studio (version %s) and bundle shape statistics were calculated [@autotrack]. "
-        % DSI_STUDIO_VERSION
-    )
+
     model_name = params.pop("model", "gqi")
     omp_nthreads = config.nipype.omp_nthreads
     dsi_studio_version = params.pop("dsi_studio_version", "hou")
@@ -419,20 +425,21 @@ def init_dsi_studio_autotrack_wf(
         + "\n\n"
     )
     LOGGER.info(bundle_desc)
-
-    workflow = Workflow(name=name)
-    workflow.__desc__ = desc + bundle_desc
+    workflow.__desc__ += bundle_desc
 
     _AutoTrack = AutoTrack if dsi_studio_version == "hou" else ChenAutoTrack
 
     # Run autotrack!
     actual_trk = pe.Node(
-        _AutoTrack(num_threads=omp_nthreads, **params), name="actual_trk", n_procs=omp_nthreads
-    )  # An extra thread is needed
+        _AutoTrack(num_threads=omp_nthreads, **params),
+        name="actual_trk",
+        n_procs=omp_nthreads,  # An extra thread is needed
+    )
 
     # Create a single output
     aggregate_atk_results = pe.Node(
-        AggregateAutoTrackResults(expected_bundles=bundle_names), name="aggregate_atk_results"
+        AggregateAutoTrackResults(expected_bundles=bundle_names),
+        name="aggregate_atk_results",
     )
 
     convert_to_tck = pe.MapNode(DSIStudioTrkToTck(), name="convert_to_tck", iterfield="trk_file")
@@ -571,6 +578,12 @@ def init_dsi_studio_connectivity_wf(
             Maximum streamline length in millimeters.
 
     """
+    workflow = pe.Workflow(name=name)
+    workflow.__desc__ = (
+        "Streamline-based connectivity matrices were calculated using DSI Studio's "
+        "'atlasgraph' command."
+    )
+
     inputnode = pe.Node(
         niu.IdentityInterface(
             fields=recon_workflow_input_fields
@@ -585,7 +598,6 @@ def init_dsi_studio_connectivity_wf(
     omp_nthreads = config.nipype.omp_nthreads
     plot_reports = not config.execution.skip_odf_reports
 
-    workflow = pe.Workflow(name=name)
     calc_connectivity = pe.Node(
         DSIStudioAtlasGraph(num_threads=omp_nthreads, **params),
         name="calc_connectivity",
@@ -665,6 +677,12 @@ def init_dsi_studio_export_wf(
             Isotropic component of the ODF in each voxel.
 
     """
+    workflow = pe.Workflow(name=name)
+    workflow.__desc__ = (
+        "Scalar maps were exported from a DSI Studio fib file into NIfTI files with correct "
+        "headers."
+    )
+
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields + ["fibgz"]), name="inputnode"
     )
@@ -686,14 +704,22 @@ def init_dsi_studio_export_wf(
         "rd",
         "gfa",
         "iso",
+        "rdi",
     ]
+    if inputs_dict.get("shell_scheme") == "multishell":
+        scalar_names += [
+            "nrdi02L",
+            "nrdi04L",
+            "nrdi06L",
+        ]
+
     outputnode = pe.Node(
         niu.IdentityInterface(
             fields=[name + "_file" for name in scalar_names] + ["recon_scalars"]
         ),
         name="outputnode",
     )
-    workflow = pe.Workflow(name=name)
+
     export = pe.Node(DSIStudioExport(to_export=",".join(scalar_names)), name="export")
     recon_scalars = pe.Node(
         DSIStudioReconScalars(qsirecon_suffix=qsirecon_suffix),
