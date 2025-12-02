@@ -761,7 +761,6 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
     _run_and_generate(f"{TEST_NAME}_apply", parameters, test_main=False)
 
 
-
 def _run_and_generate(test_name, parameters, test_main=False):
     from qsirecon import config
 
