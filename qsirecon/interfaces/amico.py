@@ -137,6 +137,7 @@ class NODDIInputSpec(AmicoInputSpec):
             "Stored in the metadata as ParallelDiffusivity."
         ),
         doc=ConditionalDoc("The parallel diffusivity constant was set to {value} mm^2/s."),
+        recon_spec_accessible=True,
     )
     dIso = traits.Float(
         mandatory=True,
@@ -147,12 +148,14 @@ class NODDIInputSpec(AmicoInputSpec):
             "Stored in the metadata as IsotropicDiffusivity."
         ),
         doc=ConditionalDoc("The isotropic diffusivity constant was set to {value} mm^2/s."),
+        recon_spec_accessible=True,
     )
     b0_threshold = traits.Float(
         50.0,
         usedefault=True,
         desc="Threshold below which a b-value is considered a b0.",
         doc=ConditionalDoc("All b-values were rounded to the closest {value} s/mm²."),
+        recon_spec_accessible=True,
     )
     isExvivo = traits.Bool(
         False,
@@ -167,6 +170,7 @@ class NODDIInputSpec(AmicoInputSpec):
                 "to account for hindered diffusivity in fixed tissue."
             ),
         ),
+        recon_spec_accessible=True,
     )
     doNormalize = traits.Bool(
         True,
@@ -187,6 +191,7 @@ class NODDIInputSpec(AmicoInputSpec):
                 "to the mean b0 image."
             ),
         ),
+        recon_spec_accessible=True,
     )
     rmse = traits.Bool(
         True,
@@ -199,6 +204,7 @@ class NODDIInputSpec(AmicoInputSpec):
             if_true="The root mean square error (RMSE) between the measured "
             "and fitted signals was computed."
         ),
+        recon_spec_accessible=True,
     )
     nrmse = traits.Bool(
         True,
@@ -214,6 +220,7 @@ class NODDIInputSpec(AmicoInputSpec):
                 "between the measured and fitted signals was computed."
             ),
         ),
+        recon_spec_accessible=True,
     )
     saveModulatedMaps = traits.Bool(
         True,
@@ -226,6 +233,7 @@ class NODDIInputSpec(AmicoInputSpec):
                 "in AMICO to produce tissue fraction modulated maps (@parker2021not)."
             ),
         ),
+        recon_spec_accessible=True,
     )
     fitMethod = traits.Enum(
         "OLS",
@@ -240,6 +248,7 @@ class NODDIInputSpec(AmicoInputSpec):
             "Peak directions were estimated from a diffusion tensor model "
             "using {value} fitting in DIPY (@dipy)."
         ),
+        recon_spec_accessible=True,
     )
     num_threads = traits.Int(1, usedefault=True, nohash=True)
 
