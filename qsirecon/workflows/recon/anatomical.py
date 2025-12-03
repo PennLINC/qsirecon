@@ -673,12 +673,12 @@ def init_dwi_recon_anatomical_workflow(
                 ),
                 name="resample_atlases",
                 run_without_submitting=True,
-                iterfield=["in_file", "transforms"],
+                iterfield=["input_image", "transforms"],
             )
             workflow.connect([
                 (inputnode, resample_atlases, [("dwi_file", "reference_image")]),
                 (deconstruct_atlas_configs, resample_atlases, [("xfms_to_anat", "transforms")]),
-                (conform_atlases, resample_atlases, [("out_file", "in_file")]),
+                (conform_atlases, resample_atlases, [("out_file", "input_image")]),
             ])  # fmt:skip
 
             make_luts = pe.MapNode(
@@ -698,7 +698,7 @@ def init_dwi_recon_anatomical_workflow(
                 iterfield=["in_file", "in_lut", "in_config"],
             )
             workflow.connect([
-                (resample_atlases, convert_to_mifs, [("out_file", "in_file")]),
+                (resample_atlases, convert_to_mifs, [("output_image", "in_file")]),
                 (make_luts, convert_to_mifs, [
                     ("orig_lut", "in_lut"),
                     ("mrtrix_lut", "in_config"),
@@ -712,7 +712,7 @@ def init_dwi_recon_anatomical_workflow(
                 iterfield=["in_file", "in_lut", "in_config"],
             )
             workflow.connect([
-                (resample_atlases, convert_to_niis, [("out_file", "in_file")]),
+                (resample_atlases, convert_to_niis, [("output_image", "in_file")]),
                 (make_luts, convert_to_niis, [
                     ("orig_lut", "in_lut"),
                     ("mrtrix_lut", "in_config"),
