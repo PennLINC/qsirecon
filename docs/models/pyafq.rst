@@ -6,7 +6,7 @@ pyAFQ (Automated Fiber Quantification in Python)
 
 pyAFQ is part of a software ecosystem for brain tractometry processing, analysis,
 and insight :cite:p:`kruper2025`. It is a Python implementation of the original
-MATLAB-based Automated Fiber Quantification (AFQ) pipeline :cite:p:`yeatman2012`.
+MATLAB-based Automated Fiber Quantification (AFQ) pipeline :cite:p:`pyafq2`.
 pyAFQ automates the identification and quantification of white matter fiber tracts
 from diffusion MRI data. It provides tools for preprocessing, tractography,
 tract segmentation, and extraction of diffusion metrics along fiber bundles.
@@ -16,7 +16,7 @@ various diffusion models and metrics, facilitating comprehensive studies of whit
 matter microstructure and connectivity. The software is actively maintained
 and widely used in the neuroimaging community, with contributions from multiple 
 research groups and institutions supporting the development and validation of
-pyAFQ :cite:p:`kruper2021`.
+pyAFQ :cite:p:`pyafq`.
 
 Detailed documentation can be found at
 `pyAFQ Documentation <https://tractometry.org/pyAFQ/index.html>`.
