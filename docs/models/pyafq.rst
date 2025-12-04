@@ -50,12 +50,13 @@ along the tract, with parameters weighted by their distance to the core of each 
 bundle.   
 
 This along-tract quantification provides a mechanism for significantly increased
-statistical power and biological specificity compared to traditional global measurements.
-The original research established several key findings supporting this high-resolution
-approach: first, while FA values vary substantially within a tract, the resulting Tract
-FA Profile structure remains highly consistent across healthy subjects. Second, and
-most importantly for lifespan studies, developmental changes in FA occur not along the
-entire tract uniformly, but rather are concentrated at specific positional segments.
+statistical power and biological specificity compared to traditional global 
+measurements. The original research established several key findings supporting this 
+high-resolution approach: first, while FA values vary substantially within a tract, 
+the resulting Tract FA Profile structure remains highly consistent across healthy 
+subjects. Second, and most importantly for lifespan studies, developmental changes in 
+FA occur not along the entire tract uniformly, but rather are concentrated at specific
+positional segments.
 
 pyAFQ Studies Across The Lifespan
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
