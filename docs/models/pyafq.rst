@@ -66,9 +66,9 @@ cross-sectional and longitudinal study designs, demonstrating its robustness for
 studying white matter development from infancy through adulthood. For example, pyAFQ was
 sensitive to developmental changes in white matter along two fundamental axes - a
 deep-to-superficial gradient where superficial tract regions near the cortical surface
-show greater age-related change, and alignment with the sensorimotor-association cortical
-hierarchy where tract ends adjacent to sensorimotor cortices mature earlier than those 
-near association cortices :cite:p:`luo2025`. 
+show greater age-related change, and alignment with the sensorimotor-association 
+cortical hierarchy where tract ends adjacent to sensorimotor cortices mature earlier 
+than those  near association cortices :cite:p:`luo2025`. 
 
 babyAFQ :cite:p:`grotheer2022` addresses the unique challenges of tractography in infant 
 diffusion MRI by providing specialized waypoint ROIs and bundle definitions using the
