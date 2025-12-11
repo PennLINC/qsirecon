@@ -13,7 +13,7 @@ pyAFQ automates the identification and quantification of white matter fiber trac
 from diffusion MRI data. It implements a pipeline that includes tractography,
 delineation of tracts based on anatomical constraints, and the extraction of diffusion metrics along the length of the tracts for the purpose of tractometry.
 pyAFQ is designed to be flexible and extensible, allowing researchers to
-customize analyses and integrate with other neuroimaging software. It supports
+customize analyses and integrate with other neuroimaging software. For example, in `qsirecon` it can accept as input tractography or maps of tissue properties that were generated with other pipelines. It also natively supports
 various diffusion models and metrics, facilitating comprehensive studies of white
 matter microstructure and connectivity. The software is actively maintained
 and widely used in the neuroimaging community, with contributions from multiple 
