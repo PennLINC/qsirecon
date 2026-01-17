@@ -372,7 +372,8 @@ def subset_dwi(
 ):
     """Create a subset of a dwi based on a set of indices."""
     bvals = np.loadtxt(original_bval)
-    if np.all(indices == np.arange(len(bvals))):
+    indices = np.asarray(indices)
+    if np.array_equal(indices, np.arange(bvals.size)):
         return original_bval, original_bvec, original_b, original_btable, original_nifti
 
     # Subset and write the bval
