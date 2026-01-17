@@ -4,7 +4,7 @@ orbs:
 
 .dockersetup: &dockersetup
   docker:
-    - image: pennlinc/qsirecon_build:25.1.0
+    - image: pennlinc/qsirecon_build:26.1.16
   working_directory: /src/qsirecon
 
 runinstall: &runinstall
