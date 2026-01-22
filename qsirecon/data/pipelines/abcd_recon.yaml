@@ -1,0 +1,127 @@
+name: ABCD_Recon
+nodes:
+# NODDI with WM parameters
+-   action: fit_noddi
+    input: qsirecon
+    name: fit_noddi_wm
+    parameters:
+        dIso: 0.003
+        dPar: 0.0017
+        isExvivo: false
+    qsirecon_suffix: wmNODDI
+    software: AMICO
+# NODDI with GM parameters
+-   action: fit_noddi
+    input: qsirecon
+    name: fit_noddi_gm
+    parameters:
+        dIso: 0.003
+        dPar: 0.0011
+        isExvivo: false
+    qsirecon_suffix: gmNODDI
+    software: AMICO
+# DIPY diffusion kurtosis modeling
+-   action: DKI_reconstruction
+    input: qsirecon
+    name: dipy_dki
+    parameters:
+        write_fibgz: false
+        write_mif: false
+    qsirecon_suffix: DIPYDKI
+    software: Dipy
+# TORTOISE MAPMRI w/ small b-val tensor fit
+-   action: estimate
+    input: qsirecon
+    name: tortoise_dtmapmri
+    parameters:
+        big_delta: null
+        estimate_mapmri:
+            map_order: 4
+        estimate_tensor:
+            bval_cutoff: 1200
+            write_cs: true
+        estimate_tensor_separately: true
+        small_delta: null
+    qsirecon_suffix: TORTOISE_model-MAPMRI
+    software: TORTOISE
+# Fit the GQI model to the data
+-   action: reconstruction
+    input: qsirecon
+    name: dsistudio_gqi
+    parameters:
+        method: gqi
+    qsirecon_suffix: DSIStudioGQI
+    software: DSI Studio
+# Get 3D images of DSI Studio's scalar maps
+-   action: export
+    input: dsistudio_gqi
+    name: gqi_scalars
+    qsirecon_suffix: DSIStudioGQI
+    software: DSI Studio
+ # Perform the registration using the GQI-based QA+ISO
+-   action: autotrack_registration
+    input: dsistudio_gqi
+    name: autotrack_gqi_registration
+    # qsirecon_suffix: Don't include here - the map.gz is saved in autotrack
+    software: DSI Studio
+# Do MSMT on all shells
+-   action: csd
+    software: MRTrix3
+    input: qsirecon
+    name: msmt_csd
+    parameters:
+        fod:
+            algorithm: msmt_csd
+            max_sh:
+            - 8
+            - 8
+            - 8
+        mtnormalize: true
+        response:
+            algorithm: dhollander
+    qsirecon_suffix: MSMTAutoTrack
+# Merge the FOD fib file and the map file
+-   action: fod_fib_merge
+    name: create_fod_fib_msmt
+    # to include the fib file AND the map file
+    input: autotrack_gqi_registration
+    csd_input: msmt_csd
+    # outputs include the FOD fib file and the map file is passed through
+    qsirecon_suffix: MSMTAutoTrack
+    parameters:
+        model: msmt
+# Execute AutoTrack
+-   action: autotrack
+    input: create_fod_fib_msmt
+    name: autotrack_fod_msmt
+    parameters:
+        tolerance: 22,26,30
+        track_id: Association,Projection,Commissure,Cerebellum
+        track_voxel_ratio: 2.0
+        yield_rate: 1.0e-06
+        model: msmt
+    qsirecon_suffix: MSMTAutoTrack
+    software: DSI Studio
+# Map scalars to bundles
+-   action: bundle_map
+    input: autotrack_fod_msmt
+    name: bundle_means
+    scalars_from:
+    - fit_noddi_wm
+    - dipy_dki
+    - tortoise_dtmapmri
+    - gqi_scalars
+    software: qsirecon
+# Map scalars to MNI
+-   action: template_map
+    input: qsirecon
+    name: template_map
+    parameters:
+        interpolation: NearestNeighbor
+    scalars_from:
+    - fit_noddi_wm
+    - fit_noddi_gm
+    - dipy_dki
+    - tortoise_dtmapmri
+    - gqi_scalars
+    software: qsirecon
