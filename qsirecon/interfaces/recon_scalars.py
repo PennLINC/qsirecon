@@ -8,6 +8,7 @@ Classes that collect scalar images and metadata from Recon Workflows
 
 
 """
+
 import itertools
 import json
 import os
