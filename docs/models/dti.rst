@@ -7,6 +7,24 @@
 Diffusion tensor imaging (DTI)
 ##############################
 
+
+***************
+DTI in QSIRecon
+***************
+
+DTI reconstruction is supported in QSIRecon using the
+DSI Studio package (see :func:`~qsirecon.workflows.recon.dsi_studio.init_dsi_studio_recon_wf`)
+or the TORTOISE package (see :func:`~qsirecon.workflows.recon.tortoise.init_tortoise_estimator_wf`).
+
+The DIPY approach is accessible in a reconstruction specification by using a node with
+``action: DTI_reconstruction`` and ``software: Dipy``.
+Also see :class:`qsirecon.interfaces.dipy.TensorReconstruction` (primary DTI node),
+
+The TORTOISE approach is accessible in a reconstruction specification by using a node with
+``action: estimate``, ``software: TORTOISE``, and the ``parameters: estimate_tensor`` subdictionary.
+Also see :class:`qsirecon.interfaces.tortoise.EstimateTensor`.
+
+
 ***********************
 DTI Foundational Papers
 ***********************
