@@ -1,0 +1,57 @@
+---
+globs: "*.py"
+---
+# QSIRecon Project Rules
+
+## Project Identity
+
+- Package: `qsirecon` -- diffusion MRI reconstruction/postprocessing BIDS App
+- Default branch: `main`
+- Entry point: [qsirecon/cli/run.py](mdc:qsirecon/cli/run.py)
+
+## IMPORTANT: Linting & Formatting (Migration Pending)
+
+QSIRecon has NOT yet migrated to ruff. Current tools:
+
+- **Formatter**: black (line-length 99, target py38, **double quotes**)
+- **Import sorter**: isort (profile "black")
+- **Linter**: flake8 (configured in `[tool.flake8]` in pyproject.toml)
+- **No pre-commit config** exists yet
+- **No tox.ini** exists yet
+- CI runs flake8 only (`.github/workflows/lint.yml`)
+
+### What This Means for New Code
+
+- Use **double quotes** for strings (matching current black default)
+- Follow isort "black" profile for import ordering
+- The migration to ruff + single quotes is planned (see AGENTS.md roadmap)
+- Once migrated, switch to single quotes and ruff formatting
+
+## Reconstruction Workflow Specs
+
+- YAML-based pipeline definitions in `qsirecon/data/` (44 `.yaml` files)
+- Each YAML file defines reconstruction nodes, parameters, and connections
+- When adding new pipelines, create a new `.yaml` file following existing patterns
+- Workflow builder in `qsirecon/workflows/recon/build_workflow.py`
+
+## External Tool Dependencies
+
+- pyAFQ (== 2.0): automated fiber quantification
+- dmri-amico (== 2.0.3): NODDI via AMICO
+- Ingress2QSIRecon (== 0.2.3): data ingression
+- DSI Studio, MRtrix3, TORTOISE: called via subprocess interfaces
+
+## Key Module Paths
+
+- Reconstruction workflows: `qsirecon/workflows/recon/` (amico, dipy, dsi_studio, mrtrix, pyafq, tortoise)
+- Tool interfaces: `qsirecon/interfaces/` (amico, dipy, dsi_studio, mrtrix, pyafq, tortoise)
+- Scalar mapping: `qsirecon/interfaces/scalar_mapping.py`, `qsirecon/interfaces/recon_scalars.py`
+- ODF conversion CLI: [qsirecon/cli/convertODFs.py](mdc:qsirecon/cli/convertODFs.py)
+- Config: [qsirecon/config.py](mdc:qsirecon/config.py)
+
+## Testing
+
+- Test extras: `tests` in pyproject.toml
+- No pytest-xdist (no parallel test execution)
+- Integration test markers defined in `[tool.pytest.ini_options]`
+- Environment variable `RUNNING_PYTEST=1` is set during test runs
