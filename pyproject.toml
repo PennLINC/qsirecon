@@ -174,7 +174,6 @@ ignore = [
   "W605",  # [*] Invalid escape sequence: `\s`
   "S101",  # Use of `assert` detected
   "E402",  # Module level import not at top of file
-  "UP010",  # [*] Unnecessary `__future__` import `division`
   "UP007",  # [*] Use `X | Y` for type annotations
   "S607",  # Starting a process with a partial executable path
   "C403",  # Unnecessary list comprehension (rewrite as a set comprehension)
