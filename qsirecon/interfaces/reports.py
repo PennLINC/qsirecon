@@ -400,7 +400,7 @@ class ScalarReport(SimpleInterface):
             nrows=n_scalars,
             ncols=3,
             figsize=(43, 6 * n_scalars),
-            gridspec_kw=dict(width_ratios=[6, 36, 0.25], wspace=0),
+            gridspec_kw={'width_ratios': [6, 36, 0.25], 'wspace': 0},
         )
 
         underlay = self.inputs.underlay

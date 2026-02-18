@@ -67,7 +67,7 @@ def check_latest():
 def is_flagged():
     """Check whether current version is flagged."""
     # https://raw.githubusercontent.com/pennlinc/qsirecon/main/.versions.json
-    flagged = tuple()
+    flagged = ()
     try:
         response = requests.get(
             url="""\
