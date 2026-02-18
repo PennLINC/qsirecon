@@ -114,7 +114,7 @@ def init_fod_fib_wf(inputs_dict, name='fod_fib', qsirecon_suffix='', params={}):
             DSI Studio spatial normalization file. Passed through unchanged, but renamed
             to match ``fibgz`` so it will be recognized by DSI Studio.
         recon_scalars
-            Ununsed.
+            Unused.
 
     """
     workflow = Workflow(name=name)

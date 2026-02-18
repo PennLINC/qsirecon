@@ -72,7 +72,7 @@ def test_real_shells():
         with pytest.raises(Exception, match='Too many possible shells detected.'):
             _find_shells(test_bvals, 100)
 
-    # DSIQ7 actually _passes_ the mrtrix test, but failes silhouette
+    # DSIQ7 actually _passes_ the mrtrix test, but fails silhouette
     bval_file = Path(get_test_data_path()) / 'Q7.bval'
     test_bvals = np.loadtxt(bval_file)
 

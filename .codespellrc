@@ -10,4 +10,5 @@ skip = .git,*.pdf,*.svg,*.html,dataset_description.json,*.gii
 # Gage: name
 # Joo: name
 # Sepulcre: name
-ignore-words-list = te,weill,reson,DNE,fo,fixel,pres,Gage,Joo,Sepulcre
+# numer: abbreviation for numerator
+ignore-words-list = te,weill,reson,DNE,fo,fixel,pres,Gage,Joo,Sepulcre,numer

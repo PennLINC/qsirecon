@@ -234,7 +234,7 @@ class NODDIInputSpec(AmicoInputSpec):
         doc=ConditionalDoc(
             if_true=(
                 'Intracellular volume fraction (ICVF) and Orientation dispersion maps '
-                'were multipled by the tissue fraction (1 - isotropic volume fraction) '
+                'were multiplied by the tissue fraction (1 - isotropic volume fraction) '
                 'in AMICO to produce tissue fraction modulated maps (@parker2021not).'
             ),
         ),

@@ -159,7 +159,7 @@ class DSIStudioReconstructionInputSpec(CommandLineInputSpec):
         True, usedefault=True, desc="Include full ODF's in output", argstr='--record_odf=1'
     )
     odf_order = traits.Enum(
-        (8, 4, 5, 6, 10, 12, 16, 20), usedefault=True, desc='ODF tesselation order'
+        (8, 4, 5, 6, 10, 12, 16, 20), usedefault=True, desc='ODF tessellation order'
     )
     # Which scalars to include
     other_output = traits.Str(

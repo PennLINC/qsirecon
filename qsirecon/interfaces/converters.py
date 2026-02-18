@@ -1,4 +1,4 @@
-"""Handle merging and spliting of DSI files."""
+"""Handle merging and splitting of DSI files."""
 
 import gzip
 import logging
@@ -267,7 +267,7 @@ class MergeFODGQIFibs(SimpleInterface):
         )
         response = p.communicate()
         if not p.returncode == 0:
-            raise Exception(f'Gzip exitted with code {p.returncode}: {response}')
+            raise Exception(f'Gzip exited with code {p.returncode}: {response}')
         if not Path(merged_fibgz_file).exists():
             raise Exception(f'Failed to gzip {merged_fib_file}')
         self._results['fibgz'] = merged_fibgz_file
