@@ -179,7 +179,6 @@ ignore = [
   "S202",  # Uses of `tarfile.extractall()`
   "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
   "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
-  "E721",  # Use `is` and `is not` for type comparisons
   "S110",  # `try`-`except`-`pass` detected
   "UP032",  # [*] Use f-string instead of `format` call
   "A004",  # Import `ConnectionError` is shadowing a Python builtin
