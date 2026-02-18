@@ -163,7 +163,6 @@ ignore = [
   "B904",  # Within an `except` clause, raise exceptions
   "BLE001",  # Do not catch blind exceptions
   "B017",  # Do not assert blind exception: `Exception`
-  "UP015",  # [*] Unnecessary mode argument
   "B905",  # `zip()` without an explicit `strict=` parameter
   "PT009",  # Use a regular `assert` instead of unittest-style `assertIn`
   "PT027",  # Use `pytest.raises` instead of unittest-style `assertRaises`

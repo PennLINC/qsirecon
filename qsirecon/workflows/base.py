@@ -400,7 +400,7 @@ def _load_recon_spec(spec_name):
         raise Exception(f'{spec_name} is not a file that exists or in {prepackaged}')
 
     if recon_spec.endswith('.json'):
-        with open(recon_spec, 'r') as f:
+        with open(recon_spec) as f:
             try:
                 spec = json.load(f)
             except Exception:

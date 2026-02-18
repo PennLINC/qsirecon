@@ -73,7 +73,7 @@ def bids_response_function_to_mrtrix(json_file):
 
     import numpy as np
 
-    with open(json_file, 'r') as f:
+    with open(json_file) as f:
         json_data = json.load(f)
 
     return np.array(json_data['ResponseFunction']['Coefficients'])

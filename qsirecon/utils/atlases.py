@@ -97,7 +97,7 @@ def collect_atlases(datasets, atlases, bids_filters={}):
 
             atlas_metadata = None
             if atlas_metadata_file:
-                with open(atlas_metadata_file, 'r') as fo:
+                with open(atlas_metadata_file) as fo:
                     atlas_metadata = json.load(fo)
 
             atlas_cache[atlas] = {

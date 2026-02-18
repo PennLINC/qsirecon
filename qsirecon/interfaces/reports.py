@@ -196,7 +196,7 @@ class InteractiveReport(SimpleInterface):
         )
         report['carpetplot'] = []
         if isdefined(self.inputs.carpetplot_data):
-            with open(self.inputs.carpetplot_data, 'r') as carpet_f:
+            with open(self.inputs.carpetplot_data) as carpet_f:
                 carpet_data = json.load(carpet_f)
             report.update(carpet_data)
 

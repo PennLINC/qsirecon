@@ -345,7 +345,7 @@ def write_derivative_description(
     lock_file = os.path.join(deriv_dir, 'qsirecon_dataset_description.lock')
     with filelock.SoftFileLock(lock_file, timeout=60):
         if os.path.isfile(out_dset_description):
-            with open(out_dset_description, 'r') as fo:
+            with open(out_dset_description) as fo:
                 old_dset_desc = json.load(fo)
 
             old_version = old_dset_desc['GeneratedBy'][0]['Version']
@@ -387,7 +387,7 @@ def write_atlas_dataset_description(atlas_dir):
 
     atlas_dset_description = os.path.join(atlas_dir, 'dataset_description.json')
     if os.path.isfile(atlas_dset_description):
-        with open(atlas_dset_description, 'r') as fo:
+        with open(atlas_dset_description) as fo:
             old_desc = json.load(fo)
 
         old_version = old_desc['GeneratedBy'][0]['Version']

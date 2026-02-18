@@ -467,7 +467,7 @@ def _parse_network_file(txtfile):
         Dictionary of parsed network measures keyed by measure name.
     """
 
-    with open(txtfile, 'r') as f:
+    with open(txtfile) as f:
         lines = f.readlines()
     network_data = {}
     for line in lines:
@@ -922,7 +922,7 @@ def stat_txt_to_df(stat_txt_file, bundle_name):
     bundle_stats = {'bundle_name': bundle_name}
     if stat_txt_file == 'NA':
         return bundle_stats
-    with open(stat_txt_file, 'r') as statf:
+    with open(stat_txt_file) as statf:
         lines = [
             line.strip().replace(' ', '_').replace('^', '').replace('(', '_').replace(')', '')
             for line in statf
@@ -978,7 +978,7 @@ def _get_dsi_studio_bundles(desired_bundles='', version='hou'):
     if not op.exists(bundle_file):
         raise Exception(f'No such file {bundle_file} for loading bundles')
 
-    with open(bundle_file, 'r') as bundlef:
+    with open(bundle_file) as bundlef:
         all_bundles = [line.strip() for line in bundlef]
 
     if not desired_bundles:

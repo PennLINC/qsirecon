@@ -95,13 +95,13 @@ def check_generated_files(output_dir, output_list_file, optional_output_list_fil
     # Ignore logs
     found_files = sorted({f for f in found_files if 'log' not in f.split(os.path.sep)})
 
-    with open(output_list_file, 'r') as fo:
+    with open(output_list_file) as fo:
         expected_files = fo.readlines()
         expected_files = [f.rstrip() for f in expected_files]
 
     optional_files = []
     if optional_output_list_file:
-        with open(optional_output_list_file, 'r') as fo:
+        with open(optional_output_list_file) as fo:
             optional_files = fo.readlines()
             optional_files = [f.rstrip() for f in optional_files]
 
@@ -136,7 +136,7 @@ def reorder_expected_outputs():
     for expected_output_file in expected_output_files:
         LOGGER.info(f'Sorting {expected_output_file}')
 
-        with open(expected_output_file, 'r') as fo:
+        with open(expected_output_file) as fo:
             file_contents = fo.readlines()
 
         file_contents = sorted(set(file_contents))
