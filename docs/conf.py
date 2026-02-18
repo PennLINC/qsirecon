@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # qsirecon  documentation build configuration file, created by
 # sphinx-quickstart on Mon May  9 09:04:25 2016.

@@ -159,7 +159,6 @@ extend-select = [
   "Q",
 ]
 ignore = [
-  "UP009",  # UTF-8 encoding declaration is unnecessary
   "EXE001",  # Shebang is present but file is not executable
   "B006",  # Do not use mutable data structures for argument defaults (keep in ignore)
   "ISC001",  # Implicitly concatenated string literals on one line
