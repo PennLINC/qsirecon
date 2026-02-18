@@ -172,7 +172,6 @@ ignore = [
   "E402",  # Module level import not at top of file
   "S607",  # Starting a process with a partial executable path
   "B028",  # No explicit `stacklevel` keyword argument found
-  "UP008",  # [*] Use `super()` instead of `super(__class__, self)`
   "B007",  # Loop control variable `atlas` not used within loop body
   "S202",  # Uses of `tarfile.extractall()`
   "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument

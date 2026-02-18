@@ -215,7 +215,7 @@ class Dwi2Response(ResponseSD):
         if self.inputs.algorithm not in ('dhollander', 'msmt_5tt'):
             if name in ('gm_file', 'csf_file'):
                 return ''
-        return super(Dwi2Response, self)._format_arg(name, spec, val)
+        return super()._format_arg(name, spec, val)
 
     def _gen_filename(self, name):
         if name in ('gm_file', 'csf_file', 'wm_file'):
@@ -446,7 +446,7 @@ class EstimateFOD(MRTrix3Base):
         if self.inputs.algorithm == 'csd':
             if name in ('gm_odf', 'gm_txt', 'csf_odf', 'csf_txt'):
                 return ''
-        return super(EstimateFOD, self)._format_arg(name, spec, value)
+        return super()._format_arg(name, spec, value)
 
     def _gen_filename(self, name):
         if name in ('gm_odf', 'gm_txt', 'wm_odf', 'wm_txt', 'csf_odf', 'csf_txt'):
@@ -854,7 +854,7 @@ class BuildConnectome(MRTrix3Base):
             if self.inputs.use_sift_weights:
                 return spec.argstr % val
             return ''
-        return super(BuildConnectome, self)._format_arg(name, spec, val)
+        return super()._format_arg(name, spec, val)
 
 
 class MRTrixAtlasGraphInputSpec(BuildConnectomeInputSpec):
@@ -1067,7 +1067,7 @@ class Connectome2Tck(MRTrix3Base):
     def _list_outputs(self):
         if not self.inputs.output_files == 'single':
             raise NotImplementedError('Interface only supports single file output')
-        outputs = super(Connectome2Tck, self)._list_outputs()
+        outputs = super()._list_outputs()
         exemplar_weights = outputs['output_tck_weights'] + '.csv'
         if op.exists(exemplar_weights):
             outputs['exemplar_weights'] = exemplar_weights

@@ -54,7 +54,7 @@ class BIDSError(ValueError):
             message=message,
             footer=''.join(['-'] * len(header)),
         )
-        super(BIDSError, self).__init__(self.msg)
+        super().__init__(self.msg)
         self.bids_root = bids_root
 
 
