@@ -187,7 +187,6 @@ ignore = [
   "E721",  # Use `is` and `is not` for type comparisons
   "S110",  # `try`-`except`-`pass` detected
   "UP032",  # [*] Use f-string instead of `format` call
-  "UP034",  # [*] Avoid extraneous parentheses
   "C408",  # Unnecessary `tuple()` call (rewrite as a literal)
   "A004",  # Import `ConnectionError` is shadowing a Python builtin
   "C419",  # Unnecessary list comprehension

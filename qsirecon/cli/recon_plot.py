@@ -349,10 +349,10 @@ def peaks_from_odfs(
             raise ValueError('Mask is not the same shape as data.')
 
     gfa_array = np.zeros(shape)
-    qa_array = np.zeros((shape + (npeaks,)))
+    qa_array = np.zeros(shape + (npeaks,))
 
-    peak_dirs = np.zeros((shape + (npeaks, 3)))
-    peak_values = np.zeros((shape + (npeaks,)))
+    peak_dirs = np.zeros(shape + (npeaks, 3))
+    peak_values = np.zeros(shape + (npeaks,))
     peak_indices = np.zeros((shape + (npeaks,)), dtype='int')
     peak_indices.fill(-1)
 
