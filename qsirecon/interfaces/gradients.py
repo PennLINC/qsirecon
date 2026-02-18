@@ -1,4 +1,4 @@
-"""Handle merging and spliting of DSI files."""
+"""Handle merging and splitting of DSI files."""
 
 import logging
 
