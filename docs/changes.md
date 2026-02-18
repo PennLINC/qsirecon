@@ -1,5 +1,67 @@
 # What's New
 
+## 1.2.0
+
+### 🛠 Breaking Changes
+
+* Disable dkimicro/wmti in recon specs by @tsalo in https://github.com/PennLINC/qsirecon/pull/268
+
+### 🎉 Exciting New Features
+
+* Calculate MD from TORTOISE tensor fits by @tsalo in https://github.com/PennLINC/qsirecon/pull/315
+* Raise error if atlases are not collected by @tsalo in https://github.com/PennLINC/qsirecon/pull/256
+* Add integer downsample option for MRtrix3 tckgen by @kjamison in https://github.com/PennLINC/qsirecon/pull/324
+* Add MSDKI option to DIPY_Reconstruction action by @tsalo in https://github.com/PennLINC/qsirecon/pull/269
+* Add missing GQI scalars by @tsalo in https://github.com/PennLINC/qsirecon/pull/326
+* Add pipeline description to boilerplate by @tsalo in https://github.com/PennLINC/qsirecon/pull/332
+* Add QSIRecon suffix to boilerplate sections and add boilerplates for smaller workflows by @tsalo in https://github.com/PennLINC/qsirecon/pull/331
+* Ingress response functions by @tsalo in https://github.com/PennLINC/qsirecon/pull/335
+
+### 🐛 Bug Fixes
+
+* Account for Query.NONE session IDs in Freesurfer folder detection by @tsalo in https://github.com/PennLINC/qsirecon/pull/271
+* Add plot_reports param to failing interfaces by @tsalo in https://github.com/PennLINC/qsirecon/pull/286
+* Fix DSI Studio GQI connectivity by @araikes in https://github.com/PennLINC/qsirecon/pull/277
+* Fix bug in assignment of formatted LUTs for connectivity steps by @tsalo in https://github.com/PennLINC/qsirecon/pull/278
+* Fix parameter assignments in Dipy MAPMRI workflow and document params by @tsalo in https://github.com/PennLINC/qsirecon/pull/308
+* Make missing Freesurfer license error messages more informative by @tsalo in https://github.com/PennLINC/qsirecon/pull/261
+
+### Other Changes
+
+* Fix workflow reference in builtin_workflows.rst by @appukuttan-shailesh in https://github.com/PennLINC/qsirecon/pull/285
+* Add unit metadata to some scalar maps by @tsalo in https://github.com/PennLINC/qsirecon/pull/247
+* Clean up the Bibtex file by @araikes in https://github.com/PennLINC/qsirecon/pull/290
+* Add scalar params to JSON files by @tsalo in https://github.com/PennLINC/qsirecon/pull/292
+* Add parameter metadata extracted from interfaces to boilerplate for tortoise by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/291
+* Add model metadata with description and URL reference for MAPMRI by @chiuhoward in https://github.com/PennLINC/qsirecon/pull/295
+* Add new available models pages to documentation by @singlesp in https://github.com/PennLINC/qsirecon/pull/306
+* Simplify the parameter metadata extraction for JSONs by @tsalo in https://github.com/PennLINC/qsirecon/pull/307
+* Add API documentation by @tsalo in https://github.com/PennLINC/qsirecon/pull/233
+* Document hardcoded DKI parameters in YAMLs by @cookpa in https://github.com/PennLINC/qsirecon/pull/302
+* Add detailed information about DTI to model page by @tien-tong in https://github.com/PennLINC/qsirecon/pull/310
+* Add DKI model page to docs by @singlesp in https://github.com/PennLINC/qsirecon/pull/309
+* Add parameter metadata extracted from interfaces to boilerplate for AMICO by @araikes in https://github.com/PennLINC/qsirecon/pull/299
+* Add GQI model page to docs by @singlesp in https://github.com/PennLINC/qsirecon/pull/311
+* Add MAP-MRI model page to docs by @tien-tong in https://github.com/PennLINC/qsirecon/pull/313
+* Add noddi model docs by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/325
+* Further model docs cleanup by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/327
+* Add BIDS metadata to SH fits from mrtrix by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/297
+* Make model page markup consistent by @tsalo in https://github.com/PennLINC/qsirecon/pull/329
+* DWI only fix by @smeisler in https://github.com/PennLINC/qsirecon/pull/209
+* Fix container image name in documentation by @hfxcarl in https://github.com/PennLINC/qsirecon/pull/197
+* Make ABCD recon spec built in by @smeisler in https://github.com/PennLINC/qsirecon/pull/344
+* Add AGENTS.md and cursor rules by @singlesp in https://github.com/PennLINC/qsirecon/pull/348
+* update to ubuntu22.04 by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/343
+
+### New Contributors
+
+* @appukuttan-shailesh made their first contribution in https://github.com/PennLINC/qsirecon/pull/285
+* @kjamison made their first contribution in https://github.com/PennLINC/qsirecon/pull/324
+* @hfxcarl made their first contribution in https://github.com/PennLINC/qsirecon/pull/197
+
+**Full Changelog**: https://github.com/PennLINC/qsirecon/compare/1.1.1...1.2.0
+
+
 ## 1.1.1
 
 This release fixes a major bug in QSIRecon's handling of multi-session and multi-run datasets.
@@ -32,7 +94,7 @@ The built-in workflows should be largely unaffected.
 * Fix table borders by @tsalo in https://github.com/PennLINC/qsirecon/pull/260
 * Add unused `plot_reports` input to `_KurtosisReconstructionInputSpec` by @tsalo in https://github.com/PennLINC/qsirecon/pull/262
 
-## New Contributors
+### New Contributors
 * @36000 made their first contribution in https://github.com/PennLINC/qsirecon/pull/235
 
 **Full Changelog**: https://github.com/PennLINC/qsirecon/compare/1.1.0...1.1.1
@@ -50,7 +112,7 @@ The built-in workflows should be largely unaffected.
 * Add `smoothing` and `otsu_threshold` autotrack arguments by @smeisler in https://github.com/PennLINC/qsirecon/pull/219
 * Allow desc entity in recon scalar derivatives by @tsalo in https://github.com/PennLINC/qsirecon/pull/220
 
-## New Contributors
+### New Contributors
 
 * @araikes made their first contribution in https://github.com/PennLINC/qsirecon/pull/218
 
