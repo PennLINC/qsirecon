@@ -702,7 +702,6 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
     ------
     - qsirecon multi shell results (data/DSDTI_fmap)
     """
-    import json
 
     import numpy as np
 

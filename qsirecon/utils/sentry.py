@@ -24,7 +24,6 @@
 
 import os
 import re
-from pathlib import Path
 
 from nibabel.optpkg import optional_package
 from niworkflows.utils.misc import read_crashfile
@@ -32,7 +31,7 @@ from niworkflows.utils.misc import read_crashfile
 sentry_sdk = optional_package('sentry_sdk')[0]
 migas = optional_package('migas')[0]
 
-from .. import __version__, config
+from .. import config
 
 CHUNK_SIZE = 16384
 # Group common events with pre specified fingerprints

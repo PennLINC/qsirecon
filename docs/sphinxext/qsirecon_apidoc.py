@@ -19,9 +19,6 @@ except Exception:  # pragma: no cover - environment-dependent
 # Reuse Nipype's internals so behavior stays consistent unless overridden
 from nipype.sphinxext.apidoc import __version__ as NIPYPE_VERSION
 from nipype.sphinxext.apidoc import _skip_member as nipype_skip_member
-from nipype.sphinxext.apidoc.docstring import (
-    InterfaceDocstring as BaseInterfaceDocstring,
-)
 from nipype.sphinxext.apidoc.docstring import (  # noqa: F401
     NipypeDocstring as BaseNipypeDocstring,
 )
