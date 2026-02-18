@@ -28,7 +28,6 @@ import os
 import sys
 import warnings
 from pathlib import Path
-from typing import Union
 
 import filelock
 from bids import BIDSLayout
@@ -509,7 +508,7 @@ def _get_shub_version(singularity_url):
     raise ValueError('Not yet implemented')
 
 
-def clean_datasinks(workflow: pe.Workflow, qsirecon_suffix: Union[str, None]) -> pe.Workflow:
+def clean_datasinks(workflow: pe.Workflow, qsirecon_suffix: str | None) -> pe.Workflow:
     """Overwrite the base_directory of Datasinks."""
     out_dir = Path(config.execution.output_dir)
     if qsirecon_suffix:
