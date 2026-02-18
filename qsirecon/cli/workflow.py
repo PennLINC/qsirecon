@@ -32,6 +32,7 @@ dictionary (``retval``) to allow isolation using a
 a hard-limited memory-scope.
 
 """
+
 from pathlib import Path
 
 from pkg_resources import resource_filename as pkgrf
@@ -119,13 +120,11 @@ def build_workflow(config_file, retval):
 
     # Check for FS license after building the workflow
     if not Path(config.execution.fs_license_file).exists():
-        build_log.critical(
-            """\
+        build_log.critical("""\
 ERROR: a valid license file is required for FreeSurfer to run. QSIRecon looked for an existing \
 license file at several paths, in this order: 1) command line argument ``--fs-license-file``; \
 2) ``$FS_LICENSE`` environment variable; and 3) the ``$FREESURFER_HOME/license.txt`` path. Get it \
-(for free) by registering at https://surfer.nmr.mgh.harvard.edu/registration.html"""
-        )
+(for free) by registering at https://surfer.nmr.mgh.harvard.edu/registration.html""")
         retval["return_code"] = 126  # 126 == Command invoked cannot execute.
         return retval
 

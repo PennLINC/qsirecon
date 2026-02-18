@@ -8,6 +8,7 @@ Image tools interfaces
 
 
 """
+
 import os
 import os.path as op
 import zipfile
@@ -38,6 +39,8 @@ from nipype.interfaces.mrtrix3.utils import Generate5ttInputSpec
 from nipype.utils.filemanip import fname_presuffix, split_filename, which
 from scipy.io.matlab import loadmat, savemat
 
+from ..utils.misc import mrtrix_response_function_to_bids
+
 LOGGER = logging.getLogger("nipype.interface")
 RC3_ROOT = which("average_response")  # Only exists in RC3
 if RC3_ROOT is not None:
@@ -54,14 +57,6 @@ if _SS3T_EXE is None:
         SS3T_ROOT = "/opt/3Tissue/bin"
 else:
     SS3T_ROOT = os.path.split(_SS3T_EXE)[0]
-
-
-def response_function_to_bids(response_function_file):
-    """Load a response function from MRtrix3 and convert to JSON-compatible format."""
-    response_data = np.loadtxt(response_function_file)
-    if response_data.ndim == 1:
-        return [[value] for value in response_data]
-    return [row.tolist() for row in response_data]
 
 
 class TckGenInputSpec(TractographyInputSpec):
@@ -437,7 +432,7 @@ class EstimateFOD(MRTrix3Base):
             )
         for tissue_desc, tissue_type in responses:
             response_function = getattr(self.inputs, tissue_type + "_txt")
-            response_function_data = response_function_to_bids(response_function)
+            response_function_data = mrtrix_response_function_to_bids(response_function)
 
             outputs[tissue_type + "_odf_metadata"] = {
                 "Model": {
@@ -499,7 +494,7 @@ class SS3TEstimateFOD(SS3TBase, EstimateFOD):
             ("Cerebrospinal fluid", "csf"),
         ):
             response_function = getattr(self.inputs, tissue_type + "_txt")
-            response_function_data = response_function_to_bids(response_function)
+            response_function_data = mrtrix_response_function_to_bids(response_function)
 
             outputs[tissue_type + "_odf_metadata"] = {
                 "Model": {

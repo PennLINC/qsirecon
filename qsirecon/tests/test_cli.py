@@ -22,6 +22,7 @@ from qsirecon.utils.bids import (
     write_bidsignore,
     write_derivative_description,
 )
+from qsirecon.utils.misc import bids_response_function_to_mrtrix
 
 nipype_config.enable_debug_mode()
 
@@ -693,37 +694,71 @@ def test_tortoise_recon(data_dir, output_dir, working_dir):
 
 
 @pytest.mark.integration
-@pytest.mark.dsi_studio_gqi_recon
-def test_dsi_studio_gqi_recon(data_dir, output_dir, working_dir):
-    """Test the DSI Studio GQI recon workflow
-
-    All supported reconstruction workflows get tested
+@pytest.mark.mrtrix3_recon_with_response_functions
+def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir):
+    """Test the MRtrix3 recon workflow with response functions.
 
     Inputs
     ------
     - qsirecon multi shell results (data/DSDTI_fmap)
     """
-    TEST_NAME = "dsi_studio_gqi_recon"
+    import json
+
+    import numpy as np
+
+    TEST_NAME = "mrtrix3_recon_with_response_functions"
 
     dataset_dir = download_test_data("multishell_output", data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
     dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
-    out_dir = os.path.join(output_dir, TEST_NAME)
-    work_dir = os.path.join(working_dir, TEST_NAME)
+    test_dir = os.path.join(output_dir, TEST_NAME)
 
+    estimate_work_dir = os.path.join(working_dir, f"{TEST_NAME}_estimate")
+    estimate_dir = os.path.join(test_dir, "estimate")
     parameters = [
         dataset_dir,
-        out_dir,
+        estimate_dir,
         "participant",
-        f"-w={work_dir}",
+        f"-w={estimate_work_dir}",
         "--sloppy",
-        "--recon-spec=dsi_studio_gqi",
-        "--atlases",
-        "4S156Parcels",
-        "Brainnetome246Ext",
+        "--recon-spec=mrtrix_multishell_msmt_noACT_estimate",
     ]
 
-    _run_and_generate(TEST_NAME, parameters, test_main=False)
+    _run_and_generate(f"{TEST_NAME}_estimate", parameters, test_main=False)
+
+    # Now convert the response functions from JSON to MRtrix format
+    for tissue in ["wm", "gm", "csf"]:
+        label = tissue.upper()
+        json_file = os.path.join(
+            estimate_dir,
+            "derivatives",
+            "qsirecon-MRtrix3_act-None_response-subject",
+            "sub-ABCD",
+            "dwi",
+            f"sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-{label}_dwimap.json",
+        )
+        assert os.path.exists(json_file)
+        arr = bids_response_function_to_mrtrix(json_file)
+        txt_file = os.path.join(test_dir, f"{tissue}.txt")
+        with open(txt_file, "w") as f:
+            np.savetxt(f, arr)
+
+    # Now apply the response functions
+    apply_work_dir = os.path.join(working_dir, f"{TEST_NAME}_apply")
+    apply_dir = os.path.join(test_dir, "apply")
+    parameters = [
+        dataset_dir,
+        apply_dir,
+        "participant",
+        f"-w={apply_work_dir}",
+        "--sloppy",
+        "--recon-spec=mrtrix_multishell_msmt_noACT_apply",
+        "--recon-spec-aux-files",
+        test_dir,
+        "--atlases",
+        "Gordon333Ext",
+    ]
+    _run_and_generate(f"{TEST_NAME}_apply", parameters, test_main=False)
 
 
 def _run_and_generate(test_name, parameters, test_main=False):

@@ -8,6 +8,7 @@ Workflows for AMICO
 
 
 """
+
 import os
 import os.path as op
 
@@ -86,7 +87,6 @@ class AmicoReconInterface(SimpleInterface):
         return output_fname
 
     def _write_external_formats(self, runtime, fit_obj, mask_img, suffix):
-
         if not (self.inputs.write_fibgz or self.inputs.write_mif):
             return
 
@@ -98,10 +98,16 @@ class AmicoReconInterface(SimpleInterface):
         hs = HemiSphere(x=x, y=y, z=z)
         odf_amplitudes = nb.Nifti1Image(fit_obj.odf(hs), mask_img.affine, mask_img.header)
         output_amps_file = fname_presuffix(
-            self.inputs.dwi_file, suffix=suffix + "_amp.nii.gz", newpath=runtime.cwd, use_ext=False
+            self.inputs.dwi_file,
+            suffix=suffix + "_amp.nii.gz",
+            newpath=runtime.cwd,
+            use_ext=False,
         )
         output_dirs_file = fname_presuffix(
-            self.inputs.dwi_file, suffix=suffix + "_dirs.npy", newpath=runtime.cwd, use_ext=False
+            self.inputs.dwi_file,
+            suffix=suffix + "_dirs.npy",
+            newpath=runtime.cwd,
+            use_ext=False,
         )
         odf_amplitudes.to_filename(output_amps_file)
         np.save(output_dirs_file, verts[:hemisphere])
@@ -110,7 +116,10 @@ class AmicoReconInterface(SimpleInterface):
 
         if self.inputs.write_fibgz:
             output_fib_file = fname_presuffix(
-                self.inputs.dwi_file, suffix=suffix + ".fib", newpath=runtime.cwd, use_ext=False
+                self.inputs.dwi_file,
+                suffix=suffix + ".fib",
+                newpath=runtime.cwd,
+                use_ext=False,
             )
             LOGGER.info("Writing DSI Studio fib file %s", output_fib_file)
             amplitudes_to_fibgz(
@@ -120,7 +129,10 @@ class AmicoReconInterface(SimpleInterface):
 
         if self.inputs.write_mif:
             output_mif_file = fname_presuffix(
-                self.inputs.dwi_file, suffix=suffix + ".mif", newpath=runtime.cwd, use_ext=False
+                self.inputs.dwi_file,
+                suffix=suffix + ".mif",
+                newpath=runtime.cwd,
+                use_ext=False,
             )
             LOGGER.info("Writing sh mif file %s", output_mif_file)
             amplitudes_to_sh_mif(odf_amplitudes, verts, output_mif_file, runtime.cwd)
@@ -278,7 +290,6 @@ class NODDI(AmicoReconInterface):
     output_spec = NODDIOutputSpec
 
     def _run_interface(self, runtime):
-
         # shim the expected inputs
         shim_dir = op.join(runtime.cwd, "study/subject")
         os.makedirs(shim_dir)
@@ -300,7 +311,10 @@ class NODDI(AmicoReconInterface):
         # Set up the AMICO evaluation
         aeval = amico.Evaluation("study", "subject")
         scheme_file = amico.util.fsl2scheme(
-            bval_file, bvec_file, bStep=self.inputs.b0_threshold, flipAxes=[False, True, True]
+            bval_file,
+            bvec_file,
+            bStep=self.inputs.b0_threshold,
+            flipAxes=[False, True, True],
         )
         aeval.load_data(
             dwi_filename=dwi_file,
