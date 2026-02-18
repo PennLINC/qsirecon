@@ -159,6 +159,50 @@ extend-select = [
   "Q",
 ]
 ignore = [
+  "Q000",  # TODO: Double quotes. Fix these.
+  "UP009",  # UTF-8 encoding declaration is unnecessary
+  "EXE001",  # Shebang is present but file is not executable
+  "B006",  # Do not use mutable data structures for argument defaults (keep in ignore)
+  "ISC001",  # Implicitly concatenated string literals on one line
+  "ISC003",  # Explicitly concatenated string should be implicitly concatenated
+  "I001",  # Import block is unsorted
+  "UP031",  # Use format specifiers instead of percent format
+  "C405",  # Unnecessary tuple literal
+  "C414",  # Unnecessary `list()` call within `sorted()`
+  "B904",  # Within an `except` clause, raise exceptions
+  "BLE001",  # Do not catch blind exceptions
+  "B017",  # Do not assert blind exception: `Exception`
+  "UP015",  # [*] Unnecessary mode argument
+  "B905",  # `zip()` without an explicit `strict=` parameter
+  "PT009",  # Use a regular `assert` instead of unittest-style `assertIn`
+  "PT027",  # Use `pytest.raises` instead of unittest-style `assertRaises`
+  "W605",  # [*] Invalid escape sequence: `\s`
+  "S101",  # Use of `assert` detected
+  "F401",  # [*] `..__version__` imported but unused
+  "E402",  # Module level import not at top of file
+  "UP010",  # [*] Unnecessary `__future__` import `division`
+  "UP007",  # [*] Use `X | Y` for type annotations
+  "S607",  # Starting a process with a partial executable path
+  "C403",  # Unnecessary list comprehension (rewrite as a set comprehension)
+  "B028",  # No explicit `stacklevel` keyword argument found
+  "UP008",  # [*] Use `super()` instead of `super(__class__, self)`
+  "B007",  # Loop control variable `atlas` not used within loop body
+  "S202",  # Uses of `tarfile.extractall()`
+  "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
+  "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
+  "E721",  # Use `is` and `is not` for type comparisons
+  "S110",  # `try`-`except`-`pass` detected
+  "UP032",  # [*] Use f-string instead of `format` call
+  "UP034",  # [*] Avoid extraneous parentheses
+  "C408",  # Unnecessary `tuple()` call (rewrite as a literal)
+  "A004",  # Import `ConnectionError` is shadowing a Python builtin
+  "C419",  # Unnecessary list comprehension
+  "S608",  # Possible SQL injection vector through string-based query construction
+  "UP018",  # [*] Unnecessary `str` call (rewrite as a literal)
+  "ICN001",  # `matplotlib` should be imported as `mpl`
+  "S108",  # Probable insecure usage of temporary file or directory: "/tmp"
+  "S602",  # `subprocess` call with `shell=True` identified, security issue
+  "S113",  # Probable use of `requests` call without timeout
   "S105",
   "S311",  # We are not using random for cryptographic purposes
   "S603",  # subprocess used only for trusted commands (git, pandoc, test runners)
