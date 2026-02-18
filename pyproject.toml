@@ -160,8 +160,6 @@ extend-select = [
 ]
 ignore = [
   "B006",  # Do not use mutable data structures for argument defaults (keep in ignore)
-  "ISC001",  # Implicitly concatenated string literals on one line
-  "ISC003",  # Explicitly concatenated string should be implicitly concatenated
   "UP031",  # Use format specifiers instead of percent format
   "B904",  # Within an `except` clause, raise exceptions
   "BLE001",  # Do not catch blind exceptions

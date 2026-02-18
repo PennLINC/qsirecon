@@ -80,7 +80,7 @@ def init_tortoise_estimator_wf(inputs_dict, name='tortoise_recon', qsirecon_suff
     suffix_str = f' (outputs written to qsirecon-{qsirecon_suffix})' if qsirecon_suffix else ''
     workflow.__desc__ = (
         f'\n\n#### TORTOISE Reconstruction{suffix_str}\n\n'
-        + 'Methods implemented in TORTOISE (@tortoisev3) were used for reconstruction. '
+         'Methods implemented in TORTOISE (@tortoisev3) were used for reconstruction. '
     )
 
     inputnode = pe.Node(
