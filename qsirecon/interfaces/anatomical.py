@@ -148,7 +148,7 @@ class QSIPrepAnatomicalIngress(SimpleInterface):
             files = [
                 fname
                 for fname in files
-                if not any([exclude in op.split(fname)[1] for exclude in excludes])
+                if not any(exclude in op.split(fname)[1] for exclude in excludes)
             ]
 
         if len(files) == 1:

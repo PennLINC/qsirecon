@@ -173,7 +173,6 @@ ignore = [
   "E402",  # Module level import not at top of file
   "UP007",  # [*] Use `X | Y` for type annotations
   "S607",  # Starting a process with a partial executable path
-  "C403",  # Unnecessary list comprehension (rewrite as a set comprehension)
   "B028",  # No explicit `stacklevel` keyword argument found
   "UP008",  # [*] Use `super()` instead of `super(__class__, self)`
   "B007",  # Loop control variable `atlas` not used within loop body
@@ -185,7 +184,6 @@ ignore = [
   "UP032",  # [*] Use f-string instead of `format` call
   "C408",  # Unnecessary `tuple()` call (rewrite as a literal)
   "A004",  # Import `ConnectionError` is shadowing a Python builtin
-  "C419",  # Unnecessary list comprehension
   "S608",  # Possible SQL injection vector through string-based query construction
   "S108",  # Probable insecure usage of temporary file or directory: "/tmp"
   "S602",  # `subprocess` call with `shell=True` identified, security issue

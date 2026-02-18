@@ -454,7 +454,7 @@ class ParcellateScalars(SimpleInterface):
 
     def _run_interface(self, runtime):
         # Measures to extract: mean, stdev, median
-        source_suffixes = set([cfg['qsirecon_suffix'] for cfg in self.inputs.scalars_config])
+        source_suffixes = {cfg['qsirecon_suffix'] for cfg in self.inputs.scalars_config}
         if len(source_suffixes) > 1:
             raise ValueError(
                 'All scalars must have the same qsirecon_suffix. '

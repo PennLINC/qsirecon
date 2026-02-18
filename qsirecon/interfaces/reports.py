@@ -333,8 +333,8 @@ class ConnectivityReport(SimpleInterface):
         """Generate a reportlet."""
         mat = loadmat(self.inputs.connectivity_matfile)
         connectivity_keys = [key for key in mat.keys() if key.endswith('connectivity')]
-        atlases = sorted(set([key.split('_')[0] for key in connectivity_keys]))
-        measures = sorted(set(['_'.join(key.split('_')[1:-1]) for key in connectivity_keys]))
+        atlases = sorted({key.split('_')[0] for key in connectivity_keys})
+        measures = sorted({'_'.join(key.split('_')[1:-1]) for key in connectivity_keys})
         nrows = len(atlases)
         ncols = len(measures)
         fig, ax = plt.subplots(nrows=nrows, ncols=ncols, squeeze=False)
