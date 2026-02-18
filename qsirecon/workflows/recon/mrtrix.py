@@ -151,10 +151,10 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='
     create_mif = pe.Node(MRTrixIngress(), name='create_mif')
     workflow.connect([
         (inputnode, create_mif, [
-            ("dwi_file", "dwi_file"),
-            ("bval_file", "bval_file"),
-            ("bvec_file", "bvec_file"),
-            ("b_file", "b_file"),
+            ('dwi_file', 'dwi_file'),
+            ('bval_file', 'bval_file'),
+            ('bvec_file', 'bvec_file'),
+            ('b_file', 'b_file'),
         ]),
     ])  # fmt:skip
 
@@ -164,9 +164,9 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='
     )
     workflow.connect([
         (response_buffer, outputnode, [
-            ("wm_txt", "wm_txt"),
-            ("gm_txt", "gm_txt"),
-            ("csf_txt", "csf_txt"),
+            ('wm_txt', 'wm_txt'),
+            ('gm_txt', 'gm_txt'),
+            ('csf_txt', 'csf_txt'),
         ]),
     ])  # fmt:skip
 
@@ -188,9 +188,9 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='
         )
         workflow.connect([
             (load_response_functions, response_buffer, [
-                ("wm_txt", "wm_txt"),
-                ("gm_txt", "gm_txt"),
-                ("csf_txt", "csf_txt"),
+                ('wm_txt', 'wm_txt'),
+                ('gm_txt', 'gm_txt'),
+                ('csf_txt', 'csf_txt'),
             ]),
         ])  # fmt:skip
     else:
@@ -211,19 +211,19 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='
             n_procs=omp_nthreads,
         )
         workflow.connect([
-            (inputnode, estimate_response, [("dwi_mask", "in_mask")]),
-            (create_mif, estimate_response, [("mif_file", "in_file")]),
+            (inputnode, estimate_response, [('dwi_mask', 'in_mask')]),
+            (create_mif, estimate_response, [('mif_file', 'in_file')]),
             (estimate_response, response_buffer, [
-                ("wm_file", "wm_txt"),
-                ("gm_file", "gm_txt"),
-                ("csf_file", "csf_txt"),
+                ('wm_file', 'wm_txt'),
+                ('gm_file', 'gm_txt'),
+                ('csf_file', 'csf_txt'),
             ]),
         ])  # fmt:skip
 
         if response_algorithm == 'msmt_5tt':
             if method_5tt == 'hsvs':
                 workflow.connect([
-                    (inputnode, estimate_response, [("qsiprep_5tt_hsvs", "mtt_file")])
+                    (inputnode, estimate_response, [('qsiprep_5tt_hsvs', 'mtt_file')])
                 ])  # fmt:skip
             else:
                 raise Exception('Unrecognized 5tt method: ' + method_5tt)
@@ -241,12 +241,12 @@ spherical deconvolution (CSD, @originalcsd, @tournier2008csd){seg_str}.
 MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
 
     workflow.connect([
-        (inputnode, estimate_fod, [("dwi_mask", "mask_file")]),
-        (create_mif, estimate_fod, [("mif_file", "in_file")]),
+        (inputnode, estimate_fod, [('dwi_mask', 'mask_file')]),
+        (create_mif, estimate_fod, [('mif_file', 'in_file')]),
         (response_buffer, estimate_fod, [
-            ("wm_txt", "wm_txt"),
-            ("gm_txt", "gm_txt"),
-            ("csf_txt", "csf_txt"),
+            ('wm_txt', 'wm_txt'),
+            ('gm_txt', 'gm_txt'),
+            ('csf_txt', 'csf_txt'),
         ]),
     ])  # fmt:skip
 
@@ -254,10 +254,10 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
         workflow.connect([
             # (estimate_fod, plot_peaks, [("wm_odf", "mif_file")]),
             (estimate_fod, outputnode, [
-                ("wm_odf", "fod_sh_mif"),
-                ("wm_odf", "wm_odf"),
-                ("gm_odf", "gm_odf"),
-                ("csf_odf", "csf_odf"),
+                ('wm_odf', 'fod_sh_mif'),
+                ('wm_odf', 'wm_odf'),
+                ('gm_odf', 'gm_odf'),
+                ('csf_odf', 'csf_odf'),
             ]),
         ])  # fmt:skip
     else:
@@ -271,17 +271,17 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
             n_procs=omp_nthreads,
         )
         workflow.connect([
-            (inputnode, intensity_norm, [("dwi_mask", "mask_file")]),
+            (inputnode, intensity_norm, [('dwi_mask', 'mask_file')]),
             (estimate_fod, intensity_norm, [
-                ("wm_odf", "wm_odf"),
-                ("gm_odf", "gm_odf"),
-                ("csf_odf", "csf_odf"),
+                ('wm_odf', 'wm_odf'),
+                ('gm_odf', 'gm_odf'),
+                ('csf_odf', 'csf_odf'),
             ]),
             (intensity_norm, outputnode, [
-                ("wm_normed_odf", "fod_sh_mif"),
-                ("wm_normed_odf", "wm_odf"),
-                ("gm_normed_odf", "gm_odf"),
-                ("csf_normed_odf", "csf_odf"),
+                ('wm_normed_odf', 'fod_sh_mif'),
+                ('wm_normed_odf', 'wm_odf'),
+                ('gm_normed_odf', 'gm_odf'),
+                ('csf_normed_odf', 'csf_odf'),
             ]),
         ])  # fmt:skip
         workflow.__desc__ += ' FODs were intensity-normalized using mtnormalize (@mtnormalize).'
@@ -304,11 +304,11 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
         )
         workflow.connect([
             (inputnode, plot_peaks, [
-                ("dwi_ref", "background_image"),
-                ("odf_rois", "odf_rois"),
-                ("dwi_mask", "mask_file"),
+                ('dwi_ref', 'background_image'),
+                ('odf_rois', 'odf_rois'),
+                ('dwi_mask', 'mask_file'),
             ]),
-            (plot_peaks, ds_report_peaks, [("peak_report", "in_file")]),
+            (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')]),
         ])  # fmt:skip
 
         # Plot targeted regions
@@ -345,8 +345,8 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
             run_without_submitting=True,
         )
         workflow.connect([
-            (outputnode, ds_wm_odf, [("wm_odf", "in_file")]),
-            (estimate_fod, ds_wm_odf, [("wm_odf_metadata", "meta_dict")]),
+            (outputnode, ds_wm_odf, [('wm_odf', 'in_file')]),
+            (estimate_fod, ds_wm_odf, [('wm_odf_metadata', 'meta_dict')]),
         ])  # fmt:skip
 
         ds_wm_txt = pe.Node(
@@ -391,9 +391,9 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
                 run_without_submitting=True,
             )
             workflow.connect([
-                (outputnode, ds_gm_odf, [("gm_odf", "in_file")]),
-                (estimate_fod, ds_gm_odf, [("gm_odf_metadata", "meta_dict")]),
-                (outputnode, ds_gm_txt, [("gm_txt", "in_file")]),
+                (outputnode, ds_gm_odf, [('gm_odf', 'in_file')]),
+                (estimate_fod, ds_gm_odf, [('gm_odf_metadata', 'meta_dict')]),
+                (outputnode, ds_gm_txt, [('gm_txt', 'in_file')]),
             ])  # fmt:skip
 
             ds_csf_odf = pe.Node(
@@ -422,9 +422,9 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
                 run_without_submitting=True,
             )
             workflow.connect([
-                (outputnode, ds_csf_odf, [("csf_odf", "in_file")]),
-                (estimate_fod, ds_csf_odf, [("csf_odf_metadata", "meta_dict")]),
-                (outputnode, ds_csf_txt, [("csf_txt", "in_file")]),
+                (outputnode, ds_csf_odf, [('csf_odf', 'in_file')]),
+                (estimate_fod, ds_csf_odf, [('csf_odf_metadata', 'meta_dict')]),
+                (outputnode, ds_csf_txt, [('csf_txt', 'in_file')]),
             ])  # fmt:skip
 
             if run_mtnormalize:
@@ -439,8 +439,8 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
                     name='ds_mt_norm',
                     run_without_submitting=True,
                 )
-                workflow.connect(intensity_norm, "norm_image",
-                                 ds_mt_norm, "in_file")  # fmt:skip
+                workflow.connect(intensity_norm, 'norm_image',
+                                 ds_mt_norm, 'in_file')  # fmt:skip
                 ds_inlier_mask = pe.Node(
                     DerivativesDataSink(
                         dismiss_entities=('desc',),
@@ -509,23 +509,23 @@ def init_global_tractography_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffi
     tck_global = pe.Node(GlobalTractography(**params), name='tck_global')
     workflow.connect([
         (inputnode, create_mif, [
-            ("dwi_file", "dwi_file"),
-            ("bval_file", "bval_file"),
-            ("bvec_file", "bvec_file"),
-            ("b_file", "b_file"),
+            ('dwi_file', 'dwi_file'),
+            ('bval_file', 'bval_file'),
+            ('bvec_file', 'bvec_file'),
+            ('b_file', 'b_file'),
         ]),
-        (create_mif, tck_global, [("mif_file", "dwi_file")]),
-        (inputnode, tck_global, [("dwi_mask", "mask")]),
+        (create_mif, tck_global, [('mif_file', 'dwi_file')]),
+        (inputnode, tck_global, [('dwi_mask', 'mask')]),
         (inputnode, tck_global, [
-            ("wm_txt", "wm_txt"),
-            ("gm_txt", "gm_txt"),
-            ("csf_txt", "csf_txt")]),
+            ('wm_txt', 'wm_txt'),
+            ('gm_txt', 'gm_txt'),
+            ('csf_txt', 'csf_txt')]),
         (tck_global, outputnode, [
-            ("wm_odf", "wm_odf"),
-            ("isotropic_fraction", "isotropic_fraction"),
-            ("tck_file", "tck_file"),
-            ("residual_energy", "residual_energy"),
-            ("wm_odf", "fod_sh_mif"),
+            ('wm_odf', 'wm_odf'),
+            ('isotropic_fraction', 'isotropic_fraction'),
+            ('tck_file', 'tck_file'),
+            ('residual_energy', 'residual_energy'),
+            ('wm_odf', 'fod_sh_mif'),
         ]),
     ])  # fmt:skip
 
@@ -539,8 +539,8 @@ def init_global_tractography_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffi
             name='ds_globalwm_odf',
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, "wm_odf",
-                         ds_globalwm_odf, "in_file")  # fmt:skip
+        workflow.connect(outputnode, 'wm_odf',
+                         ds_globalwm_odf, 'in_file')  # fmt:skip
 
         ds_isotropic_fraction = pe.Node(
             DerivativesDataSink(
@@ -550,8 +550,8 @@ def init_global_tractography_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffi
             name='ds_isotropic_fraction',
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, "isotropic_fraction",
-                         ds_isotropic_fraction, "in_file")  # fmt:skip
+        workflow.connect(outputnode, 'isotropic_fraction',
+                         ds_isotropic_fraction, 'in_file')  # fmt:skip
 
         ds_tck_file = pe.Node(
             DerivativesDataSink(
@@ -562,7 +562,7 @@ def init_global_tractography_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffi
             name='ds_tck_file',
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, "tck_file", ds_tck_file, "in_file")  # fmt:skip
+        workflow.connect(outputnode, 'tck_file', ds_tck_file, 'in_file')  # fmt:skip
 
         ds_residual_energy = pe.Node(
             DerivativesDataSink(
@@ -573,8 +573,8 @@ def init_global_tractography_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffi
             name='ds_residual_energy',
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, "residual_energy",
-                         ds_residual_energy, "in_file")  # fmt:skip
+        workflow.connect(outputnode, 'residual_energy',
+                         ds_residual_energy, 'in_file')  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
@@ -627,10 +627,10 @@ def init_mrtrix_tractography_wf(
     tracking = pe.Node(TckGen(**tracking_params), name='tractography', n_procs=omp_nthreads)
     workflow.connect([
         (inputnode, tracking, [
-            ("fod_sh_mif", "in_file"),
-            ("fod_sh_mif", "seed_dynamic"),
+            ('fod_sh_mif', 'in_file'),
+            ('fod_sh_mif', 'seed_dynamic'),
         ]),
-        (tracking, outputnode, [("out_file", "tck_file")]),
+        (tracking, outputnode, [('out_file', 'tck_file')]),
     ])  # fmt:skip
 
     # Which 5tt image should be used?
@@ -652,11 +652,11 @@ def init_mrtrix_tractography_wf(
 
         tck_sift2 = pe.Node(SIFT2(**sift_params), name='tck_sift2', n_procs=omp_nthreads)
         workflow.connect([
-            (inputnode, tck_sift2, [("fod_sh_mif", "in_fod")]),
-            (tracking, tck_sift2, [("out_file", "in_tracks")]),
+            (inputnode, tck_sift2, [('fod_sh_mif', 'in_fod')]),
+            (tracking, tck_sift2, [('out_file', 'in_tracks')]),
             (tck_sift2, outputnode, [
-                ("out_mu", "mu"),
-                ("out_weights", "sift_weights"),
+                ('out_mu', 'mu'),
+                ('out_weights', 'sift_weights'),
             ]),
         ])  # fmt:skip
 
@@ -751,11 +751,11 @@ def init_mrtrix_connectivity_wf(
     )
     workflow.connect([
         (inputnode, calc_connectivity, [
-            ("tck_file", "in_file"),
-            ("sift_weights", "in_weights"),
-            ("atlas_configs", "atlas_configs"),
+            ('tck_file', 'in_file'),
+            ('sift_weights', 'in_weights'),
+            ('atlas_configs', 'atlas_configs'),
         ]),
-        (calc_connectivity, outputnode, [("connectivity_matfile", "matfile")]),
+        (calc_connectivity, outputnode, [('connectivity_matfile', 'matfile')]),
     ])  # fmt:skip
 
     if not config.execution.skip_odf_reports:
@@ -775,9 +775,9 @@ def init_mrtrix_connectivity_wf(
         )
         workflow.connect([
             (calc_connectivity, plot_connectivity, [
-                ("connectivity_matfile", "connectivity_matfile"),
+                ('connectivity_matfile', 'connectivity_matfile'),
             ]),
-            (plot_connectivity, ds_report_connectivity, [("out_report", "in_file")]),
+            (plot_connectivity, ds_report_connectivity, [('out_report', 'in_file')]),
         ])  # fmt:skip
 
     if qsirecon_suffix:
@@ -799,8 +799,8 @@ def init_mrtrix_connectivity_wf(
             run_without_submitting=True,
         )
         workflow.connect([
-            (calc_connectivity, ds_connectivity, [("connectivity_matfile", "in_file")]),
-            (calc_connectivity, ds_exemplars, [("exemplar_files", "in_file")]),
+            (calc_connectivity, ds_connectivity, [('connectivity_matfile', 'in_file')]),
+            (calc_connectivity, ds_exemplars, [('exemplar_files', 'in_file')]),
         ])  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)

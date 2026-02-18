@@ -916,9 +916,9 @@ class MRTrixAtlasGraph(SimpleInterface):
             name='outputnode',
         )
         workflow.connect([
-            (merge_mats, outputnode, [("out", "matfiles")]),
-            (merge_tcks, outputnode, [("out", "tckfiles")]),
-            (merge_weights, outputnode, [("out", "weights")]),
+            (merge_mats, outputnode, [('out', 'matfiles')]),
+            (merge_tcks, outputnode, [('out', 'tckfiles')]),
+            (merge_weights, outputnode, [('out', 'weights')]),
         ])  # fmt:skip
 
         in_num = 1
@@ -954,24 +954,24 @@ class MRTrixAtlasGraph(SimpleInterface):
                     )
                 )
                 workflow.connect([
-                    (nodes[-1], c2t_nodes[-1], [("out_assignments", "in_assignments")]),
-                    (nodes[-1], merge_mats, [("connectivity_matfile", f"in{in_num}")]),
-                    (nodes[-1], merge_csvs, [("out_file", f"in{in_num}")]),
-                    (c2t_nodes[-1], merge_tcks, [("exemplar_tck", f"in{in_num}")]),
+                    (nodes[-1], c2t_nodes[-1], [('out_assignments', 'in_assignments')]),
+                    (nodes[-1], merge_mats, [('connectivity_matfile', f'in{in_num}')]),
+                    (nodes[-1], merge_csvs, [('out_file', f'in{in_num}')]),
+                    (c2t_nodes[-1], merge_tcks, [('exemplar_tck', f'in{in_num}')]),
                 ])  # fmt:skip
                 if using_weights:
                     workflow.connect([
-                        (c2t_nodes[-1], merge_weights, [("exemplar_weights", f"in{in_num}")]),
+                        (c2t_nodes[-1], merge_weights, [('exemplar_weights', f'in{in_num}')]),
                     ])  # fmt:skip
                 in_num += 1
 
         # Get the exemplar tcks and weights
         workflow.connect([
-            (merge_tcks, merge_exemplars, [("out", "in1")]),
-            (merge_weights, merge_exemplars, [("out", "in2")]),
-            (merge_csvs, merge_exemplars, [("out", "in3")]),
-            (merge_exemplars, compress_exemplars, [("out", "files")]),
-            (compress_exemplars, outputnode, [("out_zip", "exemplar_files")])
+            (merge_tcks, merge_exemplars, [('out', 'in1')]),
+            (merge_weights, merge_exemplars, [('out', 'in2')]),
+            (merge_csvs, merge_exemplars, [('out', 'in3')]),
+            (merge_exemplars, compress_exemplars, [('out', 'files')]),
+            (compress_exemplars, outputnode, [('out_zip', 'exemplar_files')])
         ])  # fmt:skip
 
         workflow.config['execution']['stop_on_first_crash'] = 'true'

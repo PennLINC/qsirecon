@@ -160,10 +160,10 @@ def init_highres_recon_anatomical_wf(
             run_without_submitting=True,
         )
         workflow.connect([
-            (inputnode, ds_fs_5tt_hsvs, [("acpc_preproc", "source_file")]),
-            (inputnode, ds_qsiprep_5tt_hsvs, [("acpc_preproc", "source_file")]),
-            (create_5tt_hsvs, outputnode, [("out_file", "fs_5tt_hsvs")]),
-            (create_5tt_hsvs, ds_fs_5tt_hsvs, [("out_file", "in_file")]),
+            (inputnode, ds_fs_5tt_hsvs, [('acpc_preproc', 'source_file')]),
+            (inputnode, ds_qsiprep_5tt_hsvs, [('acpc_preproc', 'source_file')]),
+            (create_5tt_hsvs, outputnode, [('out_file', 'fs_5tt_hsvs')]),
+            (create_5tt_hsvs, ds_fs_5tt_hsvs, [('out_file', 'in_file')]),
         ])  # fmt:skip
 
         # Transform the 5tt image so it's registered to the QSIRecon AC-PC T1w
@@ -178,25 +178,25 @@ def init_highres_recon_anatomical_wf(
             apply_header_to_5tt = pe.Node(TransformHeader(), name='apply_header_to_5tt')
             workflow.connect([
                 (inputnode, register_fs_to_qsiprep_wf, [
-                    ("acpc_preproc", "inputnode.qsiprep_reference_image"),
-                    ("acpc_brain_mask", "inputnode.qsiprep_reference_mask"),
+                    ('acpc_preproc', 'inputnode.qsiprep_reference_image'),
+                    ('acpc_brain_mask', 'inputnode.qsiprep_reference_mask'),
                 ]),
                 (fs_source, register_fs_to_qsiprep_wf, [
-                    (field, f"inputnode.{field}") for field in FS_FILES_TO_REGISTER
+                    (field, f'inputnode.{field}') for field in FS_FILES_TO_REGISTER
                 ]),
                 (register_fs_to_qsiprep_wf, outputnode, [
-                    ("outputnode.fs_to_qsiprep_transform_mrtrix",
-                        "fs_to_qsiprep_transform_mrtrix"),
-                    ("outputnode.fs_to_qsiprep_transform_itk", "fs_to_qsiprep_transform_itk")
+                    ('outputnode.fs_to_qsiprep_transform_mrtrix',
+                        'fs_to_qsiprep_transform_mrtrix'),
+                    ('outputnode.fs_to_qsiprep_transform_itk', 'fs_to_qsiprep_transform_itk')
                 ] + [
-                    (f"outputnode.{field}", field) for field in FS_FILES_TO_REGISTER
+                    (f'outputnode.{field}', field) for field in FS_FILES_TO_REGISTER
                 ]),
-                (create_5tt_hsvs, apply_header_to_5tt, [("out_file", "in_image")]),
+                (create_5tt_hsvs, apply_header_to_5tt, [('out_file', 'in_image')]),
                 (register_fs_to_qsiprep_wf, apply_header_to_5tt, [
-                    ("outputnode.fs_to_qsiprep_transform_mrtrix", "transform_file"),
+                    ('outputnode.fs_to_qsiprep_transform_mrtrix', 'transform_file'),
                 ]),
-                (apply_header_to_5tt, outputnode, [("out_image", "qsiprep_5tt_hsvs")]),
-                (apply_header_to_5tt, ds_qsiprep_5tt_hsvs, [("out_image", "in_file")]),
+                (apply_header_to_5tt, outputnode, [('out_image', 'qsiprep_5tt_hsvs')]),
+                (apply_header_to_5tt, ds_qsiprep_5tt_hsvs, [('out_image', 'in_file')]),
             ])  # fmt:skip
 
             workflow.__desc__ += 'A hybrid surface/volume segmentation was created [Smith 2020].'
@@ -266,8 +266,8 @@ def init_register_fs_to_qsiprep_wf(
 
     # If there is a mask for the QSIRecon reference image, use it
     if use_qsiprep_reference_mask:
-        workflow.connect(inputnode, "qsiprep_reference_mask",
-                         register_to_qsiprep, "fixed_image_masks")  # fmt:skip
+        workflow.connect(inputnode, 'qsiprep_reference_mask',
+                         register_to_qsiprep, 'fixed_image_masks')  # fmt:skip
 
     # The more recent ANTs mat format isn't compatible with transformconvert.
     # So convert it to ANTs text format with ConvertTransform
@@ -285,27 +285,27 @@ def init_register_fs_to_qsiprep_wf(
     for image_name in FS_FILES_TO_REGISTER:
         transform_nodes[image_name] = pe.Node(TransformHeader(), name='transform_' + image_name)
         workflow.connect([
-            (inputnode, transform_nodes[image_name], [(image_name, "in_image")]),
+            (inputnode, transform_nodes[image_name], [(image_name, 'in_image')]),
             (convert_ants_to_mrtrix_transform,
-             transform_nodes[image_name], [("out_transform", "transform_file")]),
-            (transform_nodes[image_name], outputnode, [("out_image", image_name)])
+             transform_nodes[image_name], [('out_transform', 'transform_file')]),
+            (transform_nodes[image_name], outputnode, [('out_image', image_name)])
         ])  # fmt:skip
 
     workflow.connect([
-        (inputnode, convert_fs_brain, [("brain", "in_file")]),
-        (inputnode, register_to_qsiprep, [("qsiprep_reference_image", "fixed_image")]),
-        (convert_fs_brain, register_to_qsiprep, [("out_file", "moving_image")]),
+        (inputnode, convert_fs_brain, [('brain', 'in_file')]),
+        (inputnode, register_to_qsiprep, [('qsiprep_reference_image', 'fixed_image')]),
+        (convert_fs_brain, register_to_qsiprep, [('out_file', 'moving_image')]),
         (register_to_qsiprep, convert_ants_transform, [
-            (("forward_transforms", _get_first), "in_transform"),
+            (('forward_transforms', _get_first), 'in_transform'),
         ]),
         (register_to_qsiprep, outputnode, [
-            ("composite_transform", "fs_to_qsiprep_transform_itk"),
+            ('composite_transform', 'fs_to_qsiprep_transform_itk'),
         ]),
         (convert_ants_transform, convert_ants_to_mrtrix_transform, [
-            ("out_transform", "in_transform"),
+            ('out_transform', 'in_transform'),
         ]),
         (convert_ants_to_mrtrix_transform, outputnode, [
-            ("out_transform", "fs_to_qsiprep_transform_mrtrix"),
+            ('out_transform', 'fs_to_qsiprep_transform_mrtrix'),
         ]),
     ])  # fmt:skip
 
@@ -422,13 +422,13 @@ def init_dwi_recon_anatomical_workflow(
     reference_grid_wf = init_output_grid_wf()
     workflow.connect([
         (get_template, mask_template, [
-            ("template_file", "in_file_a"),
-            ("mask_file", "in_file_b"),
+            ('template_file', 'in_file_a'),
+            ('mask_file', 'in_file_b'),
         ]),
-        (mask_template, reorient_to_lps, [("out_file", "in_file")]),
-        (inputnode, reference_grid_wf, [("dwi_ref", "inputnode.input_image")]),
-        (reorient_to_lps, reference_grid_wf, [("out_file", "inputnode.template_image")]),
-        (reference_grid_wf, buffernode, [("outputnode.grid_image", "resampling_template")]),
+        (mask_template, reorient_to_lps, [('out_file', 'in_file')]),
+        (inputnode, reference_grid_wf, [('dwi_ref', 'inputnode.input_image')]),
+        (reorient_to_lps, reference_grid_wf, [('out_file', 'inputnode.template_image')]),
+        (reference_grid_wf, buffernode, [('outputnode.grid_image', 'resampling_template')]),
     ])  # fmt:skip
 
     # Missing Freesurfer AND QSIPrep T1ws, or the user wants a DWI-based mask
@@ -441,10 +441,10 @@ def init_dwi_recon_anatomical_workflow(
         mask_b0s = pe.Node(afni.Automask(outputtype='NIFTI_GZ'), name='mask_b0s')
         workflow.connect([
             (inputnode, extract_b0s, [
-                ("dwi_file", "dwi_series"),
-                ("bval_file", "bval_file"),
+                ('dwi_file', 'dwi_series'),
+                ('bval_file', 'bval_file'),
             ]),
-            (extract_b0s, mask_b0s, [("b0_series", "in_file")]),
+            (extract_b0s, mask_b0s, [('b0_series', 'in_file')]),
             (inputnode, outputnode, [(field, field) for field in connect_from_inputnode]),
         ])  # fmt:skip
 
@@ -460,8 +460,8 @@ def init_dwi_recon_anatomical_workflow(
             run_without_submitting=True,
         )
         workflow.connect([
-            (mask_b0s, ds_dwi_mask, [("out_file", "in_file")]),
-            (ds_dwi_mask, outputnode, [("out_file", "dwi_mask")]),
+            (mask_b0s, ds_dwi_mask, [('out_file', 'in_file')]),
+            (ds_dwi_mask, outputnode, [('out_file', 'dwi_mask')]),
         ])  # fmt:skip
 
         workflow = clean_datasinks(workflow, qsirecon_suffix)
@@ -500,19 +500,19 @@ def init_dwi_recon_anatomical_workflow(
             use_qsiprep_reference_mask=False,
         )
         workflow.connect([
-            (inputnode, fs_source, [("subject_id", "subject_id")]),
+            (inputnode, fs_source, [('subject_id', 'subject_id')]),
             (inputnode, register_fs_to_qsiprep_wf, [
-                ("dwi_ref", "inputnode.qsiprep_reference_image"),
+                ('dwi_ref', 'inputnode.qsiprep_reference_image'),
             ]),
             (fs_source, register_fs_to_qsiprep_wf, [
-                (field, "inputnode." + field) for field in FS_FILES_TO_REGISTER
+                (field, 'inputnode.' + field) for field in FS_FILES_TO_REGISTER
             ]),
             (register_fs_to_qsiprep_wf, buffernode, [
-                ("outputnode.brain", "acpc_preproc"),
-                ("outputnode.aseg", "acpc_brain_mask"),
-                ("outputnode.fs_to_qsiprep_transform_mrtrix", "fs_to_qsiprep_transform_mrtrix"),
-                ("outputnode.fs_to_qsiprep_transform_itk", "fs_to_qsiprep_transform_itk"),
-            ] + [("outputnode." + field, field) for field in FS_FILES_TO_REGISTER],
+                ('outputnode.brain', 'acpc_preproc'),
+                ('outputnode.aseg', 'acpc_brain_mask'),
+                ('outputnode.fs_to_qsiprep_transform_mrtrix', 'fs_to_qsiprep_transform_mrtrix'),
+                ('outputnode.fs_to_qsiprep_transform_itk', 'fs_to_qsiprep_transform_itk'),
+            ] + [('outputnode.' + field, field) for field in FS_FILES_TO_REGISTER],
             ),
         ])  # fmt:skip
 
@@ -538,9 +538,9 @@ def init_dwi_recon_anatomical_workflow(
             run_without_submitting=True,
         )
         workflow.connect([
-            (inputnode, apply_header_to_5tt_hsvs, [("fs_5tt_hsvs", "in_image")]),
-            (apply_header_to_5tt_hsvs, buffernode, [("out_image", "qsiprep_5tt_hsvs")]),
-            (apply_header_to_5tt_hsvs, ds_qsiprep_5tt_hsvs, [("out_image", "in_file")]),
+            (inputnode, apply_header_to_5tt_hsvs, [('fs_5tt_hsvs', 'in_image')]),
+            (apply_header_to_5tt_hsvs, buffernode, [('out_image', 'qsiprep_5tt_hsvs')]),
+            (apply_header_to_5tt_hsvs, ds_qsiprep_5tt_hsvs, [('out_image', 'in_file')]),
         ])  # fmt:skip
         workflow.__desc__ += 'A hybrid surface/volume segmentation was created [Smith 2020]. '
 
@@ -601,8 +601,8 @@ def init_dwi_recon_anatomical_workflow(
         )
         workflow.connect([
             (inputnode, resample_mask, [
-                ("acpc_brain_mask", "input_image"),
-                ("dwi_ref", "reference_image"),
+                ('acpc_brain_mask', 'input_image'),
+                ('dwi_ref', 'reference_image'),
             ]),
         ])  # fmt:skip
 
@@ -618,9 +618,9 @@ def init_dwi_recon_anatomical_workflow(
             run_without_submitting=True,
         )
         workflow.connect([
-            (inputnode, ds_resampled_mask, [("dwi_file", "source_file")]),
-            (resample_mask, ds_resampled_mask, [("output_image", "in_file")]),
-            (ds_resampled_mask, buffernode, [("out_file", "dwi_mask")]),
+            (inputnode, ds_resampled_mask, [('dwi_file', 'source_file')]),
+            (resample_mask, ds_resampled_mask, [('output_image', 'in_file')]),
+            (ds_resampled_mask, buffernode, [('out_file', 'dwi_mask')]),
         ])  # fmt:skip
 
     if has_qsiprep_t1w_transforms:
@@ -632,11 +632,11 @@ def init_dwi_recon_anatomical_workflow(
         )
         odf_rois.inputs.input_image = crossing_rois_file
         workflow.connect([
-            (_get_source_node("template_to_acpc_xfm"), odf_rois, [
-                ("template_to_acpc_xfm", "transforms"),
+            (_get_source_node('template_to_acpc_xfm'), odf_rois, [
+                ('template_to_acpc_xfm', 'transforms'),
             ]),
-            (inputnode, odf_rois, [("dwi_file", "reference_image")]),
-            (odf_rois, buffernode, [("output_image", "odf_rois")]),
+            (inputnode, odf_rois, [('dwi_file', 'reference_image')]),
+            (odf_rois, buffernode, [('output_image', 'odf_rois')]),
         ])  # fmt:skip
 
         # Similarly, if we need atlases, transform them into DWI space
@@ -665,7 +665,7 @@ def init_dwi_recon_anatomical_workflow(
                 run_without_submitting=True,
             )
             workflow.connect([
-                (prepare_atlases, extract_atlas_files, [("atlas_configs", "atlas_configs")]),
+                (prepare_atlases, extract_atlas_files, [('atlas_configs', 'atlas_configs')]),
             ])  # fmt:skip
 
             ds_atlas = pe.MapNode(
@@ -712,20 +712,20 @@ def init_dwi_recon_anatomical_workflow(
             )
             workflow.connect([
                 (extract_atlas_files, ds_atlas, [
-                    ("nifti_files", "in_file"),
-                    ("atlases", "seg"),
+                    ('nifti_files', 'in_file'),
+                    ('atlases', 'seg'),
                 ]),
                 (extract_atlas_files, ds_atlas_mifs, [
-                    ("mif_files", "in_file"),
-                    ("atlases", "seg"),
+                    ('mif_files', 'in_file'),
+                    ('atlases', 'seg'),
                 ]),
                 (extract_atlas_files, ds_atlas_mrtrix_lut, [
-                    ("mrtrix_lut_files", "in_file"),
-                    ("atlases", "seg"),
+                    ('mrtrix_lut_files', 'in_file'),
+                    ('atlases', 'seg'),
                 ]),
                 (extract_atlas_files, ds_atlas_orig_lut, [
-                    ("orig_lut_files", "in_file"),
-                    ("atlases", "seg"),
+                    ('orig_lut_files', 'in_file'),
+                    ('atlases', 'seg'),
                 ]),
             ])  # fmt:skip
 
@@ -735,13 +735,13 @@ def init_dwi_recon_anatomical_workflow(
                 run_without_submitting=True,
             )
             workflow.connect([
-                (prepare_atlases, recombine_atlas_configs, [("atlas_configs", "atlas_configs")]),
-                (extract_atlas_files, recombine_atlas_configs, [("atlases", "atlases")]),
-                (ds_atlas, recombine_atlas_configs, [("out_file", "nifti_files")]),
-                (ds_atlas_mifs, recombine_atlas_configs, [("out_file", "mif_files")]),
-                (ds_atlas_mrtrix_lut, recombine_atlas_configs, [("out_file", "mrtrix_lut_files")]),
-                (ds_atlas_orig_lut, recombine_atlas_configs, [("out_file", "orig_lut_files")]),
-                (recombine_atlas_configs, buffernode, [("atlas_configs", "atlas_configs")]),
+                (prepare_atlases, recombine_atlas_configs, [('atlas_configs', 'atlas_configs')]),
+                (extract_atlas_files, recombine_atlas_configs, [('atlases', 'atlases')]),
+                (ds_atlas, recombine_atlas_configs, [('out_file', 'nifti_files')]),
+                (ds_atlas_mifs, recombine_atlas_configs, [('out_file', 'mif_files')]),
+                (ds_atlas_mrtrix_lut, recombine_atlas_configs, [('out_file', 'mrtrix_lut_files')]),
+                (ds_atlas_orig_lut, recombine_atlas_configs, [('out_file', 'orig_lut_files')]),
+                (recombine_atlas_configs, buffernode, [('atlas_configs', 'atlas_configs')]),
             ])  # fmt:skip
 
             # Fill in the atlas datasinks
@@ -749,7 +749,7 @@ def init_dwi_recon_anatomical_workflow(
                 node_suffix = node.split('.')[-1]
                 if node_suffix.startswith('ds_atlas'):
                     workflow.connect([
-                        (inputnode, workflow.get_node(node), [("dwi_file", "source_file")]),
+                        (inputnode, workflow.get_node(node), [('dwi_file', 'source_file')]),
                     ])  # fmt:skip
 
     if 'mrtrix_5tt_hsvs' in extras_to_make and not has_qsiprep_5tt_hsvs:
@@ -804,12 +804,12 @@ def init_output_grid_wf() -> Workflow:
     )
 
     workflow.connect([
-        (inputnode, autobox_template, [("template_image", "in_file")]),
-        (autobox_template, deoblique_autobox, [("out_file", "in_file")]),
-        (deoblique_autobox, resample_to_voxel_size, [("out_file", "in_file")]),
-        (resample_to_voxel_size, outputnode, [("out_file", "grid_image")]),
-        (inputnode, voxel_size_chooser, [("input_image", "input_image")]),
-        (voxel_size_chooser, resample_to_voxel_size, [(("voxel_size", _tupleize), "voxel_size")])
+        (inputnode, autobox_template, [('template_image', 'in_file')]),
+        (autobox_template, deoblique_autobox, [('out_file', 'in_file')]),
+        (deoblique_autobox, resample_to_voxel_size, [('out_file', 'in_file')]),
+        (resample_to_voxel_size, outputnode, [('out_file', 'grid_image')]),
+        (inputnode, voxel_size_chooser, [('input_image', 'input_image')]),
+        (voxel_size_chooser, resample_to_voxel_size, [(('voxel_size', _tupleize), 'voxel_size')])
     ])  # fmt:skip
 
     return workflow

@@ -73,17 +73,17 @@ def init_scalar_to_bundle_wf(inputs_dict, name='scalar_to_bundle', qsirecon_suff
     )
     workflow.connect([
         (inputnode, bundle_mapper, [
-            ("collected_scalars", "recon_scalars"),
-            ("tck_files", "tck_files"),
-            ("dwi_ref", "dwiref_image"),
-            ("mapping_metadata", "mapping_metadata"),
-            ("bundle_names", "bundle_names")]),
+            ('collected_scalars', 'recon_scalars'),
+            ('tck_files', 'tck_files'),
+            ('dwi_ref', 'dwiref_image'),
+            ('mapping_metadata', 'mapping_metadata'),
+            ('bundle_names', 'bundle_names')]),
         (bundle_mapper, ds_bundle_mapper, [
-            ("bundle_summary", "summary_tsv")]),
+            ('bundle_summary', 'summary_tsv')]),
         (bundle_mapper, outputnode, [
-            ("bundle_summary", "bundle_summary")]),
+            ('bundle_summary', 'bundle_summary')]),
         (bundle_mapper, ds_tdi_summary, [
-            ("tdi_stats", "summary_tsv")])
+            ('tdi_stats', 'summary_tsv')])
     ])  # fmt:skip
 
     # NOTE: Don't add qsirecon_suffix with clean_datasinks here,
@@ -138,11 +138,11 @@ def init_scalar_to_atlas_wf(
     )
     workflow.connect([
         (inputnode, scalar_parcellator, [
-            ("collected_scalars", "scalars_config"),
-            ("mapping_metadata", "mapping_metadata"),
-            ("dwi_mask", "brain_mask"),
+            ('collected_scalars', 'scalars_config'),
+            ('mapping_metadata', 'mapping_metadata'),
+            ('dwi_mask', 'brain_mask'),
         ]),
-        (split_atlas_configs, scalar_parcellator, [("atlas_configs", "atlas_config")]),
+        (split_atlas_configs, scalar_parcellator, [('atlas_configs', 'atlas_config')]),
     ])  # fmt:skip
 
     ds_parcellated_scalars = pe.MapNode(
@@ -157,9 +157,9 @@ def init_scalar_to_atlas_wf(
     )
     workflow.connect([
         (scalar_parcellator, ds_parcellated_scalars, [
-            ("parcellated_scalar_tsv", "in_file"),
-            ("metadata", "meta_dict"),
-            ("seg", "seg"),
+            ('parcellated_scalar_tsv', 'in_file'),
+            ('metadata', 'meta_dict'),
+            ('seg', 'seg'),
         ]),
     ])  # fmt:skip
 
@@ -216,22 +216,22 @@ def init_scalar_to_template_wf(
     )
     workflow.connect([
         (inputnode, template_mapper, [
-            ("collected_scalars", "recon_scalars"),
-            ("acpc_to_template_xfm", "to_template_transform"),
-            ("resampling_template", "template_reference_image"),
+            ('collected_scalars', 'recon_scalars'),
+            ('acpc_to_template_xfm', 'to_template_transform'),
+            ('resampling_template', 'template_reference_image'),
         ]),
-        (template_mapper, outputnode, [("template_space_scalars", "template_scalars")]),
+        (template_mapper, outputnode, [('template_space_scalars', 'template_scalars')]),
     ])  # fmt:skip
 
     scalar_output_wf = init_scalar_output_wf()
     workflow.connect([
-        (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
+        (inputnode, scalar_output_wf, [('dwi_file', 'inputnode.source_file')]),
         (template_mapper, scalar_output_wf, [
-            ("template_space_scalar_info", "inputnode.scalar_configs"),
-            ("template_space", "inputnode.space"),
+            ('template_space_scalar_info', 'inputnode.scalar_configs'),
+            ('template_space', 'inputnode.space'),
         ]),
         (scalar_output_wf, outputnode, [
-            ("outputnode.scalar_configs", "template_recon_scalars"),
+            ('outputnode.scalar_configs', 'template_recon_scalars'),
         ]),
     ])  # fmt:skip
 
