@@ -12,7 +12,7 @@ import os.path as op
 import time
 from pathlib import Path
 
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -240,7 +240,7 @@ class InteractiveReport(SimpleInterface):
 
 
 def _filename_to_colors(labels_column, colormap='rainbow'):
-    cmap = matplotlib.cm.get_cmap(colormap)
+    cmap = mpl.cm.get_cmap(colormap)
     labels, _ = pd.factorize(labels_column)
     n_samples = labels.shape[0]
     max_label = labels.max()
