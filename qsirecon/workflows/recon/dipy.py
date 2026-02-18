@@ -688,6 +688,7 @@ def init_dipy_dki_recon_wf(inputs_dict, name="dipy_dki_recon", qsirecon_suffix="
     --------
     :class:`qsirecon.interfaces.dipy.KurtosisReconstruction`
     :class:`qsirecon.interfaces.dipy.KurtosisReconstructionMicrostructure`
+    :class:`qsirecon.interfaces.dipy.KurtosisReconstructionMSDKI`
     :class:`qsirecon.interfaces.recon_scalars.DIPYDKIReconScalars`
     """
     workflow = Workflow(name=name)

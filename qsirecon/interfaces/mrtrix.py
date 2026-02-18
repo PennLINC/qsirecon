@@ -204,9 +204,11 @@ class Dwi2ResponseInputSpec(ResponseSDInputSpec):
         argstr="-lmax %s",
         sep=",",
         desc=(
-            "maximum harmonic degree of response function - single value for "
-            "single-shell response, list for multi-shell response"
+            "Maximum harmonic degree of response function - a single value for "
+            "single-shell response, list for multi-shell response. "
+            "This can be set with fod['max_sh'] in the reconstruction specification."
         ),
+        recon_spec_accessible=True,
     )
 
 
@@ -338,7 +340,16 @@ class MTNormalize(SS3TBase):
 
 class EstimateFODInputSpec(MRTrix3BaseInputSpec):
     algorithm = traits.Enum(
-        "csd", "msmt_csd", argstr="%s", position=-8, mandatory=True, desc="FOD algorithm"
+        "csd",
+        "msmt_csd",
+        argstr="%s",
+        position=-8,
+        mandatory=True,
+        desc=(
+            "FOD algorithm. This can be set with fod['algorithm'] in the reconstruction "
+            "specification."
+        ),
+        recon_spec_accessible=True,
     )
     in_file = File(exists=True, argstr="%s", position=-7, mandatory=True, desc="input DWI image")
     wm_txt = File(argstr="%s", position=-6, mandatory=True, desc="WM response text file")

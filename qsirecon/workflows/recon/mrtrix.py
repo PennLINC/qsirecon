@@ -57,45 +57,55 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
     This workflow uses mrtrix tools to run csd on multishell data. At the end,
     mtnormalise is run.
 
+    Parameters
+    ----------
+    params : dict
+        Parameters for the workflow. The following keys are supported:
+        -   response : dict. Parameters for estimating the response function.
+            The following keys are supported:
+
+            -   algorithm : str. The algorithm to use for response function estimation.
+                Supported values are "dhollander" and "msmt_5tt".
+            -   method_5tt : str. The method to use for 5tt segmentation.
+                Supported values are "hsvs".
+        -   fod : dict. Parameters for dwi2fod. The following keys are supported:
+
+            -   algorithm : str. The algorithm to use for FOD estimation.
+                Supported values are "msmt_csd" and "ss3t_csd".
+            -   max_sh : list. The maximum harmonic degree of the response function.
+        -   mtnormalize : bool. Should the FODs be mtnormalized?
+
     Inputs
-
-        *Default qsirecon inputs*
-
-        qsiprep_5tt_hsvs
-            A hybrid surface volume segmentation 5tt image aligned with the
-            QSIRecon T1w
-
+    ------
+    *Default qsirecon inputs*
+    qsiprep_5tt_hsvs
+        A hybrid surface volume segmentation 5tt image aligned with the
+        QSIRecon T1w
 
     Outputs
+    -------
+    wm_txt
+        SH fiber response function for white matter
+    wm_fod
+        FOD SH coefficients for white matter
+    gm_txt
+        SH fiber response function for gray matter
+    gm_fod
+        FOD SH coefficients for gray matter
+    csf_txt
+        SH fiber response function for CSF
+    csf_fod
+        FOD SH coefficients for CSF
+    fod_sh_mif
+        The same file as wm_fod.
 
-        wm_txt
-            SH fiber response function for white matter
-        wm_fod
-            FOD SH coefficients for white matter
-        gm_txt
-            SH fiber response function for gray matter
-        gm_fod
-            FOD SH coefficients for gray matter
-        csf_txt
-            SH fiber response function for CSF
-        csf_fod
-            FOD SH coefficients for CSF
-        fod_sh_mif
-            The same file as wm_fod.
-
-
-    Params
-
-        response: dict
-            parameters for estimating the response function. A minimal example would be
-            ``{"algorighm": "dhollander"}``
-        fod: dict
-            parameters for dwi2fod. A minimal example would be
-            ``{"algorithm": "msmt_csd", "max_sh": [6, 8, 8]}``.
-        mtnormalize: bool
-            Should the FODs be mtnormalized?
-
-
+    See Also
+    --------
+    :class:`qsirecon.interfaces.mrtrix.MRTrixIngress`
+    :class:`qsirecon.interfaces.mrtrix.EstimateFOD`
+    :class:`qsirecon.interfaces.mrtrix.SS3TDwi2Response`
+    :class:`qsirecon.interfaces.mrtrix.SS3TEstimateFOD`
+    :class:`qsirecon.interfaces.mrtrix.MTNormalize`
     """
     workflow = Workflow(name=name)
     suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""

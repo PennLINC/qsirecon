@@ -6,6 +6,24 @@
 Mean Apparent Propagator MRI (MAP-MRI)
 ######################################
 
+
+*******************
+MAP-MRI in QSIRecon
+*******************
+
+MAPMRI reconstruction is supported in QSIRecon using the
+DIPY package (see :func:`~qsirecon.workflows.recon.dipy.init_dipy_mapmri_recon_wf`)
+or the TORTOISE package (see :func:`~qsirecon.workflows.recon.tortoise.init_tortoise_estimator_wf`).
+
+The DIPY approach is accessible in a reconstruction specification by using a node with
+``action: MAPMRI_reconstruction`` and ``software: Dipy``.
+Also see :class:`qsirecon.interfaces.dipy.MAPMRIReconstruction`.
+
+The TORTOISE approach is accessible in a reconstruction specification by using a node with
+``action: estimate``, ``software: TORTOISE``, and the ``parameters: estimate_mapmri`` subdictionary.
+Also see :class:`qsirecon.interfaces.tortoise.EstimateMAPMRI`.
+
+
 ***************************
 MAP-MRI Foundational Papers
 ***************************

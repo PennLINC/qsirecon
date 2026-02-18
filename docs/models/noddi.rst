@@ -7,6 +7,15 @@ Neurite Orientation Dispersion and Density Imaging (NODDI)
 ##########################################################
 
 
+*****************
+NODDI in QSIRecon
+*****************
+
+QSIRecon supports NODDI reconstruction using the AMICO package: see :func:`~qsirecon.workflows.recon.amico.init_amico_noddi_fit_wf`.
+This is accessible in a reconstruction specification by using a node with ``action: fit_noddi`` and ``software: AMICO``.
+Also see :class:`~qsirecon.interfaces.amico.NODDI`.
+
+
 *************************
 NODDI Foundational Papers
 *************************
