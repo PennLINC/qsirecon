@@ -11,7 +11,7 @@ def check_deps(workflow):
     return sorted(
         (node.interface.__class__.__name__, node.interface._cmd)
         for node in workflow._get_all_nodes()
-        if (hasattr(node.interface, "_cmd") and which(node.interface._cmd.split()[0]) is None)
+        if (hasattr(node.interface, '_cmd') and which(node.interface._cmd.split()[0]) is None)
     )
 
 
@@ -26,7 +26,7 @@ def remove_non_alphanumeric(input_string: str) -> str:
     # Replace all non-alphanumeric characters with an empty string
     import re
 
-    cleaned_string = re.sub(r"[^a-zA-Z0-9]", "", input_string)
+    cleaned_string = re.sub(r'[^a-zA-Z0-9]', '', input_string)
     return cleaned_string
 
 
@@ -75,10 +75,10 @@ def bids_response_function_to_mrtrix(json_file):
 
     import numpy as np
 
-    with open(json_file, "r") as f:
+    with open(json_file, 'r') as f:
         json_data = json.load(f)
 
-    return np.array(json_data["ResponseFunction"]["Coefficients"])
+    return np.array(json_data['ResponseFunction']['Coefficients'])
 
 
 def mrtrix_response_function_to_bids(response_function_file):

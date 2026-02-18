@@ -36,20 +36,20 @@ def test_mrtrix_singleshell_ss3t_fod_autotrack(data_dir, output_dir, working_dir
     ------
     - qsirecon single shell results
     """
-    TEST_NAME = "ss3t_fod_autotrack"
+    TEST_NAME = 'ss3t_fod_autotrack'
 
-    dataset_dir = download_test_data("singleshell_output", data_dir)
-    dataset_dir = os.path.join(dataset_dir, "qsiprep")
+    dataset_dir = download_test_data('singleshell_output', data_dir)
+    dataset_dir = os.path.join(dataset_dir, 'qsiprep')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        "--recon-spec=ss3t_fod_autotrack",
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=ss3t_fod_autotrack',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -74,22 +74,22 @@ def test_mrtrix_singleshell_ss3t_act(data_dir, output_dir, working_dir):
     ------
     - qsirecon single shell results (data/DSDTI_fmap)
     """
-    TEST_NAME = "mrtrix_singleshell_ss3t_act"
+    TEST_NAME = 'mrtrix_singleshell_ss3t_act'
 
-    dataset_dir = download_test_data("singleshell_output", data_dir)
-    dataset_dir = os.path.join(dataset_dir, "qsiprep")
+    dataset_dir = download_test_data('singleshell_output', data_dir)
+    dataset_dir = os.path.join(dataset_dir, 'qsiprep')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        "--recon-spec=mrtrix_singleshell_ss3t_ACT-fast",
-        "--atlases",
-        "Gordon333Ext",
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=mrtrix_singleshell_ss3t_ACT-fast',
+        '--atlases',
+        'Gordon333Ext',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -108,25 +108,25 @@ def test_mrtrix_multishell_msmt_hsvs(data_dir, output_dir, working_dir):
     - hsvs input data (data/araikes/qsiprep, data/araikes/freesurfer)
     """
 
-    TEST_NAME = "mrtrix_multishell_msmt_hsvs"
+    TEST_NAME = 'mrtrix_multishell_msmt_hsvs'
 
-    dataset_dir = download_test_data("hsvs_data", data_dir)
-    qsiprep_dir = os.path.join(dataset_dir, "araikes/qsiprep")
-    freesurfer_dir = os.path.join(dataset_dir, "araikes/freesurfer")
+    dataset_dir = download_test_data('hsvs_data', data_dir)
+    qsiprep_dir = os.path.join(dataset_dir, 'araikes/qsiprep')
+    freesurfer_dir = os.path.join(dataset_dir, 'araikes/freesurfer')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         qsiprep_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        f"--fs-subjects-dir={freesurfer_dir}",
-        "--recon-spec=mrtrix_multishell_msmt_ACT-hsvs",
-        "--atlases",
-        "AAL116",
-        "--report-output-level=root",
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        f'--fs-subjects-dir={freesurfer_dir}',
+        '--recon-spec=mrtrix_multishell_msmt_ACT-hsvs',
+        '--atlases',
+        'AAL116',
+        '--report-output-level=root',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -152,26 +152,26 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
     - qsirecon multi shell results (data/DSDTI_fmap)
     - custom atlases (data/custom_atlases)
     """
-    TEST_NAME = "mrtrix_singleshell_ss3t_noact"
+    TEST_NAME = 'mrtrix_singleshell_ss3t_noact'
 
-    dataset_dir = download_test_data("singleshell_output", data_dir)
-    dataset_dir = os.path.join(dataset_dir, "qsiprep")
-    custom_atlases_dir = download_test_data("custom_atlases", data_dir)
+    dataset_dir = download_test_data('singleshell_output', data_dir)
+    dataset_dir = os.path.join(dataset_dir, 'qsiprep')
+    custom_atlases_dir = download_test_data('custom_atlases', data_dir)
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        "--recon-spec=mrtrix_singleshell_ss3t_noACT",
-        "--atlases",
-        "AAL116",
-        "carpet",
-        "--report-output-level=subject",
-        f"--datasets={custom_atlases_dir}",
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=mrtrix_singleshell_ss3t_noACT',
+        '--atlases',
+        'AAL116',
+        'carpet',
+        '--report-output-level=subject',
+        f'--datasets={custom_atlases_dir}',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -181,21 +181,21 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
 @pytest.mark.multises_post1_qsiprep
 def test_multises_post1_qsiprep_reportroot(data_dir, output_dir, working_dir):
     """Test reading inputs from post-1.0.0rc0 qsiprep"""
-    TEST_NAME = "multises_post1_qsiprep_reportroot"
+    TEST_NAME = 'multises_post1_qsiprep_reportroot'
 
-    dataset_dir = download_test_data("multises_post1_output", data_dir)
+    dataset_dir = download_test_data('multises_post1_output', data_dir)
 
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "derivatives")
+    dataset_dir = os.path.join(dataset_dir, 'derivatives')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--recon-spec=test_workflow",
+        'participant',
+        f'-w={work_dir}',
+        '--recon-spec=test_workflow',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -205,22 +205,22 @@ def test_multises_post1_qsiprep_reportroot(data_dir, output_dir, working_dir):
 @pytest.mark.multises_post1_qsiprep
 def test_multises_post1_qsiprep_reportsubject(data_dir, output_dir, working_dir):
     """Test reading inputs from post-1.0.0rc0 qsiprep"""
-    TEST_NAME = "multises_post1_qsiprep_reportsubject"
+    TEST_NAME = 'multises_post1_qsiprep_reportsubject'
 
-    dataset_dir = download_test_data("multises_post1_output", data_dir)
+    dataset_dir = download_test_data('multises_post1_output', data_dir)
 
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "derivatives")
+    dataset_dir = os.path.join(dataset_dir, 'derivatives')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--report-output-level=subject",
-        "--recon-spec=test_workflow",
+        'participant',
+        f'-w={work_dir}',
+        '--report-output-level=subject',
+        '--recon-spec=test_workflow',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -230,22 +230,22 @@ def test_multises_post1_qsiprep_reportsubject(data_dir, output_dir, working_dir)
 @pytest.mark.multises_post1_qsiprep
 def test_multises_post1_qsiprep_reportsession(data_dir, output_dir, working_dir):
     """Test reading inputs from post-1.0.0rc0 qsiprep"""
-    TEST_NAME = "multises_post1_qsiprep_reportsession"
+    TEST_NAME = 'multises_post1_qsiprep_reportsession'
 
-    dataset_dir = download_test_data("multises_post1_output", data_dir)
+    dataset_dir = download_test_data('multises_post1_output', data_dir)
 
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "derivatives")
+    dataset_dir = os.path.join(dataset_dir, 'derivatives')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--report-output-level=session",
-        "--recon-spec=test_workflow",
+        'participant',
+        f'-w={work_dir}',
+        '--report-output-level=session',
+        '--recon-spec=test_workflow',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -255,21 +255,21 @@ def test_multises_post1_qsiprep_reportsession(data_dir, output_dir, working_dir)
 @pytest.mark.multises_pre1_qsiprep
 def test_multises_pre1_qsiprep_reportroot(data_dir, output_dir, working_dir):
     """Test reading inputs from post-1.0.0rc0 qsiprep"""
-    TEST_NAME = "multises_pre1_qsiprep_reportroot"
+    TEST_NAME = 'multises_pre1_qsiprep_reportroot'
 
-    dataset_dir = download_test_data("multises_pre1_output", data_dir)
+    dataset_dir = download_test_data('multises_pre1_output', data_dir)
 
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "derivatives")
+    dataset_dir = os.path.join(dataset_dir, 'derivatives')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--recon-spec=test_workflow",
+        'participant',
+        f'-w={work_dir}',
+        '--recon-spec=test_workflow',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -279,22 +279,22 @@ def test_multises_pre1_qsiprep_reportroot(data_dir, output_dir, working_dir):
 @pytest.mark.multises_pre1_qsiprep
 def test_multises_pre1_qsiprep_reportsubject(data_dir, output_dir, working_dir):
     """Test reading inputs from pre-1.0.0rc0 qsiprep"""
-    TEST_NAME = "multises_pre1_qsiprep_reportsubject"
+    TEST_NAME = 'multises_pre1_qsiprep_reportsubject'
 
-    dataset_dir = download_test_data("multises_pre1_output", data_dir)
+    dataset_dir = download_test_data('multises_pre1_output', data_dir)
 
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "derivatives")
+    dataset_dir = os.path.join(dataset_dir, 'derivatives')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--report-output-level=subject",
-        "--recon-spec=test_workflow",
+        'participant',
+        f'-w={work_dir}',
+        '--report-output-level=subject',
+        '--recon-spec=test_workflow',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -304,22 +304,22 @@ def test_multises_pre1_qsiprep_reportsubject(data_dir, output_dir, working_dir):
 @pytest.mark.multises_pre1_qsiprep
 def test_multises_pre1_qsiprep_reportsession(data_dir, output_dir, working_dir):
     """Test reading inputs from pre-1.0.0rc0 qsiprep"""
-    TEST_NAME = "multises_pre1_qsiprep_reportsession"
+    TEST_NAME = 'multises_pre1_qsiprep_reportsession'
 
-    dataset_dir = download_test_data("multises_pre1_output", data_dir)
+    dataset_dir = download_test_data('multises_pre1_output', data_dir)
 
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "derivatives")
+    dataset_dir = os.path.join(dataset_dir, 'derivatives')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--report-output-level=session",
-        "--recon-spec=test_workflow",
+        'participant',
+        f'-w={work_dir}',
+        '--report-output-level=session',
+        '--recon-spec=test_workflow',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -343,22 +343,22 @@ def test_amico_noddi(data_dir, output_dir, working_dir):
     ------
     - DSDTI BIDS data (data/singleshell_output)
     """
-    TEST_NAME = "amico_noddi"
+    TEST_NAME = 'amico_noddi'
 
-    dataset_dir = download_test_data("singleshell_output", data_dir)
+    dataset_dir = download_test_data('singleshell_output', data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, 'qsiprep')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        "--recon-spec=amico_noddi",
-        "--report-output-level=session",
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=amico_noddi',
+        '--report-output-level=session',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -383,21 +383,21 @@ def test_autotrack(data_dir, output_dir, working_dir):
     ------
     - DSDTI BIDS data (data/multishell_output)
     """
-    TEST_NAME = "autotrack"
+    TEST_NAME = 'autotrack'
 
-    dataset_dir = download_test_data("multishell_output", data_dir)
+    dataset_dir = download_test_data('multishell_output', data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        "--recon-spec=dsi_studio_autotrack",
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=dsi_studio_autotrack',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -412,24 +412,24 @@ def test_dsi_studio_gqi_recon(data_dir, output_dir, working_dir):
     ------
     - qsirecon multi shell results (data/DSDTI_fmap)
     """
-    TEST_NAME = "dsi_studio_gqi_recon"
+    TEST_NAME = 'dsi_studio_gqi_recon'
 
-    dataset_dir = download_test_data("multishell_output", data_dir)
+    dataset_dir = download_test_data('multishell_output', data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        "--recon-spec=dsi_studio_gqi",
-        "--atlases",
-        "4S156Parcels",
-        "Brainnetome246Ext",
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=dsi_studio_gqi',
+        '--atlases',
+        '4S156Parcels',
+        'Brainnetome246Ext',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -456,22 +456,22 @@ def test_dipy_mapmri(data_dir, output_dir, working_dir):
     - qsirecon single shell results (data/DSDTI_fmap)
     - qsirecon multi shell results (data/DSDTI_fmap)
     """
-    TEST_NAME = "dipy_mapmri"
+    TEST_NAME = 'dipy_mapmri'
 
-    dataset_dir = download_test_data("multishell_output", data_dir)
+    dataset_dir = download_test_data('multishell_output', data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        "--recon-spec=dipy_mapmri",
-        "--output-resolution=5",
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=dipy_mapmri',
+        '--output-resolution=5',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -498,21 +498,21 @@ def test_dipy_dki(data_dir, output_dir, working_dir):
     - qsirecon single shell results (data/DSDTI_fmap)
     - qsirecon multi shell results (data/DSDTI_fmap)
     """
-    TEST_NAME = "dipy_dki"
+    TEST_NAME = 'dipy_dki'
 
-    dataset_dir = download_test_data("multishell_output", data_dir)
+    dataset_dir = download_test_data('multishell_output', data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        "--recon-spec=dipy_dki",
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=dipy_dki',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -529,26 +529,26 @@ def test_scalar_mapper(data_dir, output_dir, working_dir):
     ------
     - qsirecon multi shell results (data/DSDTI_fmap)
     """
-    TEST_NAME = "scalar_mapper"
+    TEST_NAME = 'scalar_mapper'
 
-    dataset_dir = download_test_data("multishell_output", data_dir)
+    dataset_dir = download_test_data('multishell_output', data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        "--recon-spec=test_scalar_maps",
-        "--output-resolution=3.5",
-        "--nthreads=1",
-        "--atlases",
-        "4S156Parcels",
-        "Brainnetome246Ext",
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=test_scalar_maps',
+        '--output-resolution=3.5',
+        '--nthreads=1',
+        '--atlases',
+        '4S156Parcels',
+        'Brainnetome246Ext',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -568,21 +568,21 @@ def test_pyafq_recon_external_trk(data_dir, output_dir, working_dir):
     ------
     - qsirecon multi shell results (data/DSDTI_fmap)
     """
-    TEST_NAME = "pyafq_recon_external_trk"
+    TEST_NAME = 'pyafq_recon_external_trk'
 
-    dataset_dir = download_test_data("multishell_output", data_dir)
+    dataset_dir = download_test_data('multishell_output', data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        "--recon-spec=mrtrix_multishell_msmt_pyafq_tractometry",
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=mrtrix_multishell_msmt_pyafq_tractometry',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -602,21 +602,21 @@ def test_pyafq_recon_full(data_dir, output_dir, working_dir):
     ------
     - qsirecon multi shell results (data/DSDTI_fmap)
     """
-    TEST_NAME = "pyafq_recon_full"
+    TEST_NAME = 'pyafq_recon_full'
 
-    dataset_dir = download_test_data("multishell_output", data_dir)
+    dataset_dir = download_test_data('multishell_output', data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        "--recon-spec=pyafq_tractometry",
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=pyafq_tractometry',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -640,23 +640,23 @@ def test_mrtrix3_recon(data_dir, output_dir, working_dir):
     - qsirecon single shell results (data/DSDTI_fmap)
     - qsirecon multi shell results (data/DSDTI_fmap)
     """
-    TEST_NAME = "mrtrix3_recon"
+    TEST_NAME = 'mrtrix3_recon'
 
-    dataset_dir = download_test_data("multishell_output", data_dir)
+    dataset_dir = download_test_data('multishell_output', data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        "--recon-spec=mrtrix_multishell_msmt_ACT-fast",
-        "--atlases",
-        "4S156Parcels",
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=mrtrix_multishell_msmt_ACT-fast',
+        '--atlases',
+        '4S156Parcels',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -673,21 +673,21 @@ def test_tortoise_recon(data_dir, output_dir, working_dir):
     ------
     - qsirecon multi shell results (data/DSDTI_fmap)
     """
-    TEST_NAME = "tortoise_recon"
+    TEST_NAME = 'tortoise_recon'
 
-    dataset_dir = download_test_data("multishell_output", data_dir)
+    dataset_dir = download_test_data('multishell_output', data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
     parameters = [
         dataset_dir,
         out_dir,
-        "participant",
-        f"-w={work_dir}",
-        "--sloppy",
-        "--recon-spec=TORTOISE",
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=TORTOISE',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -706,90 +706,90 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
 
     import numpy as np
 
-    TEST_NAME = "mrtrix3_recon_with_response_functions"
+    TEST_NAME = 'mrtrix3_recon_with_response_functions'
 
-    dataset_dir = download_test_data("multishell_output", data_dir)
+    dataset_dir = download_test_data('multishell_output', data_dir)
     # XXX: Having to modify dataset_dirs is suboptimal.
-    dataset_dir = os.path.join(dataset_dir, "multishell_output", "qsiprep")
+    dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
     test_dir = os.path.join(output_dir, TEST_NAME)
 
-    estimate_work_dir = os.path.join(working_dir, f"{TEST_NAME}_estimate")
-    estimate_dir = os.path.join(test_dir, "estimate")
+    estimate_work_dir = os.path.join(working_dir, f'{TEST_NAME}_estimate')
+    estimate_dir = os.path.join(test_dir, 'estimate')
     parameters = [
         dataset_dir,
         estimate_dir,
-        "participant",
-        f"-w={estimate_work_dir}",
-        "--sloppy",
-        "--recon-spec=mrtrix_multishell_msmt_noACT_estimate",
+        'participant',
+        f'-w={estimate_work_dir}',
+        '--sloppy',
+        '--recon-spec=mrtrix_multishell_msmt_noACT_estimate',
     ]
 
-    _run_and_generate(f"{TEST_NAME}_estimate", parameters, test_main=False)
+    _run_and_generate(f'{TEST_NAME}_estimate', parameters, test_main=False)
 
     # Now convert the response functions from JSON to MRtrix format
-    for tissue in ["wm", "gm", "csf"]:
+    for tissue in ['wm', 'gm', 'csf']:
         label = tissue.upper()
         json_file = os.path.join(
             estimate_dir,
-            "derivatives",
-            "qsirecon-MRtrix3_act-None_response-subject",
-            "sub-ABCD",
-            "dwi",
-            f"sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-{label}_dwimap.json",
+            'derivatives',
+            'qsirecon-MRtrix3_act-None_response-subject',
+            'sub-ABCD',
+            'dwi',
+            f'sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-{label}_dwimap.json',
         )
         assert os.path.exists(json_file)
         arr = bids_response_function_to_mrtrix(json_file)
-        txt_file = os.path.join(test_dir, f"{tissue}.txt")
-        with open(txt_file, "w") as f:
+        txt_file = os.path.join(test_dir, f'{tissue}.txt')
+        with open(txt_file, 'w') as f:
             np.savetxt(f, arr)
 
     # Now apply the response functions
-    apply_work_dir = os.path.join(working_dir, f"{TEST_NAME}_apply")
-    apply_dir = os.path.join(test_dir, "apply")
+    apply_work_dir = os.path.join(working_dir, f'{TEST_NAME}_apply')
+    apply_dir = os.path.join(test_dir, 'apply')
     parameters = [
         dataset_dir,
         apply_dir,
-        "participant",
-        f"-w={apply_work_dir}",
-        "--sloppy",
-        "--recon-spec=mrtrix_multishell_msmt_noACT_apply",
-        "--recon-spec-aux-files",
+        'participant',
+        f'-w={apply_work_dir}',
+        '--sloppy',
+        '--recon-spec=mrtrix_multishell_msmt_noACT_apply',
+        '--recon-spec-aux-files',
         test_dir,
-        "--atlases",
-        "Gordon333Ext",
+        '--atlases',
+        'Gordon333Ext',
     ]
-    _run_and_generate(f"{TEST_NAME}_apply", parameters, test_main=False)
+    _run_and_generate(f'{TEST_NAME}_apply', parameters, test_main=False)
 
 
 def _run_and_generate(test_name, parameters, test_main=False):
     from qsirecon import config
 
     # TODO: Add --clean-workdir param to CLI
-    parameters.append("--stop-on-first-crash")
-    parameters.append("--notrack")
-    parameters.append("-vv")
+    parameters.append('--stop-on-first-crash')
+    parameters.append('--notrack')
+    parameters.append('-vv')
 
     if test_main:
         # This runs, but for some reason doesn't count toward coverage.
-        argv = ["qsirecon"] + parameters
-        with patch.object(sys, "argv", argv):
+        argv = ['qsirecon'] + parameters
+        with patch.object(sys, 'argv', argv):
             with pytest.raises(SystemExit) as e:
                 run.main()
 
             assert e.value.code == 0
     else:
         parse_args(parameters)
-        config_file = config.execution.work_dir / f"config-{config.execution.run_uuid}.toml"
-        config.loggers.cli.warning(f"Saving config file to {config_file}")
+        config_file = config.execution.work_dir / f'config-{config.execution.run_uuid}.toml'
+        config.loggers.cli.warning(f'Saving config file to {config_file}')
         config.execution.fs_license_file = freesurfer_license(config.execution.work_dir)
         config.to_filename(config_file)
 
         retval = build_workflow(config_file, retval={})
-        qsirecon_wf = retval["workflow"]
+        qsirecon_wf = retval['workflow']
         build_boilerplate(str(config_file), qsirecon_wf)
         config.loggers.workflow.log(
             15,
-            "\n".join(["config:"] + ["\t\t%s" % s for s in config.dumps().splitlines()]),
+            '\n'.join(['config:'] + ['\t\t%s' % s for s in config.dumps().splitlines()]),
         )
 
         qsirecon_wf.run(**config.nipype.get_plugin())
@@ -801,25 +801,25 @@ def _run_and_generate(test_name, parameters, test_main=False):
         )
 
         if config.execution.atlases:
-            write_atlas_dataset_description(config.execution.output_dir / "atlases")
+            write_atlas_dataset_description(config.execution.output_dir / 'atlases')
 
         # Compile list of output folders
         qsirecon_suffixes = config.workflow.qsirecon_suffixes
-        config.loggers.cli.info(f"QSIRecon pipeline suffixes: {qsirecon_suffixes}")
+        config.loggers.cli.info(f'QSIRecon pipeline suffixes: {qsirecon_suffixes}')
         failed_reports = []
         for qsirecon_suffix in qsirecon_suffixes:
             suffix_dir = str(
-                config.execution.output_dir / "derivatives" / f"qsirecon-{qsirecon_suffix}"
+                config.execution.output_dir / 'derivatives' / f'qsirecon-{qsirecon_suffix}'
             )
 
             # Add other pipeline-specific suffixes to the dataset links
             other_suffixes = [s for s in qsirecon_suffixes if s != qsirecon_suffix]
             dataset_links = config.execution.dataset_links.copy()
-            dataset_links["qsirecon"] = str(config.execution.output_dir)
+            dataset_links['qsirecon'] = str(config.execution.output_dir)
             dataset_links.update(
                 {
-                    f"qsirecon-{s}": str(
-                        config.execution.output_dir / "derivatives" / f"qsirecon-{s}"
+                    f'qsirecon-{s}': str(
+                        config.execution.output_dir / 'derivatives' / f'qsirecon-{s}'
                     )
                     for s in other_suffixes
                 }
@@ -845,8 +845,8 @@ def _run_and_generate(test_name, parameters, test_main=False):
         if failed_reports:
             print(failed_reports)
 
-    output_list_file = os.path.join(get_test_data_path(), f"{test_name}_outputs.txt")
-    optional_outputs_list = os.path.join(get_test_data_path(), f"{test_name}_optional_outputs.txt")
+    output_list_file = os.path.join(get_test_data_path(), f'{test_name}_outputs.txt')
+    optional_outputs_list = os.path.join(get_test_data_path(), f'{test_name}_optional_outputs.txt')
     if not os.path.isfile(optional_outputs_list):
         optional_outputs_list = None
 

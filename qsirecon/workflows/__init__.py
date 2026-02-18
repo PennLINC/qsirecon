@@ -4,4 +4,4 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 from . import base, recon, reports
 
-__all__ = ["base", "recon", "reports"]
+__all__ = ['base', 'recon', 'reports']

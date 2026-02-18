@@ -12,7 +12,7 @@ def reorient_array(data, aff):
     orientation = nib.orientations.io_orientation(aff)
     data_RAS = nib.orientations.apply_orientation(data, orientation)
     # In RAS
-    return nib.orientations.apply_orientation(data_RAS, nib.orientations.axcodes2ornt("IPL"))
+    return nib.orientations.apply_orientation(data_RAS, nib.orientations.axcodes2ornt('IPL'))
 
 
 def mplfig(data, outfile=None, as_bytes=False):
@@ -28,10 +28,10 @@ def mplfig(data, outfile=None, as_bytes=False):
         return outfile
     if as_bytes:
         IObytes = BytesIO()
-        plt.savefig(IObytes, format="png", dpi=data.shape[0], transparent=True)
+        plt.savefig(IObytes, format='png', dpi=data.shape[0], transparent=True)
         IObytes.seek(0)
         base64_jpgData = base64.b64encode(IObytes.read())
-        return base64_jpgData.decode("ascii")
+        return base64_jpgData.decode('ascii')
 
 
 def mplfigcontour(data, outfile=None, as_bytes=False):
@@ -44,17 +44,17 @@ def mplfigcontour(data, outfile=None, as_bytes=False):
     bg = np.zeros(data.shape)
     bg[:] = np.nan
     ax.imshow(bg, aspect=1, cmap=plt.cm.Greys_r)  # used to be aspect="normal"
-    ax.contour(data, colors="red", linewidths=0.1)
+    ax.contour(data, colors='red', linewidths=0.1)
     if outfile:
         fig.savefig(outfile, dpi=data.shape[0], transparent=True)
         plt.close()
         return outfile
     if as_bytes:
         IObytes = BytesIO()
-        plt.savefig(IObytes, format="png", dpi=data.shape[0], transparent=True)
+        plt.savefig(IObytes, format='png', dpi=data.shape[0], transparent=True)
         IObytes.seek(0)
         base64_jpgData = base64.b64encode(IObytes.read())
-        return base64_jpgData.decode("ascii")
+        return base64_jpgData.decode('ascii')
 
 
 def load_and_reorient(filename):
@@ -100,7 +100,7 @@ def make_a_square(data_mat, include_last_dim=True):
         left_pad = int(needed_padding // 2)
         right_pad = needed_padding - left_pad
         padding[side_to_pad] = (left_pad, right_pad)
-    return np.pad(data_mat, padding, "constant", constant_values=(0, 0))
+    return np.pad(data_mat, padding, 'constant', constant_values=(0, 0))
 
 
 def nearest_square(limit):
@@ -161,12 +161,12 @@ def createSprite4D(dwi_file):
     dwi = load_and_reorient(dwi_file)[:, :, :, 1:]
 
     # create tiles from center slice on each orientation
-    for orient in ["sag", "ax", "cor"]:
+    for orient in ['sag', 'ax', 'cor']:
         axis_tiles = get_middle_slice_tiles(dwi, orient)
         # create sprite images for the axis
         results = embed_tiles_in_json_sprite(axis_tiles, as_bytes=True)
-        results["img_type"] = "4dsprite"
-        results["orientation"] = orient
+        results['img_type'] = '4dsprite'
+        results['orientation'] = orient
         output.append(results)
 
     return output
@@ -220,7 +220,7 @@ def embed_tiles_in_json_sprite(tile_list, as_bytes=True, out_file=None):
 
 def get_middle_slice_tiles(data, slice_direction):
     """Create a strip of intensity-normalized, square middle slices."""
-    slicer = {"ax": 0, "cor": 1, "sag": 2}
+    slicer = {'ax': 0, 'cor': 1, 'sag': 2}
     all_data_slicer = [slice(None), slice(None), slice(None)]
     num_slices = data.shape[slicer[slice_direction]]
     slice_num = int(num_slices / 2)
@@ -243,18 +243,18 @@ def createB0_ColorFA_Mask_Sprites(b0_file, colorFA_file, mask_file):
     # make a b0 sprite
     _, mask = median_otsu(b0)
     outb0 = create_sprite_from_tiles(b0, as_bytes=True)
-    outb0["img_type"] = "brainsprite"
+    outb0['img_type'] = 'brainsprite'
 
     # make a colorFA sprite, masked by b0
     Q = make_a_square(colorfa, include_last_dim=False)
     Q[np.logical_not(mask)] = np.nan
     Q = np.moveaxis(Q, -2, -1)
     outcolorFA = create_sprite_from_tiles(Q, as_bytes=True)
-    outcolorFA["img_type"] = "brainsprite"
+    outcolorFA['img_type'] = 'brainsprite'
 
     # make an anat mask contour sprite
     outmask = create_sprite_from_tiles(make_a_square(anat_mask, include_last_dim=False))
-    img = mplfigcontour(outmask.pop("mosaic"), as_bytes=True)
-    outmask["img"] = img
+    img = mplfigcontour(outmask.pop('mosaic'), as_bytes=True)
+    outmask['img'] = img
 
     return outb0, outcolorFA, outmask

@@ -15,7 +15,7 @@ from nipype.interfaces.base import (
 )
 from nipype.utils.filemanip import fname_presuffix
 
-LOGGER = logging.getLogger("nipype.interface")
+LOGGER = logging.getLogger('nipype.interface')
 
 
 class _GradientSelectInputSpec(BaseInterfaceInputSpec):
@@ -27,7 +27,7 @@ class _GradientSelectInputSpec(BaseInterfaceInputSpec):
     bval_distance_cutoff = traits.Float(5.0, usedefault=True)
     expected_n_input_shells = traits.Int()
     requested_shells = InputMultiObject(
-        traits.Either(traits.CInt(), traits.Enum("highest", "lowest")), mandatory=True
+        traits.Either(traits.CInt(), traits.Enum('highest', 'lowest')), mandatory=True
     )
 
 
@@ -64,15 +64,15 @@ class GradientSelect(SimpleInterface):
             original_nifti=self.inputs.dwi_file,
             indices=selected_indices,
             newdir=runtime.cwd,
-            suffix="_selected",
+            suffix='_selected',
         )
-        self._results["bval_file"] = new_bval
-        self._results["bvec_file"] = new_bvec
-        self._results["dwi_file"] = new_nifti
+        self._results['bval_file'] = new_bval
+        self._results['bvec_file'] = new_bvec
+        self._results['dwi_file'] = new_nifti
         if new_b:
-            self._results["b_file"] = new_b
+            self._results['b_file'] = new_b
         if new_btable:
-            self._results["btable_file"] = new_btable
+            self._results['btable_file'] = new_btable
 
         return runtime
 
@@ -91,18 +91,18 @@ def _select_gradients(
 
     # Check that the correct number of input shells are detected
     if expected_n_input_shells is not None:
-        n_found_shells = len(bval_df["assigned_shell"].unique())
+        n_found_shells = len(bval_df['assigned_shell'].unique())
         if not expected_n_input_shells == n_found_shells:
             howmuch, newthresh = (
-                ("too many", "higher")
+                ('too many', 'higher')
                 if n_found_shells > expected_n_input_shells
-                else ("too few", "lower")
+                else ('too few', 'lower')
             )
             raise Exception(
-                f"Expected to find {expected_n_input_shells} shells in "
-                f"the input data. Instead we found {n_found_shells}. Having "
-                f"{howmuch} shells detected means you may need to adjust the"
-                f"bval_distance_cutoff parameter to be {newthresh}."
+                f'Expected to find {expected_n_input_shells} shells in '
+                f'the input data. Instead we found {n_found_shells}. Having '
+                f'{howmuch} shells detected means you may need to adjust the'
+                f'bval_distance_cutoff parameter to be {newthresh}.'
             )
 
     # Ensure that at lease 1 b>0 and one b=0 shell are selected
@@ -112,11 +112,11 @@ def _select_gradients(
     shell_distances = pairwise_distances(select_shell_bs.reshape(-1, 1))
     if np.any(shell_distances[np.triu_indices_from(shell_distances, k=1)] < max_distance):
         raise Exception(
-            "Shells and bval_distance_cutoff have overlap. Choose a lower "
-            "bval_distance_cutoff or more separated shells."
+            'Shells and bval_distance_cutoff have overlap. Choose a lower '
+            'bval_distance_cutoff or more separated shells.'
         )
 
-    selected_indices = np.flatnonzero(bval_df["assigned_shell"].isin(select_shell_bs))
+    selected_indices = np.flatnonzero(bval_df['assigned_shell'].isin(select_shell_bs))
 
     return selected_indices
 
@@ -125,28 +125,28 @@ def _parse_shell_selection(requested_bvals, bval_df, max_distance):
     """Turn bval requests into numbers. Add a 0 if none were originally included."""
     numeric_bvals = []
     for requested_bval in requested_bvals:
-        if requested_bval == "highest":
-            highest_shell = bval_df["assigned_shell"].max()
-            LOGGER.info(f"Selecting b={highest_shell} as the highest shell")
+        if requested_bval == 'highest':
+            highest_shell = bval_df['assigned_shell'].max()
+            LOGGER.info(f'Selecting b={highest_shell} as the highest shell')
             numeric_bvals.append(highest_shell)
-        elif requested_bval == "lowest":
-            lowest_shell = bval_df["assigned_shell"][
-                bval_df["assigned_shell"] > max_distance
+        elif requested_bval == 'lowest':
+            lowest_shell = bval_df['assigned_shell'][
+                bval_df['assigned_shell'] > max_distance
             ].min()
-            LOGGER.info(f"Selecting b={lowest_shell} as the lowest b>0 shell")
+            LOGGER.info(f'Selecting b={lowest_shell} as the lowest b>0 shell')
             numeric_bvals.append(lowest_shell)
         else:
             # Find the closest detected shell
-            ok_shells = bval_df["assigned_shell"][
+            ok_shells = bval_df['assigned_shell'][
                 np.logical_and(
-                    bval_df["assigned_shell"] >= requested_bval - max_distance,
-                    bval_df["assigned_shell"] <= requested_bval + max_distance,
+                    bval_df['assigned_shell'] >= requested_bval - max_distance,
+                    bval_df['assigned_shell'] <= requested_bval + max_distance,
                 )
             ]
             if len(ok_shells.unique()) > 1:
                 raise Exception(
-                    f"Unable to unambiguously select b={requested_bval}. "
-                    f"Instead select from {bval_df.assigned_shells.unique().tolist()}"
+                    f'Unable to unambiguously select b={requested_bval}. '
+                    f'Instead select from {bval_df.assigned_shells.unique().tolist()}'
                 )
 
             numeric_bvals.append(ok_shells.iloc[0])
@@ -154,9 +154,9 @@ def _parse_shell_selection(requested_bvals, bval_df, max_distance):
     # Make sure there is a 0 in the list
     if len(numeric_bvals) < 2:
         if numeric_bvals[0] < max_distance:
-            LOGGER.critical("No effectively b>0 shells are selected.")
+            LOGGER.critical('No effectively b>0 shells are selected.')
         else:
-            LOGGER.warning("Adding a b=0 shell to the selection.")
+            LOGGER.warning('Adding a b=0 shell to the selection.')
             numeric_bvals.append(0)
 
     return np.array(sorted(numeric_bvals))
@@ -174,20 +174,20 @@ def _find_shells(bvals, max_distance):
     # Introduce a new check:
     score = silhouette_score(X, shells)
     if score < 0.8:
-        raise Exception("Silhouette score is low. Is this is a DSI scheme?")
+        raise Exception('Silhouette score is low. Is this is a DSI scheme?')
 
     # Do the same check as mrtrix
     max_shells = np.sqrt(np.sum(bvals > max_distance))
     if n_clusters > max_shells:
-        raise Exception("Too many possible shells detected.")
+        raise Exception('Too many possible shells detected.')
 
-    bval_df = pd.DataFrame({"bvalue": bvals, "assignment": shells})
-    shell_df = bval_df.groupby("assignment", as_index=False).agg({"bvalue": "median"})
-    bval_df["assigned_shell"] = bval_df["assignment"].replace(
-        shell_df["assignment"].tolist(), shell_df["bvalue"].tolist()
+    bval_df = pd.DataFrame({'bvalue': bvals, 'assignment': shells})
+    shell_df = bval_df.groupby('assignment', as_index=False).agg({'bvalue': 'median'})
+    bval_df['assigned_shell'] = bval_df['assignment'].replace(
+        shell_df['assignment'].tolist(), shell_df['bvalue'].tolist()
     )
-    bval_df["shell_num"] = bval_df["assigned_shell"].rank(method="dense")
-    bval_df.drop(columns=["assignment"], inplace=True)
+    bval_df['shell_num'] = bval_df['assigned_shell'].rank(method='dense')
+    bval_df.drop(columns=['assignment'], inplace=True)
 
     return bval_df
 
@@ -200,7 +200,7 @@ def _cluster_bvals(bvals, max_distance):
     agg_cluster = AgglomerativeClustering(
         n_clusters=None,
         distance_threshold=2 * max_distance,
-        linkage="complete",
+        linkage='complete',
     ).fit(X)
     return agg_cluster.labels_
 
@@ -263,7 +263,7 @@ class RemoveDuplicates(SimpleInterface):
         if isdefined(expected):
             if not len(seen_vecs) == expected:
                 raise Exception(
-                    "Expected %d unique samples but found %d", expected, len(seen_vecs)
+                    'Expected %d unique samples but found %d', expected, len(seen_vecs)
                 )
 
         # Extract the unique samples
@@ -275,15 +275,15 @@ class RemoveDuplicates(SimpleInterface):
             original_nifti=self.inputs.dwi_file,
             indices=np.array(ok_vecs),
             newdir=runtime.cwd,
-            suffix="_unique",
+            suffix='_unique',
         )
-        self._results["bval_file"] = new_bval
-        self._results["bvec_file"] = new_bvec
-        self._results["dwi_file"] = new_nifti
+        self._results['bval_file'] = new_bval
+        self._results['bvec_file'] = new_bvec
+        self._results['dwi_file'] = new_nifti
         if new_b:
-            self._results["b_file"] = new_b
+            self._results['b_file'] = new_b
         if new_btable:
-            self._results["btable_file"] = new_btable
+            self._results['btable_file'] = new_btable
 
         return runtime
 
@@ -308,10 +308,10 @@ class ExtractB0s(SimpleInterface):
 
     def _run_interface(self, runtime):
         output_fname = fname_presuffix(
-            self.inputs.dwi_series, suffix="_b0_series", use_ext=True, newpath=runtime.cwd
+            self.inputs.dwi_series, suffix='_b0_series', use_ext=True, newpath=runtime.cwd
         )
         output_mean_fname = fname_presuffix(
-            output_fname, suffix="_mean", use_ext=True, newpath=runtime.cwd
+            output_fname, suffix='_mean', use_ext=True, newpath=runtime.cwd
         )
         if isdefined(self.inputs.b0_indices):
             indices = np.array(self.inputs.b0_indices).astype(int)
@@ -319,18 +319,18 @@ class ExtractB0s(SimpleInterface):
             bvals = np.loadtxt(self.inputs.bval_file)
             indices = np.flatnonzero(bvals < self.inputs.b0_threshold)
             if indices.size == 0:
-                raise ValueError("No b<%d images found" % self.inputs.b0_threshold)
+                raise ValueError('No b<%d images found' % self.inputs.b0_threshold)
         else:
-            raise ValueError("No gradient information available")
+            raise ValueError('No gradient information available')
         new_data = nim.index_img(self.inputs.dwi_series, indices)
         new_data.to_filename(output_fname)
-        self._results["b0_series"] = output_fname
+        self._results['b0_series'] = output_fname
         if new_data.ndim == 3:
-            self._results["b0_average"] = output_fname
+            self._results['b0_average'] = output_fname
         else:
-            mean_image = nim.math_img("img.mean(3)", img=new_data)
+            mean_image = nim.math_img('img.mean(3)', img=new_data)
             mean_image.to_filename(output_mean_fname)
-            self._results["b0_average"] = output_mean_fname
+            self._results['b0_average'] = output_mean_fname
 
         return runtime
 
@@ -342,7 +342,7 @@ def concatenate_bvals(bval_list, out_file):
         collected_vals.append(np.loadtxt(bval_file, ndmin=1))
     final_bvals = np.concatenate(collected_vals).squeeze()
     if out_file is not None:
-        np.savetxt(out_file, final_bvals, fmt=str("%i"))
+        np.savetxt(out_file, final_bvals, fmt=str('%i'))
     return final_bvals
 
 
@@ -368,7 +368,7 @@ def subset_dwi(
     original_nifti,
     indices,
     newdir,
-    suffix="_bsel",
+    suffix='_bsel',
 ):
     """Create a subset of a dwi based on a set of indices."""
     bvals = np.loadtxt(original_bval)
@@ -379,12 +379,12 @@ def subset_dwi(
     # Subset and write the bval
     new_bval = fname_presuffix(original_bval, newpath=newdir, suffix=suffix)
     subsetted_bval_data = np.loadtxt(original_bval).squeeze()[indices]
-    np.savetxt(new_bval, subsetted_bval_data, fmt="%d", newline=" ")
+    np.savetxt(new_bval, subsetted_bval_data, fmt='%d', newline=' ')
 
     # Subset and write the bvec
     new_bvec = fname_presuffix(original_bvec, newpath=newdir, suffix=suffix)
     selected_bvecs = np.loadtxt(original_bvec)[:, indices]
-    np.savetxt(new_bvec, selected_bvecs, fmt="%.8f")
+    np.savetxt(new_bvec, selected_bvecs, fmt='%.8f')
 
     # Subset and write the dwi nifti
     new_nifti = fname_presuffix(original_nifti, newpath=newdir, suffix=suffix)
@@ -406,11 +406,11 @@ def subset_dwi(
 
 def _select_lines(in_file, out_file, indices):
 
-    with open(in_file, "r") as in_f:
+    with open(in_file, 'r') as in_f:
         in_lines = in_f.readlines()
         new_lines = [in_lines[lineno] for lineno in indices]
 
-    with open(out_file, "w") as out_f:
+    with open(out_file, 'w') as out_f:
         out_f.writelines(new_lines)
 
 
@@ -426,14 +426,14 @@ def _classify_shell_scheme(bval_file, max_distance=5):
     # Check if it's a DSI protocol
     score = silhouette_score(X, shells)
     if score < 0.8:
-        return "non-shelled"
+        return 'non-shelled'
 
     # Do the same check as mrtrix
     max_shells = np.sqrt(np.sum(bvals > max_distance))
     if n_clusters > max_shells:
-        return "non-shelled"
+        return 'non-shelled'
 
     if n_clusters <= 2:
-        return "singleshell"
+        return 'singleshell'
     else:
-        return "multishell"
+        return 'multishell'

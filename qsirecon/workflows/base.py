@@ -30,12 +30,12 @@ from ..interfaces.bids import CopyAtlas
 def init_qsirecon_wf():
     """Organize the execution of qsirecon, with a sub-workflow for each subject."""
     ver = Version(config.environment.version)
-    qsirecon_wf = Workflow(name=f"qsirecon_{ver.major}_{ver.minor}_wf")
+    qsirecon_wf = Workflow(name=f'qsirecon_{ver.major}_{ver.minor}_wf')
     qsirecon_wf.base_dir = config.execution.work_dir
 
-    if config.workflow.input_type not in ("qsiprep", "hcpya", "ukb"):
+    if config.workflow.input_type not in ('qsiprep', 'hcpya', 'ukb'):
         raise NotImplementedError(
-            f"{config.workflow.input_type} is not supported as recon-input yet."
+            f'{config.workflow.input_type} is not supported as recon-input yet.'
         )
 
     to_recon_list = config.execution.participant_label
@@ -43,8 +43,8 @@ def init_qsirecon_wf():
     for subject_id in to_recon_list:
         single_subject_wf = init_single_subject_recon_wf(subject_id=subject_id)
 
-        single_subject_wf.config["execution"]["crashdump_dir"] = str(
-            config.execution.output_dir / f"sub-{subject_id}" / "log" / config.execution.run_uuid
+        single_subject_wf.config['execution']['crashdump_dir'] = str(
+            config.execution.output_dir / f'sub-{subject_id}' / 'log' / config.execution.run_uuid
         )
         for node in single_subject_wf._get_all_nodes():
             node.config = deepcopy(single_subject_wf.config)
@@ -52,14 +52,14 @@ def init_qsirecon_wf():
 
         # Dump a copy of the config file into the log directory
         log_dir = (
-            config.execution.output_dir / f"sub-{subject_id}" / "log" / config.execution.run_uuid
+            config.execution.output_dir / f'sub-{subject_id}' / 'log' / config.execution.run_uuid
         )
         log_dir.mkdir(exist_ok=True, parents=True)
-        config.to_filename(log_dir / "qsirecon.toml")
+        config.to_filename(log_dir / 'qsirecon.toml')
 
         # Dump a copy of the recon spec into the log directory as well
         recon_spec = _load_recon_spec(config.workflow.recon_spec)
-        with open(log_dir / "recon_spec.yaml", "w") as f:
+        with open(log_dir / 'recon_spec.yaml', 'w') as f:
             yaml.dump(recon_spec, f, default_flow_style=False, sort_keys=False, indent=4)
 
     return qsirecon_wf
@@ -95,13 +95,13 @@ def init_single_subject_recon_wf(subject_id):
     from .recon.build_workflow import init_dwi_recon_workflow
 
     spec = _load_recon_spec(config.workflow.recon_spec)
-    workflow = Workflow(name=f"sub-{subject_id}_{spec['name']}")
+    workflow = Workflow(name=f'sub-{subject_id}_{spec["name"]}')
 
-    spec_desc = " " + spec.get("description", "")
+    spec_desc = ' ' + spec.get('description', '')
     workflow.__desc__ = f"""
 Reconstruction was
 performed using *QSIRecon* {config.__version__} (@cieslak2021qsiprep),
-according to the "{spec.get("name", "UNKNOWN")}" pipeline.{spec_desc}
+according to the "{spec.get('name', 'UNKNOWN')}" pipeline.{spec_desc}
 
 """
     workflow.__postdesc__ = f"""
@@ -121,11 +121,11 @@ to workflows in *QSIRecon*'s documentation]\
     dwis_and_anats = [
         pair
         for pair in config.execution.processing_list
-        if pair[0].entities["subject"] == subject_id
+        if pair[0].entities['subject'] == subject_id
     ]
 
     if len(dwis_and_anats) == 0:
-        config.loggers.workflow.info("No dwi files found for %s", subject_id)
+        config.loggers.workflow.info('No dwi files found for %s', subject_id)
         return workflow
 
     anat_ingress_nodes = {}
@@ -139,10 +139,10 @@ to workflows in *QSIRecon*'s documentation]\
         # and [session_id, Query.NONE] if there is a file and a session is specified.
         if anat_input_file is None:
             _session_filter = None
-        elif "session" not in anat_input_file.entities:
+        elif 'session' not in anat_input_file.entities:
             _session_filter = Query.NONE
         else:
-            _session_filter = [anat_input_file.entities["session"], Query.NONE]
+            _session_filter = [anat_input_file.entities['session'], Query.NONE]
 
         if anat_input_file.path in highres_anat_wfs:
             # Skip if we've already processed this anatomical file
@@ -158,24 +158,24 @@ to workflows in *QSIRecon*'s documentation]\
         )
 
         config.loggers.workflow.info(
-            f"Anatomical data available for {anat_input_file.path}:\n"
-            f"{yaml.dump(anat_data, default_flow_style=False, indent=4)}"
+            f'Anatomical data available for {anat_input_file.path}:\n'
+            f'{yaml.dump(anat_data, default_flow_style=False, indent=4)}'
         )
         anat_ingress_nodes[anat_input_file.path] = pe.Node(
             niu.IdentityInterface(fields=list(anat_data.keys())),
-            name=f"anat_ingress_node_{anat_num}",
+            name=f'anat_ingress_node_{anat_num}',
         )
         highres_anat_wfs[anat_input_file.path], highres_anat_statuses[anat_input_file.path] = (
             init_highres_recon_anatomical_wf(
                 subject_id=subject_id,
                 session_id=_session_filter,
-                extras_to_make=spec.get("anatomical", []),
+                extras_to_make=spec.get('anatomical', []),
                 status=highres_anat_statuses[anat_input_file.path],
-                name=f"recon_anatomical_wf_{anat_num}",
+                name=f'recon_anatomical_wf_{anat_num}',
             )
         )
         for key, value in anat_data.items():
-            config.loggers.workflow.info(f"{key} ({type(key)}): {value} ({type(value)})")
+            config.loggers.workflow.info(f'{key} ({type(key)}): {value} ({type(value)})')
             anat_ingress_nodes[anat_input_file.path].set_input(key, value)
             workflow.connect([
                 (anat_ingress_nodes[anat_input_file.path],
@@ -187,11 +187,11 @@ to workflows in *QSIRecon*'s documentation]\
         atlas_configs = {}
         if config.execution.atlases:
             # Limit atlases to ones in the specified space.
-            xfm_to_anat = anat_data["template_to_acpc_xfm"]
-            template_space = get_entity(xfm_to_anat, "from")
+            xfm_to_anat = anat_data['template_to_acpc_xfm']
+            template_space = get_entity(xfm_to_anat, 'from')
             bids_filters = (config.execution.bids_filters or {}).copy()
-            bids_filters["atlas"] = bids_filters.get("atlas", {})
-            bids_filters["atlas"]["space"] = template_space
+            bids_filters['atlas'] = bids_filters.get('atlas', {})
+            bids_filters['atlas']['space'] = template_space
 
             # Collect atlases across datasets, including built-in atlases.
             atlas_configs = collect_atlases(
@@ -202,7 +202,7 @@ to workflows in *QSIRecon*'s documentation]\
             # Patch the transform into the atlas configs.
             # This is a placeholder until we can support atlases in various spaces.
             for atlas_name in atlas_configs.keys():
-                atlas_configs[atlas_name]["xfm_to_anat"] = xfm_to_anat
+                atlas_configs[atlas_name]['xfm_to_anat'] = xfm_to_anat
 
             # Prepare the atlases.
             # Reorient to LPS+ and zero out the sform.
@@ -212,28 +212,28 @@ to workflows in *QSIRecon*'s documentation]\
                 # atlases in order to track Sources.
                 ds_atlas_orig = pe.Node(
                     CopyAtlas(
-                        in_file=atlas_config["image"],
-                        source_file=atlas_config["image"],
+                        in_file=atlas_config['image'],
+                        source_file=atlas_config['image'],
                         out_dir=config.execution.output_dir,
                         atlas=atlas_name,
-                        meta_dict=atlas_config["metadata"],
+                        meta_dict=atlas_config['metadata'],
                     ),
-                    name=f"datasink_atlas_orig_{atlas_name}_{anat_num}",
+                    name=f'datasink_atlas_orig_{atlas_name}_{anat_num}',
                 )
                 workflow.add_nodes([ds_atlas_orig])
 
                 ds_atlas_labels_orig = pe.Node(
                     CopyAtlas(
-                        in_file=atlas_config["labels"],
-                        source_file=atlas_config["labels"],
+                        in_file=atlas_config['labels'],
+                        source_file=atlas_config['labels'],
                         out_dir=config.execution.output_dir,
                         atlas=atlas_name,
                     ),
-                    name=f"datasink_atlas_labels_orig_{atlas_name}_{anat_num}",
+                    name=f'datasink_atlas_labels_orig_{atlas_name}_{anat_num}',
                 )
                 workflow.add_nodes([ds_atlas_labels_orig])
 
-    config.loggers.workflow.info(f"Found {len(anat_input_files)} high-res anatomicals to process")
+    config.loggers.workflow.info(f'Found {len(anat_input_files)} high-res anatomicals to process')
 
     # create a processing pipeline for the dwis in each session
     dwi_recon_wfs = {}
@@ -248,7 +248,7 @@ to workflows in *QSIRecon*'s documentation]\
         # Get the preprocessed DWI and all the related preprocessed images
         dwi_ingress_nodes[dwi_file] = pe.Node(
             QSIPrepDWIIngress(dwi_file=dwi_file),
-            name=f"{wf_name}_ingressed_dwi_data",
+            name=f'{wf_name}_ingressed_dwi_data',
         )
 
         # Create scan-specific anatomical data (mask, atlas configs, odf ROIs for reports)
@@ -256,32 +256,32 @@ to workflows in *QSIRecon*'s documentation]\
             atlas_configs=atlas_configs,
             prefer_dwi_mask=False,
             needs_t1w_transform=bool(config.execution.atlases),
-            extras_to_make=spec.get("anatomical", []),
-            name=f"{wf_name}_dwi_specific_anat_wf",
+            extras_to_make=spec.get('anatomical', []),
+            name=f'{wf_name}_dwi_specific_anat_wf',
             **highres_anat_statuses[anat_input.path],
         )
         inputs_dict = {
-            "dwi_file": dwi_file,
-            "dwi_metadata": config.execution.layout.get_metadata(dwi_file),
+            'dwi_file': dwi_file,
+            'dwi_metadata': config.execution.layout.get_metadata(dwi_file),
             **dwi_available_anatomical_data,
         }
         # Load bval file and determine number of shells
         bval_file = config.execution.layout.get_bval(dwi_file)
         shell_scheme = _classify_shell_scheme(bval_file, 5)
-        inputs_dict["shell_scheme"] = shell_scheme
+        inputs_dict['shell_scheme'] = shell_scheme
 
         # This node holds all the inputs that will go to the recon workflow.
         # It is the definitive place to check what the input files are
         recon_full_inputs[dwi_file] = pe.Node(
             ReconWorkflowInputs(),
-            name=f"{wf_name}_recon_inputs",
+            name=f'{wf_name}_recon_inputs',
         )
 
         # This is the actual recon workflow for this dwi file
         dwi_recon_wfs[dwi_file] = init_dwi_recon_workflow(
             inputs_dict=inputs_dict,
             workflow_spec=spec,
-            name=f"{wf_name}_recon_wf",
+            name=f'{wf_name}_recon_wf',
         )
 
         # Connect the collected diffusion data (gradients, etc) to the inputnode
@@ -319,71 +319,71 @@ to workflows in *QSIRecon*'s documentation]\
     about = pe.Node(
         AboutSummary(
             version=config.environment.version,
-            command=" ".join(sys.argv),
+            command=' '.join(sys.argv),
         ),
-        name="about",
+        name='about',
         run_without_submitting=True,
     )
     summary = pe.Node(
         SubjectSummary(
             subject_id=subject_id,
             subjects_dir=config.execution.fs_subjects_dir,
-            std_spaces=["MNIInfant" if config.workflow.infant else "MNI152NLin2009cAsym"],
+            std_spaces=['MNIInfant' if config.workflow.infant else 'MNI152NLin2009cAsym'],
             nstd_spaces=[],
             dwi=dwi_files,
             t1w=sorted(highres_anat_statuses.keys()),
         ),
-        name="summary",
+        name='summary',
         run_without_submitting=True,
     )
 
     suffix_dirs = []
     for qsirecon_suffix in config.workflow.qsirecon_suffixes:
         suffix_dir = str(
-            config.execution.output_dir / "derivatives" / f"qsirecon-{qsirecon_suffix}"
+            config.execution.output_dir / 'derivatives' / f'qsirecon-{qsirecon_suffix}'
         )
         suffix_dirs.append(suffix_dir)
 
     ds_report_about = pe.MapNode(
         DerivativesDataSink(
             source_file=dwi_basename,
-            datatype="figures",
-            desc="about",
-            suffix="T1w",
+            datatype='figures',
+            desc='about',
+            suffix='T1w',
         ),
-        name="ds_report_about",
+        name='ds_report_about',
         run_without_submitting=True,
-        iterfield=["base_directory"],
+        iterfield=['base_directory'],
     )
     ds_report_about.inputs.base_directory = suffix_dirs
-    workflow.connect([(about, ds_report_about, [("out_report", "in_file")])])
+    workflow.connect([(about, ds_report_about, [('out_report', 'in_file')])])
 
     ds_report_summary = pe.MapNode(
         DerivativesDataSink(
             source_file=dwi_basename,
-            datatype="figures",
-            desc="summary",
-            suffix="T1w",
+            datatype='figures',
+            desc='summary',
+            suffix='T1w',
         ),
-        name="ds_report_summary",
+        name='ds_report_summary',
         run_without_submitting=True,
-        iterfield=["base_directory"],
+        iterfield=['base_directory'],
     )
     ds_report_summary.inputs.base_directory = suffix_dirs
-    workflow.connect([(summary, ds_report_summary, [("out_report", "in_file")])])
+    workflow.connect([(summary, ds_report_summary, [('out_report', 'in_file')])])
 
     # Fill-in datasinks of reportlets seen so far
     for node in workflow.list_node_names():
-        if node.split(".")[-1].startswith("ds_report"):
-            workflow.get_node(node).inputs.datatype = "figures"
+        if node.split('.')[-1].startswith('ds_report'):
+            workflow.get_node(node).inputs.datatype = 'figures'
 
     return workflow
 
 
 def _get_wf_name(dwi_file):
     basedir, fname, ext = split_filename(dwi_file)
-    tokens = fname.split("_")
-    return "_".join(tokens[:-1]).replace("-", "_")
+    tokens = fname.split('_')
+    return '_'.join(tokens[:-1]).replace('-', '_')
 
 
 def _load_recon_spec(spec_name):
@@ -392,49 +392,49 @@ def _load_recon_spec(spec_name):
     from ..utils.misc import load_yaml
     from ..utils.sloppy_recon import make_sloppy
 
-    prepackaged_dir = pkgrf("qsirecon", "data/pipelines")
-    prepackaged = [op.split(fname)[1][:-5] for fname in glob(op.join(prepackaged_dir, "*.yaml"))]
+    prepackaged_dir = pkgrf('qsirecon', 'data/pipelines')
+    prepackaged = [op.split(fname)[1][:-5] for fname in glob(op.join(prepackaged_dir, '*.yaml'))]
     if op.exists(spec_name):
         recon_spec = spec_name
     elif spec_name in prepackaged:
-        recon_spec = op.join(prepackaged_dir, f"{spec_name}.yaml")
+        recon_spec = op.join(prepackaged_dir, f'{spec_name}.yaml')
     else:
-        raise Exception(f"{spec_name} is not a file that exists or in {prepackaged}")
+        raise Exception(f'{spec_name} is not a file that exists or in {prepackaged}')
 
-    if recon_spec.endswith(".json"):
-        with open(recon_spec, "r") as f:
+    if recon_spec.endswith('.json'):
+        with open(recon_spec, 'r') as f:
             try:
                 spec = json.load(f)
             except Exception:
-                raise Exception("Unable to read JSON spec. Check the syntax.")
+                raise Exception('Unable to read JSON spec. Check the syntax.')
     else:
         try:
             spec = load_yaml(recon_spec)
         except Exception:
-            raise Exception("Unable to read YAML spec. Check the syntax.")
+            raise Exception('Unable to read YAML spec. Check the syntax.')
 
     if config.execution.sloppy:
-        config.loggers.workflow.warning("Forcing reconstruction to use unrealistic parameters")
+        config.loggers.workflow.warning('Forcing reconstruction to use unrealistic parameters')
         spec = make_sloppy(spec)
 
     # Expand any "scalars_from" lists into separate nodes
     orig_spec = deepcopy(spec)
-    spec["nodes"] = []
-    for node in orig_spec["nodes"]:
-        if "scalars_from" in node.keys() and isinstance(node["scalars_from"], list):
-            for scalar_source in node["scalars_from"]:
+    spec['nodes'] = []
+    for node in orig_spec['nodes']:
+        if 'scalars_from' in node.keys() and isinstance(node['scalars_from'], list):
+            for scalar_source in node['scalars_from']:
                 new_node = node.copy()
-                new_node["name"] = f"{node['name']}_{scalar_source}"
-                new_node["scalars_from"] = scalar_source
-                if "qsirecon_suffix" not in new_node.keys():
+                new_node['name'] = f'{node["name"]}_{scalar_source}'
+                new_node['scalars_from'] = scalar_source
+                if 'qsirecon_suffix' not in new_node.keys():
                     # Infer the suffix from the source node
-                    for temp_node in spec["nodes"]:
-                        if temp_node["name"] == scalar_source:
-                            new_node["qsirecon_suffix"] = temp_node["qsirecon_suffix"]
+                    for temp_node in spec['nodes']:
+                        if temp_node['name'] == scalar_source:
+                            new_node['qsirecon_suffix'] = temp_node['qsirecon_suffix']
                             continue
 
-                spec["nodes"].append(new_node)
+                spec['nodes'].append(new_node)
         else:
-            spec["nodes"].append(node)
+            spec['nodes'].append(node)
 
     return spec

@@ -12,21 +12,21 @@ from qsirecon.interfaces.ingress import QSIPrepDWIIngress
 # Anatomical (t1w/t2w) slots
 FS_FILES_TO_REGISTER = [
     # The skull-stripped brain produced by FreeSurfer
-    "brain",
+    'brain',
     # Automated volumetric segmentation file from FreeSurfer
-    "aseg",
+    'aseg',
 ]
 CREATEABLE_ANATOMICAL_OUTPUTS = [
-    "fs_5tt_hsvs",
-    "qsiprep_5tt_hsvs",
-    "qsiprep_5tt_fast",
-    "fs_to_qsiprep_transform_itk",
-    "fs_to_qsiprep_transform_mrtrix",
+    'fs_5tt_hsvs',
+    'qsiprep_5tt_hsvs',
+    'qsiprep_5tt_fast',
+    'fs_to_qsiprep_transform_itk',
+    'fs_to_qsiprep_transform_mrtrix',
 ]
 
 # These come directly from QSIPrep outputs. They're aligned to the DWIs in AC-PC
-_spec = yaml.safe_load(load_data.readable("io_spec.yaml").read_text())
-qsiprep_highres_anatomical_ingressed_fields = list(_spec["queries"]["anat"].keys())
+_spec = yaml.safe_load(load_data.readable('io_spec.yaml').read_text())
+qsiprep_highres_anatomical_ingressed_fields = list(_spec['queries']['anat'].keys())
 
 # The init_recon_anatomical anatomical workflow can create additional
 # anatomical files (segmentations/masks/etc) that can be used downstream.
@@ -42,19 +42,19 @@ qsiprep_output_names = QSIPrepDWIIngress().output_spec.class_editable_traits()
 
 # dMRI + registered anatomical fields
 recon_workflow_anatomical_input_fields = anatomical_workflow_outputs + [
-    "dwi_mask",
-    "atlas_configs",
-    "odf_rois",
-    "resampling_template",
-    "mapping_metadata",
+    'dwi_mask',
+    'atlas_configs',
+    'odf_rois',
+    'resampling_template',
+    'mapping_metadata',
 ]
 
 # Check that no conflicts have been introduced
 overlapping_names = set(qsiprep_output_names).intersection(recon_workflow_anatomical_input_fields)
 if overlapping_names:
     raise Exception(
-        "Someone has added overlapping outputs between the anatomical "
-        "and dwi inputs: " + " ".join(overlapping_names)
+        'Someone has added overlapping outputs between the anatomical '
+        'and dwi inputs: ' + ' '.join(overlapping_names)
     )
 
 recon_workflow_input_fields = qsiprep_output_names + recon_workflow_anatomical_input_fields

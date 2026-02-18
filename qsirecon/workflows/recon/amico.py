@@ -26,8 +26,8 @@ from qsirecon.data import load as load_data
 
 def init_amico_noddi_fit_wf(
     inputs_dict,
-    name="amico_noddi_recon",
-    qsirecon_suffix="",
+    name='amico_noddi_recon',
+    qsirecon_suffix='',
     params={},
 ):
     """Reconstruct NODDI scalars using AMICO.
@@ -60,58 +60,58 @@ def init_amico_noddi_fit_wf(
 
     """
     workflow = Workflow(name=name)
-    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    suffix_str = f' (outputs written to qsirecon-{qsirecon_suffix})' if qsirecon_suffix else ''
     workflow.__desc__ = (
-        f"\n\n#### NODDI Reconstruction{suffix_str}\n\n"
-        "The NODDI model (@noddi) was fit using the AMICO implementation (@amico). "
+        f'\n\n#### NODDI Reconstruction{suffix_str}\n\n'
+        'The NODDI model (@noddi) was fit using the AMICO implementation (@amico). '
     )
 
     inputnode = pe.Node(
-        niu.IdentityInterface(fields=recon_workflow_input_fields + ["odf_rois"]),
-        name="inputnode",
+        niu.IdentityInterface(fields=recon_workflow_input_fields + ['odf_rois']),
+        name='inputnode',
     )
     outputnode = pe.Node(
         niu.IdentityInterface(
             fields=[
-                "directions",
-                "icvf",
-                "od",
-                "isovf",
-                "modulated_icvf",
-                "modulated_od",
-                "rmse",
-                "nrmse",
-                "config",
-                "fibgz",
-                "recon_scalars",
-                "tf",
+                'directions',
+                'icvf',
+                'od',
+                'isovf',
+                'modulated_icvf',
+                'modulated_od',
+                'rmse',
+                'nrmse',
+                'config',
+                'fibgz',
+                'recon_scalars',
+                'tf',
             ],
         ),
-        name="outputnode",
+        name='outputnode',
     )
     omp_nthreads = config.nipype.omp_nthreads
 
-    plot_reports = params.pop("plot_reports", True)
+    plot_reports = params.pop('plot_reports', True)
 
     recon_scalars = pe.Node(
         AMICOReconScalars(
-            dismiss_entities=["desc"],
+            dismiss_entities=['desc'],
             qsirecon_suffix=qsirecon_suffix,
         ),
-        name="recon_scalars",
+        name='recon_scalars',
         run_without_submitting=True,
     )
-    noddi_fit = pe.Node(NODDI(**params), name="recon_noddi", n_procs=omp_nthreads)
-    workflow.__desc__ += build_documentation(noddi_fit) + " "
+    noddi_fit = pe.Node(NODDI(**params), name='recon_noddi', n_procs=omp_nthreads)
+    workflow.__desc__ += build_documentation(noddi_fit) + ' '
 
-    if params.get("saveModulatedMaps", True):
-        noddi_tissue_fraction = pe.Node(NODDITissueFraction(), name="noddi_tissue_fraction")
+    if params.get('saveModulatedMaps', True):
+        noddi_tissue_fraction = pe.Node(NODDITissueFraction(), name='noddi_tissue_fraction')
         workflow.__desc__ += (
-            "AMICO does not save the tissue fraction map. Therefore, "
-            "the output tissue fraction map was separately reconstructed using "
-            "custom Python code matching the AMICO implementation. "
+            'AMICO does not save the tissue fraction map. Therefore, '
+            'the output tissue fraction map was separately reconstructed using '
+            'custom Python code matching the AMICO implementation. '
         )
-    convert_to_fibgz = pe.Node(NODDItoFIBGZ(), name="convert_to_fibgz")
+    convert_to_fibgz = pe.Node(NODDItoFIBGZ(), name='convert_to_fibgz')
 
     workflow.connect([
         (inputnode, noddi_fit, [
@@ -147,7 +147,7 @@ def init_amico_noddi_fit_wf(
         (convert_to_fibgz, outputnode, [('fibgz_file', 'fibgz')]),
     ])  # fmt:skip
 
-    if params.get("saveModulatedMaps", True):
+    if params.get('saveModulatedMaps', True):
         workflow.connect([
             (inputnode, noddi_tissue_fraction, [("dwi_mask", "mask_image")]),
             (noddi_fit, noddi_tissue_fraction, [("isovf", "isovf")]),
@@ -166,7 +166,7 @@ def init_amico_noddi_fit_wf(
             ]),
         ])  # fmt:skip
 
-    if params.get("rmse", True):
+    if params.get('rmse', True):
         workflow.connect([
             (noddi_fit, recon_scalars, [
                 ("rmse", "rmse"),
@@ -174,7 +174,7 @@ def init_amico_noddi_fit_wf(
             ]),
         ])  # fmt:skip
 
-    if params.get("nrmse", True):
+    if params.get('nrmse', True):
         workflow.connect([
             (noddi_fit, recon_scalars, [
                 ("nrmse", "nrmse"),
@@ -185,16 +185,16 @@ def init_amico_noddi_fit_wf(
     if plot_reports:
         plot_peaks = pe.Node(
             CLIReconPeaksReport(),
-            name="plot_peaks",
+            name='plot_peaks',
             n_procs=omp_nthreads,
         )
         ds_report_peaks = pe.Node(
             DerivativesDataSink(
-                datatype="figures",
-                desc="NODDI",
-                suffix="peaks",
+                datatype='figures',
+                desc='NODDI',
+                suffix='peaks',
             ),
-            name="ds_report_peaks",
+            name='ds_report_peaks',
             run_without_submitting=True,
         )
         workflow.connect([
@@ -205,17 +205,17 @@ def init_amico_noddi_fit_wf(
         ])  # fmt:skip
 
     if qsirecon_suffix:
-        derivatives_config = load_yaml(load_data("nonscalars/amico_noddi.yaml"))
+        derivatives_config = load_yaml(load_data('nonscalars/amico_noddi.yaml'))
         ds_fibgz = pe.Node(
             DerivativesDataSink(
-                dismiss_entities=["desc"],
+                dismiss_entities=['desc'],
                 compress=True,
-                **derivatives_config["fibgz"]["bids"],
+                **derivatives_config['fibgz']['bids'],
             ),
-            name=f"ds_{qsirecon_suffix}_fibgz",
+            name=f'ds_{qsirecon_suffix}_fibgz',
             run_without_submitting=True,
         )
-        workflow.connect([(outputnode, ds_fibgz, [("fibgz", "in_file")])])
+        workflow.connect([(outputnode, ds_fibgz, [('fibgz', 'in_file')])])
 
         scalar_output_wf = init_scalar_output_wf()
         workflow.connect([
@@ -225,18 +225,18 @@ def init_amico_noddi_fit_wf(
 
         ds_config = pe.Node(
             DerivativesDataSink(
-                dismiss_entities=["desc"],
+                dismiss_entities=['desc'],
                 compress=True,
-                **derivatives_config["config_file"]["bids"],
+                **derivatives_config['config_file']['bids'],
             ),
-            name="ds_noddi_config",
+            name='ds_noddi_config',
             run_without_submitting=True,
         )
-        workflow.connect([(outputnode, ds_config, [("config_file", "in_file")])])
+        workflow.connect([(outputnode, ds_config, [('config_file', 'in_file')])])
 
         plot_scalars = pe.Node(
             ScalarReport(),
-            name="plot_scalars",
+            name='plot_scalars',
             n_procs=omp_nthreads,
         )
         workflow.connect([
@@ -252,17 +252,17 @@ def init_amico_noddi_fit_wf(
 
         ds_report_scalars = pe.Node(
             DerivativesDataSink(
-                datatype="figures",
-                desc="scalars",
-                suffix="dwimap",
-                dismiss_entities=["dsistudiotemplate"],
+                datatype='figures',
+                desc='scalars',
+                suffix='dwimap',
+                dismiss_entities=['dsistudiotemplate'],
             ),
-            name="ds_report_scalars",
+            name='ds_report_scalars',
             run_without_submitting=True,
         )
-        workflow.connect([(plot_scalars, ds_report_scalars, [("out_report", "in_file")])])
+        workflow.connect([(plot_scalars, ds_report_scalars, [('out_report', 'in_file')])])
     else:
         # If not writing out scalar files, pass the working directory scalar configs
-        workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
+        workflow.connect([(recon_scalars, outputnode, [('scalar_info', 'recon_scalars')])])
 
     return clean_datasinks(workflow, qsirecon_suffix)

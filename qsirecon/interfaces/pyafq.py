@@ -27,7 +27,7 @@ from nipype.interfaces.base import (
 )
 from nipype.utils.filemanip import fname_presuffix
 
-LOGGER = logging.getLogger("nipype.interface")
+LOGGER = logging.getLogger('nipype.interface')
 
 
 class PyAFQInputSpec(BaseInterfaceInputSpec):
@@ -52,7 +52,7 @@ class PyAFQRecon(SimpleInterface):
     def _run_interface(self, runtime):
 
         # shim the expected inputs
-        shim_dir = op.join(runtime.cwd, "study/subject")
+        shim_dir = op.join(runtime.cwd, 'study/subject')
         os.makedirs(shim_dir)
         bval_file = fname_presuffix(self.inputs.bval_file, newpath=shim_dir)
         bvec_file = fname_presuffix(self.inputs.bvec_file, newpath=shim_dir)
@@ -76,11 +76,11 @@ class PyAFQRecon(SimpleInterface):
         # itk_map = ItkMap(warp_path=itk_file)
 
         if tck_file is None:
-            tck_file = kwargs["import_tract"]
-        kwargs.pop("import_tract", None)
+            tck_file = kwargs['import_tract']
+        kwargs.pop('import_tract', None)
         if brain_mask_definition is None:
-            brain_mask_definition = kwargs["brain_mask_definition"]
-        kwargs.pop("brain_mask_definition", None)
+            brain_mask_definition = kwargs['brain_mask_definition']
+        kwargs.pop('brain_mask_definition', None)
 
         # if "parallel_segmentation" in kwargs:
         #     if (
@@ -93,12 +93,12 @@ class PyAFQRecon(SimpleInterface):
         #     kwargs["parallel_segmentation"]["n_jobs"] = self.inputs.kwargs["omp_nthreads"]
 
         if self.inputs.n_procs > 1:
-            kwargs["parallel_segmentation"]["n_jobs"] = self.inputs.n_procs
+            kwargs['parallel_segmentation']['n_jobs'] = self.inputs.n_procs
         else:
-            kwargs["parallel_segmentation"] = {}
-            kwargs["parallel_segmentation"]["n_jobs"] = self.inputs.n_procs
+            kwargs['parallel_segmentation'] = {}
+            kwargs['parallel_segmentation']['n_jobs'] = self.inputs.n_procs
 
-        output_dir = shim_dir + "/PYAFQ/"
+        output_dir = shim_dir + '/PYAFQ/'
         os.makedirs(output_dir, exist_ok=True)
         myafq = ParticipantAFQ(
             dwi_file,
@@ -111,11 +111,11 @@ class PyAFQRecon(SimpleInterface):
             **kwargs,
         )
 
-        if "export" not in kwargs or kwargs["export"] == "all":
+        if 'export' not in kwargs or kwargs['export'] == 'all':
             myafq.export_all()
         else:
-            myafq.export(kwargs["export"])
+            myafq.export(kwargs['export'])
 
-        self._results["afq_dir"] = output_dir
+        self._results['afq_dir'] = output_dir
 
         return runtime

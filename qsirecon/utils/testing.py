@@ -56,10 +56,10 @@ class TestWorkflow(unittest.TestCase):
         actual_outputs = []
         node_tuples = [(node.name, node.inputs.items(), node.outputs.items()) for node in nodes]
         for name, inputs, outputs in node_tuples:
-            pre = str(name) + "."
+            pre = str(name) + '.'
             actual_inputs += get_io_names(pre, inputs)
 
-            pre = pre if pre[0:-1] != "inputnode" else ""
+            pre = pre if pre[0:-1] != 'inputnode' else ''
             actual_outputs += get_io_names(pre, outputs)
 
         return actual_inputs, actual_outputs
@@ -89,8 +89,8 @@ class TestWorkflow(unittest.TestCase):
             b) connected to another node's output (e.g. using the workflow.connect method)
         additional_inputs is a dict:
             {'node_name': ['mandatory', 'input', 'fields']}"""
-        dummy_node = pe.Node(niu.IdentityInterface(fields=["dummy"]), name="DummyNode")
-        node_names = [name for name in workflow.list_node_names() if name.count(".") == 0]
+        dummy_node = pe.Node(niu.IdentityInterface(fields=['dummy']), name='DummyNode')
+        node_names = [name for name in workflow.list_node_names() if name.count('.') == 0]
         for node_name in set(node_names + list(additional_inputs.keys())):
             node = workflow.get_node(node_name)
             mandatory_inputs = list(node.inputs.traits(mandatory=True).keys())
@@ -102,4 +102,4 @@ class TestWorkflow(unittest.TestCase):
                     # maybe it is connected to an output
                     with self.assertRaises(Exception):
                         # throws an error if the input is already connected
-                        workflow.connect([(dummy_node, node, [("dummy", field)])])
+                        workflow.connect([(dummy_node, node, [('dummy', field)])])

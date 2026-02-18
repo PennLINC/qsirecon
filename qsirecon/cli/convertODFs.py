@@ -5,8 +5,8 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 
 from qsirecon.interfaces.converters import FIBGZtoFOD, FODtoFIBGZ
 
-warnings.filterwarnings("ignore", category=ImportWarning)
-warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+warnings.filterwarnings('ignore', category=ImportWarning)
+warnings.filterwarnings('ignore', category=PendingDeprecationWarning)
 
 
 def sink_mask_file(in_file, orig_file, out_dir):
@@ -15,7 +15,7 @@ def sink_mask_file(in_file, orig_file, out_dir):
     from nipype.utils.filemanip import copyfile, fname_presuffix
 
     os.makedirs(out_dir, exist_ok=True)
-    out_file = fname_presuffix(orig_file, suffix="_mask", newpath=out_dir)
+    out_file = fname_presuffix(orig_file, suffix='_mask', newpath=out_dir)
     copyfile(in_file, out_file, copy=True, use_hardlink=True)
     return out_file
 
@@ -23,38 +23,38 @@ def sink_mask_file(in_file, orig_file, out_dir):
 def fib_to_mif():
     """Convert fib to mif."""
     parser = ArgumentParser(
-        description="qsirecon: Convert DSI Studio fib file to MRtrix mif file.",
+        description='qsirecon: Convert DSI Studio fib file to MRtrix mif file.',
         formatter_class=RawTextHelpFormatter,
     )
 
     parser.add_argument(
-        "--fib",
+        '--fib',
         required=True,
-        action="store",
+        action='store',
         type=os.path.abspath,
-        default="",
-        help="DSI Studio fib file to convert",
+        default='',
+        help='DSI Studio fib file to convert',
     )
     parser.add_argument(
-        "--mif",
+        '--mif',
         type=os.path.abspath,
         required=False,
-        action="store",
-        default="",
-        help="output path for a MRtrix mif file",
+        action='store',
+        default='',
+        help='output path for a MRtrix mif file',
     )
     parser.add_argument(
-        "--ref_image",
+        '--ref_image',
         required=True,
-        action="store",
+        action='store',
         type=os.path.abspath,
-        help="a NIfTI-1 format file with a valid q/sform.",
+        help='a NIfTI-1 format file with a valid q/sform.',
     )
     parser.add_argument(
-        "--subtract-iso",
+        '--subtract-iso',
         required=False,
-        action="store_true",
-        help="subtract ODF min so visualization looks similar in mrview",
+        action='store_true',
+        help='subtract ODF min so visualization looks similar in mrview',
     )
     opts = parser.parse_args()
     converter = FIBGZtoFOD(
@@ -69,43 +69,43 @@ def fib_to_mif():
 def mif_to_fib():
     """Convert mif to fib."""
     parser = ArgumentParser(
-        description="qsirecon: Convert MRtrix mif file to DSI Studio fib file",
+        description='qsirecon: Convert MRtrix mif file to DSI Studio fib file',
         formatter_class=RawTextHelpFormatter,
     )
 
     parser.add_argument(
-        "--mif",
+        '--mif',
         type=os.path.abspath,
         required=True,
-        action="store",
-        default="",
-        help="MRtrix mif file to convert",
+        action='store',
+        default='',
+        help='MRtrix mif file to convert',
     )
     parser.add_argument(
-        "--fib",
+        '--fib',
         required=True,
-        action="store",
+        action='store',
         type=os.path.abspath,
-        default="",
-        help="the output path for the DSI Studio fib file",
+        default='',
+        help='the output path for the DSI Studio fib file',
     )
     parser.add_argument(
-        "--mask",
+        '--mask',
         required=False,
-        action="store",
+        action='store',
         type=os.path.abspath,
-        help="a NIfTI-1 format mask file.",
+        help='a NIfTI-1 format mask file.',
     )
     parser.add_argument(
-        "--num_fibers",
+        '--num_fibers',
         required=False,
-        action="store",
+        action='store',
         type=int,
         default=5,
-        help="maximum number of fixels per voxel.",
+        help='maximum number of fixels per voxel.',
     )
     parser.add_argument(
-        "--unit-odf", required=False, action="store_true", help="force ODFs to sum to 1."
+        '--unit-odf', required=False, action='store_true', help='force ODFs to sum to 1.'
     )
     opts = parser.parse_args()
     if opts.mask is not None:
@@ -126,5 +126,5 @@ def mif_to_fib():
     converter.run()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     mif_to_fib()

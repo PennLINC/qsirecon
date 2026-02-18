@@ -18,10 +18,10 @@ from PIL import Image
 from ..viz.utils import slices_from_bbox
 from qsirecon.interfaces.converters import fib2amps, mif2amps
 
-LOGGER = logging.getLogger("nipype.interface")
+LOGGER = logging.getLogger('nipype.interface')
 
-warnings.filterwarnings("ignore", category=ImportWarning)
-warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+warnings.filterwarnings('ignore', category=ImportWarning)
+warnings.filterwarnings('ignore', category=PendingDeprecationWarning)
 
 
 def sink_mask_file(in_file, orig_file, out_dir):
@@ -30,7 +30,7 @@ def sink_mask_file(in_file, orig_file, out_dir):
     from nipype.utils.filemanip import copyfile, fname_presuffix
 
     os.makedirs(out_dir, exist_ok=True)
-    out_file = fname_presuffix(orig_file, suffix="_mask", newpath=out_dir)
+    out_file = fname_presuffix(orig_file, suffix='_mask', newpath=out_dir)
     copyfile(in_file, out_file, copy=True, use_hardlink=True)
     return out_file
 
@@ -38,78 +38,78 @@ def sink_mask_file(in_file, orig_file, out_dir):
 def recon_plot():
     """Convert fib to mif."""
     parser = ArgumentParser(
-        description="qsirecon: Convert DSI Studio fib file to MRtrix mif file.",
+        description='qsirecon: Convert DSI Studio fib file to MRtrix mif file.',
         formatter_class=RawTextHelpFormatter,
     )
 
-    parser.add_argument("--fib", action="store", help="DSI Studio fib file to convert")
-    parser.add_argument("--mif", action="store", help="path to a MRtrix mif file")
+    parser.add_argument('--fib', action='store', help='DSI Studio fib file to convert')
+    parser.add_argument('--mif', action='store', help='path to a MRtrix mif file')
     parser.add_argument(
-        "--amplitudes",
-        action="store",
-        help="4D ampliudes corresponding to --directions",
+        '--amplitudes',
+        action='store',
+        help='4D ampliudes corresponding to --directions',
     )
     parser.add_argument(
-        "--directions",
-        action="store",
-        help="text file of directions corresponding to --amplitudes",
+        '--directions',
+        action='store',
+        help='text file of directions corresponding to --amplitudes',
     )
     parser.add_argument(
-        "--mask_file",
-        action="store",
-        help="a NIfTI-1 format file defining a brain mask.",
+        '--mask_file',
+        action='store',
+        help='a NIfTI-1 format file defining a brain mask.',
     )
     parser.add_argument(
-        "--odf_rois",
-        action="store",
-        help="a NIfTI-1 format file with ROIs for plotting ODFs",
+        '--odf_rois',
+        action='store',
+        help='a NIfTI-1 format file with ROIs for plotting ODFs',
     )
     parser.add_argument(
-        "--peaks_image",
-        action="store",
-        default="peaks_mosiac.png",
-        help="png file for odf peaks image",
+        '--peaks_image',
+        action='store',
+        default='peaks_mosiac.png',
+        help='png file for odf peaks image',
     )
     parser.add_argument(
-        "--odfs_image",
-        action="store",
-        default="odfs_mosaic.png",
-        help="png file for odf results",
+        '--odfs_image',
+        action='store',
+        default='odfs_mosaic.png',
+        help='png file for odf results',
     )
     parser.add_argument(
-        "--background_image",
-        action="store",
-        help="a NIfTI-1 format file with a valid q/sform.",
+        '--background_image',
+        action='store',
+        help='a NIfTI-1 format file with a valid q/sform.',
     )
     parser.add_argument(
-        "--subtract-iso",
-        action="store_true",
-        help="subtract ODF min so visualization looks similar in mrview",
+        '--subtract-iso',
+        action='store_true',
+        help='subtract ODF min so visualization looks similar in mrview',
     )
-    parser.add_argument("--peaks_only", action="store_true", help="only plot the peaks")
-    parser.add_argument("--ncuts", type=int, default=3, help="number of slices to plot")
-    parser.add_argument("--padding", type=int, default=10, help="number of slices to plot")
+    parser.add_argument('--peaks_only', action='store_true', help='only plot the peaks')
+    parser.add_argument('--ncuts', type=int, default=3, help='number of slices to plot')
+    parser.add_argument('--padding', type=int, default=10, help='number of slices to plot')
     opts = parser.parse_args()
     peaks_png = str(Path(opts.peaks_image).absolute())
     cwd = os.getcwd()
-    LOGGER.info(f"Running in {cwd}")
+    LOGGER.info(f'Running in {cwd}')
 
     if opts.mif:
         odf_img, directions = mif2amps(opts.mif, os.getcwd())
-        LOGGER.info("converting %s to plot ODF/peaks", opts.mif)
+        LOGGER.info('converting %s to plot ODF/peaks', opts.mif)
     elif opts.fib:
         odf_img, directions = fib2amps(opts.fib, opts.background_image, os.getcwd())
-        LOGGER.info("converting %s to plot ODF/peaks", opts.fib)
+        LOGGER.info('converting %s to plot ODF/peaks', opts.fib)
     elif opts.amplitudes and opts.directions:
         LOGGER.info(
-            "loading amplitudes=%s, directions=%s " "to plot ODF/peaks",
+            'loading amplitudes=%s, directions=%s to plot ODF/peaks',
             opts.amplitudes,
             opts.directions,
         )
         odf_img = nb.load(opts.amplitudes)
         directions = np.load(opts.directions)
     else:
-        raise Exception("Requires either a mif file or fib file")
+        raise Exception('Requires either a mif file or fib file')
 
     odf_4d = odf_img.get_fdata()
     sphere = HemiSphere(xyz=directions.astype(float))
@@ -118,32 +118,32 @@ def recon_plot():
     else:
         background_data = nb.load(opts.background_image).get_fdata()
 
-    LOGGER.info("Starting a virtual framebuffer for FURY")
+    LOGGER.info('Starting a virtual framebuffer for FURY')
 
     # Xvfb won't allow an empty $DISPLAY
-    if "DISPLAY" in os.environ:
-        del os.environ["DISPLAY"]
+    if 'DISPLAY' in os.environ:
+        del os.environ['DISPLAY']
 
     from xvfbwrapper import Xvfb
 
-    display = Xvfb(nolisten="tcp")
-    display.extra_xvfb_args += ["+iglx"]
+    display = Xvfb(nolisten='tcp')
+    display.extra_xvfb_args += ['+iglx']
 
     try:
         display.start()
     except Exception as exc:
         LOGGER.warning(
-            "Unable to start Xvfb!! If you are running this via Apptainer/Singularity "
-            "there may be an issue accessing the /tmp directory.\n\n"
-            "If you used the --containall flag, please also use --writable-tmpfs.\n\n"
-            "Otherwise, be sure that the /tmp directory is writable by Singularity/Apptainer. "
-            "This may require contacting a system administrator.\n\n"
-            f"The python error was\n{exc}"
+            'Unable to start Xvfb!! If you are running this via Apptainer/Singularity '
+            'there may be an issue accessing the /tmp directory.\n\n'
+            'If you used the --containall flag, please also use --writable-tmpfs.\n\n'
+            'Otherwise, be sure that the /tmp directory is writable by Singularity/Apptainer. '
+            'This may require contacting a system administrator.\n\n'
+            f'The python error was\n{exc}'
         )
         sys.exit(1)
 
     try:
-        LOGGER.info("Plotting ODF Peaks images...")
+        LOGGER.info('Plotting ODF Peaks images...')
         peak_slice_series(
             odf_4d,
             sphere,
@@ -157,13 +157,13 @@ def recon_plot():
         LOGGER.warning(exc)
         sys.exit(1)
 
-    LOGGER.info(f"Saved peaks image to {peaks_png}")
+    LOGGER.info(f'Saved peaks image to {peaks_png}')
 
     # Plot ODFs in interesting regions
     if opts.odf_rois and not opts.peaks_only:
         odfs_png_file = str(Path(opts.odfs_image).absolute())
         try:
-            LOGGER.info("Attempting to render ODFs...")
+            LOGGER.info('Attempting to render ODFs...')
             odf_roi_plot(
                 odf_4d,
                 sphere,
@@ -177,9 +177,9 @@ def recon_plot():
             LOGGER.warning(exc)
             sys.exit(1)
 
-        LOGGER.info(f"Saved odfs image to {odfs_png_file}")
+        LOGGER.info(f'Saved odfs image to {odfs_png_file}')
     else:
-        LOGGER.info("Not plotting ODFs.")
+        LOGGER.info('Not plotting ODFs.')
 
     display.stop()
     sys.exit(0)
@@ -235,7 +235,7 @@ def plot_peak_slice(
     if normalize_peaks:
         peak_values = peak_values / peak_values.max() * np.pi
     peak_actor = actor.peak_slicer(peak_dirs, peak_values, colors=None)
-    image_actor = actor.slicer(image_slice, opacity=0.6, interpolation="nearest")
+    image_actor = actor.slicer(image_slice, opacity=0.6, interpolation='nearest')
     image_size = (tile_size, tile_size)
     scene = window.Scene()
     scene.add(image_actor)
@@ -256,7 +256,7 @@ def peak_slice_series(
     background_data,
     out_file,
     mask_image=None,
-    prefix="odf",
+    prefix='odf',
     tile_size=1200,
     n_cuts=3,
     padding=4,
@@ -265,17 +265,17 @@ def peak_slice_series(
 
     # Make a slice mask to reduce memory
     if mask_image is None:
-        LOGGER.info("No mask image for plotting peaks")
+        LOGGER.info('No mask image for plotting peaks')
         image_mask = np.ones(background_data.shape)
     else:
         image_mask = nb.load(mask_image).get_fdata()
 
     slice_indices = slices_from_bbox(background_data, cuts=n_cuts, padding=padding)
-    LOGGER.info("Plotting slice indices %s", slice_indices)
+    LOGGER.info('Plotting slice indices %s', slice_indices)
     # Render the axial slices
-    z_image = Image.new("RGB", (tile_size, tile_size * n_cuts))
-    for slicenum, z_slice in enumerate(slice_indices["z"]):
-        png_file = "{}_tra_{:03d}.png".format(prefix, z_slice)
+    z_image = Image.new('RGB', (tile_size, tile_size * n_cuts))
+    for slicenum, z_slice in enumerate(slice_indices['z']):
+        png_file = '{}_tra_{:03d}.png'.format(prefix, z_slice)
         plot_peak_slice(
             odf_4d,
             sphere,
@@ -290,9 +290,9 @@ def peak_slice_series(
         z_image.paste(Image.open(png_file), (0, slicenum * tile_size))
 
     # Render the sagittal slices
-    x_image = Image.new("RGB", (tile_size, tile_size * n_cuts))
-    for slicenum, x_slice in enumerate(slice_indices["x"]):
-        png_file = "{}_sag_{:03d}.png".format(prefix, x_slice)
+    x_image = Image.new('RGB', (tile_size, tile_size * n_cuts))
+    for slicenum, x_slice in enumerate(slice_indices['x']):
+        png_file = '{}_sag_{:03d}.png'.format(prefix, x_slice)
         plot_peak_slice(
             odf_4d,
             sphere,
@@ -307,9 +307,9 @@ def peak_slice_series(
         x_image.paste(Image.open(png_file), (0, slicenum * tile_size))
 
     # Render the coronal slices
-    y_image = Image.new("RGB", (tile_size, tile_size * n_cuts))
-    for slicenum, y_slice in enumerate(slice_indices["y"]):
-        png_file = "{}_cor_{:03d}.png".format(prefix, y_slice)
+    y_image = Image.new('RGB', (tile_size, tile_size * n_cuts))
+    for slicenum, y_slice in enumerate(slice_indices['y']):
+        png_file = '{}_cor_{:03d}.png'.format(prefix, y_slice)
         plot_peak_slice(
             odf_4d,
             sphere,
@@ -323,7 +323,7 @@ def peak_slice_series(
         )
         y_image.paste(Image.open(png_file), (0, slicenum * tile_size))
 
-    final_image = Image.new("RGB", (tile_size * 3, tile_size * n_cuts))
+    final_image = Image.new('RGB', (tile_size * 3, tile_size * n_cuts))
     final_image.paste(z_image, (0, 0))
     final_image.paste(x_image, (tile_size, 0))
     final_image.paste(y_image, (tile_size * 2, 0))
@@ -343,17 +343,17 @@ def peaks_from_odfs(
 
     shape = odf4d.shape[:-1]
     if mask is None:
-        mask = np.ones(shape, dtype="bool")
+        mask = np.ones(shape, dtype='bool')
     else:
         if mask.shape != shape:
-            raise ValueError("Mask is not the same shape as data.")
+            raise ValueError('Mask is not the same shape as data.')
 
     gfa_array = np.zeros(shape)
     qa_array = np.zeros((shape + (npeaks,)))
 
     peak_dirs = np.zeros((shape + (npeaks, 3)))
     peak_values = np.zeros((shape + (npeaks,)))
-    peak_indices = np.zeros((shape + (npeaks,)), dtype="int")
+    peak_indices = np.zeros((shape + (npeaks,)), dtype='int')
     peak_indices.fill(-1)
 
     global_max = -np.inf
@@ -445,7 +445,7 @@ def plot_an_odf_slice(
     odf_actor = actor.odf_slicer(
         odf_slice, sphere=full_sphere, colormap=None, scale=0.6, mask=image_slice
     )
-    image_actor = actor.slicer(image_slice, opacity=0.6, interpolation="nearest")
+    image_actor = actor.slicer(image_slice, opacity=0.6, interpolation='nearest')
     image_size = (tile_size, tile_size)
     scene = window.Scene()
     scene.add(image_actor)
@@ -466,14 +466,14 @@ def odf_roi_plot(
     background_data,
     out_file,
     roi_file,
-    prefix="odf",
+    prefix='odf',
     tile_size=1200,
     subtract_iso=False,
     mask=None,
 ):
 
     roi_data = nb.load(roi_file).get_fdata()
-    roi_image = Image.new("RGB", (tile_size * 3, tile_size))
+    roi_image = Image.new('RGB', (tile_size * 3, tile_size))
     roi1_centroid, roi1_distance = get_camera_for_roi(roi_data, 1, 2)
     roi2_centroid, roi2_distance = get_camera_for_roi(roi_data, 2, 1)
     roi3_centroid, roi3_distance = get_camera_for_roi(roi_data, 3, 1)
@@ -487,7 +487,7 @@ def odf_roi_plot(
 
     # Fill out the other half of the sphere
     odf_sphere = halfsphere.mirror()
-    semiovale_axial_file = "{}_semoivale_axial.png".format(prefix)
+    semiovale_axial_file = '{}_semoivale_axial.png'.format(prefix)
     plot_an_odf_slice(
         odf_4d,
         odf_sphere,
@@ -503,7 +503,7 @@ def odf_roi_plot(
     roi_image.paste(Image.open(semiovale_axial_file), (0, 0))
 
     # Render the coronal slice with a double-crossing
-    cst_x_cc_file = "{}_CSTxCC.png".format(prefix)
+    cst_x_cc_file = '{}_CSTxCC.png'.format(prefix)
     plot_an_odf_slice(
         odf_4d,
         odf_sphere,
@@ -519,7 +519,7 @@ def odf_roi_plot(
     roi_image.paste(Image.open(cst_x_cc_file), (tile_size, 0))
 
     # Render the corpus callosum
-    cc_file = "{}_CC.png".format(prefix)
+    cc_file = '{}_CC.png'.format(prefix)
     plot_an_odf_slice(
         odf_4d,
         odf_sphere,

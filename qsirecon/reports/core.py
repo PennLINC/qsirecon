@@ -33,9 +33,9 @@ def run_reports(
     subject_label,
     run_uuid,
     bootstrap_file=None,
-    out_filename="report.html",
+    out_filename='report.html',
     reportlets_dir=None,
-    errorname="report.err",
+    errorname='report.err',
     metadata=None,
     **entities,
 ):
@@ -62,7 +62,7 @@ def run_reports(
         import traceback
 
         # Store the list of subjects for which report generation failed
-        traceback.print_exception(*sys.exc_info(), file=str(Path(output_dir) / "logs" / errorname))
+        traceback.print_exception(*sys.exc_info(), file=str(Path(output_dir) / 'logs' / errorname))
         return subject_label
 
     return None
@@ -73,7 +73,7 @@ def generate_reports(
     output_dir,
     run_uuid,
     bootstrap_file=None,
-    qsirecon_suffix="",
+    qsirecon_suffix='',
 ):
     """Generate reports for a list of subjects.
 
@@ -83,26 +83,26 @@ def generate_reports(
     """
 
     errors = []
-    bootstrap_file = data.load("reports-spec.yml") if bootstrap_file is None else bootstrap_file
+    bootstrap_file = data.load('reports-spec.yml') if bootstrap_file is None else bootstrap_file
 
     bids_filters = config.execution.bids_filters or {}
     for subject_label in config.execution.participant_label:
-        subject_id = subject_label[4:] if subject_label.startswith("sub-") else subject_label
+        subject_id = subject_label[4:] if subject_label.startswith('sub-') else subject_label
 
         # Extract session IDs from the processed DWIs
         sessions = config.execution.layout.get_sessions(
             subject=subject_label,
             session=config.execution.session_id or Query.OPTIONAL,
-            suffix="dwi",
-            **bids_filters.get("dwi", {}),
+            suffix='dwi',
+            **bids_filters.get('dwi', {}),
         )
-        if output_level == "session" and not sessions:
+        if output_level == 'session' and not sessions:
             report_dir = output_dir
-            output_level = "subject"
+            output_level = 'subject'
             config.loggers.workflow.warning(
-                "Session-level reports were requested, "
-                "but data was found without a session level. "
-                "Writing out reports to subject level."
+                'Session-level reports were requested, '
+                'but data was found without a session level. '
+                'Writing out reports to subject level.'
             )
 
         if not sessions:
@@ -110,17 +110,17 @@ def generate_reports(
 
         for session_label in sessions:
             if session_label == Query.NONE:
-                html_report = html_report = f"sub-{subject_id}.html"
+                html_report = html_report = f'sub-{subject_id}.html'
                 session_label = None
             else:
-                html_report = html_report = f"sub-{subject_id}_ses-{session_label}.html"
+                html_report = html_report = f'sub-{subject_id}_ses-{session_label}.html'
 
-            if output_level == "root":
+            if output_level == 'root':
                 report_dir = output_dir
-            elif output_level == "subject":
-                report_dir = Path(output_dir) / f"sub-{subject_id}"
-            elif output_level == "session":
-                report_dir = Path(output_dir) / f"sub-{subject_id}" / f"ses-{session_label}"
+            elif output_level == 'subject':
+                report_dir = Path(output_dir) / f'sub-{subject_id}'
+            elif output_level == 'session':
+                report_dir = Path(output_dir) / f'sub-{subject_id}' / f'ses-{session_label}'
 
             report_error = run_reports(
                 report_dir,
@@ -129,10 +129,10 @@ def generate_reports(
                 bootstrap_file=bootstrap_file,
                 out_filename=html_report,
                 reportlets_dir=output_dir,
-                errorname=f"report-{run_uuid}-{subject_label}.err",
+                errorname=f'report-{run_uuid}-{subject_label}.err',
                 metadata={
-                    "qsirecon_suffix": qsirecon_suffix,
-                    "session_str": f", session '{session_label}'" if session_label else "",
+                    'qsirecon_suffix': qsirecon_suffix,
+                    'session_str': f", session '{session_label}'" if session_label else '',
                 },
                 subject=subject_label,
                 session=session_label,

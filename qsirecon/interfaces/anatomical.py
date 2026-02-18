@@ -25,12 +25,12 @@ from nipype.interfaces.base import (
 )
 from nipype.utils.filemanip import fname_presuffix
 
-LOGGER = logging.getLogger("nipype.interface")
+LOGGER = logging.getLogger('nipype.interface')
 
 
 class QSIPrepAnatomicalIngressInputSpec(BaseInterfaceInputSpec):
     recon_input_dir = traits.Directory(
-        exists=True, mandatory=True, help="directory containing subject results directories"
+        exists=True, mandatory=True, help='directory containing subject results directories'
     )
     subject_id = traits.Str()
     subjects_dir = File(exists=True)
@@ -75,70 +75,70 @@ class QSIPrepAnatomicalIngress(SimpleInterface):
     def _run_interface(self, runtime):
         # The path to the output from the qsirecon run
         sub = self.inputs.subject_id
-        qp_root = op.join(self.inputs.recon_input_dir, "sub-" + sub)
-        anat_root = op.join(qp_root, "anat")
+        qp_root = op.join(self.inputs.recon_input_dir, 'sub-' + sub)
+        anat_root = op.join(qp_root, 'anat')
         # space-T1w files
         self._get_if_exists(
-            "acpc_aparc",
-            "%s/sub-%s*desc-aparcaseg_dseg.nii.*" % (anat_root, sub),
-            excludes=["space-MNI"],
+            'acpc_aparc',
+            '%s/sub-%s*desc-aparcaseg_dseg.nii.*' % (anat_root, sub),
+            excludes=['space-MNI'],
         )
         self._get_if_exists(
-            "acpc_seg", "%s/sub-%s_*dseg.nii*" % (anat_root, sub), excludes=["space-MNI", "aseg"]
+            'acpc_seg', '%s/sub-%s_*dseg.nii*' % (anat_root, sub), excludes=['space-MNI', 'aseg']
         )
         self._get_if_exists(
-            "acpc_aseg",
-            "%s/sub-%s_*aseg_dseg.nii*" % (anat_root, sub),
-            excludes=["space-MNI", "aparc"],
+            'acpc_aseg',
+            '%s/sub-%s_*aseg_dseg.nii*' % (anat_root, sub),
+            excludes=['space-MNI', 'aparc'],
         )
         self._get_if_exists(
-            "acpc_brain_mask",
-            "%s/sub-%s*_desc-brain_mask.nii*" % (anat_root, sub),
-            excludes=["space-MNI"],
+            'acpc_brain_mask',
+            '%s/sub-%s*_desc-brain_mask.nii*' % (anat_root, sub),
+            excludes=['space-MNI'],
         )
         self._get_if_exists(
-            "acpc_preproc",
-            "%s/sub-%s_desc-preproc_T*w.nii*" % (anat_root, sub),
-            excludes=["space-MNI"],
+            'acpc_preproc',
+            '%s/sub-%s_desc-preproc_T*w.nii*' % (anat_root, sub),
+            excludes=['space-MNI'],
         )
-        if "acpc_preproc" not in self._results:
-            LOGGER.warning("Unable to find a preprocessed T1w in %s", qp_root)
+        if 'acpc_preproc' not in self._results:
+            LOGGER.warning('Unable to find a preprocessed T1w in %s', qp_root)
         self._get_if_exists(
-            "acpc_csf_probseg",
-            "%s/sub-%s*_label-CSF_probseg.nii*" % (anat_root, sub),
-            excludes=["space-MNI"],
-        )
-        self._get_if_exists(
-            "acpc_gm_probseg",
-            "%s/sub-%s*_label-GM_probseg.nii*" % (anat_root, sub),
-            excludes=["space-MNI"],
+            'acpc_csf_probseg',
+            '%s/sub-%s*_label-CSF_probseg.nii*' % (anat_root, sub),
+            excludes=['space-MNI'],
         )
         self._get_if_exists(
-            "acpc_wm_probseg",
-            "%s/sub-%s*_label-WM_probseg.nii*" % (anat_root, sub),
-            excludes=["space-MNI"],
+            'acpc_gm_probseg',
+            '%s/sub-%s*_label-GM_probseg.nii*' % (anat_root, sub),
+            excludes=['space-MNI'],
         )
         self._get_if_exists(
-            "orig_to_acpc_xfm",
-            "%s/sub-%s*_from-orig_to-T*w_mode-image_xfm.txt" % (anat_root, sub),
+            'acpc_wm_probseg',
+            '%s/sub-%s*_label-WM_probseg.nii*' % (anat_root, sub),
+            excludes=['space-MNI'],
+        )
+        self._get_if_exists(
+            'orig_to_acpc_xfm',
+            '%s/sub-%s*_from-orig_to-T*w_mode-image_xfm.txt' % (anat_root, sub),
         )
         if self.inputs.infant_mode:
             self._get_if_exists(
-                "template_to_acpc_xfm",
-                "%s/sub-%s*_from-MNIInfant*_to-T*w*_xfm.h5" % (anat_root, sub),
+                'template_to_acpc_xfm',
+                '%s/sub-%s*_from-MNIInfant*_to-T*w*_xfm.h5' % (anat_root, sub),
             )
             self._get_if_exists(
-                "acpc_to_template_xfm",
-                "%s/sub-%s*_from-T*w_to-MNIInfant*_mode-image_xfm.h5" % (anat_root, sub),
+                'acpc_to_template_xfm',
+                '%s/sub-%s*_from-T*w_to-MNIInfant*_mode-image_xfm.h5' % (anat_root, sub),
             )
         else:
             self._get_if_exists(
-                "template_to_acpc_xfm",
-                "%s/sub-%s*_from-MNI152NLin2009cAsym_to-T*w*_xfm.h5" % (anat_root, sub),
+                'template_to_acpc_xfm',
+                '%s/sub-%s*_from-MNI152NLin2009cAsym_to-T*w*_xfm.h5' % (anat_root, sub),
             )
             self._get_if_exists(
-                "acpc_to_template_xfm",
-                "%s/sub-%s*_from-T*w_to-MNI152NLin2009cAsym_mode-image_xfm.h5" % (anat_root, sub),
+                'acpc_to_template_xfm',
+                '%s/sub-%s*_from-T*w_to-MNI152NLin2009cAsym_mode-image_xfm.h5' % (anat_root, sub),
             )
 
         return runtime
@@ -239,14 +239,15 @@ class CalculateSOP(SimpleInterface):
         # determine what the lmax was based on the number of volumes
         num_vols = img.shape[3]
         if num_vols not in lmax_lut:
-            raise ValueError("Not an SH image")
+            raise ValueError('Not an SH image')
         lmax = lmax_lut[num_vols]
 
         # Do we have enough SH coeffs to calculate all the SOPs?
         if self.inputs.order > lmax:
             raise Exception(
-                "Not enough SH coefficients (found {}) "
-                "to calculate SOP order {}".format(num_vols, self.inputs.order)
+                'Not enough SH coefficients (found {}) to calculate SOP order {}'.format(
+                    num_vols, self.inputs.order
+                )
             )
         sh_l, sh_m = get_l_m(lmax)
         sh_data = img.get_fdata()
@@ -258,7 +259,7 @@ class CalculateSOP(SimpleInterface):
         def calculate_order(order):
             out_fname = fname_presuffix(
                 self.inputs.sh_nifti,
-                suffix="q-%d_SOP.nii.gz" % order,
+                suffix='q-%d_SOP.nii.gz' % order,
                 use_ext=False,
                 newpath=runtime.cwd,
             )
@@ -266,7 +267,7 @@ class CalculateSOP(SimpleInterface):
 
             # Save with the new name in the sandbox
             nb.Nifti1Image(order_data, img.affine).to_filename(out_fname)
-            self._results["q%d_file" % order] = out_fname
+            self._results['q%d_file' % order] = out_fname
 
         # calculate!
         for order in range(2, self.inputs.order + 2, 2):
@@ -278,7 +279,7 @@ class CalculateSOP(SimpleInterface):
 class _VoxelSizeChooserInputSpec(BaseInterfaceInputSpec):
     voxel_size = traits.Float()
     input_image = File(exists=True)
-    anisotropic_strategy = traits.Enum("min", "max", "mean", usedefault=True)
+    anisotropic_strategy = traits.Enum('min', 'max', 'mean', usedefault=True)
 
 
 class _VoxelSizeChooserOutputSpec(TraitedSpec):
@@ -291,7 +292,7 @@ class VoxelSizeChooser(SimpleInterface):
 
     def _run_interface(self, runtime):
         if not isdefined(self.inputs.input_image) and not isdefined(self.inputs.voxel_size):
-            raise Exception("Either voxel_size or input_image need to be defined")
+            raise Exception('Either voxel_size or input_image need to be defined')
 
         # A voxel size was specified without an image
         if isdefined(self.inputs.voxel_size):
@@ -300,14 +301,14 @@ class VoxelSizeChooser(SimpleInterface):
             # An image was provided
             img = nb.load(self.inputs.input_image)
             zooms = img.header.get_zooms()[:3]
-            if self.inputs.anisotropic_strategy == "min":
+            if self.inputs.anisotropic_strategy == 'min':
                 voxel_size = min(zooms)
-            elif self.inputs.anisotropic_strategy == "max":
+            elif self.inputs.anisotropic_strategy == 'max':
                 voxel_size = max(zooms)
             else:
                 voxel_size = np.round(np.mean(zooms), 2)
 
-        self._results["voxel_size"] = voxel_size
+        self._results['voxel_size'] = voxel_size
         return runtime
 
 
@@ -329,31 +330,31 @@ class GetTemplate(SimpleInterface):
 
         template_name = self.inputs.template_name
         cohort = None
-        if "+" in template_name:
-            template_name, cohort = template_name.split("+")
+        if '+' in template_name:
+            template_name, cohort = template_name.split('+')
 
         template_file = str(
             get_template(
                 template_name,
                 cohort=cohort,
-                resolution="1",
+                resolution='1',
                 desc=None,
-                suffix="T1w",
-                extension=".nii.gz",
+                suffix='T1w',
+                extension='.nii.gz',
             ),
         )
         mask_file = str(
             get_template(
                 template_name,
                 cohort=cohort,
-                resolution="1",
-                desc="brain",
-                suffix="mask",
-                extension=".nii.gz",
+                resolution='1',
+                desc='brain',
+                suffix='mask',
+                extension='.nii.gz',
             ),
         )
 
-        self._results["template_file"] = template_file
-        self._results["mask_file"] = mask_file
+        self._results['template_file'] = template_file
+        self._results['mask_file'] = mask_file
 
         return runtime
