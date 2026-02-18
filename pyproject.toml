@@ -160,21 +160,21 @@ extend-select = [
 ]
 ignore = [
   "B006",  # Do not use mutable data structures for argument defaults (keep in ignore)
+  "S110",  # `try`-`except`-`pass` detected
   "B904",  # Within an `except` clause, raise exceptions
   "BLE001",  # Do not catch blind exceptions
   "B017",  # Do not assert blind exception: `Exception`
   "B905",  # `zip()` without an explicit `strict=` parameter
+  "S101",  # Use of `assert` detected
   "PT009",  # Use a regular `assert` instead of unittest-style `assertIn`
   "PT027",  # Use `pytest.raises` instead of unittest-style `assertRaises`
   "W605",  # [*] Invalid escape sequence: `\s`
-  "S101",  # Use of `assert` detected
   "E402",  # Module level import not at top of file
   "S607",  # Starting a process with a partial executable path
   "B028",  # No explicit `stacklevel` keyword argument found
   "S202",  # Uses of `tarfile.extractall()`
   "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
   "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
-  "S110",  # `try`-`except`-`pass` detected
   "A004",  # Import `ConnectionError` is shadowing a Python builtin
   "S608",  # Possible SQL injection vector through string-based query construction
   "S108",  # Probable insecure usage of temporary file or directory: "/tmp"
