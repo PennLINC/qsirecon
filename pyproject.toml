@@ -164,7 +164,6 @@ ignore = [
   "ISC003",  # Explicitly concatenated string should be implicitly concatenated
   "UP031",  # Use format specifiers instead of percent format
   "C405",  # Unnecessary tuple literal
-  "C414",  # Unnecessary `list()` call within `sorted()`
   "B904",  # Within an `except` clause, raise exceptions
   "BLE001",  # Do not catch blind exceptions
   "B017",  # Do not assert blind exception: `Exception`
