@@ -1,4 +1,3 @@
-#!python
 """
 Wrappers for the TORTOISE programs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
