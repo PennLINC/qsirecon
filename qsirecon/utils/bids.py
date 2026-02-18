@@ -495,7 +495,7 @@ def validate_input_dir(exec_env, bids_dir, participant_label):
         ignored_subs = all_subs.difference(selected_subs)
         if ignored_subs:
             for sub in ignored_subs:
-                validator_config_dict['ignoredFiles'].append('/sub-%s/**' % sub)
+                validator_config_dict['ignoredFiles'].append(f'/sub-{sub}/**')
     with tempfile.NamedTemporaryFile('w+') as temp:
         temp.write(json.dumps(validator_config_dict))
         temp.flush()

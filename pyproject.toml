@@ -160,7 +160,6 @@ extend-select = [
 ]
 ignore = [
   "B006",  # Do not use mutable data structures for argument defaults (keep in ignore)
-  "UP031",  # Use format specifiers instead of percent format
   "B904",  # Within an `except` clause, raise exceptions
   "BLE001",  # Do not catch blind exceptions
   "B017",  # Do not assert blind exception: `Exception`
@@ -180,7 +179,6 @@ ignore = [
   "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
   "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
   "S110",  # `try`-`except`-`pass` detected
-  "UP032",  # [*] Use f-string instead of `format` call
   "A004",  # Import `ConnectionError` is shadowing a Python builtin
   "S608",  # Possible SQL injection vector through string-based query construction
   "S108",  # Probable insecure usage of temporary file or directory: "/tmp"

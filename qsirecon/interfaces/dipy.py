@@ -190,25 +190,25 @@ class DipyReconInterface(SimpleInterface):
         )
         output_bval_file = fname_presuffix(
             self.inputs.dwi_file,
-            suffix='{}.bval'.format(scheme_name),
+            suffix=f'{scheme_name}.bval',
             newpath=runtime.cwd,
             use_ext=False,
         )
         output_bvec_file = fname_presuffix(
             self.inputs.dwi_file,
-            suffix='{}.bvec'.format(scheme_name),
+            suffix=f'{scheme_name}.bvec',
             newpath=runtime.cwd,
             use_ext=False,
         )
         output_b_file = fname_presuffix(
             self.inputs.dwi_file,
-            suffix='{}.b'.format(scheme_name),
+            suffix=f'{scheme_name}.b',
             newpath=runtime.cwd,
             use_ext=False,
         )
         # Copy in the bval and bvecs
-        bval_file = pkgr('qsirecon', 'data/schemes/{}.bval'.format(scheme_name))
-        bvec_file = pkgr('qsirecon', 'data/schemes/{}.bvec'.format(scheme_name))
+        bval_file = pkgr('qsirecon', f'data/schemes/{scheme_name}.bval')
+        bvec_file = pkgr('qsirecon', f'data/schemes/{scheme_name}.bvec')
         shutil.copyfile(bval_file, output_bval_file)
         shutil.copyfile(bvec_file, output_bvec_file)
         self._results['extrapolated_bvecs'] = bvec_file
@@ -600,25 +600,25 @@ class BrainSuiteShoreReconstruction(DipyReconInterface):
         )
         output_bval_file = fname_presuffix(
             self.inputs.dwi_file,
-            suffix='{}.bval'.format(scheme_name),
+            suffix=f'{scheme_name}.bval',
             newpath=runtime.cwd,
             use_ext=False,
         )
         output_bvec_file = fname_presuffix(
             self.inputs.dwi_file,
-            suffix='{}.bvec'.format(scheme_name),
+            suffix=f'{scheme_name}.bvec',
             newpath=runtime.cwd,
             use_ext=False,
         )
         output_b_file = fname_presuffix(
             self.inputs.dwi_file,
-            suffix='{}.b'.format(scheme_name),
+            suffix=f'{scheme_name}.b',
             newpath=runtime.cwd,
             use_ext=False,
         )
         # Copy in the bval and bvecs
-        bval_file = pkgr('qsirecon', 'data/schemes/{}.bval'.format(scheme_name))
-        bvec_file = pkgr('qsirecon', 'data/schemes/{}.bvec'.format(scheme_name))
+        bval_file = pkgr('qsirecon', f'data/schemes/{scheme_name}.bval')
+        bvec_file = pkgr('qsirecon', f'data/schemes/{scheme_name}.bvec')
         shutil.copyfile(bval_file, output_bval_file)
         shutil.copyfile(bvec_file, output_bvec_file)
         self._results['extrapolated_bvecs'] = bvec_file

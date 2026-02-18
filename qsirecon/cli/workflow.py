@@ -157,9 +157,7 @@ def build_boilerplate(config_file, workflow):
     config.load(config_file)
     logs_path = config.execution.output_dir / 'logs'
     boilerplate = workflow.visit_desc()
-    citation_files = {
-        ext: logs_path / ('CITATION.%s' % ext) for ext in ('bib', 'tex', 'md', 'html')
-    }
+    citation_files = {ext: logs_path / (f'CITATION.{ext}') for ext in ('bib', 'tex', 'md', 'html')}
 
     if boilerplate:
         # To please git-annex users and also to guarantee consistency
@@ -227,7 +225,7 @@ def copy_boilerplate(in_dir, out_dir):
     out_logs_path = Path(out_dir) / 'logs'
     out_logs_path.mkdir(exist_ok=True, parents=True)
     citation_files = {
-        ext: in_logs_path / ('CITATION.%s' % ext) for ext in ('bib', 'tex', 'md', 'html')
+        ext: in_logs_path / (f'CITATION.{ext}') for ext in ('bib', 'tex', 'md', 'html')
     }
     for ext, citation_file in citation_files.items():
         if citation_file.exists():

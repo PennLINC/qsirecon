@@ -414,19 +414,19 @@ def amplitudes_to_fibgz(
         # fill in the "fa" values
         fa_n = np.zeros(n_voxels)
         fa_n[flat_mask] = peak_vals[:, nfib]
-        dsi_mat['fa%d' % nfib] = fa_n.astype('float32')
+        dsi_mat[f'fa{nfib}'] = fa_n.astype('float32')
 
         # Fill in the index values
         index_n = np.zeros(n_voxels)
         index_n[flat_mask] = peak_indices[:, nfib]
-        dsi_mat['index%d' % nfib] = index_n.astype('int16')
+        dsi_mat[f'index{nfib}'] = index_n.astype('int16')
 
     # Add in the ODFs
     num_odf_matrices = n_odfs // ODF_COLS
     split_indices = (np.arange(num_odf_matrices) + 1) * ODF_COLS
     odf_splits = np.array_split(masked_odfs, split_indices, axis=0)
     for splitnum, odfs in enumerate(odf_splits):
-        dsi_mat['odf%d' % splitnum] = odfs.T.astype('float32')
+        dsi_mat[f'odf{splitnum}'] = odfs.T.astype('float32')
 
     dsi_mat['odf_vertices'] = odf_dirs.T
     dsi_mat['odf_faces'] = odf_faces.T
@@ -657,7 +657,7 @@ def fib2amps(fib_file, ref_image, subtract_iso=True):
     n_voxels = np.prod(dims)
     if odf_vars:
         for n in range(len(odf_vars)):
-            varname = 'odf%d' % n
+            varname = f'odf{n}'
             odfs = fibmat[varname]
             odf_sum = odfs.sum(0)
             odf_sum_mask = odf_sum > 0
@@ -692,7 +692,7 @@ def peaks_to_odfs(fibdict):
     odfs = np.zeros((num_odfs, num_directions), dtype='float32')
     row_indices = np.arange(num_odfs)
     for peak_num in range(num_indexes):
-        fa_values = fibdict['fa%d' % peak_num].squeeze().ravel(order='F')[flat_mask]
-        peak_indices = fibdict['index%d' % peak_num].squeeze().ravel(order='F')[flat_mask]
+        fa_values = fibdict[f'fa{peak_num}'].squeeze().ravel(order='F')[flat_mask]
+        peak_indices = fibdict[f'index{peak_num}'].squeeze().ravel(order='F')[flat_mask]
         odfs[row_indices, peak_indices] = fa_values
     return odfs

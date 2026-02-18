@@ -138,7 +138,7 @@ def process_crashfile(crashfile):
                 scope.set_extra(k, strv[0])
             else:
                 for i, chunk in enumerate(strv):
-                    scope.set_extra('%s_%02d' % (k, i), chunk)
+                    scope.set_extra(f'{k}_{i:02d}', chunk)
 
         fingerprint = ''
         issue_title = f'{node_name}: {gist}'

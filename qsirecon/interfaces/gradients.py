@@ -319,7 +319,7 @@ class ExtractB0s(SimpleInterface):
             bvals = np.loadtxt(self.inputs.bval_file)
             indices = np.flatnonzero(bvals < self.inputs.b0_threshold)
             if indices.size == 0:
-                raise ValueError('No b<%d images found' % self.inputs.b0_threshold)
+                raise ValueError(f'No b<{self.inputs.b0_threshold} images found')
         else:
             raise ValueError('No gradient information available')
         new_data = nim.index_img(self.inputs.dwi_series, indices)

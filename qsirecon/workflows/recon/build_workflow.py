@@ -263,7 +263,7 @@ def workflow_from_spec(inputs_dict, node_spec):
         parameters['plot_reports'] = False
 
     if node_name is None:
-        raise Exception('Node %s must have a "name" attribute' % node_spec)
+        raise Exception(f'Node {node_spec} must have a "name" attribute')
     kwargs = {
         'inputs_dict': inputs_dict,
         'name': node_name,
@@ -351,7 +351,7 @@ def workflow_from_spec(inputs_dict, node_spec):
         if node_spec['action'] == 'parcellate_scalars':
             return init_scalar_to_atlas_wf(**kwargs)
 
-    raise Exception('Unknown node %s' % pformat(node_spec))
+    raise Exception(f'Unknown node {pformat(node_spec)}')
 
 
 def _as_connections(attr_list, src_prefix='', dest_prefix=''):

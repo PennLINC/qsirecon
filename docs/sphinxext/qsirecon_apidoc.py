@@ -48,7 +48,7 @@ class QSIInterfaceDocstring(BaseNipypeDocstring):
             cmd = getattr(obj, '_cmd', '')
             if cmd and isinstance(cmd, str) and cmd.strip():
                 self._parsed_lines = [
-                    'Wrapped executable: ``%s``.' % cmd.strip(),
+                    f'Wrapped executable: ``{cmd.strip()}``.',
                     '',
                 ] + self._parsed_lines
         except Exception:
@@ -163,7 +163,7 @@ def _format_recon_spec_item(inputs, name, spec):
         if getattr(spec, 'desc', None):
             desc = ''.join([spec.desc[0].capitalize(), spec.desc[1:]])
             if not desc.endswith('.') and not desc.endswith('\n'):
-                desc = '%s.' % desc
+                desc = f'{desc}.'
             desc_lines += desc.splitlines()
     except Exception:
         pass
@@ -173,16 +173,11 @@ def _format_recon_spec_item(inputs, name, spec):
         if argstr and str(argstr).strip():
             pos = getattr(spec, 'position', None)
             if pos is None:
-                desc_lines += [
-                    'Maps to a command-line argument: :code:`{arg}`.'.format(
-                        arg=str(argstr).strip()
-                    )
-                ]
+                desc_lines += [f'Maps to a command-line argument: :code:`{str(argstr).strip()}`.']
             else:
                 desc_lines += [
-                    'Maps to a command-line argument: :code:`{arg}` (position: {pos}).'.format(
-                        arg=str(argstr).strip(), pos=pos
-                    )
+                    'Maps to a command-line argument: '
+                    f':code:`{str(argstr).strip()}` (position: {pos}).'
                 ]
     except Exception:
         pass
@@ -191,7 +186,9 @@ def _format_recon_spec_item(inputs, name, spec):
         xor = getattr(spec, 'xor', None)
         if xor:
             desc_lines += [
-                'Mutually **exclusive** with inputs: %s.' % ', '.join(['``%s``' % x for x in xor])
+                'Mutually **exclusive** with inputs: {}.'.format(
+                    ', '.join([f'``{x}``' for x in xor])
+                )
             ]
     except Exception:
         pass
@@ -200,7 +197,7 @@ def _format_recon_spec_item(inputs, name, spec):
         requires = getattr(spec, 'requires', None)
         if requires:
             desc_lines += [
-                '**Requires** inputs: %s.' % ', '.join(['``%s``' % x for x in requires])
+                '**Requires** inputs: {}.'.format(', '.join([f'``{x}``' for x in requires]))
             ]
     except Exception:
         pass
@@ -210,7 +207,7 @@ def _format_recon_spec_item(inputs, name, spec):
             default = spec.default_value()[1]
             if isinstance(default, (bytes, str)) and not default:
                 default = '""'
-            desc_lines += ['(Default value: ``%s``)' % str(default)]
+            desc_lines += [f'(Default value: ``{str(default)}``)']
     except Exception:
         pass
 
@@ -392,15 +389,15 @@ def _format_recon_spec_table(inputs, items):
 
         # Emit row
         lines += [
-            '   * - {}'.format(name),
-            '     - {}'.format(type_info),
-            '     - {}'.format(cli_text),
-            '     - {}'.format(default_text),
-            '     - {}'.format(desc_lines[0]),
+            f'   * - {name}',
+            f'     - {type_info}',
+            f'     - {cli_text}',
+            f'     - {default_text}',
+            f'     - {desc_lines[0]}',
         ]
         # Any additional description lines
         for extra in desc_lines[1:]:
-            lines.append('       {}'.format(extra))
+            lines.append(f'       {extra}')
 
     return lines
 

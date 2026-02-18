@@ -78,65 +78,65 @@ class QSIPrepAnatomicalIngress(SimpleInterface):
         # space-T1w files
         self._get_if_exists(
             'acpc_aparc',
-            '%s/sub-%s*desc-aparcaseg_dseg.nii.*' % (anat_root, sub),
+            f'{anat_root}/sub-{sub}*desc-aparcaseg_dseg.nii.*',
             excludes=['space-MNI'],
         )
         self._get_if_exists(
-            'acpc_seg', '%s/sub-%s_*dseg.nii*' % (anat_root, sub), excludes=['space-MNI', 'aseg']
+            'acpc_seg', f'{anat_root}/sub-{sub}_*dseg.nii*', excludes=['space-MNI', 'aseg']
         )
         self._get_if_exists(
             'acpc_aseg',
-            '%s/sub-%s_*aseg_dseg.nii*' % (anat_root, sub),
+            f'{anat_root}/sub-{sub}_*aseg_dseg.nii*',
             excludes=['space-MNI', 'aparc'],
         )
         self._get_if_exists(
             'acpc_brain_mask',
-            '%s/sub-%s*_desc-brain_mask.nii*' % (anat_root, sub),
+            f'{anat_root}/sub-{sub}*_desc-brain_mask.nii*',
             excludes=['space-MNI'],
         )
         self._get_if_exists(
             'acpc_preproc',
-            '%s/sub-%s_desc-preproc_T*w.nii*' % (anat_root, sub),
+            f'{anat_root}/sub-{sub}_desc-preproc_T*w.nii*',
             excludes=['space-MNI'],
         )
         if 'acpc_preproc' not in self._results:
             LOGGER.warning('Unable to find a preprocessed T1w in %s', qp_root)
         self._get_if_exists(
             'acpc_csf_probseg',
-            '%s/sub-%s*_label-CSF_probseg.nii*' % (anat_root, sub),
+            f'{anat_root}/sub-{sub}*_label-CSF_probseg.nii*',
             excludes=['space-MNI'],
         )
         self._get_if_exists(
             'acpc_gm_probseg',
-            '%s/sub-%s*_label-GM_probseg.nii*' % (anat_root, sub),
+            f'{anat_root}/sub-{sub}*_label-GM_probseg.nii*',
             excludes=['space-MNI'],
         )
         self._get_if_exists(
             'acpc_wm_probseg',
-            '%s/sub-%s*_label-WM_probseg.nii*' % (anat_root, sub),
+            f'{anat_root}/sub-{sub}*_label-WM_probseg.nii*',
             excludes=['space-MNI'],
         )
         self._get_if_exists(
             'orig_to_acpc_xfm',
-            '%s/sub-%s*_from-orig_to-T*w_mode-image_xfm.txt' % (anat_root, sub),
+            f'{anat_root}/sub-{sub}*_from-orig_to-T*w_mode-image_xfm.txt',
         )
         if self.inputs.infant_mode:
             self._get_if_exists(
                 'template_to_acpc_xfm',
-                '%s/sub-%s*_from-MNIInfant*_to-T*w*_xfm.h5' % (anat_root, sub),
+                f'{anat_root}/sub-{sub}*_from-MNIInfant*_to-T*w*_xfm.h5',
             )
             self._get_if_exists(
                 'acpc_to_template_xfm',
-                '%s/sub-%s*_from-T*w_to-MNIInfant*_mode-image_xfm.h5' % (anat_root, sub),
+                f'{anat_root}/sub-{sub}*_from-T*w_to-MNIInfant*_mode-image_xfm.h5',
             )
         else:
             self._get_if_exists(
                 'template_to_acpc_xfm',
-                '%s/sub-%s*_from-MNI152NLin2009cAsym_to-T*w*_xfm.h5' % (anat_root, sub),
+                f'{anat_root}/sub-{sub}*_from-MNI152NLin2009cAsym_to-T*w*_xfm.h5',
             )
             self._get_if_exists(
                 'acpc_to_template_xfm',
-                '%s/sub-%s*_from-T*w_to-MNI152NLin2009cAsym_mode-image_xfm.h5' % (anat_root, sub),
+                f'{anat_root}/sub-{sub}*_from-T*w_to-MNI152NLin2009cAsym_mode-image_xfm.h5',
             )
 
         return runtime
@@ -243,9 +243,8 @@ class CalculateSOP(SimpleInterface):
         # Do we have enough SH coeffs to calculate all the SOPs?
         if self.inputs.order > lmax:
             raise Exception(
-                'Not enough SH coefficients (found {}) to calculate SOP order {}'.format(
-                    num_vols, self.inputs.order
-                )
+                f'Not enough SH coefficients (found {num_vols}) to calculate SOP order '
+                f'{self.inputs.order}'
             )
         sh_l, sh_m = get_l_m(lmax)
         sh_data = img.get_fdata()
@@ -257,7 +256,7 @@ class CalculateSOP(SimpleInterface):
         def calculate_order(order):
             out_fname = fname_presuffix(
                 self.inputs.sh_nifti,
-                suffix='q-%d_SOP.nii.gz' % order,
+                suffix=f'q-{order}_SOP.nii.gz',
                 use_ext=False,
                 newpath=runtime.cwd,
             )
@@ -265,7 +264,7 @@ class CalculateSOP(SimpleInterface):
 
             # Save with the new name in the sandbox
             nb.Nifti1Image(order_data, img.affine).to_filename(out_fname)
-            self._results['q%d_file' % order] = out_fname
+            self._results[f'q{order}_file'] = out_fname
 
         # calculate!
         for order in range(2, self.inputs.order + 2, 2):

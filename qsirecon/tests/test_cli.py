@@ -788,7 +788,7 @@ def _run_and_generate(test_name, parameters, test_main=False):
         build_boilerplate(str(config_file), qsirecon_wf)
         config.loggers.workflow.log(
             15,
-            '\n'.join(['config:'] + ['\t\t%s' % s for s in config.dumps().splitlines()]),
+            '\n'.join(['config:'] + [f'\t\t{s}' for s in config.dumps().splitlines()]),
         )
 
         qsirecon_wf.run(**config.nipype.get_plugin())
