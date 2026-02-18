@@ -187,7 +187,6 @@ ignore = [
   "A004",  # Import `ConnectionError` is shadowing a Python builtin
   "C419",  # Unnecessary list comprehension
   "S608",  # Possible SQL injection vector through string-based query construction
-  "UP018",  # [*] Unnecessary `str` call (rewrite as a literal)
   "ICN001",  # `matplotlib` should be imported as `mpl`
   "S108",  # Probable insecure usage of temporary file or directory: "/tmp"
   "S602",  # `subprocess` call with `shell=True` identified, security issue

@@ -342,7 +342,7 @@ def concatenate_bvals(bval_list, out_file):
         collected_vals.append(np.loadtxt(bval_file, ndmin=1))
     final_bvals = np.concatenate(collected_vals).squeeze()
     if out_file is not None:
-        np.savetxt(out_file, final_bvals, fmt=str('%i'))
+        np.savetxt(out_file, final_bvals, fmt='%i')
     return final_bvals
 
 

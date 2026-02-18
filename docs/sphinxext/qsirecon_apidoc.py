@@ -465,12 +465,12 @@ def _format_recon_spec_blocks(inputs, items):
         if cli_text:
             lines.append(
                 '     <div class="recon-spec-cli"><span class="recon-label">CLI</span>'
-                 f'<code>{cli_text}</code></div>'
+                f'<code>{cli_text}</code></div>'
             )
         if default_text:
             lines.append(
                 '     <div class="recon-spec-default"><span class="recon-label">Default</span>'
-                 f'<code>{default_text}</code></div>'
+                f'<code>{default_text}</code></div>'
             )
         lines.append('   </div>')
 
