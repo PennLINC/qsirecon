@@ -163,7 +163,7 @@ def init_dwi_recon_workflow(
                     inputnode,
                     node,
                     _as_connections(
-                        connect_from_qsirecon - set(('mapping_metadata',)),
+                        connect_from_qsirecon - {'mapping_metadata'},
                         dest_prefix='inputnode.',
                     ),
                 ),
@@ -181,7 +181,7 @@ def init_dwi_recon_workflow(
                     upstream_node,
                     node,
                     _as_connections(
-                        connect_from_upstream - set(('mapping_metadata',)),
+                        connect_from_upstream - {'mapping_metadata'},
                         src_prefix='outputnode.',
                         dest_prefix='inputnode.',
                     ),
@@ -224,7 +224,7 @@ def init_dwi_recon_workflow(
                     special_upstream_node,
                     node,
                     _as_connections(
-                        connect_from_special_upstream - set(('mapping_metadata',)),
+                        connect_from_special_upstream - {'mapping_metadata'},
                         src_prefix='outputnode.',
                         dest_prefix='inputnode.',
                     ),

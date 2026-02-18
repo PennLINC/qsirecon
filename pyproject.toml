@@ -163,7 +163,6 @@ ignore = [
   "ISC001",  # Implicitly concatenated string literals on one line
   "ISC003",  # Explicitly concatenated string should be implicitly concatenated
   "UP031",  # Use format specifiers instead of percent format
-  "C405",  # Unnecessary tuple literal
   "B904",  # Within an `except` clause, raise exceptions
   "BLE001",  # Do not catch blind exceptions
   "B017",  # Do not assert blind exception: `Exception`
