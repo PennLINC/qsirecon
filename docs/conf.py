@@ -38,15 +38,15 @@ from sphinxcontrib.bibtex.style.referencing.author_year import (
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.append(os.path.abspath("sphinxext"))
-sys.path.insert(0, os.path.abspath("../qsirecon"))
+sys.path.append(os.path.abspath('sphinxext'))
+sys.path.insert(0, os.path.abspath('../qsirecon'))
 
 from github_link import make_linkcode_resolve
 
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
-needs_sphinx = "4.2.0"
+needs_sphinx = '4.2.0'
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -55,59 +55,59 @@ extensions = [
     # "matplotlib.sphinxext.plot_directive",
     # "nbsphinx",
     # Use QSIRecon's custom apidoc processor instead of Nipype's default
-    "qsirecon_apidoc",
-    "nipype.sphinxext.plot_workflow",
-    "recommonmark",
-    "sphinx.ext.autodoc",
-    "sphinx.ext.coverage",
-    "sphinx.ext.doctest",
+    'qsirecon_apidoc',
+    'nipype.sphinxext.plot_workflow',
+    'recommonmark',
+    'sphinx.ext.autodoc',
+    'sphinx.ext.coverage',
+    'sphinx.ext.doctest',
     # "sphinx.ext.graphviz",
     # "sphinx.ext.inheritance_diagram",
-    "sphinx.ext.intersphinx",
-    "sphinx.ext.linkcode",
-    "sphinx.ext.mathjax",
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.linkcode',
+    'sphinx.ext.mathjax',
     # "sphinx.ext.napoleon",
-    "sphinx_markdown_tables",
-    "sphinxarg.ext",  # argparse extension
-    "sphinxcontrib.apidoc",
-    "sphinxcontrib.bibtex",
-    "sphinx_design",
+    'sphinx_markdown_tables',
+    'sphinxarg.ext',  # argparse extension
+    'sphinxcontrib.apidoc',
+    'sphinxcontrib.bibtex',
+    'sphinx_design',
 ]
 
 # Mock modules in autodoc:
 autodoc_mock_imports = [
-    "matplotlib",
-    "nilearn",
-    "numpy",
-    "pandas",
-    "pygraphviz",
-    "seaborn",
+    'matplotlib',
+    'nilearn',
+    'numpy',
+    'pandas',
+    'pygraphviz',
+    'seaborn',
     # Mock internal optional module used by CLI to avoid import errors in docs
-    "qsirecon.viz.reports",
+    'qsirecon.viz.reports',
     # Mock Cython module that is not importable at doc build time
-    "qsirecon.utils.maths",
+    'qsirecon.utils.maths',
 ]
 
 # NOTE: Not in qsirecon
 # autosectionlabel_prefix_document = True
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
+templates_path = ['_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffixes as a list of string:
-source_suffix = [".rst", ".md"]
+source_suffix = ['.rst', '.md']
 
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
 
 # The master toctree document.
-master_doc = "index"
+master_doc = 'index'
 
 # General information about the project.
-project = "qsirecon"
-author = "qsirecon team"
-copyright = f"2021-{datetime.now().year}, {author}"
+project = 'qsirecon'
+author = 'qsirecon team'
+copyright = f'2021-{datetime.now().year}, {author}'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -123,7 +123,7 @@ release = qsirecon.__version__
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = "en"
+language = 'en'
 
 # There are two options for replacing |today|: either, you set today to some
 # non-false value, then it is used:
@@ -134,7 +134,7 @@ language = "en"
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -152,7 +152,7 @@ exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "default"
+pygments_style = 'default'
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
@@ -187,34 +187,34 @@ napoleon_attr_annotations = True
 # https://github.com/sphinx-contrib/napoleon/pull/10 is merged.
 napoleon_use_param = False
 napoleon_custom_sections = [
-    ("Inputs", "Parameters"),
-    ("Outputs", "Parameters"),
-    ("Attributes", "Parameters"),
-    ("Mandatory Inputs", "Parameters"),
-    ("Optional Inputs", "Parameters"),
-    ("License", "License"),
+    ('Inputs', 'Parameters'),
+    ('Outputs', 'Parameters'),
+    ('Attributes', 'Parameters'),
+    ('Mandatory Inputs', 'Parameters'),
+    ('Optional Inputs', 'Parameters'),
+    ('License', 'License'),
 ]
 
 # -- Extension configuration -------------------------------------------------
-apidoc_module_dir = "../qsirecon"
-apidoc_output_dir = "api"
-apidoc_excluded_paths = ["conftest.py", "*/tests/*", "tests/*", "data/*"]
+apidoc_module_dir = '../qsirecon'
+apidoc_output_dir = 'api'
+apidoc_excluded_paths = ['conftest.py', '*/tests/*', 'tests/*', 'data/*']
 apidoc_excluded_paths += [
     # Exclude config module to avoid duplicate object descriptions
-    "config.py",
+    'config.py',
     # Skip problematic utils/shm.py from docs
-    "utils/shm.py",
+    'utils/shm.py',
     # Avoid duplicate/invalid module references from package docstring
-    "workflows/recon/__init__.py",
+    'workflows/recon/__init__.py',
 ]
 apidoc_separate_modules = True
-apidoc_extra_args = ["--module-first", "-d 1", "-T"]
+apidoc_extra_args = ['--module-first', '-d 1', '-T']
 
 # -- Options for HTML output ----------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "sphinx_rtd_theme"
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -243,7 +243,7 @@ html_theme = "sphinx_rtd_theme"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+html_static_path = ['_static']
 
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
@@ -308,7 +308,7 @@ html_static_path = ["_static"]
 # html_search_scorer = 'scorer.js'
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = "qsirecon_doc"
+htmlhelp_basename = 'qsirecon_doc'
 
 # -- Options for LaTeX output ---------------------------------------------
 
@@ -327,7 +327,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "qsirecon.tex", "qsirecon Documentation", author, "manual"),
+    (master_doc, 'qsirecon.tex', 'qsirecon Documentation', author, 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -355,7 +355,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "qsirecon", "qsirecon Documentation", [author], 1)]
+man_pages = [(master_doc, 'qsirecon', 'qsirecon Documentation', [author], 1)]
 
 # If true, show URL addresses after external links.
 # man_show_urls = False
@@ -369,12 +369,12 @@ man_pages = [(master_doc, "qsirecon", "qsirecon Documentation", [author], 1)]
 texinfo_documents = [
     (
         master_doc,
-        "qsirecon",
-        "qsirecon Documentation",
+        'qsirecon',
+        'qsirecon Documentation',
         author,
-        "qsirecon",
-        "One line description of project.",
-        "Miscellaneous",
+        'qsirecon',
+        'One line description of project.',
+        'Miscellaneous',
     ),
 ]
 
@@ -392,48 +392,47 @@ texinfo_documents = [
 
 # The following is used by sphinx.ext.linkcode to provide links to github
 linkcode_resolve = make_linkcode_resolve(
-    "qsirecon",
+    'qsirecon',
     (
-        "https://github.com/pennlinc/qsirecon/blob/"
-        "{revision}/{package}/{path}#L{lineno}"  # noqa: FS003
+        'https://github.com/pennlinc/qsirecon/blob/{revision}/{package}/{path}#L{lineno}'  # noqa: FS003
     ),
 )
 
 # -----------------------------------------------------------------------------
 # intersphinx
 # -----------------------------------------------------------------------------
-_python_version_str = f"{sys.version_info.major}.{sys.version_info.minor}"
-_python_doc_base = f"https://docs.python.org/{_python_version_str}"
+_python_version_str = f'{sys.version_info.major}.{sys.version_info.minor}'
+_python_doc_base = f'https://docs.python.org/{_python_version_str}'
 intersphinx_mapping = {
-    "python": (_python_doc_base, None),
-    "numpy": ("https://numpy.org/doc/stable/", None),
-    "scipy": (
-        "https://docs.scipy.org/doc/scipy/reference",
-        (None, "./_intersphinx/scipy-objects.inv"),
+    'python': (_python_doc_base, None),
+    'numpy': ('https://numpy.org/doc/stable/', None),
+    'scipy': (
+        'https://docs.scipy.org/doc/scipy/reference',
+        (None, './_intersphinx/scipy-objects.inv'),
     ),
-    "matplotlib": (
-        "https://matplotlib.org/stable/",
-        (None, "https://matplotlib.org/stable/objects.inv"),
+    'matplotlib': (
+        'https://matplotlib.org/stable/',
+        (None, 'https://matplotlib.org/stable/objects.inv'),
     ),
-    "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
-    "nibabel": ("https://nipy.org/nibabel/", None),
-    "nilearn": ("http://nilearn.github.io/stable/", None),
-    "nipype": ("https://nipype.readthedocs.io/en/latest/", None),
-    "dipy": (f"https://docs.dipy.org/{dipy_version}", None),
+    'pandas': ('https://pandas.pydata.org/pandas-docs/stable/', None),
+    'nibabel': ('https://nipy.org/nibabel/', None),
+    'nilearn': ('http://nilearn.github.io/stable/', None),
+    'nipype': ('https://nipype.readthedocs.io/en/latest/', None),
+    'dipy': (f'https://docs.dipy.org/{dipy_version}', None),
 }
-suppress_warnings = ["image.nonlocal_uri"]
+suppress_warnings = ['image.nonlocal_uri']
 
 # -----------------------------------------------------------------------------
 # sphinxcontrib-bibtex
 # -----------------------------------------------------------------------------
 bibtex_bibfiles = [
-    "../qsirecon/data/boilerplate.bib",
+    '../qsirecon/data/boilerplate.bib',
 ]
-bibtex_style = "unsrt"
+bibtex_style = 'unsrt'
 
 
 def _round_brackets() -> BracketStyle:
-    return BracketStyle(left="(", right=")")
+    return BracketStyle(left='(', right=')')
 
 
 @dataclass
@@ -446,17 +445,17 @@ class AuthorYearRoundReferenceStyle(AuthorYearReferenceStyle):
 
 
 sphinxcontrib.bibtex.plugin.register_plugin(
-    "sphinxcontrib.bibtex.style.referencing",
-    "author_year_round",
+    'sphinxcontrib.bibtex.style.referencing',
+    'author_year_round',
     AuthorYearRoundReferenceStyle,
 )
 
-bibtex_reference_style = "author_year_round"
-bibtex_footbibliography_header = ""
+bibtex_reference_style = 'author_year_round'
+bibtex_footbibliography_header = ''
 
 
 def setup(app):
     """Add extra formatting files."""
-    app.add_css_file("theme_overrides.css")
+    app.add_css_file('theme_overrides.css')
     # We need this for the boilerplate script
-    app.add_js_file("https://cdn.rawgit.com/chrisfilo/zenodo.js/v0.1/zenodo.js")
+    app.add_js_file('https://cdn.rawgit.com/chrisfilo/zenodo.js/v0.1/zenodo.js')

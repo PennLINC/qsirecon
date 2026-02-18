@@ -22,22 +22,22 @@ from ...interfaces.utils import TestReportPlot, WriteSidecar
 from ...utils.bids import clean_datasinks
 
 
-def init_conform_dwi_wf(inputs_dict, name="conform_dwi", qsirecon_suffix="", params={}):
+def init_conform_dwi_wf(inputs_dict, name='conform_dwi', qsirecon_suffix='', params={}):
     """If data were preprocessed elsewhere, ensure the gradients and images
     conform to LPS+ before running other parts of the pipeline."""
     workflow = Workflow(name=name)
-    workflow.__desc__ = "The dMRI data were conformed to LPS+ orientation."
+    workflow.__desc__ = 'The dMRI data were conformed to LPS+ orientation.'
 
     inputnode = pe.Node(
-        niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
+        niu.IdentityInterface(fields=recon_workflow_input_fields), name='inputnode'
     )
     outputnode = pe.Node(
-        niu.IdentityInterface(fields=["dwi_file", "bval_file", "bvec_file", "b_file"]),
-        name="outputnode",
+        niu.IdentityInterface(fields=['dwi_file', 'bval_file', 'bvec_file', 'b_file']),
+        name='outputnode',
     )
 
-    conform = pe.Node(ConformDwi(), name="conform_dwi")
-    grad_table = pe.Node(MRTrixGradientTable(), name="grad_table")
+    conform = pe.Node(ConformDwi(), name='conform_dwi')
+    grad_table = pe.Node(MRTrixGradientTable(), name='grad_table')
     workflow.connect([
         (inputnode, conform, [
             ('dwi_file', 'dwi_file')]),
@@ -56,38 +56,38 @@ def init_conform_dwi_wf(inputs_dict, name="conform_dwi", qsirecon_suffix="", par
 
 def init_discard_repeated_samples_wf(
     inputs_dict,
-    name="discard_repeats",
-    qsirecon_suffix="",
+    name='discard_repeats',
+    qsirecon_suffix='',
     params={},
 ):
     """Remove a sample if a similar direction/gradient has already been sampled."""
     workflow = Workflow(name=name)
     workflow.__desc__ = (
-        "Volumes in the dMRI data were discarded if a similar direction/gradient has already been "
-        "sampled. "
-        "A volume was classified as a duplicate if the distance between its scaled gradient "
+        'Volumes in the dMRI data were discarded if a similar direction/gradient has already been '
+        'sampled. '
+        'A volume was classified as a duplicate if the distance between its scaled gradient '
         f"vector and a previous volume's was less than {params.get('distance_cutoff', 5.0)} "
-        "s / mm^2."
+        's / mm^2.'
     )
 
     inputnode = pe.Node(
-        niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
+        niu.IdentityInterface(fields=recon_workflow_input_fields), name='inputnode'
     )
     outputnode = pe.Node(
         niu.IdentityInterface(
             fields=[
-                "dwi_file",
-                "bval_file",
-                "bvec_file",
-                "local_bvec_file",
-                "b_file",
-                "btable_file",
+                'dwi_file',
+                'bval_file',
+                'bvec_file',
+                'local_bvec_file',
+                'b_file',
+                'btable_file',
             ]
         ),
-        name="outputnode",
+        name='outputnode',
     )
 
-    discard_repeats = pe.Node(RemoveDuplicates(**params), name="discard_repeats")
+    discard_repeats = pe.Node(RemoveDuplicates(**params), name='discard_repeats')
     workflow.connect([
         (inputnode, discard_repeats, [
             ('dwi_file', 'dwi_file'),
@@ -108,32 +108,32 @@ def init_discard_repeated_samples_wf(
 
 def init_gradient_select_wf(
     inputs_dict,
-    name="gradient_select_wf",
-    qsirecon_suffix="",
+    name='gradient_select_wf',
+    qsirecon_suffix='',
     params={},
 ):
     """Remove a sample if a similar direction/gradient has already been sampled."""
     workflow = Workflow(name=name)
-    workflow.__desc__ = "Gradients were selected based on the requested shells."
+    workflow.__desc__ = 'Gradients were selected based on the requested shells.'
 
     inputnode = pe.Node(
-        niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
+        niu.IdentityInterface(fields=recon_workflow_input_fields), name='inputnode'
     )
     outputnode = pe.Node(
         niu.IdentityInterface(
             fields=[
-                "dwi_file",
-                "bval_file",
-                "bvec_file",
-                "local_bvec_file",
-                "b_file",
-                "btable_file",
+                'dwi_file',
+                'bval_file',
+                'bvec_file',
+                'local_bvec_file',
+                'b_file',
+                'btable_file',
             ]
         ),
-        name="outputnode",
+        name='outputnode',
     )
 
-    gradient_select = pe.Node(GradientSelect(**params), name="gradient_select")
+    gradient_select = pe.Node(GradientSelect(**params), name='gradient_select')
     workflow.connect([
         (inputnode, gradient_select, [
             ('dwi_file', 'dwi_file'),
@@ -153,7 +153,7 @@ def init_gradient_select_wf(
 
 
 def init_scalar_output_wf(
-    name="scalar_output_wf",
+    name='scalar_output_wf',
 ):
     """Write out reconstructed scalar maps."""
     workflow = Workflow(name=name)
@@ -161,35 +161,35 @@ def init_scalar_output_wf(
     inputnode = pe.Node(
         niu.IdentityInterface(
             fields=[
-                "source_file",
-                "scalar_configs",
+                'source_file',
+                'scalar_configs',
                 # Entities
-                "space",
+                'space',
             ],
         ),
-        name="inputnode",
+        name='inputnode',
     )
     outputnode = pe.Node(
-        niu.IdentityInterface(fields=["scalar_files", "scalar_configs"]),
-        name="outputnode",
+        niu.IdentityInterface(fields=['scalar_files', 'scalar_configs']),
+        name='outputnode',
     )
 
     organize_scalar_data = pe.MapNode(
         OrganizeScalarData(),
-        iterfield=["scalar_config"],
-        name="organize_scalar_data",
+        iterfield=['scalar_config'],
+        name='organize_scalar_data',
     )
-    workflow.connect([(inputnode, organize_scalar_data, [("scalar_configs", "scalar_config")])])
+    workflow.connect([(inputnode, organize_scalar_data, [('scalar_configs', 'scalar_config')])])
 
     ds_scalar = pe.MapNode(
         DerivativesDataSink(
-            dismiss_entities=["desc"],
-            datatype="dwi",
-            suffix="dwimap",
-            extension="nii.gz",
+            dismiss_entities=['desc'],
+            datatype='dwi',
+            suffix='dwimap',
+            extension='nii.gz',
         ),
-        iterfield=["in_file", "meta_dict", "model", "param", "desc"],
-        name="ds_scalar",
+        iterfield=['in_file', 'meta_dict', 'model', 'param', 'desc'],
+        name='ds_scalar',
         run_without_submitting=True,
     )
     workflow.connect([
@@ -209,8 +209,8 @@ def init_scalar_output_wf(
 
     disorganize_scalar_data = pe.MapNode(
         DisorganizeScalarData(),
-        iterfield=["scalar_config", "scalar_file"],
-        name="disorganize_scalar_data",
+        iterfield=['scalar_config', 'scalar_file'],
+        name='disorganize_scalar_data',
     )
     workflow.connect([
         (inputnode, disorganize_scalar_data, [("scalar_configs", "scalar_config")]),
@@ -221,32 +221,32 @@ def init_scalar_output_wf(
     return workflow
 
 
-def init_test_wf(inputs_dict, name="test_wf", qsirecon_suffix="test", params={}):
+def init_test_wf(inputs_dict, name='test_wf', qsirecon_suffix='test', params={}):
     """A workflow for testing how derivatives will be saved."""
     workflow = Workflow(name=name)
     workflow.__desc__ = (
-        "\n\n#### Testing Workflow\n\nThis workflow tests boilerplate, figures and derivatives."
+        '\n\n#### Testing Workflow\n\nThis workflow tests boilerplate, figures and derivatives.'
     )
 
     inputnode = pe.Node(
-        niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
+        niu.IdentityInterface(fields=recon_workflow_input_fields), name='inputnode'
     )
     outputnode = pe.Node(
-        niu.IdentityInterface(fields=["fibgz", "recon_scalars"]), name="outputnode"
+        niu.IdentityInterface(fields=['fibgz', 'recon_scalars']), name='outputnode'
     )
     outputnode.inputs.recon_scalars = []
 
-    write_metadata = pe.Node(WriteSidecar(metadata=inputs_dict), name="write_metadata")
-    plot_image = pe.Node(TestReportPlot(), name="plot_image")
+    write_metadata = pe.Node(WriteSidecar(metadata=inputs_dict), name='write_metadata')
+    plot_image = pe.Node(TestReportPlot(), name='plot_image')
 
     ds_metadata = pe.Node(
-        DerivativesDataSink(desc="availablemetadata"),
-        name="ds_metadata",
+        DerivativesDataSink(desc='availablemetadata'),
+        name='ds_metadata',
         run_without_submitting=True,
     )
     ds_plot = pe.Node(
-        DerivativesDataSink(desc="exampleplot", datatype="figures", extension=".png"),
-        name="ds_plot",
+        DerivativesDataSink(desc='exampleplot', datatype='figures', extension='.png'),
+        name='ds_plot',
         run_without_submitting=True,
     )
     workflow.connect([

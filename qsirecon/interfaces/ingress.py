@@ -34,7 +34,7 @@ from nipype.utils.filemanip import split_filename
 
 from .bids import get_bids_params
 
-LOGGER = logging.getLogger("nipype.interface")
+LOGGER = logging.getLogger('nipype.interface')
 
 
 class QSIPrepDWIIngressInputSpec(BaseInterfaceInputSpec):
@@ -74,31 +74,31 @@ class QSIPrepDWIIngress(SimpleInterface):
     def _run_interface(self, runtime):
         params = get_bids_params(self.inputs.dwi_file)
         self._results = {key: val for key, val in list(params.items()) if val is not None}
-        space = self._results.get("space_id")
+        space = self._results.get('space_id')
         if space is None:
-            raise Exception("Unable to detect space of %s" % self.inputs.dwi_file)
+            raise Exception('Unable to detect space of %s' % self.inputs.dwi_file)
 
         # Find the additional files
         out_root, fname, _ = split_filename(self.inputs.dwi_file)
-        self._results["bval_file"] = op.join(out_root, fname + ".bval")
-        self._results["bvec_file"] = op.join(out_root, fname + ".bvec")
-        self._get_if_exists("confounds_file", op.join(out_root, "*confounds.tsv"))
-        self._get_if_exists("local_bvec_file", op.join(out_root, fname[:-3] + "bvec.nii*"))
-        self._get_if_exists("b_file", op.join(out_root, fname + ".b"))
-        self._get_if_exists("mask_file", op.join(out_root, fname[:-11] + "brain_mask.nii*"))
-        self._get_if_exists("dwi_ref", op.join(out_root, fname[:-16] + "dwiref.nii*"))
-        self._results["dwi_file"] = self.inputs.dwi_file
+        self._results['bval_file'] = op.join(out_root, fname + '.bval')
+        self._results['bvec_file'] = op.join(out_root, fname + '.bvec')
+        self._get_if_exists('confounds_file', op.join(out_root, '*confounds.tsv'))
+        self._get_if_exists('local_bvec_file', op.join(out_root, fname[:-3] + 'bvec.nii*'))
+        self._get_if_exists('b_file', op.join(out_root, fname + '.b'))
+        self._get_if_exists('mask_file', op.join(out_root, fname[:-11] + 'brain_mask.nii*'))
+        self._get_if_exists('dwi_ref', op.join(out_root, fname[:-16] + 'dwiref.nii*'))
+        self._results['dwi_file'] = self.inputs.dwi_file
 
         # Image QC doesn't include space
-        self._get_if_exists("qc_file", self._get_qc_filename(out_root, params, "ImageQC", "csv"))
+        self._get_if_exists('qc_file', self._get_qc_filename(out_root, params, 'ImageQC', 'csv'))
         self._get_if_exists(
-            "slice_qc_file", self._get_qc_filename(out_root, params, "SliceQC", "json")
+            'slice_qc_file', self._get_qc_filename(out_root, params, 'SliceQC', 'json')
         )
 
         # Get the anatomical data
         path_parts = out_root.split(op.sep)[:-1]  # remove "dwi"
         # Anat is above ses
-        if path_parts[-1].startswith("ses"):
+        if path_parts[-1].startswith('ses'):
             path_parts.pop()
         return runtime
 
@@ -110,6 +110,6 @@ class QSIPrepDWIIngress(SimpleInterface):
             self._results[name] = files[0]
 
     def _get_qc_filename(self, out_root, params, desc, suffix):
-        used_keys = ["subject_id", "session_id", "acq_id", "dir_id", "run_id"]
-        fname = "_".join([params[key] for key in used_keys if params[key]])
-        return out_root + "/" + fname + "_desc-%s_dwi.%s" % (desc, suffix)
+        used_keys = ['subject_id', 'session_id', 'acq_id', 'dir_id', 'run_id']
+        fname = '_'.join([params[key] for key in used_keys if params[key]])
+        return out_root + '/' + fname + '_desc-%s_dwi.%s' % (desc, suffix)

@@ -10,7 +10,7 @@ Loading atlases
 
 import logging
 
-LOGGER = logging.getLogger("nipype.interface")
+LOGGER = logging.getLogger('nipype.interface')
 
 
 def collect_atlases(datasets, atlases, bids_filters={}):
@@ -53,14 +53,14 @@ def collect_atlases(datasets, atlases, bids_filters={}):
 
     from qsirecon.data import load as load_data
 
-    atlas_cfg = load_data("atlas_bids_config.json")
+    atlas_cfg = load_data('atlas_bids_config.json')
     bids_filters = bids_filters or {}
 
-    atlas_filter = bids_filters.get("atlas", {})
-    atlas_filter["suffix"] = atlas_filter.get("suffix") or "dseg"  # XCP-D only supports dsegs
-    atlas_filter["extension"] = [".nii.gz", ".nii"]
+    atlas_filter = bids_filters.get('atlas', {})
+    atlas_filter['suffix'] = atlas_filter.get('suffix') or 'dseg'  # XCP-D only supports dsegs
+    atlas_filter['extension'] = ['.nii.gz', '.nii']
     # Hardcoded spaces for now
-    atlas_filter["space"] = atlas_filter.get("space") or "MNI152NLin2009cAsym"
+    atlas_filter['space'] = atlas_filter.get('space') or 'MNI152NLin2009cAsym'
 
     atlas_cache = {}
     for dataset_name, dataset_path in datasets.items():
@@ -69,67 +69,67 @@ def collect_atlases(datasets, atlases, bids_filters={}):
         else:
             layout = dataset_path
 
-        if layout.get_dataset_description().get("DatasetType") != "atlas":
+        if layout.get_dataset_description().get('DatasetType') != 'atlas':
             continue
 
         for atlas in atlases:
             atlas_images = layout.get(
                 atlas=atlas,
                 **atlas_filter,
-                return_type="file",
+                return_type='file',
             )
             if not atlas_images:
                 continue
             elif len(atlas_images) > 1:
-                bulleted_list = "\n".join([f"  - {img}" for img in atlas_images])
+                bulleted_list = '\n'.join([f'  - {img}' for img in atlas_images])
                 LOGGER.warning(
-                    f"Multiple atlas images found for {atlas} with query {atlas_filter}:\n"
-                    f"{bulleted_list}\nUsing {atlas_images[0]}."
+                    f'Multiple atlas images found for {atlas} with query {atlas_filter}:\n'
+                    f'{bulleted_list}\nUsing {atlas_images[0]}.'
                 )
 
             if atlas in atlas_cache:
                 raise ValueError(f"Multiple datasets contain the same atlas '{atlas}'")
 
             atlas_image = atlas_images[0]
-            atlas_labels = layout.get_nearest(atlas_image, extension=".tsv", strict=False)
-            atlas_metadata_file = layout.get_nearest(atlas_image, extension=".json", strict=True)
+            atlas_labels = layout.get_nearest(atlas_image, extension='.tsv', strict=False)
+            atlas_metadata_file = layout.get_nearest(atlas_image, extension='.json', strict=True)
 
             if not atlas_labels:
-                raise FileNotFoundError(f"No TSV file found for {atlas_image}")
+                raise FileNotFoundError(f'No TSV file found for {atlas_image}')
 
             atlas_metadata = None
             if atlas_metadata_file:
-                with open(atlas_metadata_file, "r") as fo:
+                with open(atlas_metadata_file, 'r') as fo:
                     atlas_metadata = json.load(fo)
 
             atlas_cache[atlas] = {
-                "dataset": dataset_name,
-                "image": atlas_image,
-                "labels": atlas_labels,
-                "metadata": atlas_metadata,
+                'dataset': dataset_name,
+                'image': atlas_image,
+                'labels': atlas_labels,
+                'metadata': atlas_metadata,
             }
 
     errors = []
     for atlas in atlases:
         if atlas not in atlas_cache:
-            LOGGER.warning(f"No atlas images found for {atlas} with query {atlas_filter}")
-            errors.append(f"No atlas images found for {atlas} with query {atlas_filter}")
+            LOGGER.warning(f'No atlas images found for {atlas} with query {atlas_filter}')
+            errors.append(f'No atlas images found for {atlas} with query {atlas_filter}')
 
     for atlas, atlas_info in atlas_cache.items():
-        if not atlas_info["labels"]:
-            errors.append(f"No TSV file found for {atlas_info['image']}")
+        if not atlas_info['labels']:
+            errors.append(f'No TSV file found for {atlas_info["image"]}')
             continue
 
         # Check the contents of the labels file
-        df = pd.read_table(atlas_info["labels"])
-        if "label" not in df.columns:
+        df = pd.read_table(atlas_info['labels'])
+        if 'label' not in df.columns:
             errors.append(f"'label' column not found in {atlas_info['labels']}")
 
-        if "index" not in df.columns:
+        if 'index' not in df.columns:
             errors.append(f"'index' column not found in {atlas_info['labels']}")
 
     if errors:
-        error_str = "\n\t".join(errors)
-        raise ValueError(f"Errors found in atlas collection:\n\t{error_str}")
+        error_str = '\n\t'.join(errors)
+        raise ValueError(f'Errors found in atlas collection:\n\t{error_str}')
 
     return atlas_cache

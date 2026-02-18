@@ -40,18 +40,18 @@ from ...interfaces.utils import LoadResponseFunctions
 from ...utils.bids import clean_datasinks
 from ...utils.misc import remove_non_alphanumeric
 
-LOGGER = logging.getLogger("nipype.interface")
-MULTI_RESPONSE_ALGORITHMS = ("dhollander", "msmt_5tt")
+LOGGER = logging.getLogger('nipype.interface')
+MULTI_RESPONSE_ALGORITHMS = ('dhollander', 'msmt_5tt')
 
 CITATIONS = {
-    "dhollander": "(@dhollander2019response, @dhollander2016unsupervised)",
-    "msmt_5tt": "(@msmt5tt)",
-    "csd": "(@originalcsd, @tournier2007robust)",
-    "msmt_csd": "(@originalcsd, @msmt5tt)",
+    'dhollander': '(@dhollander2019response, @dhollander2016unsupervised)',
+    'msmt_5tt': '(@msmt5tt)',
+    'csd': '(@originalcsd, @tournier2007robust)',
+    'msmt_csd': '(@originalcsd, @msmt5tt)',
 }
 
 
-def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="", params={}):
+def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='', params={}):
     """Create FOD images for WM, GM and CSF.
 
     This workflow uses mrtrix tools to run csd on multishell data. At the end,
@@ -98,57 +98,57 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
 
     """
     workflow = Workflow(name=name)
-    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
-    workflow.__desc__ = f"\n\n#### MRtrix3 Reconstruction{suffix_str}\n\n"
+    suffix_str = f' (outputs written to qsirecon-{qsirecon_suffix})' if qsirecon_suffix else ''
+    workflow.__desc__ = f'\n\n#### MRtrix3 Reconstruction{suffix_str}\n\n'
 
     inputnode = pe.Node(
-        niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
+        niu.IdentityInterface(fields=recon_workflow_input_fields), name='inputnode'
     )
     outputnode = pe.Node(
         niu.IdentityInterface(
             fields=[
-                "fod_sh_mif",
-                "wm_odf",
-                "wm_txt",
-                "gm_odf",
-                "gm_txt",
-                "csf_odf",
-                "csf_txt",
-                "recon_scalars",
+                'fod_sh_mif',
+                'wm_odf',
+                'wm_txt',
+                'gm_odf',
+                'gm_txt',
+                'csf_odf',
+                'csf_txt',
+                'recon_scalars',
             ]
         ),
-        name="outputnode",
+        name='outputnode',
     )
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
 
     # Response estimation
-    response = params.get("response", {})
-    response_algorithm = response.get("algorithm", "dhollander")
+    response = params.get('response', {})
+    response_algorithm = response.get('algorithm', 'dhollander')
 
-    if response_algorithm == "fast":
-        response_algorithm = "dhollander"
+    if response_algorithm == 'fast':
+        response_algorithm = 'dhollander'
 
-    response["algorithm"] = response_algorithm
-    response["nthreads"] = omp_nthreads
-    tissue_str = "Multi-tissue "
-    if response_algorithm == "csd":
-        tissue_str = "Single-tissue "
+    response['algorithm'] = response_algorithm
+    response['nthreads'] = omp_nthreads
+    tissue_str = 'Multi-tissue '
+    if response_algorithm == 'csd':
+        tissue_str = 'Single-tissue '
 
-    LOGGER.info("Response configuration: %s", response)
+    LOGGER.info('Response configuration: %s', response)
 
     # FOD estimation
-    fod = params.get("fod", {})
-    fod_algorithm = fod.get("algorithm", "msmt_csd")
-    fod["algorithm"] = fod_algorithm
-    fod["nthreads"] = omp_nthreads
-    LOGGER.info("Using %d threads in MRtrix3", omp_nthreads)
-    using_multitissue = fod_algorithm in ("ss3t", "msmt_csd")
+    fod = params.get('fod', {})
+    fod_algorithm = fod.get('algorithm', 'msmt_csd')
+    fod['algorithm'] = fod_algorithm
+    fod['nthreads'] = omp_nthreads
+    LOGGER.info('Using %d threads in MRtrix3', omp_nthreads)
+    using_multitissue = fod_algorithm in ('ss3t', 'msmt_csd')
 
     # Intensity normalize?
-    run_mtnormalize = params.get("mtnormalize", True) and using_multitissue
+    run_mtnormalize = params.get('mtnormalize', True) and using_multitissue
 
-    create_mif = pe.Node(MRTrixIngress(), name="create_mif")
+    create_mif = pe.Node(MRTrixIngress(), name='create_mif')
     workflow.connect([
         (inputnode, create_mif, [
             ("dwi_file", "dwi_file"),
@@ -159,8 +159,8 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
     ])  # fmt:skip
 
     response_buffer = pe.Node(
-        niu.IdentityInterface(fields=["wm_txt", "gm_txt", "csf_txt"]),
-        name="response_buffer",
+        niu.IdentityInterface(fields=['wm_txt', 'gm_txt', 'csf_txt']),
+        name='response_buffer',
     )
     workflow.connect([
         (response_buffer, outputnode, [
@@ -170,21 +170,21 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
         ]),
     ])  # fmt:skip
 
-    seg_str = ""
-    if response_algorithm == "precomputed":
+    seg_str = ''
+    if response_algorithm == 'precomputed':
         workflow.__desc__ += (
-            f"{tissue_str} fiber response functions were loaded from precomputed files. "
+            f'{tissue_str} fiber response functions were loaded from precomputed files. '
         )
 
         load_response_functions = pe.Node(
             LoadResponseFunctions(
-                wm_file=response["wm_txt"],
-                gm_file=response.get("gm_txt", None),
-                csf_file=response.get("csf_txt", None),
+                wm_file=response['wm_txt'],
+                gm_file=response.get('gm_txt', None),
+                csf_file=response.get('csf_txt', None),
                 using_multitissue=using_multitissue,
                 input_dir=config.execution.recon_spec_aux_files,
             ),
-            name="load_response_functions",
+            name='load_response_functions',
         )
         workflow.connect([
             (load_response_functions, response_buffer, [
@@ -194,20 +194,20 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
             ]),
         ])  # fmt:skip
     else:
-        seg_str = f" using an unsupervised multi-tissue method {CITATIONS[response_algorithm]}"
-        if response_algorithm == "msmt_5tt":
-            seg_str = f" using a T1w-based segmentation {CITATIONS[response_algorithm]}"
+        seg_str = f' using an unsupervised multi-tissue method {CITATIONS[response_algorithm]}'
+        if response_algorithm == 'msmt_5tt':
+            seg_str = f' using a T1w-based segmentation {CITATIONS[response_algorithm]}'
 
         workflow.__desc__ += (
-            f"{tissue_str} fiber response functions were estimated using "
-            f"the {response_algorithm} algorithm. "
+            f'{tissue_str} fiber response functions were estimated using '
+            f'the {response_algorithm} algorithm. '
         )
 
-        method_5tt = response.pop("method_5tt", "dhollander")
+        method_5tt = response.pop('method_5tt', 'dhollander')
         # Use dwi2response from 3Tissue for updated dhollander
         estimate_response = pe.Node(
             SS3TDwi2Response(**response),
-            name="estimate_response",
+            name='estimate_response',
             n_procs=omp_nthreads,
         )
         workflow.connect([
@@ -220,23 +220,23 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="
             ]),
         ])  # fmt:skip
 
-        if response_algorithm == "msmt_5tt":
-            if method_5tt == "hsvs":
+        if response_algorithm == 'msmt_5tt':
+            if method_5tt == 'hsvs':
                 workflow.connect([
                     (inputnode, estimate_response, [("qsiprep_5tt_hsvs", "mtt_file")])
                 ])  # fmt:skip
             else:
-                raise Exception("Unrecognized 5tt method: " + method_5tt)
+                raise Exception('Unrecognized 5tt method: ' + method_5tt)
 
     workflow.__desc__ += f"""FODs were estimated via constrained
 spherical deconvolution (CSD, @originalcsd, @tournier2008csd){seg_str}.
 """
 
-    if fod_algorithm in ("msmt_csd", "csd"):
-        estimate_fod = pe.Node(EstimateFOD(**fod), name="estimate_fod", n_procs=omp_nthreads)
-        workflow.__desc__ += " Reconstruction was done using MRtrix3 (@mrtrix3)."
-    elif fod_algorithm == "ss3t":
-        estimate_fod = pe.Node(SS3TEstimateFOD(**fod), name="estimate_fod", n_procs=omp_nthreads)
+    if fod_algorithm in ('msmt_csd', 'csd'):
+        estimate_fod = pe.Node(EstimateFOD(**fod), name='estimate_fod', n_procs=omp_nthreads)
+        workflow.__desc__ += ' Reconstruction was done using MRtrix3 (@mrtrix3).'
+    elif fod_algorithm == 'ss3t':
+        estimate_fod = pe.Node(SS3TEstimateFOD(**fod), name='estimate_fod', n_procs=omp_nthreads)
         workflow.__desc__ += """ A single-shell-optimized multi-tissue CSD was performed using
 MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
 
@@ -264,10 +264,10 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
         intensity_norm = pe.Node(
             MTNormalize(
                 nthreads=omp_nthreads,
-                inlier_mask="inliers.nii.gz",
-                norm_image="norm.nii.gz",
+                inlier_mask='inliers.nii.gz',
+                norm_image='norm.nii.gz',
             ),
-            name="intensity_norm",
+            name='intensity_norm',
             n_procs=omp_nthreads,
         )
         workflow.connect([
@@ -284,22 +284,22 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
                 ("csf_normed_odf", "csf_odf"),
             ]),
         ])  # fmt:skip
-        workflow.__desc__ += " FODs were intensity-normalized using mtnormalize (@mtnormalize)."
+        workflow.__desc__ += ' FODs were intensity-normalized using mtnormalize (@mtnormalize).'
 
     if not config.execution.skip_odf_reports:
         # Make a visual report of the model
         plot_peaks = pe.Node(
             CLIReconPeaksReport(),
-            name="plot_peaks",
+            name='plot_peaks',
             n_procs=omp_nthreads,
         )
         ds_report_peaks = pe.Node(
             DerivativesDataSink(
-                desc="wmFOD",
-                suffix="peaks",
-                extension=".png",
+                desc='wmFOD',
+                suffix='peaks',
+                extension='.png',
             ),
-            name="ds_report_peaks",
+            name='ds_report_peaks',
             run_without_submitting=True,
         )
         workflow.connect([
@@ -312,36 +312,36 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
         ])  # fmt:skip
 
         # Plot targeted regions
-        if inputs_dict["has_qsiprep_t1w_transforms"]:
+        if inputs_dict['has_qsiprep_t1w_transforms']:
             ds_report_odfs = pe.Node(
                 DerivativesDataSink(
-                    desc="wmFOD",
-                    suffix="odfs",
-                    extension=".png",
+                    desc='wmFOD',
+                    suffix='odfs',
+                    extension='.png',
                 ),
-                name="ds_report_odfs",
+                name='ds_report_odfs',
                 run_without_submitting=True,
             )
-            workflow.connect([(plot_peaks, ds_report_odfs, [("odf_report", "in_file")])])
+            workflow.connect([(plot_peaks, ds_report_odfs, [('odf_report', 'in_file')])])
 
         fod_source, fod_key = (
-            (estimate_fod, "wm_odf") if not run_mtnormalize else (intensity_norm, "wm_normed_odf")
+            (estimate_fod, 'wm_odf') if not run_mtnormalize else (intensity_norm, 'wm_normed_odf')
         )
-        workflow.connect([(fod_source, plot_peaks, [(fod_key, "mif_file")])])
+        workflow.connect([(fod_source, plot_peaks, [(fod_key, 'mif_file')])])
 
     if qsirecon_suffix:
         model_name = remove_non_alphanumeric(fod_algorithm).lower()
         ds_wm_odf = pe.Node(
             DerivativesDataSink(
-                dismiss_entities=("desc",),
+                dismiss_entities=('desc',),
                 model=model_name,
-                param="fod",
-                label="WM",
-                suffix="dwimap",
-                extension=".mif.gz",
+                param='fod',
+                label='WM',
+                suffix='dwimap',
+                extension='.mif.gz',
                 compress=True,
             ),
-            name="ds_wm_odf",
+            name='ds_wm_odf',
             run_without_submitting=True,
         )
         workflow.connect([
@@ -351,43 +351,43 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
 
         ds_wm_txt = pe.Node(
             DerivativesDataSink(
-                dismiss_entities=("desc",),
+                dismiss_entities=('desc',),
                 model=model_name,
-                param="fod",
-                label="WM",
-                suffix="dwimap",
-                extension=".txt",
+                param='fod',
+                label='WM',
+                suffix='dwimap',
+                extension='.txt',
             ),
-            name="ds_wm_txt",
+            name='ds_wm_txt',
             run_without_submitting=True,
         )
-        workflow.connect([(outputnode, ds_wm_txt, [("wm_txt", "in_file")])])
+        workflow.connect([(outputnode, ds_wm_txt, [('wm_txt', 'in_file')])])
 
         # If multitissue write out FODs for csf, gm
         if using_multitissue:
             ds_gm_odf = pe.Node(
                 DerivativesDataSink(
-                    dismiss_entities=("desc",),
+                    dismiss_entities=('desc',),
                     model=model_name,
-                    param="fod",
-                    label="GM",
-                    suffix="dwimap",
-                    extension=".mif.gz",
+                    param='fod',
+                    label='GM',
+                    suffix='dwimap',
+                    extension='.mif.gz',
                     compress=True,
                 ),
-                name="ds_gm_odf",
+                name='ds_gm_odf',
                 run_without_submitting=True,
             )
             ds_gm_txt = pe.Node(
                 DerivativesDataSink(
-                    dismiss_entities=("desc",),
+                    dismiss_entities=('desc',),
                     model=model_name,
-                    param="fod",
-                    label="GM",
-                    suffix="dwimap",
-                    extension=".txt",
+                    param='fod',
+                    label='GM',
+                    suffix='dwimap',
+                    extension='.txt',
                 ),
-                name="ds_gm_txt",
+                name='ds_gm_txt',
                 run_without_submitting=True,
             )
             workflow.connect([
@@ -398,27 +398,27 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
 
             ds_csf_odf = pe.Node(
                 DerivativesDataSink(
-                    dismiss_entities=("desc",),
+                    dismiss_entities=('desc',),
                     model=model_name,
-                    param="fod",
-                    label="CSF",
-                    suffix="dwimap",
-                    extension=".mif.gz",
+                    param='fod',
+                    label='CSF',
+                    suffix='dwimap',
+                    extension='.mif.gz',
                     compress=True,
                 ),
-                name="ds_csf_odf",
+                name='ds_csf_odf',
                 run_without_submitting=True,
             )
             ds_csf_txt = pe.Node(
                 DerivativesDataSink(
-                    dismiss_entities=("desc",),
+                    dismiss_entities=('desc',),
                     model=model_name,
-                    param="fod",
-                    label="CSF",
-                    suffix="dwimap",
-                    extension=".txt",
+                    param='fod',
+                    label='CSF',
+                    suffix='dwimap',
+                    extension='.txt',
                 ),
-                name="ds_csf_txt",
+                name='ds_csf_txt',
                 run_without_submitting=True,
             )
             workflow.connect([
@@ -430,34 +430,34 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
             if run_mtnormalize:
                 ds_mt_norm = pe.Node(
                     DerivativesDataSink(
-                        dismiss_entities=("desc",),
-                        model="mtnorm",
-                        param="norm",
-                        suffix="dwimap",
+                        dismiss_entities=('desc',),
+                        model='mtnorm',
+                        param='norm',
+                        suffix='dwimap',
                         compress=True,
                     ),
-                    name="ds_mt_norm",
+                    name='ds_mt_norm',
                     run_without_submitting=True,
                 )
                 workflow.connect(intensity_norm, "norm_image",
                                  ds_mt_norm, "in_file")  # fmt:skip
                 ds_inlier_mask = pe.Node(
                     DerivativesDataSink(
-                        dismiss_entities=("desc",),
-                        model="mtnorm",
-                        param="inliermask",
-                        suffix="dwimap",
+                        dismiss_entities=('desc',),
+                        model='mtnorm',
+                        param='inliermask',
+                        suffix='dwimap',
                         compress=True,
                     ),
-                    name="ds_inlier_mask",
+                    name='ds_inlier_mask',
                     run_without_submitting=True,
                 )
-                workflow.connect([(intensity_norm, ds_inlier_mask, [("inlier_mask", "in_file")])])
+                workflow.connect([(intensity_norm, ds_inlier_mask, [('inlier_mask', 'in_file')])])
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
-def init_global_tractography_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffix="", params={}):
+def init_global_tractography_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='', params={}):
     """Run multi-shell, multi-tissue global tractography
 
     This workflow uses mrtrix tools to run csd on multishell data.
@@ -490,23 +490,23 @@ def init_global_tractography_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffi
 
     inputnode = pe.Node(
         niu.IdentityInterface(
-            fields=recon_workflow_input_fields + ["gm_txt", "wm_txt", "csf_txt"]
+            fields=recon_workflow_input_fields + ['gm_txt', 'wm_txt', 'csf_txt']
         ),
-        name="inputnode",
+        name='inputnode',
     )
     outputnode = pe.Node(
         niu.IdentityInterface(
-            fields=["fod_sh_mif", "wm_odf", "iso_fraction", "tck_file", "recon_scalars"]
+            fields=['fod_sh_mif', 'wm_odf', 'iso_fraction', 'tck_file', 'recon_scalars']
         ),
-        name="outputnode",
+        name='outputnode',
     )
 
     outputnode.inputs.recon_scalars = []
 
-    create_mif = pe.Node(MRTrixIngress(), name="create_mif")
+    create_mif = pe.Node(MRTrixIngress(), name='create_mif')
 
     # Resample anat mask
-    tck_global = pe.Node(GlobalTractography(**params), name="tck_global")
+    tck_global = pe.Node(GlobalTractography(**params), name='tck_global')
     workflow.connect([
         (inputnode, create_mif, [
             ("dwi_file", "dwi_file"),
@@ -532,11 +532,11 @@ def init_global_tractography_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffi
     if qsirecon_suffix:
         ds_globalwm_odf = pe.Node(
             DerivativesDataSink(
-                desc="globalwmFOD",
-                extension=".mif.gz",
+                desc='globalwmFOD',
+                extension='.mif.gz',
                 compress=True,
             ),
-            name="ds_globalwm_odf",
+            name='ds_globalwm_odf',
             run_without_submitting=True,
         )
         workflow.connect(outputnode, "wm_odf",
@@ -544,10 +544,10 @@ def init_global_tractography_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffi
 
         ds_isotropic_fraction = pe.Node(
             DerivativesDataSink(
-                desc="ISOfraction",
-                extension=".mif.gz",
+                desc='ISOfraction',
+                extension='.mif.gz',
             ),
-            name="ds_isotropic_fraction",
+            name='ds_isotropic_fraction',
             run_without_submitting=True,
         )
         workflow.connect(outputnode, "isotropic_fraction",
@@ -555,22 +555,22 @@ def init_global_tractography_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffi
 
         ds_tck_file = pe.Node(
             DerivativesDataSink(
-                desc="global",
-                extension=".tck.gz",
+                desc='global',
+                extension='.tck.gz',
                 compress=True,
             ),
-            name="ds_tck_file",
+            name='ds_tck_file',
             run_without_submitting=True,
         )
         workflow.connect(outputnode, "tck_file", ds_tck_file, "in_file")  # fmt:skip
 
         ds_residual_energy = pe.Node(
             DerivativesDataSink(
-                desc="residualEnergy",
-                extension=".tck.gz",
+                desc='residualEnergy',
+                extension='.tck.gz',
                 compress=True,
             ),
-            name="ds_residual_energy",
+            name='ds_residual_energy',
             run_without_submitting=True,
         )
         workflow.connect(outputnode, "residual_energy",
@@ -580,7 +580,7 @@ def init_global_tractography_wf(inputs_dict, name="mrtrix_recon", qsirecon_suffi
 
 
 def init_mrtrix_tractography_wf(
-    inputs_dict, name="mrtrix_tracking", qsirecon_suffix="", params={}
+    inputs_dict, name='mrtrix_tracking', qsirecon_suffix='', params={}
 ):
     """Run tractography
 
@@ -607,24 +607,24 @@ def init_mrtrix_tractography_wf(
     workflow.__desc__ = "Tractography was performed using MRtrix3's 'tckgen' command."
 
     inputnode = pe.Node(
-        niu.IdentityInterface(fields=recon_workflow_input_fields + ["fod_sh_mif"]),
-        name="inputnode",
+        niu.IdentityInterface(fields=recon_workflow_input_fields + ['fod_sh_mif']),
+        name='inputnode',
     )
     outputnode = pe.Node(
-        niu.IdentityInterface(fields=["tck_file", "sift_weights", "mu", "recon_scalars"]),
-        name="outputnode",
+        niu.IdentityInterface(fields=['tck_file', 'sift_weights', 'mu', 'recon_scalars']),
+        name='outputnode',
     )
 
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
     # Resample anat mask
-    tracking_params = params.get("tckgen", {})
-    tracking_params["nthreads"] = omp_nthreads
-    use_sift2 = params.get("use_sift2", True)
-    use_5tt = params.get("use_5tt", False)
-    sift_params = params.get("sift2", {})
-    sift_params["nthreads"] = omp_nthreads
-    tracking = pe.Node(TckGen(**tracking_params), name="tractography", n_procs=omp_nthreads)
+    tracking_params = params.get('tckgen', {})
+    tracking_params['nthreads'] = omp_nthreads
+    use_sift2 = params.get('use_sift2', True)
+    use_5tt = params.get('use_5tt', False)
+    sift_params = params.get('sift2', {})
+    sift_params['nthreads'] = omp_nthreads
+    tracking = pe.Node(TckGen(**tracking_params), name='tractography', n_procs=omp_nthreads)
     workflow.connect([
         (inputnode, tracking, [
             ("fod_sh_mif", "in_file"),
@@ -634,23 +634,23 @@ def init_mrtrix_tractography_wf(
     ])  # fmt:skip
 
     # Which 5tt image should be used?
-    method_5tt = params.get("method_5tt", "hsvs")
-    if method_5tt == "fast":
-        method_5tt = "hsvs"
+    method_5tt = params.get('method_5tt', 'hsvs')
+    if method_5tt == 'fast':
+        method_5tt = 'hsvs'
 
     if use_5tt:
-        workflow.__desc__ += " 5TT image was used for tractography."
+        workflow.__desc__ += ' 5TT image was used for tractography.'
 
-        if method_5tt == "hsvs":
-            connect_5tt = "qsiprep_5tt_hsvs"
+        if method_5tt == 'hsvs':
+            connect_5tt = 'qsiprep_5tt_hsvs'
         else:
-            raise Exception(f"Unrecognized 5tt method: {method_5tt}")
-        workflow.connect(inputnode, connect_5tt, tracking, "act_file")
+            raise Exception(f'Unrecognized 5tt method: {method_5tt}')
+        workflow.connect(inputnode, connect_5tt, tracking, 'act_file')
 
     if use_sift2:
-        workflow.__desc__ += " SIFT2 weights were calculated."
+        workflow.__desc__ += ' SIFT2 weights were calculated.'
 
-        tck_sift2 = pe.Node(SIFT2(**sift_params), name="tck_sift2", n_procs=omp_nthreads)
+        tck_sift2 = pe.Node(SIFT2(**sift_params), name='tck_sift2', n_procs=omp_nthreads)
         workflow.connect([
             (inputnode, tck_sift2, [("fod_sh_mif", "in_fod")]),
             (tracking, tck_sift2, [("out_file", "in_tracks")]),
@@ -663,53 +663,53 @@ def init_mrtrix_tractography_wf(
         if qsirecon_suffix:
             ds_sift_weights = pe.Node(
                 DerivativesDataSink(
-                    dismiss_entities=("desc",),
-                    model="sift2",
-                    suffix="streamlineweights",
-                    extension=".csv",
+                    dismiss_entities=('desc',),
+                    model='sift2',
+                    suffix='streamlineweights',
+                    extension='.csv',
                 ),
-                name="ds_sift_weights",
+                name='ds_sift_weights',
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, "sift_weights", ds_sift_weights, "in_file")
+            workflow.connect(outputnode, 'sift_weights', ds_sift_weights, 'in_file')
 
             ds_mu_file = pe.Node(
                 DerivativesDataSink(
-                    dismiss_entities=("desc",),
-                    model="sift2",
-                    suffix="mu",
-                    extension=".txt",
+                    dismiss_entities=('desc',),
+                    model='sift2',
+                    suffix='mu',
+                    extension='.txt',
                 ),
-                name="ds_mu_file",
+                name='ds_mu_file',
                 run_without_submitting=True,
             )
-            workflow.connect(outputnode, "mu", ds_mu_file, "in_file")
+            workflow.connect(outputnode, 'mu', ds_mu_file, 'in_file')
 
         if use_5tt:
-            workflow.connect(inputnode, connect_5tt, tck_sift2, "act_file")
+            workflow.connect(inputnode, connect_5tt, tck_sift2, 'act_file')
 
     if qsirecon_suffix:
         ds_tck_file = pe.Node(
             DerivativesDataSink(
-                dismiss_entities=("desc",),
-                model=remove_non_alphanumeric(tracking_params["algorithm"]).lower(),
-                suffix="streamlines",
-                extension=".tck.gz",
+                dismiss_entities=('desc',),
+                model=remove_non_alphanumeric(tracking_params['algorithm']).lower(),
+                suffix='streamlines',
+                extension='.tck.gz',
                 compress=True,
             ),
-            name="ds_tck_file",
+            name='ds_tck_file',
             run_without_submitting=True,
         )
-        workflow.connect(outputnode, "tck_file", ds_tck_file, "in_file")
+        workflow.connect(outputnode, 'tck_file', ds_tck_file, 'in_file')
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
 def init_mrtrix_connectivity_wf(
     inputs_dict,
-    name="mrtrix_connectivity",
+    name='mrtrix_connectivity',
     params={},
-    qsirecon_suffix="",
+    qsirecon_suffix='',
 ):
     """Runs ``tck2connectome`` on a ``tck`` file.
 
@@ -731,22 +731,22 @@ def init_mrtrix_connectivity_wf(
 
     inputnode = pe.Node(
         niu.IdentityInterface(
-            fields=recon_workflow_input_fields + ["tck_file", "sift_weights", "atlas_configs"]
+            fields=recon_workflow_input_fields + ['tck_file', 'sift_weights', 'atlas_configs']
         ),
-        name="inputnode",
+        name='inputnode',
     )
     outputnode = pe.Node(
-        niu.IdentityInterface(fields=["matfile", "recon_scalars"]),
-        name="outputnode",
+        niu.IdentityInterface(fields=['matfile', 'recon_scalars']),
+        name='outputnode',
     )
     outputnode.inputs.recon_scalars = []
 
     calc_connectivity = pe.Node(
         MRTrixAtlasGraph(
-            tracking_params=params.get("tck2connectome", {}),
+            tracking_params=params.get('tck2connectome', {}),
             nthreads=config.nipype.omp_nthreads,
         ),
-        name="calc_connectivity",
+        name='calc_connectivity',
         n_procs=config.nipype.omp_nthreads,
     )
     workflow.connect([
@@ -761,16 +761,16 @@ def init_mrtrix_connectivity_wf(
     if not config.execution.skip_odf_reports:
         plot_connectivity = pe.Node(
             ConnectivityReport(),
-            name="plot_connectivity",
+            name='plot_connectivity',
             n_procs=config.nipype.omp_nthreads,
         )
         ds_report_connectivity = pe.Node(
             DerivativesDataSink(
-                desc="MRtrix3Connectivity",
-                suffix="matrices",
-                extension=".svg",
+                desc='MRtrix3Connectivity',
+                suffix='matrices',
+                extension='.svg',
             ),
-            name="ds_report_connectivity",
+            name='ds_report_connectivity',
             run_without_submitting=True,
         )
         workflow.connect([
@@ -784,18 +784,18 @@ def init_mrtrix_connectivity_wf(
         # Save the output in the outputs directory
         ds_connectivity = pe.Node(
             DerivativesDataSink(
-                dismiss_entities=("desc",),
-                suffix="connectivity",
+                dismiss_entities=('desc',),
+                suffix='connectivity',
             ),
-            name=f"ds_{name}",
+            name=f'ds_{name}',
             run_without_submitting=True,
         )
         ds_exemplars = pe.Node(
             DerivativesDataSink(
-                dismiss_entities=("desc",),
-                suffix="exemplarbundles",
+                dismiss_entities=('desc',),
+                suffix='exemplarbundles',
             ),
-            name="ds_exemplars",
+            name='ds_exemplars',
             run_without_submitting=True,
         )
         workflow.connect([

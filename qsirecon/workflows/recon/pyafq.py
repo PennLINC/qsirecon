@@ -23,13 +23,13 @@ def _parse_qsirecon_params_dict(params_dict):
     kwargs = {}
 
     special_args = {
-        "CLEANING": "clean_params",
-        "SEGMENTATION": "segmentation_params",
-        "TRACTOGRAPHY": "tracking_params",
+        'CLEANING': 'clean_params',
+        'SEGMENTATION': 'segmentation_params',
+        'TRACTOGRAPHY': 'tracking_params',
     }
 
     for section, args in arg_dict.items():
-        if section == "AFQ_desc":
+        if section == 'AFQ_desc':
             continue
         for arg, arg_info in args.items():
             if arg in special_args.keys():
@@ -49,7 +49,7 @@ def _parse_qsirecon_params_dict(params_dict):
     return kwargs
 
 
-def init_pyafq_wf(inputs_dict, name="afq", qsirecon_suffix="", params={}):
+def init_pyafq_wf(inputs_dict, name='afq', qsirecon_suffix='', params={}):
     """Run PyAFQ on some qsirecon outputs
 
     Inputs
@@ -62,31 +62,31 @@ def init_pyafq_wf(inputs_dict, name="afq", qsirecon_suffix="", params={}):
 
     """
     workflow = pe.Workflow(name=name)
-    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    suffix_str = f' (outputs written to qsirecon-{qsirecon_suffix})' if qsirecon_suffix else ''
     workflow.__desc__ = (
-        f"\n\n#### PyAFQ{suffix_str}\n\n"
-        f"PyAFQ run on version {AFQ.__version__} with the following configuration: "
+        f'\n\n#### PyAFQ{suffix_str}\n\n'
+        f'PyAFQ run on version {AFQ.__version__} with the following configuration: '
     )
 
     inputnode = pe.Node(
-        niu.IdentityInterface(fields=recon_workflow_input_fields + ["tck_file"]), name="inputnode"
+        niu.IdentityInterface(fields=recon_workflow_input_fields + ['tck_file']), name='inputnode'
     )
     outputnode = pe.Node(
-        niu.IdentityInterface(fields=["afq_dir", "recon_scalars"]), name="outputnode"
+        niu.IdentityInterface(fields=['afq_dir', 'recon_scalars']), name='outputnode'
     )
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
     kwargs = _parse_qsirecon_params_dict(params)
-    kwargs["omp_nthreads"] = config.nipype.omp_nthreads
+    kwargs['omp_nthreads'] = config.nipype.omp_nthreads
 
-    workflow.__desc__ += f"{str(kwargs)}."
+    workflow.__desc__ += f'{str(kwargs)}.'
 
     run_afq = pe.Node(
-        PyAFQRecon(kwargs=kwargs, n_procs=omp_nthreads), name="run_afq", n_procs=omp_nthreads
+        PyAFQRecon(kwargs=kwargs, n_procs=omp_nthreads), name='run_afq', n_procs=omp_nthreads
     )
 
-    if params.get("use_external_tracking", False):
-        workflow.connect([(inputnode, run_afq, [("tck_file", "tck_file")])])
+    if params.get('use_external_tracking', False):
+        workflow.connect([(inputnode, run_afq, [('tck_file', 'tck_file')])])
 
     workflow.connect([
         (inputnode, run_afq, [
@@ -104,13 +104,13 @@ def init_pyafq_wf(inputs_dict, name="afq", qsirecon_suffix="", params={}):
         ds_afq = pe.Node(
             ReconDerivativesDataSink(
                 qsirecon_suffix=qsirecon_suffix,
-                extension=".nii.gz",
+                extension='.nii.gz',
                 use_ext=False,
-                dismiss_entities=["desc"],
+                dismiss_entities=['desc'],
             ),
-            name="ds_" + name,
+            name='ds_' + name,
             run_without_submitting=True,
         )
-        workflow.connect(run_afq, "afq_dir", ds_afq, "in_file")
+        workflow.connect(run_afq, 'afq_dir', ds_afq, 'in_file')
 
     return clean_datasinks(workflow, qsirecon_suffix)

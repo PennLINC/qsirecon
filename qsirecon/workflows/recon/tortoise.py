@@ -35,17 +35,17 @@ from qsirecon.interfaces.tortoise import (
     TORTOISEConvert,
 )
 
-LOGGER = logging.getLogger("nipype.interface")
+LOGGER = logging.getLogger('nipype.interface')
 
 CITATIONS = {
-    "dhollander": "(@dhollander2019response, @dhollander2016unsupervised)",
-    "msmt_5tt": "(@msmt5tt)",
-    "csd": "(@originalcsd, @tournier2007robust)",
-    "msmt_csd": "(@originalcsd, @msmt5tt)",
+    'dhollander': '(@dhollander2019response, @dhollander2016unsupervised)',
+    'msmt_5tt': '(@msmt5tt)',
+    'csd': '(@originalcsd, @tournier2007robust)',
+    'msmt_csd': '(@originalcsd, @msmt5tt)',
 }
 
 
-def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suffix="", params={}):
+def init_tortoise_estimator_wf(inputs_dict, name='tortoise_recon', qsirecon_suffix='', params={}):
     """Run estimators from TORTOISE.
 
     This workflow may run ``EstimateTensor`` and/or ``EstimateMAPMRI``
@@ -76,42 +76,42 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
 
     """
     workflow = Workflow(name=name)
-    suffix_str = f" (outputs written to qsirecon-{qsirecon_suffix})" if qsirecon_suffix else ""
+    suffix_str = f' (outputs written to qsirecon-{qsirecon_suffix})' if qsirecon_suffix else ''
     workflow.__desc__ = (
-        f"\n\n#### TORTOISE Reconstruction{suffix_str}\n\n"
-        + "Methods implemented in TORTOISE (@tortoisev3) were used for reconstruction. "
+        f'\n\n#### TORTOISE Reconstruction{suffix_str}\n\n'
+        + 'Methods implemented in TORTOISE (@tortoisev3) were used for reconstruction. '
     )
 
     inputnode = pe.Node(
-        niu.IdentityInterface(fields=recon_workflow_input_fields), name="inputnode"
+        niu.IdentityInterface(fields=recon_workflow_input_fields), name='inputnode'
     )
     outputnode = pe.Node(
         niu.IdentityInterface(
             fields=[
                 # Tensor fit and derivatives
-                "dt_image",
-                "fa_image",
-                "ad_image",
-                "eigvec_image",
-                "gm_odf",
-                "gm_txt",
-                "csf_odf",
-                "csf_txt",
-                "scalar_image_info",
-                "recon_scalars",
+                'dt_image',
+                'fa_image',
+                'ad_image',
+                'eigvec_image',
+                'gm_odf',
+                'gm_txt',
+                'csf_odf',
+                'csf_txt',
+                'scalar_image_info',
+                'recon_scalars',
             ]
         ),
-        name="outputnode",
+        name='outputnode',
     )
 
     recon_scalars = pe.Node(
         TORTOISEReconScalars(qsirecon_suffix=qsirecon_suffix),
-        name="recon_scalars",
+        name='recon_scalars',
     )
     omp_nthreads = config.nipype.omp_nthreads
 
-    tensor_opts = params.get("estimate_tensor", {})
-    estimate_tensor_separately = params.get("estimate_tensor_separately", False)
+    tensor_opts = params.get('estimate_tensor', {})
+    estimate_tensor_separately = params.get('estimate_tensor_separately', False)
     if estimate_tensor_separately and not tensor_opts:
         raise Exception(
             'Setting "estimate_tensor_separately": true requires options'
@@ -119,18 +119,18 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
         )
 
     # Do we have deltas?
-    deltas = (params.get("big_delta", None), params.get("small_delta", None))
+    deltas = (params.get('big_delta', None), params.get('small_delta', None))
     approximate_deltas = None in deltas
-    dwi_metadata = inputs_dict.get("dwi_metadata", {})
+    dwi_metadata = inputs_dict.get('dwi_metadata', {})
     if approximate_deltas:
         deltas = (
-            dwi_metadata.get("LargeDelta", None),
-            dwi_metadata.get("SmallDelta", None),
+            dwi_metadata.get('LargeDelta', None),
+            dwi_metadata.get('SmallDelta', None),
         )
         approximate_deltas = None in deltas
 
     # TORTOISE requires unzipped float32 nifti files and a bmtxt file.
-    tortoise_convert = pe.Node(TORTOISEConvert(), name="tortoise_convert")
+    tortoise_convert = pe.Node(TORTOISEConvert(), name='tortoise_convert')
     workflow.connect([
         (inputnode, tortoise_convert, [
             ('dwi_file', 'dwi_file'),
@@ -142,29 +142,29 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
 
     # EstimateTensor
     if tensor_opts:
-        tensor_opts["num_threads"] = omp_nthreads
+        tensor_opts['num_threads'] = omp_nthreads
         estimate_tensor = pe.Node(
-            EstimateTensor(**tensor_opts), name="estimate_tensor", n_procs=omp_nthreads
+            EstimateTensor(**tensor_opts), name='estimate_tensor', n_procs=omp_nthreads
         )
 
         # Model description
-        workflow.__desc__ += "A diffusion tensor model was fit using ``EstimateTensor``. "
-        workflow.__desc__ += build_documentation(estimate_tensor) + " "
+        workflow.__desc__ += 'A diffusion tensor model was fit using ``EstimateTensor``. '
+        workflow.__desc__ += build_documentation(estimate_tensor) + ' '
 
         # Set up datasinks
-        compute_dt_fa = pe.Node(ComputeFAMap(), name="compute_dt_fa")
-        workflow.__desc__ += build_documentation(compute_dt_fa) + " "
-        compute_dt_rd = pe.Node(ComputeRDMap(), name="compute_dt_rd")
-        workflow.__desc__ += build_documentation(compute_dt_rd) + " "
-        compute_dt_ad = pe.Node(ComputeADMap(), name="compute_dt_ad")
-        workflow.__desc__ += build_documentation(compute_dt_ad) + " "
-        compute_dt_li = pe.Node(ComputeLIMap(), name="compute_dt_li")
-        workflow.__desc__ += build_documentation(compute_dt_li) + " "
-        compute_md = pe.Node(ComputeMDMap(), name="compute_md")
+        compute_dt_fa = pe.Node(ComputeFAMap(), name='compute_dt_fa')
+        workflow.__desc__ += build_documentation(compute_dt_fa) + ' '
+        compute_dt_rd = pe.Node(ComputeRDMap(), name='compute_dt_rd')
+        workflow.__desc__ += build_documentation(compute_dt_rd) + ' '
+        compute_dt_ad = pe.Node(ComputeADMap(), name='compute_dt_ad')
+        workflow.__desc__ += build_documentation(compute_dt_ad) + ' '
+        compute_dt_li = pe.Node(ComputeLIMap(), name='compute_dt_li')
+        workflow.__desc__ += build_documentation(compute_dt_li) + ' '
+        compute_md = pe.Node(ComputeMDMap(), name='compute_md')
         workflow.__desc__ += (
-            "\n\nTORTOISE does not compute a mean diffusivity. "
-            "Therefore, mean diffusivity was separately computed from the axial diffusivity and "
-            "radial diffusivity using custom Python code. "
+            '\n\nTORTOISE does not compute a mean diffusivity. '
+            'Therefore, mean diffusivity was separately computed from the axial diffusivity and '
+            'radial diffusivity using custom Python code. '
         )
         workflow.connect([
             (tortoise_convert, estimate_tensor, [
@@ -196,10 +196,10 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
             ]),
         ])  # fmt:skip
 
-    mapmri_opts = params.get("estimate_mapmri", {})
+    mapmri_opts = params.get('estimate_mapmri', {})
     if tensor_opts and mapmri_opts:
         # Split up the sections
-        workflow.__desc__ += "\n\n"
+        workflow.__desc__ += '\n\n'
 
     if mapmri_opts:
         # MAPMRI-only steps
@@ -207,31 +207,31 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
         if approximate_deltas:
             LOGGER.warning('Both "big_delta" and "small_delta" are required for precise MAPMRI')
         else:
-            mapmri_opts["big_delta"], mapmri_opts["small_delta"] = deltas
+            mapmri_opts['big_delta'], mapmri_opts['small_delta'] = deltas
 
-        mapmri_opts["num_threads"] = omp_nthreads
+        mapmri_opts['num_threads'] = omp_nthreads
 
         estimate_mapmri = pe.Node(
             EstimateMAPMRI(**mapmri_opts),
-            name="estimate_mapmri",
+            name='estimate_mapmri',
             n_procs=omp_nthreads,
         )
 
         compute_mapmri_pa = pe.Node(
             ComputeMAPMRI_PA(num_threads=1),
-            name="compute_mapmri_pa",
+            name='compute_mapmri_pa',
             n_procs=1,
         )
 
         compute_mapmri_rtop = pe.Node(
             ComputeMAPMRI_RTOP(num_threads=1),
-            name="compute_mapmri_rtop",
+            name='compute_mapmri_rtop',
             n_procs=1,
         )
 
         compute_mapmri_ng = pe.Node(
             ComputeMAPMRI_NG(num_threads=1),
-            name="compute_mapmri_ng",
+            name='compute_mapmri_ng',
             n_procs=1,
         )
 
@@ -286,7 +286,7 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
 
         plot_scalars = pe.Node(
             ScalarReport(),
-            name="plot_scalars",
+            name='plot_scalars',
             n_procs=omp_nthreads,
         )
         workflow.connect([
@@ -302,17 +302,17 @@ def init_tortoise_estimator_wf(inputs_dict, name="tortoise_recon", qsirecon_suff
 
         ds_report_scalars = pe.Node(
             DerivativesDataSink(
-                datatype="figures",
-                desc="scalars",
-                suffix="dwimap",
-                dismiss_entities=["dsistudiotemplate"],
+                datatype='figures',
+                desc='scalars',
+                suffix='dwimap',
+                dismiss_entities=['dsistudiotemplate'],
             ),
-            name="ds_report_scalars",
+            name='ds_report_scalars',
             run_without_submitting=True,
         )
-        workflow.connect([(plot_scalars, ds_report_scalars, [("out_report", "in_file")])])
+        workflow.connect([(plot_scalars, ds_report_scalars, [('out_report', 'in_file')])])
     else:
         # If not writing out scalar files, pass the working directory scalar configs
-        workflow.connect([(recon_scalars, outputnode, [("scalar_info", "recon_scalars")])])
+        workflow.connect([(recon_scalars, outputnode, [('scalar_info', 'recon_scalars')])])
 
     return clean_datasinks(workflow, qsirecon_suffix)

@@ -58,23 +58,23 @@ def find_fs_path(freesurfer_dir, subject_id, session_id=None):
         # There should only be one actual session ID
         session_id = session_id[0]
 
-        nosub = op.join(freesurfer_dir, f"{subject_id}_{session_id}.long.{subject_id}")
+        nosub = op.join(freesurfer_dir, f'{subject_id}_{session_id}.long.{subject_id}')
         if op.exists(nosub):
             return Path(nosub)
 
         withsub = op.join(
             freesurfer_dir,
-            f"sub-{subject_id}_ses-{session_id}.long.sub-{subject_id}",
+            f'sub-{subject_id}_ses-{session_id}.long.sub-{subject_id}',
         )
         if op.exists(withsub):
             return Path(withsub)
 
         # Next try with session but not longitudinal processing, if specified
-        nosub = op.join(freesurfer_dir, f"{subject_id}_{session_id}")
+        nosub = op.join(freesurfer_dir, f'{subject_id}_{session_id}')
         if op.exists(nosub):
             return Path(nosub)
 
-        withsub = op.join(freesurfer_dir, f"sub-{subject_id}_ses-{session_id}")
+        withsub = op.join(freesurfer_dir, f'sub-{subject_id}_ses-{session_id}')
         if op.exists(withsub):
             return Path(withsub)
 
@@ -83,7 +83,7 @@ def find_fs_path(freesurfer_dir, subject_id, session_id=None):
     if op.exists(nosub):
         return Path(nosub)
 
-    withsub = op.join(freesurfer_dir, f"sub-{subject_id}")
+    withsub = op.join(freesurfer_dir, f'sub-{subject_id}')
     if op.exists(withsub):
         return Path(withsub)
 

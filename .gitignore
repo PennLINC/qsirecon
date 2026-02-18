@@ -1,3 +1,5 @@
+.cursor/.cursorenv
+
 # Test data
 qsirecon/tests/test_data/
 qsirecon/tests/pytests/

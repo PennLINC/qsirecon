@@ -84,7 +84,7 @@ Anatomical Data for Reconstruction Workflows
 ********************************************
 
 Some reconstruction workflows require additional anatomical data to work properly.
-This table shows which reconstruction workflows depend on the availibility of
+This table shows which reconstruction workflows depend on the availability of
 anatomical data:
 
 

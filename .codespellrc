@@ -1,0 +1,15 @@
+[codespell]
+skip = .git,*.pdf,*.svg,*.html,dataset_description.json,*.gii
+# te - TE
+# Weill - name
+# reson - Reson. abbreviation in citation
+# DNE: acronym for does not exist
+# fo: acronym for file object
+# fixel: real word
+# fixels: plural of fixel
+# pres: variable
+# Gage: name
+# Joo: name
+# Sepulcre: name
+# numer: abbreviation for numerator
+ignore-words-list = te,weill,reson,DNE,fo,fixel,fixels,pres,Gage,Joo,Sepulcre,numer

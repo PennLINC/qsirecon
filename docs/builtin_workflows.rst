@@ -709,7 +709,7 @@ termination region could be up to 2mm from the endpoint.
 DSI Studio Connectivity Measures
 --------------------------------
 
-DSI Studio has two options for how to count streamlines as "connnecting" a region pair.
+DSI Studio has two options for how to count streamlines as "connecting" a region pair.
 ``pass`` counts a connection if any part of a streamline intersects two regions.
 ``end`` requires that a streamline terminates in each region in order to be connected.
 There are some practical considerations with each choice:

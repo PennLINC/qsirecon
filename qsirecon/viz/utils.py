@@ -13,15 +13,15 @@ def plot_denoise(
     div_id,
     plot_params=None,
     highb_plot_params=None,
-    order=("z", "x", "y"),
+    order=('z', 'x', 'y'),
     cuts=None,
     estimate_brightness=False,
     label=None,
     lowb_contour=None,
     highb_contour=None,
-    upper_label_suffix=": low-b",
-    lower_label_suffix=": high-b",
-    compress="auto",
+    upper_label_suffix=': low-b',
+    lower_label_suffix=': high-b',
+    compress='auto',
     overlay=None,
     overlay_params=None,
 ):
@@ -42,16 +42,16 @@ def plot_denoise(
     out_files = []
     if estimate_brightness:
         plot_params = robust_set_limits(
-            lowb_nii.get_fdata(dtype="float32").reshape(-1), plot_params
+            lowb_nii.get_fdata(dtype='float32').reshape(-1), plot_params
         )
     # Plot each cut axis for low-b
     for i, mode in enumerate(list(order)):
-        plot_params["display_mode"] = mode
-        plot_params["cut_coords"] = cuts[mode]
+        plot_params['display_mode'] = mode
+        plot_params['cut_coords'] = cuts[mode]
         if i == 0:
-            plot_params["title"] = label + upper_label_suffix
+            plot_params['title'] = label + upper_label_suffix
         else:
-            plot_params["title"] = None
+            plot_params['title'] = None
 
         # Generate nilearn figure
         display = plot_anat(lowb_nii, **plot_params)
@@ -64,7 +64,7 @@ def plot_denoise(
         # Find and replace the figure_1 id.
         xml_data = etree.fromstring(svg)
         find_text = etree.ETXPath("//{%s}g[@id='figure_1']" % SVGNS)
-        find_text(xml_data)[0].set("id", "%s-%s-%s" % (div_id, mode, uuid4()))
+        find_text(xml_data)[0].set('id', '%s-%s-%s' % (div_id, mode, uuid4()))
 
         svg_fig = SVGFigure()
         svg_fig.root = xml_data
@@ -73,15 +73,15 @@ def plot_denoise(
     # Plot each cut axis for high-b
     if estimate_brightness:
         highb_plot_params = robust_set_limits(
-            highb_nii.get_fdata(dtype="float32").reshape(-1), highb_plot_params
+            highb_nii.get_fdata(dtype='float32').reshape(-1), highb_plot_params
         )
     for i, mode in enumerate(list(order)):
-        highb_plot_params["display_mode"] = mode
-        highb_plot_params["cut_coords"] = cuts[mode]
+        highb_plot_params['display_mode'] = mode
+        highb_plot_params['cut_coords'] = cuts[mode]
         if i == 0:
-            highb_plot_params["title"] = label + lower_label_suffix
+            highb_plot_params['title'] = label + lower_label_suffix
         else:
-            highb_plot_params["title"] = None
+            highb_plot_params['title'] = None
 
         # Generate nilearn figure
         display = plot_anat(highb_nii, **highb_plot_params)
@@ -94,7 +94,7 @@ def plot_denoise(
         # Find and replace the figure_1 id.
         xml_data = etree.fromstring(svg)
         find_text = etree.ETXPath("//{%s}g[@id='figure_1']" % SVGNS)
-        find_text(xml_data)[0].set("id", "%s-%s-%s" % (div_id, mode, uuid4()))
+        find_text(xml_data)[0].set('id', '%s-%s-%s' % (div_id, mode, uuid4()))
 
         svg_fig = SVGFigure()
         svg_fig.root = xml_data
@@ -114,4 +114,4 @@ def slices_from_bbox(mask_data, cuts=3, padding=0):
         inc = abs(stop - start) / (cuts + 2 * padding + 1)
         slices = [start + (i + 1) * inc for i in range(cuts + 2 * padding)]
         vox_coords.append(slices[padding:-padding])
-    return {k: [int(_v) for _v in v] for k, v in zip(["x", "y", "z"], vox_coords)}
+    return {k: [int(_v) for _v in v] for k, v in zip(['x', 'y', 'z'], vox_coords)}

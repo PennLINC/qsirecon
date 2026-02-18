@@ -25,15 +25,15 @@ from nipype.interfaces.base import (
 from nipype.utils.filemanip import fname_presuffix
 from niworkflows.interfaces.header import ValidateImage
 
-IFLOGGER = logging.getLogger("nipype.interfaces")
+IFLOGGER = logging.getLogger('nipype.interfaces')
 
 
 class _WarpConnectivityAtlasesInputSpec(BaseInterfaceInputSpec):
     atlas_configs = traits.Dict(
         mandatory=True,
         desc=(
-            "Dictionary of atlas configurations. "
-            "Keys are atlas names and values are dictionaries with the following keys: "
+            'Dictionary of atlas configurations. '
+            'Keys are atlas names and values are dictionaries with the following keys: '
             "'file', 'label', 'metadata'. "
             "'file' is the path to the atlas file. "
             "'label' is the path to the label file. "
@@ -41,17 +41,17 @@ class _WarpConnectivityAtlasesInputSpec(BaseInterfaceInputSpec):
             "'xfm_to_anat' is the path to the transform to get the atlas into T1w space."
         ),
     )
-    reference_image = File(exists=True, desc="")
-    space = traits.Str("T1w", usedefault=True)
+    reference_image = File(exists=True, desc='')
+    space = traits.Str('T1w', usedefault=True)
 
 
 class _WarpConnectivityAtlasesOutputSpec(TraitedSpec):
     atlas_configs = traits.Dict(
         desc=(
-            "Dictionary of atlas configurations. "
-            "This interface adds the following keys: "
+            'Dictionary of atlas configurations. '
+            'This interface adds the following keys: '
             "'dwi_resolution_file', 'dwi_resolution_mif', 'orig_lut', 'mrtrix_lut'. "
-            "The values are the paths to the transformed atlas files and the label files."
+            'The values are the paths to the transformed atlas files and the label files.'
         ),
     )
     commands = File()
@@ -62,48 +62,48 @@ class WarpConnectivityAtlases(SimpleInterface):
     output_spec = _WarpConnectivityAtlasesOutputSpec
 
     def _run_interface(self, runtime):
-        if self.inputs.space == "T1w":
-            transforms = [cfg["xfm_to_anat"] for cfg in self.inputs.atlas_configs.values()]
+        if self.inputs.space == 'T1w':
+            transforms = [cfg['xfm_to_anat'] for cfg in self.inputs.atlas_configs.values()]
             if not all(os.path.isfile(transform) for transform in transforms):
-                raise ValueError("No standard to T1w transform found in anatomical directory.")
+                raise ValueError('No standard to T1w transform found in anatomical directory.')
 
         else:
-            transforms = ["identity"] * len(self.inputs.atlas_configs)
+            transforms = ['identity'] * len(self.inputs.atlas_configs)
 
         # Transform atlases to match the DWI data
         atlas_configs = self.inputs.atlas_configs.copy()
         resample_commands = []
         for i_atlas, (atlas_name, atlas_config) in enumerate(atlas_configs.items()):
             output_name = fname_presuffix(
-                atlas_config["image"],
+                atlas_config['image'],
                 newpath=runtime.cwd,
-                suffix="_to_dwi",
+                suffix='_to_dwi',
             )
             output_mif = fname_presuffix(
-                atlas_config["image"],
+                atlas_config['image'],
                 newpath=runtime.cwd,
-                suffix="_to_dwi.mif",
+                suffix='_to_dwi.mif',
                 use_ext=False,
             )
             output_mif_txt = fname_presuffix(
-                atlas_config["image"],
+                atlas_config['image'],
                 newpath=runtime.cwd,
-                suffix="_mrtrixlabels.txt",
+                suffix='_mrtrixlabels.txt',
                 use_ext=False,
             )
             output_orig_txt = fname_presuffix(
-                atlas_config["image"],
+                atlas_config['image'],
                 newpath=runtime.cwd,
-                suffix="_origlabels.txt",
+                suffix='_origlabels.txt',
                 use_ext=False,
             )
 
-            atlas_configs[atlas_name]["dwi_resolution_file"] = output_name
-            atlas_configs[atlas_name]["dwi_resolution_mif"] = output_mif
-            atlas_configs[atlas_name]["orig_lut"] = output_orig_txt
-            atlas_configs[atlas_name]["mrtrix_lut"] = output_mif_txt
+            atlas_configs[atlas_name]['dwi_resolution_file'] = output_name
+            atlas_configs[atlas_name]['dwi_resolution_mif'] = output_mif
+            atlas_configs[atlas_name]['orig_lut'] = output_orig_txt
+            atlas_configs[atlas_name]['mrtrix_lut'] = output_mif_txt
 
-            conform_atlas = ConformAtlas(in_file=atlas_config["image"], orientation="LPS")
+            conform_atlas = ConformAtlas(in_file=atlas_config['image'], orientation='LPS')
             result = conform_atlas.run()
             lps_name = result.outputs.out_file
 
@@ -116,19 +116,19 @@ class WarpConnectivityAtlases(SimpleInterface):
                 )
             )
             label_convert(
-                original_atlas=atlas_config["image"],
+                original_atlas=atlas_config['image'],
                 output_mif=output_mif,
                 orig_txt=output_orig_txt,
                 mrtrix_txt=output_mif_txt,
-                atlas_labels_file=atlas_config["labels"],
+                atlas_labels_file=atlas_config['labels'],
             )
 
-        self._results["atlas_configs"] = atlas_configs
-        commands_file = os.path.join(runtime.cwd, "transform_commands.txt")
-        with open(commands_file, "w") as f:
-            f.write("\n".join(resample_commands))
+        self._results['atlas_configs'] = atlas_configs
+        commands_file = os.path.join(runtime.cwd, 'transform_commands.txt')
+        with open(commands_file, 'w') as f:
+            f.write('\n'.join(resample_commands))
 
-        self._results["commands"] = commands_file
+        self._results['commands'] = commands_file
         return runtime
 
 
@@ -138,7 +138,7 @@ def _resample_atlas(input_atlas, output_atlas, transform, ref_image):
         reference_image=ref_image,
         input_image=input_atlas,
         output_image=output_atlas,
-        interpolation="MultiLabel",
+        interpolation='MultiLabel',
     )
     result = xform.run()
 
@@ -168,39 +168,39 @@ def label_convert(original_atlas, output_mif, orig_txt, mrtrix_txt, atlas_labels
 
     atlas_labels_df = pd.read_table(atlas_labels_file)
 
-    atlas_labels_df["index"] = atlas_labels_df["index"].astype(int)
-    if 0 in atlas_labels_df["index"].values:
-        print(f"WARNING: Atlas {atlas_labels_file} has a 0 index. This index will be dropped.")
-        atlas_labels_df = atlas_labels_df.loc[atlas_labels_df["index"] != 0]
+    atlas_labels_df['index'] = atlas_labels_df['index'].astype(int)
+    if 0 in atlas_labels_df['index'].values:
+        print(f'WARNING: Atlas {atlas_labels_file} has a 0 index. This index will be dropped.')
+        atlas_labels_df = atlas_labels_df.loc[atlas_labels_df['index'] != 0]
 
-    index_label_pairs = zip(atlas_labels_df["index"], atlas_labels_df["label"])
-    orig_str = ""
-    mrtrix_str = ""
+    index_label_pairs = zip(atlas_labels_df['index'], atlas_labels_df['label'])
+    orig_str = ''
+    mrtrix_str = ''
     for i_row, (index, label) in enumerate(index_label_pairs):
         # TODO: Consider using special delimiters that can be replaced with spaces before output
         # files are written.
-        orig_str += f"{index}\t{label.replace(' ', '-')}\n"
-        mrtrix_str += f"{i_row + 1}\t{label.replace(' ', '-')}\n"
+        orig_str += f'{index}\t{label.replace(" ", "-")}\n'
+        mrtrix_str += f'{i_row + 1}\t{label.replace(" ", "-")}\n'
 
-    with open(mrtrix_txt, "w") as mrtrix_f:
+    with open(mrtrix_txt, 'w') as mrtrix_f:
         mrtrix_f.write(mrtrix_str)
 
-    with open(orig_txt, "w") as orig_f:
+    with open(orig_txt, 'w') as orig_f:
         orig_f.write(orig_str)
 
-    cmd = ["labelconvert", original_atlas, orig_txt, mrtrix_txt, output_mif]
+    cmd = ['labelconvert', original_atlas, orig_txt, mrtrix_txt, output_mif]
     subprocess.run(cmd, check=True)
     if not os.path.isfile(output_mif):
-        raise RuntimeError(f"Failed to create mrtrix label file from {original_atlas}")
+        raise RuntimeError(f'Failed to create mrtrix label file from {original_atlas}')
 
 
 class _ConformAtlasInputSpec(BaseInterfaceInputSpec):
-    in_file = File(mandatory=True, desc="dwi image")
-    orientation = traits.Enum("LPS", "LAS", default="LPS", usedefault=True)
+    in_file = File(mandatory=True, desc='dwi image')
+    orientation = traits.Enum('LPS', 'LAS', default='LPS', usedefault=True)
 
 
 class _ConformAtlasOutputSpec(TraitedSpec):
-    out_file = File(exists=True, desc="conformed dwi image")
+    out_file = File(exists=True, desc='conformed dwi image')
 
 
 class ConformAtlas(SimpleInterface):
@@ -217,7 +217,7 @@ class ConformAtlas(SimpleInterface):
     def _run_interface(self, runtime):
         fname = self.inputs.in_file
         orientation = self.inputs.orientation
-        suffix = "_" + orientation
+        suffix = '_' + orientation
         out_fname = fname_presuffix(fname, suffix=suffix, newpath=runtime.cwd)
 
         validator = ValidateImage(in_file=fname)
@@ -237,10 +237,10 @@ class ConformAtlas(SimpleInterface):
             )
             reoriented_img = input_img.as_reoriented(transform_orientation)
             reoriented_img.to_filename(out_fname)
-            self._results["out_file"] = out_fname
+            self._results['out_file'] = out_fname
 
         else:
-            self._results["out_file"] = fname
+            self._results['out_file'] = fname
 
         return runtime
 
@@ -258,10 +258,10 @@ class WriteSidecar(SimpleInterface):
     output_spec = _WriteSidecarOutputSpec
 
     def _run_interface(self, runtime):
-        out_file = os.path.join(runtime.cwd, "sidecar.json")
-        with open(out_file, "w") as outf:
+        out_file = os.path.join(runtime.cwd, 'sidecar.json')
+        with open(out_file, 'w') as outf:
             json.dump(self.inputs.metadata, outf)
-        self._results["out_file"] = out_file
+        self._results['out_file'] = out_file
         return runtime
 
 
@@ -279,11 +279,11 @@ class TestReportPlot(SimpleInterface):
 
     def _run_interface(self, runtime):
         img = image.index_img(self.inputs.dwi_file, 0)
-        out_file = os.path.join(runtime.cwd, "brainfig.png")
+        out_file = os.path.join(runtime.cwd, 'brainfig.png')
         plotting.plot_img(
             img=img, output_file=out_file, title=os.path.basename(self.inputs.dwi_file)
         )
-        self._results["out_file"] = out_file
+        self._results['out_file'] = out_file
         return runtime
 
 
@@ -291,8 +291,8 @@ class _SplitAtlasConfigsInputSpec(BaseInterfaceInputSpec):
     atlas_configs = traits.Dict(
         mandatory=True,
         desc=(
-            "Dictionary of atlas configurations. "
-            "Keys are atlas names and values are dictionaries with the following keys: "
+            'Dictionary of atlas configurations. '
+            'Keys are atlas names and values are dictionaries with the following keys: '
             "'file', 'label', 'metadata'. "
             "'file' is the path to the atlas file. "
             "'label' is the path to the label file. "
@@ -306,10 +306,10 @@ class _SplitAtlasConfigsOutputSpec(TraitedSpec):
     atlas_configs = traits.List(
         traits.Dict(),
         desc=(
-            "Dictionary of atlas configurations. "
-            "This interface adds the following keys: "
+            'Dictionary of atlas configurations. '
+            'This interface adds the following keys: '
             "'dwi_resolution_file', 'dwi_resolution_mif', 'orig_lut', 'mrtrix_lut'. "
-            "The values are the paths to the transformed atlas files and the label files."
+            'The values are the paths to the transformed atlas files and the label files.'
         ),
     )
 
@@ -323,15 +323,15 @@ class SplitAtlasConfigs(SimpleInterface):
         for atlas_name, atlas_config in self.inputs.atlas_configs.items():
             atlas_configs.append({atlas_name: atlas_config})
 
-        self._results["atlas_configs"] = atlas_configs
+        self._results['atlas_configs'] = atlas_configs
 
 
 class _ExtractAtlasFilesInputSpec(BaseInterfaceInputSpec):
     atlas_configs = traits.Dict(
         mandatory=True,
         desc=(
-            "Dictionary of atlas configurations. "
-            "Keys are atlas names and values are dictionaries with the following keys: "
+            'Dictionary of atlas configurations. '
+            'Keys are atlas names and values are dictionaries with the following keys: '
             "'file', 'label', 'metadata'. "
             "'file' is the path to the atlas file. "
             "'label' is the path to the label file. "
@@ -342,11 +342,11 @@ class _ExtractAtlasFilesInputSpec(BaseInterfaceInputSpec):
 
 
 class _ExtractAtlasFilesOutputSpec(TraitedSpec):
-    atlases = traits.List(traits.Str(), desc="List of atlas names")
-    nifti_files = traits.List(File(), desc="List of nifti files")
-    mif_files = traits.List(File(), desc="List of mif files")
-    mrtrix_lut_files = traits.List(File(), desc="List of mrtrix lut files")
-    orig_lut_files = traits.List(File(), desc="List of orig lut files")
+    atlases = traits.List(traits.Str(), desc='List of atlas names')
+    nifti_files = traits.List(File(), desc='List of nifti files')
+    mif_files = traits.List(File(), desc='List of mif files')
+    mrtrix_lut_files = traits.List(File(), desc='List of mrtrix lut files')
+    orig_lut_files = traits.List(File(), desc='List of orig lut files')
 
 
 class ExtractAtlasFiles(SimpleInterface):
@@ -354,18 +354,18 @@ class ExtractAtlasFiles(SimpleInterface):
     output_spec = _ExtractAtlasFilesOutputSpec
 
     def _run_interface(self, runtime):
-        self._results["atlases"] = []
-        self._results["nifti_files"] = []
-        self._results["mif_files"] = []
-        self._results["mrtrix_lut_files"] = []
-        self._results["orig_lut_files"] = []
+        self._results['atlases'] = []
+        self._results['nifti_files'] = []
+        self._results['mif_files'] = []
+        self._results['mrtrix_lut_files'] = []
+        self._results['orig_lut_files'] = []
 
         for atlas_name, atlas_config in self.inputs.atlas_configs.items():
-            self._results["atlases"].append(atlas_name)
-            self._results["nifti_files"].append(atlas_config["dwi_resolution_file"])
-            self._results["mif_files"].append(atlas_config["dwi_resolution_mif"])
-            self._results["mrtrix_lut_files"].append(atlas_config["mrtrix_lut"])
-            self._results["orig_lut_files"].append(atlas_config["orig_lut"])
+            self._results['atlases'].append(atlas_name)
+            self._results['nifti_files'].append(atlas_config['dwi_resolution_file'])
+            self._results['mif_files'].append(atlas_config['dwi_resolution_mif'])
+            self._results['mrtrix_lut_files'].append(atlas_config['mrtrix_lut'])
+            self._results['orig_lut_files'].append(atlas_config['orig_lut'])
 
         return runtime
 
@@ -374,8 +374,8 @@ class _RecombineAtlasConfigsInputSpec(BaseInterfaceInputSpec):
     atlas_configs = traits.Dict(
         mandatory=True,
         desc=(
-            "Dictionary of atlas configurations. "
-            "Keys are atlas names and values are dictionaries with the following keys: "
+            'Dictionary of atlas configurations. '
+            'Keys are atlas names and values are dictionaries with the following keys: '
             "'file', 'label', 'metadata'. "
             "'file' is the path to the atlas file. "
             "'label' is the path to the label file. "
@@ -383,19 +383,19 @@ class _RecombineAtlasConfigsInputSpec(BaseInterfaceInputSpec):
             "'xfm_to_anat' is the path to the transform to get the atlas into ACPC space."
         ),
     )
-    atlases = traits.List(traits.Str(), desc="List of atlas names")
-    nifti_files = traits.List(File(), desc="List of nifti files")
-    mif_files = traits.List(File(), desc="List of mif files")
-    mrtrix_lut_files = traits.List(File(), desc="List of mrtrix lut files")
-    orig_lut_files = traits.List(File(), desc="List of orig lut files")
+    atlases = traits.List(traits.Str(), desc='List of atlas names')
+    nifti_files = traits.List(File(), desc='List of nifti files')
+    mif_files = traits.List(File(), desc='List of mif files')
+    mrtrix_lut_files = traits.List(File(), desc='List of mrtrix lut files')
+    orig_lut_files = traits.List(File(), desc='List of orig lut files')
 
 
 class _RecombineAtlasConfigsOutputSpec(TraitedSpec):
     atlas_configs = traits.Dict(
         mandatory=True,
         desc=(
-            "Dictionary of atlas configurations. "
-            "Keys are atlas names and values are dictionaries with the following keys: "
+            'Dictionary of atlas configurations. '
+            'Keys are atlas names and values are dictionaries with the following keys: '
             "'file', 'label', 'metadata'. "
         ),
     )
@@ -409,12 +409,12 @@ class RecombineAtlasConfigs(SimpleInterface):
         atlas_configs = self.inputs.atlas_configs.copy()
 
         for i_atlas, atlas_name in enumerate(self.inputs.atlases):
-            atlas_configs[atlas_name]["dwi_resolution_file"] = self.inputs.nifti_files[i_atlas]
-            atlas_configs[atlas_name]["dwi_resolution_mif"] = self.inputs.mif_files[i_atlas]
-            atlas_configs[atlas_name]["mrtrix_lut"] = self.inputs.mrtrix_lut_files[i_atlas]
-            atlas_configs[atlas_name]["orig_lut"] = self.inputs.orig_lut_files[i_atlas]
+            atlas_configs[atlas_name]['dwi_resolution_file'] = self.inputs.nifti_files[i_atlas]
+            atlas_configs[atlas_name]['dwi_resolution_mif'] = self.inputs.mif_files[i_atlas]
+            atlas_configs[atlas_name]['mrtrix_lut'] = self.inputs.mrtrix_lut_files[i_atlas]
+            atlas_configs[atlas_name]['orig_lut'] = self.inputs.orig_lut_files[i_atlas]
 
-        self._results["atlas_configs"] = atlas_configs
+        self._results['atlas_configs'] = atlas_configs
 
         return runtime
 
@@ -423,7 +423,7 @@ class _LoadResponseFunctionsInputSpec(BaseInterfaceInputSpec):
     wm_file = File(
         exists=False,
         mandatory=True,
-        desc="WM response function file. Only MRtrix-format txt files are currently supported.",
+        desc='WM response function file. Only MRtrix-format txt files are currently supported.',
     )
     gm_file = traits.Either(
         None,
@@ -431,8 +431,7 @@ class _LoadResponseFunctionsInputSpec(BaseInterfaceInputSpec):
             exists=False,
             mandatory=False,
             desc=(
-                "GM response function file. Only MRtrix-format txt files are currently "
-                "supported."
+                'GM response function file. Only MRtrix-format txt files are currently supported.'
             ),
         ),
     )
@@ -442,16 +441,15 @@ class _LoadResponseFunctionsInputSpec(BaseInterfaceInputSpec):
             exists=False,
             mandatory=False,
             desc=(
-                "CSF response function file. Only MRtrix-format txt files are currently "
-                "supported."
+                'CSF response function file. Only MRtrix-format txt files are currently supported.'
             ),
         ),
     )
-    using_multitissue = traits.Bool(desc="Whether to use multitissue response functions or not.")
+    using_multitissue = traits.Bool(desc='Whether to use multitissue response functions or not.')
     input_dir = traits.Directory(
         exists=True,
         mandatory=True,
-        desc="Directory containing response function files.",
+        desc='Directory containing response function files.',
     )
 
 
@@ -475,24 +473,24 @@ class LoadResponseFunctions(SimpleInterface):
 
     def _run_interface(self, runtime):
         wm_file = os.path.abspath(os.path.join(self.inputs.input_dir, self.inputs.wm_file))
-        self._results["wm_txt"] = wm_file
+        self._results['wm_txt'] = wm_file
         if not os.path.exists(wm_file):
-            raise FileNotFoundError(f"WM response file {wm_file} not found")
+            raise FileNotFoundError(f'WM response file {wm_file} not found')
 
         if self.inputs.gm_file and self.inputs.using_multitissue:
             gm_file = os.path.abspath(os.path.join(self.inputs.input_dir, self.inputs.gm_file))
             if not os.path.exists(gm_file):
-                raise FileNotFoundError(f"GM response file {gm_file} not found")
-            self._results["gm_txt"] = gm_file
+                raise FileNotFoundError(f'GM response file {gm_file} not found')
+            self._results['gm_txt'] = gm_file
         elif self.inputs.using_multitissue:
-            raise ValueError("gm_file is required when using multitissue response functions")
+            raise ValueError('gm_file is required when using multitissue response functions')
 
         if self.inputs.csf_file and self.inputs.using_multitissue:
             csf_file = os.path.abspath(os.path.join(self.inputs.input_dir, self.inputs.csf_file))
             if not os.path.exists(csf_file):
-                raise FileNotFoundError(f"CSF response file {csf_file} not found")
-            self._results["csf_txt"] = csf_file
+                raise FileNotFoundError(f'CSF response file {csf_file} not found')
+            self._results['csf_txt'] = csf_file
         elif self.inputs.using_multitissue:
-            raise ValueError("csf_file is required when using multitissue response functions")
+            raise ValueError('csf_file is required when using multitissue response functions')
 
         return runtime

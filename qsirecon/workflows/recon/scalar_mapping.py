@@ -28,10 +28,10 @@ from ...utils.bids import clean_datasinks
 from .utils import init_scalar_output_wf
 from qsirecon import config
 
-LOGGER = logging.getLogger("nipype.workflow")
+LOGGER = logging.getLogger('nipype.workflow')
 
 
-def init_scalar_to_bundle_wf(inputs_dict, name="scalar_to_bundle", qsirecon_suffix="", params={}):
+def init_scalar_to_bundle_wf(inputs_dict, name='scalar_to_bundle', qsirecon_suffix='', params={}):
     """Map scalar images to bundles
 
     Inputs
@@ -49,26 +49,26 @@ def init_scalar_to_bundle_wf(inputs_dict, name="scalar_to_bundle", qsirecon_suff
 
     """
     workflow = Workflow(name=name)
-    workflow.__desc__ = "Scalar NIfTI files were mapped to bundles."
+    workflow.__desc__ = 'Scalar NIfTI files were mapped to bundles.'
 
     inputnode = pe.Node(
         niu.IdentityInterface(
             fields=recon_workflow_input_fields
-            + ["tck_files", "bundle_names", "recon_scalars", "collected_scalars"],
+            + ['tck_files', 'bundle_names', 'recon_scalars', 'collected_scalars'],
         ),
-        name="inputnode",
+        name='inputnode',
     )
-    outputnode = pe.Node(niu.IdentityInterface(fields=["bundle_summary"]), name="outputnode")
+    outputnode = pe.Node(niu.IdentityInterface(fields=['bundle_summary']), name='outputnode')
 
-    bundle_mapper = pe.Node(BundleMapper(**params), name="bundle_mapper")
+    bundle_mapper = pe.Node(BundleMapper(**params), name='bundle_mapper')
     ds_bundle_mapper = pe.Node(
-        ReconScalarsTableSplitterDataSink(dismiss_entities=["desc"], suffix="scalarstats"),
-        name="ds_bundle_mapper",
+        ReconScalarsTableSplitterDataSink(dismiss_entities=['desc'], suffix='scalarstats'),
+        name='ds_bundle_mapper',
         run_without_submitting=True,
     )
     ds_tdi_summary = pe.Node(
-        ReconScalarsTableSplitterDataSink(dismiss_entities=["desc"], suffix="tdistats"),
-        name="ds_tdi_summary",
+        ReconScalarsTableSplitterDataSink(dismiss_entities=['desc'], suffix='tdistats'),
+        name='ds_tdi_summary',
         run_without_submitting=True,
     )
     workflow.connect([
@@ -93,8 +93,8 @@ def init_scalar_to_bundle_wf(inputs_dict, name="scalar_to_bundle", qsirecon_suff
 
 def init_scalar_to_atlas_wf(
     inputs_dict,
-    name="scalar_to_atlas_wf",
-    qsirecon_suffix="",
+    name='scalar_to_atlas_wf',
+    qsirecon_suffix='',
     params={},
 ):
     """Parcellate scalar images using atlases.
@@ -110,31 +110,31 @@ def init_scalar_to_atlas_wf(
             Dictionary containing atlas configuration information.
     """
     workflow = Workflow(name=name)
-    workflow.__desc__ = "Scalar NIfTI files were parcellated using atlases."
+    workflow.__desc__ = 'Scalar NIfTI files were parcellated using atlases.'
 
     input_fields = recon_workflow_input_fields + [
-        "recon_scalars",
-        "collected_scalars",
-        "atlas_configs",
+        'recon_scalars',
+        'collected_scalars',
+        'atlas_configs',
     ]
     inputnode = pe.Node(
         niu.IdentityInterface(fields=input_fields),
-        name="inputnode",
+        name='inputnode',
     )
 
     split_atlas_configs = pe.Node(
         SplitAtlasConfigs(),
-        name="split_atlas_configs",
+        name='split_atlas_configs',
     )
-    workflow.connect([(inputnode, split_atlas_configs, [("atlas_configs", "atlas_configs")])])
+    workflow.connect([(inputnode, split_atlas_configs, [('atlas_configs', 'atlas_configs')])])
 
     # Parcellates all scalars with one atlas at a time.
     # Outputs a tsv of parcellated scalar stats and atlas name ("seg").
     # Also ingresses and outputs metadata.
     scalar_parcellator = pe.MapNode(
         ParcellateScalars(**params),
-        name="scalar_parcellator",
-        iterfield=["atlas_config"],
+        name='scalar_parcellator',
+        iterfield=['atlas_config'],
     )
     workflow.connect([
         (inputnode, scalar_parcellator, [
@@ -148,12 +148,12 @@ def init_scalar_to_atlas_wf(
     ds_parcellated_scalars = pe.MapNode(
         ParcellationTableSplitterDataSink(
             dataset_links=config.execution.dataset_links,
-            dismiss_entities=["desc"],
-            suffix="scalarstats",
+            dismiss_entities=['desc'],
+            suffix='scalarstats',
         ),
-        name="ds_parcellated_scalars",
+        name='ds_parcellated_scalars',
         run_without_submitting=True,
-        iterfield=["seg", "in_file", "meta_dict"],
+        iterfield=['seg', 'in_file', 'meta_dict'],
     )
     workflow.connect([
         (scalar_parcellator, ds_parcellated_scalars, [
@@ -170,8 +170,8 @@ def init_scalar_to_atlas_wf(
 
 def init_scalar_to_template_wf(
     inputs_dict,
-    name="scalar_to_template",
-    qsirecon_suffix="",
+    name='scalar_to_template',
+    qsirecon_suffix='',
     params={},
 ):
     """Maps scalar data to a volumetric template
@@ -189,31 +189,30 @@ def init_scalar_to_template_wf(
     """
     workflow = Workflow(name=name)
     workflow.__desc__ = (
-        f"Scalar NIfTI files were warped to {inputs_dict['template_output_space']} "
-        "template space."
+        f'Scalar NIfTI files were warped to {inputs_dict["template_output_space"]} template space.'
     )
 
     inputnode = pe.Node(
         niu.IdentityInterface(
-            fields=recon_workflow_input_fields + ["recon_scalars", "collected_scalars"],
+            fields=recon_workflow_input_fields + ['recon_scalars', 'collected_scalars'],
         ),
-        name="inputnode",
+        name='inputnode',
     )
     outputnode = pe.Node(
         niu.IdentityInterface(
             fields=[
-                "template_scalars",
-                "template_scalar_sidecars",
+                'template_scalars',
+                'template_scalar_sidecars',
                 # scalar configs for the template space
-                "template_recon_scalars",
+                'template_recon_scalars',
             ],
         ),
-        name="outputnode",
+        name='outputnode',
     )
 
     template_mapper = pe.Node(
-        TemplateMapper(template_space=inputs_dict["template_output_space"], **params),
-        name="template_mapper",
+        TemplateMapper(template_space=inputs_dict['template_output_space'], **params),
+        name='template_mapper',
     )
     workflow.connect([
         (inputnode, template_mapper, [
@@ -241,8 +240,8 @@ def init_scalar_to_template_wf(
 
 def init_scalar_to_surface_wf(
     inputs_dict,
-    name="scalar_to_surface",
-    qsirecon_suffix="",
+    name='scalar_to_surface',
+    qsirecon_suffix='',
     params={},
 ):
     """Maps scalar data to a surface."""
