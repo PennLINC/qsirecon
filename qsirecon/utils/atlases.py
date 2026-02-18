@@ -113,7 +113,7 @@ def collect_atlases(datasets, atlases, bids_filters={}):
             LOGGER.warning(f'No atlas images found for {atlas} with query {atlas_filter}')
             errors.append(f'No atlas images found for {atlas} with query {atlas_filter}')
 
-    for atlas, atlas_info in atlas_cache.items():
+    for _atlas, atlas_info in atlas_cache.items():
         if not atlas_info['labels']:
             errors.append(f'No TSV file found for {atlas_info["image"]}')
             continue
