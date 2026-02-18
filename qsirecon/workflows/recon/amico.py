@@ -10,6 +10,8 @@ import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
+from qsirecon.data import load as load_data
+
 from ... import config
 from ...interfaces.amico import NODDI, NODDITissueFraction
 from ...interfaces.bids import DerivativesDataSink
@@ -21,7 +23,6 @@ from ...utils.bids import clean_datasinks
 from ...utils.boilerplate import build_documentation
 from ...utils.misc import load_yaml
 from .utils import init_scalar_output_wf
-from qsirecon.data import load as load_data
 
 
 def init_amico_noddi_fit_wf(

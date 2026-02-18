@@ -16,6 +16,8 @@ import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
+from qsirecon import config
+
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import (
     ParcellateScalars,
@@ -26,7 +28,6 @@ from ...interfaces.scalar_mapping import BundleMapper, TemplateMapper
 from ...interfaces.utils import SplitAtlasConfigs
 from ...utils.bids import clean_datasinks
 from .utils import init_scalar_output_wf
-from qsirecon import config
 
 LOGGER = logging.getLogger('nipype.workflow')
 

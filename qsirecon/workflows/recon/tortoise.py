@@ -13,14 +13,6 @@ import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
-from ... import config
-from ...interfaces.bids import DerivativesDataSink
-from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.recon_scalars import TORTOISEReconScalars
-from ...interfaces.reports import ScalarReport
-from ...utils.bids import clean_datasinks
-from ...utils.boilerplate import build_documentation
-from .utils import init_scalar_output_wf
 from qsirecon.interfaces.tortoise import (
     ComputeADMap,
     ComputeFAMap,
@@ -34,6 +26,15 @@ from qsirecon.interfaces.tortoise import (
     EstimateTensor,
     TORTOISEConvert,
 )
+
+from ... import config
+from ...interfaces.bids import DerivativesDataSink
+from ...interfaces.interchange import recon_workflow_input_fields
+from ...interfaces.recon_scalars import TORTOISEReconScalars
+from ...interfaces.reports import ScalarReport
+from ...utils.bids import clean_datasinks
+from ...utils.boilerplate import build_documentation
+from .utils import init_scalar_output_wf
 
 LOGGER = logging.getLogger('nipype.interface')
 

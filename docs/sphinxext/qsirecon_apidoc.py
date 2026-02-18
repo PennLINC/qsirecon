@@ -4,9 +4,8 @@ This extension mirrors Nipype's apidoc hookup but allows local customization.
 Place modifications by subclassing the imported Nipype docstring parsers.
 """
 
-from packaging.version import Version
-
 import sphinx
+from packaging.version import Version
 from sphinx.ext.napoleon import _patch_python_domain
 
 # Detect whether sphinx-design is available for grid/card/badge directives
@@ -20,9 +19,11 @@ except Exception:  # pragma: no cover - environment-dependent
 # Reuse Nipype's internals so behavior stays consistent unless overridden
 from nipype.sphinxext.apidoc import __version__ as NIPYPE_VERSION
 from nipype.sphinxext.apidoc import _skip_member as nipype_skip_member
+from nipype.sphinxext.apidoc.docstring import (
+    InterfaceDocstring as BaseInterfaceDocstring,
+)
 from nipype.sphinxext.apidoc.docstring import (  # noqa: F401
     NipypeDocstring as BaseNipypeDocstring,
-    InterfaceDocstring as BaseInterfaceDocstring,
 )
 from nipype.sphinxext.apidoc.docstring import _parse_spec as nipype_parse_spec
 

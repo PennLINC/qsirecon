@@ -22,17 +22,17 @@
 #        " for paragraphs
 import os
 import sys
+from dataclasses import dataclass, field
 from datetime import datetime
 
-from dipy import __version__ as dipy_version
-
-import qsirecon
-from dataclasses import dataclass, field
 import sphinxcontrib.bibtex.plugin
+from dipy import __version__ as dipy_version
 from sphinxcontrib.bibtex.style.referencing import BracketStyle
 from sphinxcontrib.bibtex.style.referencing.author_year import (
     AuthorYearReferenceStyle,
 )
+
+import qsirecon
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
