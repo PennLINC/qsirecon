@@ -172,7 +172,6 @@ ignore = [
   "S202",  # Uses of `tarfile.extractall()`
   "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
   "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
-  "A004",  # Import `ConnectionError` is shadowing a Python builtin
   "S608",  # Possible SQL injection vector through string-based query construction
   "S108",  # Probable insecure usage of temporary file or directory: "/tmp"
   "S602",  # `subprocess` call with `shell=True` identified, security issue
