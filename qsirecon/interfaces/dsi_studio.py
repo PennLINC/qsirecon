@@ -953,7 +953,7 @@ def btable_from_bvals_bvecs(bval_file, bvec_file, output_file):
 
     rows = []
     for row in map(tuple, np.column_stack([bvals, bvecs])):
-        rows.append(f'{row[0]:d} {row[1]:.6f} {row[2]:.6f} {row[3]:.6f}')
+        rows.append(f'{int(row[0])} {row[1]:.6f} {row[2]:.6f} {row[3]:.6f}')
 
     # Write the actual file:
     with open(output_file, 'w') as btablef:
