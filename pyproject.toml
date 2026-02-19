@@ -165,7 +165,6 @@ ignore = [
   "B017",  # Do not assert blind exception: `Exception`
   "B905",  # `zip()` without an explicit `strict=` parameter
   "S101",  # Use of `assert` detected
-  "PT027",  # Use `pytest.raises` instead of unittest-style `assertRaises`
   "W605",  # [*] Invalid escape sequence: `\s`
   "E402",  # Module level import not at top of file
   "S607",  # Starting a process with a partial executable path
