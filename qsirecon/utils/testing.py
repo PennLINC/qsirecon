@@ -102,5 +102,5 @@ def assert_inputs_set(workflow, additional_inputs=None):
             if isdefined(getattr(node.inputs, field)):
                 pass
             else:
-                with pytest.raises(Exception):  # noqa: PT011
+                with pytest.raises(Exception):  # noqa: PT011, B017
                     workflow.connect([(dummy_node, node, [('dummy', field)])])

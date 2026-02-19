@@ -553,7 +553,7 @@ def _sanitized_connectivity_matrix(conmat, official_labels):
         try:
             new_row = np.array([label_to_index[name] for name in matfile_region_ids])
         except KeyError as e:
-            raise KeyError(f"String region name '{e.args[0]}' not found in atlas labels")
+            raise KeyError(f"String region name '{e.args[0]}' not found in atlas labels") from e
 
     output = np.zeros((n_atlas_labels, n_atlas_labels))
 

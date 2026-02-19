@@ -131,7 +131,7 @@ def recon_plot():
 
     try:
         display.start()
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         LOGGER.warning(
             'Unable to start Xvfb!! If you are running this via Apptainer/Singularity '
             'there may be an issue accessing the /tmp directory.\n\n'
@@ -153,7 +153,7 @@ def recon_plot():
             mask_image=opts.mask_file,
             padding=opts.padding,
         )
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001
         LOGGER.warning(exc)
         sys.exit(1)
 
@@ -173,7 +173,7 @@ def recon_plot():
                 subtract_iso=opts.subtract_iso,
                 mask=opts.mask_file,
             )
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             LOGGER.warning(exc)
             sys.exit(1)
 

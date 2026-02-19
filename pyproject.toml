@@ -159,10 +159,6 @@ extend-select = [
   "Q",
 ]
 ignore = [
-  "S110",  # `try`-`except`-`pass` detected
-  "B904",  # Within an `except` clause, raise exceptions
-  "BLE001",  # Do not catch blind exceptions
-  "B017",  # Do not assert blind exception: `Exception`
   "B905",  # `zip()` without an explicit `strict=` parameter
   "S101",  # Use of `assert` detected
   "S607",  # Starting a process with a partial executable path
@@ -181,6 +177,7 @@ inline-quotes = "single"
 "qsirecon/utils/debug.py" = ["A002", "T100"]
 "docs/conf.py" = ["A001"]
 "docs/sphinxext/github_link.py" = ["BLE001"]
+"docs/sphinxext/qsirecon_apidoc.py" = ["BLE001", "S110"]
 
 [tool.ruff.format]
 quote-style = "single"

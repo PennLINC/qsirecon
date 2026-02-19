@@ -202,7 +202,7 @@ def calculate_mask_stats(
             nz_weighting_vector[np.isnan(nz_voxel_data)] = np.nan
             nz_weighting_vector = nz_weighting_vector / np.nansum(nz_weighting_vector)
             results['masked_weighted_mean'] = np.nansum(nz_voxel_data * nz_weighting_vector)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             LOGGER.warn(
                 f'Error calculating weighted mean of {variable_name} in {mask_name}\n{exc}'
             )

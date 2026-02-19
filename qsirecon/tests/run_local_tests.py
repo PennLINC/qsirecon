@@ -84,8 +84,8 @@ def run_tests(test_regex, test_mark, check_path):
         try:
             run_command(run_str)
             print(f'Path found: {mounted_code}.')
-        except RuntimeError:
-            raise FileNotFoundError(f'Path not found: {mounted_code}')
+        except RuntimeError as err:
+            raise FileNotFoundError(f'Path not found: {mounted_code}') from err
 
     else:
         run_str = (
