@@ -78,7 +78,7 @@ class TestWorkflow(unittest.TestCase):
 
             workflow.disconnect([(from_node, to_node, fields)])
 
-    def assert_inputs_set(self, workflow, additional_inputs={}):
+    def assert_inputs_set(self, workflow, additional_inputs=None):
         """Check that all mandatory inputs of nodes in the workflow (at the first level) are
         already set. Additionally, check that inputs in additional_inputs are set. An input is
         "set" if it is
@@ -87,6 +87,9 @@ class TestWorkflow(unittest.TestCase):
             b) connected to another node's output (e.g. using the workflow.connect method)
         additional_inputs is a dict:
             {'node_name': ['mandatory', 'input', 'fields']}"""
+        if additional_inputs is None:
+            additional_inputs = {}
+
         dummy_node = pe.Node(niu.IdentityInterface(fields=['dummy']), name='DummyNode')
         node_names = [name for name in workflow.list_node_names() if name.count('.') == 0]
         for node_name in set(node_names + list(additional_inputs.keys())):
