@@ -74,7 +74,7 @@ def init_dipy_brainsuite_shore_recon_wf(
     inputs_dict,
     name='dipy_3dshore_recon',
     qsirecon_suffix='',
-    params={},
+    params=None,
 ):
     """Reconstruct EAPs, ODFs, using 3dSHORE (brainsuite-style basis set).
 
@@ -158,6 +158,9 @@ def init_dipy_brainsuite_shore_recon_wf(
         name='outputnode',
     )
     plot_reports = not config.execution.skip_odf_reports
+
+    if params is None:
+        params = {}
 
     # Do we have deltas?
     deltas = (params.get('big_delta', None), params.get('small_delta', None))
@@ -374,7 +377,7 @@ def init_dipy_mapmri_recon_wf(
     inputs_dict,
     name='dipy_mapmri_recon',
     qsirecon_suffix='',
-    params={},
+    params=None,
 ):
     """Reconstruct EAPs, ODFs, using 3dSHORE (brainsuite-style basis set).
 
@@ -480,6 +483,9 @@ def init_dipy_mapmri_recon_wf(
         ),
         name='outputnode',
     )
+
+    if params is None:
+        params = {}
 
     # Do we have deltas?
     deltas, deltas_string = infer_deltas(inputs_dict.get('dwi_metadata', {}), params)
@@ -623,7 +629,7 @@ def init_dipy_mapmri_recon_wf(
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
-def init_dipy_dki_recon_wf(inputs_dict, name='dipy_dki_recon', qsirecon_suffix='', params={}):
+def init_dipy_dki_recon_wf(inputs_dict, name='dipy_dki_recon', qsirecon_suffix='', params=None):
     """Fit DKI.
 
     This workflow corresponds to the "DKI_reconstruction" pipeline action.
@@ -737,6 +743,10 @@ def init_dipy_dki_recon_wf(inputs_dict, name='dipy_dki_recon', qsirecon_suffix='
         ),
         name='outputnode',
     )
+
+    if params is None:
+        params = {}
+
     recon_scalars = pe.Node(
         DIPYDKIReconScalars(qsirecon_suffix=qsirecon_suffix),
         run_without_submitting=True,

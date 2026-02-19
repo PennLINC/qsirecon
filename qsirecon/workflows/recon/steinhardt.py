@@ -13,7 +13,7 @@ from ...utils.bids import clean_datasinks
 LOGGER = logging.getLogger('nipype.interface')
 
 
-def init_steinhardt_order_param_wf(inputs_dict, name='sop_recon', qsirecon_suffix='', params={}):
+def init_steinhardt_order_param_wf(inputs_dict, name='sop_recon', qsirecon_suffix='', params=None):
     """Compute Steinhardt order parameters based on ODFs or FODs
 
     Inputs
@@ -40,6 +40,9 @@ def init_steinhardt_order_param_wf(inputs_dict, name='sop_recon', qsirecon_suffi
         niu.IdentityInterface(fields=['q2_file', 'q4_file', 'q6_file', 'q8_file']),
         name='outputnode',
     )
+
+    if params is None:
+        params = {}
 
     sop_order = params.get('order', 8)
     sh_mif_to_nifti = pe.Node(

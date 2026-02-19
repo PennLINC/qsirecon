@@ -49,7 +49,7 @@ def _parse_qsirecon_params_dict(params_dict):
     return kwargs
 
 
-def init_pyafq_wf(inputs_dict, name='afq', qsirecon_suffix='', params={}):
+def init_pyafq_wf(inputs_dict, name='afq', qsirecon_suffix='', params=None):
     """Run PyAFQ on some qsirecon outputs
 
     Inputs
@@ -74,6 +74,10 @@ def init_pyafq_wf(inputs_dict, name='afq', qsirecon_suffix='', params={}):
     outputnode = pe.Node(
         niu.IdentityInterface(fields=['afq_dir', 'recon_scalars']), name='outputnode'
     )
+
+    if params is None:
+        params = {}
+
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
     kwargs = _parse_qsirecon_params_dict(params)

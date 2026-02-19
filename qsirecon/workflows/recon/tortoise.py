@@ -46,7 +46,9 @@ CITATIONS = {
 }
 
 
-def init_tortoise_estimator_wf(inputs_dict, name='tortoise_recon', qsirecon_suffix='', params={}):
+def init_tortoise_estimator_wf(
+    inputs_dict, name='tortoise_recon', qsirecon_suffix='', params=None
+):
     """Run estimators from TORTOISE.
 
     This workflow may run ``EstimateTensor`` and/or ``EstimateMAPMRI``
@@ -104,6 +106,9 @@ def init_tortoise_estimator_wf(inputs_dict, name='tortoise_recon', qsirecon_suff
         ),
         name='outputnode',
     )
+
+    if params is None:
+        params = {}
 
     recon_scalars = pe.Node(
         TORTOISEReconScalars(qsirecon_suffix=qsirecon_suffix),

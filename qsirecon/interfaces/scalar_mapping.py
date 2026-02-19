@@ -101,7 +101,9 @@ class BundleMapper(ScalarMapper):
         bundle_dfs = []
         tdi_dfs = []
         source_suffix = self.inputs.mapping_metadata.get('qsirecon_suffix', 'QSIRecon')
-        for tck_name, tck_file in zip(self.inputs.bundle_names, self.inputs.tck_files):
+        for tck_name, tck_file in zip(
+            self.inputs.bundle_names, self.inputs.tck_files, strict=False
+        ):
             output_tdi_file = fname_presuffix(
                 tck_file, suffix='_tdi.nii', newpath=runtime.cwd, use_ext=False
             )
@@ -202,7 +204,7 @@ def calculate_mask_stats(
             nz_weighting_vector[np.isnan(nz_voxel_data)] = np.nan
             nz_weighting_vector = nz_weighting_vector / np.nansum(nz_weighting_vector)
             results['masked_weighted_mean'] = np.nansum(nz_voxel_data * nz_weighting_vector)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             LOGGER.warn(
                 f'Error calculating weighted mean of {variable_name} in {mask_name}\n{exc}'
             )

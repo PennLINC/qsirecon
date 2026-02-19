@@ -160,27 +160,9 @@ extend-select = [
   "Q",
 ]
 ignore = [
-  "B006",  # Do not use mutable data structures for argument defaults (keep in ignore)
-  "S110",  # `try`-`except`-`pass` detected
-  "B904",  # Within an `except` clause, raise exceptions
-  "BLE001",  # Do not catch blind exceptions
-  "B017",  # Do not assert blind exception: `Exception`
-  "B905",  # `zip()` without an explicit `strict=` parameter
-  "S101",  # Use of `assert` detected
-  "PT009",  # Use a regular `assert` instead of unittest-style `assertIn`
-  "PT027",  # Use `pytest.raises` instead of unittest-style `assertRaises`
-  "W605",  # [*] Invalid escape sequence: `\s`
-  "E402",  # Module level import not at top of file
   "S607",  # Starting a process with a partial executable path
-  "B028",  # No explicit `stacklevel` keyword argument found
-  "S202",  # Uses of `tarfile.extractall()`
-  "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
-  "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
-  "A004",  # Import `ConnectionError` is shadowing a Python builtin
-  "S608",  # Possible SQL injection vector through string-based query construction
+  "S608",  # ruff interprets informative error message as potential SQL injection vector
   "S108",  # Probable insecure usage of temporary file or directory: "/tmp"
-  "S602",  # `subprocess` call with `shell=True` identified, security issue
-  "S113",  # Probable use of `requests` call without timeout
   "S105",
   "S311",  # We are not using random for cryptographic purposes
   "S603",  # subprocess used only for trusted commands (git, pandoc, test runners)
@@ -190,10 +172,12 @@ ignore = [
 inline-quotes = "single"
 
 [tool.ruff.lint.extend-per-file-ignores]
-"*/test_*.py" = ["S101"]
+"qsirecon/tests/*.py" = ["S101"]
+"qsirecon/utils/testing.py" = ["S101"]
 "qsirecon/utils/debug.py" = ["A002", "T100"]
 "docs/conf.py" = ["A001"]
 "docs/sphinxext/github_link.py" = ["BLE001"]
+"docs/sphinxext/qsirecon_apidoc.py" = ["BLE001", "S110"]
 
 [tool.ruff.format]
 quote-style = "single"

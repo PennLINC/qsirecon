@@ -59,9 +59,9 @@ def output_to_filepattern(bids):
     if 'label' in bids:
         file_pattern.append(f'label-{bids["label"]}')
 
-    extension = bids.get('extension', '\*')
+    extension = bids.get('extension', r'\*')
     file_pattern.append(f'_{bids.get("suffix", "dwimap")}.{extension}')
-    return '\*' + '\*'.join(file_pattern)
+    return r'\*' + r'\*'.join(file_pattern)
 
 
 def outputs_to_csv(output_def, output_csv):

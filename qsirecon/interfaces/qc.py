@@ -206,7 +206,7 @@ def embed_tiles_in_json_sprite(tile_list, as_bytes=True, out_file=None):
     i_tile_offsets = tile_size * i_indices
     j_tile_offsets = tile_size * j_indices
 
-    for tile, i_offset, j_offset in zip(tile_list, i_tile_offsets, j_tile_offsets):
+    for tile, i_offset, j_offset in zip(tile_list, i_tile_offsets, j_tile_offsets, strict=False):
         mosaic[i_offset : (i_offset + tile_size), j_offset : (j_offset + tile_size)] = tile
 
     if as_bytes:

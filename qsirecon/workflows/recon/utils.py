@@ -22,7 +22,7 @@ from ...interfaces.utils import TestReportPlot, WriteSidecar
 from ...utils.bids import clean_datasinks
 
 
-def init_conform_dwi_wf(inputs_dict, name='conform_dwi', qsirecon_suffix='', params={}):
+def init_conform_dwi_wf(inputs_dict, name='conform_dwi', qsirecon_suffix='', params=None):
     """If data were preprocessed elsewhere, ensure the gradients and images
     conform to LPS+ before running other parts of the pipeline."""
     workflow = Workflow(name=name)
@@ -35,6 +35,9 @@ def init_conform_dwi_wf(inputs_dict, name='conform_dwi', qsirecon_suffix='', par
         niu.IdentityInterface(fields=['dwi_file', 'bval_file', 'bvec_file', 'b_file']),
         name='outputnode',
     )
+
+    if params is None:
+        params = {}
 
     conform = pe.Node(ConformDwi(), name='conform_dwi')
     grad_table = pe.Node(MRTrixGradientTable(), name='grad_table')
@@ -58,7 +61,7 @@ def init_discard_repeated_samples_wf(
     inputs_dict,
     name='discard_repeats',
     qsirecon_suffix='',
-    params={},
+    params=None,
 ):
     """Remove a sample if a similar direction/gradient has already been sampled."""
     workflow = Workflow(name=name)
@@ -87,6 +90,9 @@ def init_discard_repeated_samples_wf(
         name='outputnode',
     )
 
+    if params is None:
+        params = {}
+
     discard_repeats = pe.Node(RemoveDuplicates(**params), name='discard_repeats')
     workflow.connect([
         (inputnode, discard_repeats, [
@@ -110,7 +116,7 @@ def init_gradient_select_wf(
     inputs_dict,
     name='gradient_select_wf',
     qsirecon_suffix='',
-    params={},
+    params=None,
 ):
     """Remove a sample if a similar direction/gradient has already been sampled."""
     workflow = Workflow(name=name)
@@ -132,6 +138,9 @@ def init_gradient_select_wf(
         ),
         name='outputnode',
     )
+
+    if params is None:
+        params = {}
 
     gradient_select = pe.Node(GradientSelect(**params), name='gradient_select')
     workflow.connect([
@@ -221,7 +230,7 @@ def init_scalar_output_wf(
     return workflow
 
 
-def init_test_wf(inputs_dict, name='test_wf', qsirecon_suffix='test', params={}):
+def init_test_wf(inputs_dict, name='test_wf', qsirecon_suffix='test', params=None):
     """A workflow for testing how derivatives will be saved."""
     workflow = Workflow(name=name)
     workflow.__desc__ = (
@@ -234,6 +243,10 @@ def init_test_wf(inputs_dict, name='test_wf', qsirecon_suffix='test', params={})
     outputnode = pe.Node(
         niu.IdentityInterface(fields=['fibgz', 'recon_scalars']), name='outputnode'
     )
+
+    if params is None:
+        params = {}
+
     outputnode.inputs.recon_scalars = []
 
     write_metadata = pe.Node(WriteSidecar(metadata=inputs_dict), name='write_metadata')

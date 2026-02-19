@@ -11,7 +11,7 @@ import logging
 LOGGER = logging.getLogger('nipype.interface')
 
 
-def collect_atlases(datasets, atlases, bids_filters={}):
+def collect_atlases(datasets, atlases, bids_filters=None):
     """Collect atlases from a list of BIDS-Atlas datasets.
 
     Selection of labels files and metadata does not leverage the inheritance principle.

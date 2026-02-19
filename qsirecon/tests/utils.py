@@ -61,14 +61,14 @@ def download_test_data(dset, data_dir=None):
 
     os.makedirs(out_dir, exist_ok=True)
     url = URLS[dset]
-    with requests.get(url, stream=True) as req:
+    with requests.get(url, stream=True, timeout=10) as req:
         if url.endswith('.xz'):
             with lzma.open(BytesIO(req.content)) as f:
                 with tarfile.open(fileobj=f) as t:
-                    t.extractall(out_dir)
+                    t.extractall(out_dir)  # noqa: S202
         elif url.endswith('.gz'):
             with tarfile.open(fileobj=GzipFile(fileobj=BytesIO(req.content))) as t:
-                t.extractall(out_dir)
+                t.extractall(out_dir)  # noqa: S202
         else:
             raise ValueError(f'Unknown file type for {dset} ({url})')
 

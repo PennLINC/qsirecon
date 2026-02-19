@@ -44,7 +44,9 @@ from .utils import init_scalar_output_wf
 LOGGER = logging.getLogger('nipype.interface')
 
 
-def init_dsi_studio_recon_wf(inputs_dict, name='dsi_studio_recon', qsirecon_suffix='', params={}):
+def init_dsi_studio_recon_wf(
+    inputs_dict, name='dsi_studio_recon', qsirecon_suffix='', params=None
+):
     """Reconstructs diffusion data using DSI Studio.
 
     This workflow creates a ``.src.gz`` file from the input dwi, bvals and bvecs,
@@ -75,6 +77,9 @@ def init_dsi_studio_recon_wf(inputs_dict, name='dsi_studio_recon', qsirecon_suff
     outputnode = pe.Node(
         niu.IdentityInterface(fields=['fibgz', 'recon_scalars']), name='outputnode'
     )
+
+    if params is None:
+        params = {}
 
     outputnode.inputs.recon_scalars = []
     plot_reports = not config.execution.skip_odf_reports
@@ -161,7 +166,7 @@ distance of {romdd} in DSI Studio (version {DSI_STUDIO_VERSION}). """
 def init_dsi_studio_tractography_wf(
     inputs_dict,
     name='dsi_studio_tractography',
-    params={},
+    params=None,
     qsirecon_suffix='',
 ):
     """Calculate streamline-based connectivity matrices using DSI Studio.
@@ -237,6 +242,10 @@ def init_dsi_studio_tractography_wf(
         niu.IdentityInterface(fields=['trk_file', 'fibgz', 'recon_scalars']),
         name='outputnode',
     )
+
+    if params is None:
+        params = {}
+
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
 
@@ -269,7 +278,7 @@ def init_dsi_studio_tractography_wf(
 
 def init_dsi_studio_autotrack_registration_wf(
     inputs_dict,
-    params={},
+    params=None,
     qsirecon_suffix='',
     name='dsi_studio_autotrack_registration_wf',
 ):
@@ -305,6 +314,10 @@ def init_dsi_studio_autotrack_registration_wf(
         niu.IdentityInterface(fields=['fibgz', 'fibgz_map', 'recon_scalars']),
         name='outputnode',
     )
+
+    if params is None:
+        params = {}
+
     outputnode.inputs.recon_scalars = []
 
     omp_nthreads = config.nipype.omp_nthreads
@@ -331,7 +344,7 @@ def init_dsi_studio_autotrack_registration_wf(
 
 def init_dsi_studio_autotrack_wf(
     inputs_dict,
-    params={},
+    params=None,
     qsirecon_suffix='',
     name='dsi_studio_autotrack_wf',
 ):
@@ -412,6 +425,10 @@ def init_dsi_studio_autotrack_wf(
         niu.IdentityInterface(fields=['tck_files', 'bundle_names', 'recon_scalars']),
         name='outputnode',
     )
+
+    if params is None:
+        params = {}
+
     outputnode.inputs.recon_scalars = []
 
     model_name = params.pop('model', 'gqi')
@@ -520,7 +537,7 @@ def init_dsi_studio_autotrack_wf(
 def init_dsi_studio_connectivity_wf(
     inputs_dict,
     name='dsi_studio_connectivity',
-    params={},
+    params=None,
     qsirecon_suffix='',
 ):
     """Calculate streamline-based connectivity matrices using DSI Studio.
@@ -594,6 +611,10 @@ def init_dsi_studio_connectivity_wf(
     outputnode = pe.Node(
         niu.IdentityInterface(fields=['matfile', 'recon_scalars']), name='outputnode'
     )
+
+    if params is None:
+        params = {}
+
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
     plot_reports = not config.execution.skip_odf_reports
@@ -651,7 +672,7 @@ def init_dsi_studio_connectivity_wf(
 def init_dsi_studio_export_wf(
     inputs_dict,
     name='dsi_studio_export',
-    params={},
+    params=None,
     qsirecon_suffix='',
 ):
     """Export scalar maps from a DSI Studio fib file into NIfTI files with correct headers.
@@ -686,6 +707,10 @@ def init_dsi_studio_export_wf(
     inputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields + ['fibgz']), name='inputnode'
     )
+
+    if params is None:
+        params = {}
+
     plot_reports = params.pop('plot_reports', True)  # noqa: F841
     scalar_names = [
         'qa',

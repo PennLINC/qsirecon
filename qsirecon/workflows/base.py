@@ -397,19 +397,19 @@ def _load_recon_spec(spec_name):
     elif spec_name in prepackaged:
         recon_spec = op.join(prepackaged_dir, f'{spec_name}.yaml')
     else:
-        raise Exception(f'{spec_name} is not a file that exists or in {prepackaged}')
+        raise FileNotFoundError(f'{spec_name} is not a file that exists or in {prepackaged}')
 
     if recon_spec.endswith('.json'):
         with open(recon_spec) as f:
             try:
                 spec = json.load(f)
-            except Exception:
-                raise Exception('Unable to read JSON spec. Check the syntax.')
+            except Exception as err:
+                raise ValueError('Unable to read JSON spec. Check the syntax.') from err
     else:
         try:
             spec = load_yaml(recon_spec)
-        except Exception:
-            raise Exception('Unable to read YAML spec. Check the syntax.')
+        except Exception as err:
+            raise ValueError('Unable to read YAML spec. Check the syntax.') from err
 
     if config.execution.sloppy:
         config.loggers.workflow.warning('Forcing reconstruction to use unrealistic parameters')

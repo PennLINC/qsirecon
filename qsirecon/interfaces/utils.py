@@ -171,7 +171,7 @@ def label_convert(original_atlas, output_mif, orig_txt, mrtrix_txt, atlas_labels
         print(f'WARNING: Atlas {atlas_labels_file} has a 0 index. This index will be dropped.')
         atlas_labels_df = atlas_labels_df.loc[atlas_labels_df['index'] != 0]
 
-    index_label_pairs = zip(atlas_labels_df['index'], atlas_labels_df['label'])
+    index_label_pairs = zip(atlas_labels_df['index'], atlas_labels_df['label'], strict=False)
     orig_str = ''
     mrtrix_str = ''
     for i_row, (index, label) in enumerate(index_label_pairs):

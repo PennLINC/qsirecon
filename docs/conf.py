@@ -23,7 +23,7 @@
 import os
 import sys
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 
 import sphinxcontrib.bibtex.plugin
 from dipy import __version__ as dipy_version
@@ -106,7 +106,7 @@ master_doc = 'index'
 # General information about the project.
 project = 'qsirecon'
 author = 'qsirecon team'
-copyright = f'2021-{datetime.now().year}, {author}'
+copyright = f'2021-{datetime.now(tz=timezone.utc).year}, {author}'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -392,9 +392,7 @@ texinfo_documents = [
 # The following is used by sphinx.ext.linkcode to provide links to github
 linkcode_resolve = make_linkcode_resolve(
     'qsirecon',
-    (
-        'https://github.com/pennlinc/qsirecon/blob/{revision}/{package}/{path}#L{lineno}'  # noqa: FS003
-    ),
+    'https://github.com/pennlinc/qsirecon/blob/{revision}/{package}/{path}#L{lineno}',
 )
 
 # -----------------------------------------------------------------------------

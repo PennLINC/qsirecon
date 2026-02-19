@@ -51,7 +51,7 @@ CITATIONS = {
 }
 
 
-def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='', params={}):
+def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='', params=None):
     """Create FOD images for WM, GM and CSF.
 
     This workflow uses mrtrix tools to run csd on multishell data. At the end,
@@ -119,6 +119,10 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='
         ),
         name='outputnode',
     )
+
+    if params is None:
+        params = {}
+
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
 
@@ -457,7 +461,7 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
     return clean_datasinks(workflow, qsirecon_suffix)
 
 
-def init_global_tractography_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='', params={}):
+def init_global_tractography_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='', params=None):
     """Run multi-shell, multi-tissue global tractography
 
     This workflow uses mrtrix tools to run csd on multishell data.
@@ -502,6 +506,9 @@ def init_global_tractography_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffi
     )
 
     outputnode.inputs.recon_scalars = []
+
+    if params is None:
+        params = {}
 
     create_mif = pe.Node(MRTrixIngress(), name='create_mif')
 
@@ -580,7 +587,7 @@ def init_global_tractography_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffi
 
 
 def init_mrtrix_tractography_wf(
-    inputs_dict, name='mrtrix_tracking', qsirecon_suffix='', params={}
+    inputs_dict, name='mrtrix_tracking', qsirecon_suffix='', params=None
 ):
     """Run tractography
 
@@ -614,6 +621,9 @@ def init_mrtrix_tractography_wf(
         niu.IdentityInterface(fields=['tck_file', 'sift_weights', 'mu', 'recon_scalars']),
         name='outputnode',
     )
+
+    if params is None:
+        params = {}
 
     outputnode.inputs.recon_scalars = []
     omp_nthreads = config.nipype.omp_nthreads
@@ -708,7 +718,7 @@ def init_mrtrix_tractography_wf(
 def init_mrtrix_connectivity_wf(
     inputs_dict,
     name='mrtrix_connectivity',
-    params={},
+    params=None,
     qsirecon_suffix='',
 ):
     """Runs ``tck2connectome`` on a ``tck`` file.
@@ -739,6 +749,10 @@ def init_mrtrix_connectivity_wf(
         niu.IdentityInterface(fields=['matfile', 'recon_scalars']),
         name='outputnode',
     )
+
+    if params is None:
+        params = {}
+
     outputnode.inputs.recon_scalars = []
 
     calc_connectivity = pe.Node(

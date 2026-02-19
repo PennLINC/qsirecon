@@ -210,7 +210,8 @@ class DSIStudioGQIReconstruction(CommandLine):
         target = os.path.join(os.getcwd(), srcname) + '*gqi*.fib.gz'
         config.loggers.interface.info(f'search target: {target}')
         results = glob(target)
-        assert len(results) == 1
+        if len(results) != 1:
+            raise ValueError(f'Expected 1 result, got {len(results)}')
         outputs['output_fib'] = results[0]
 
         return outputs
@@ -553,11 +554,11 @@ def _sanitized_connectivity_matrix(conmat, official_labels):
         try:
             new_row = np.array([label_to_index[name] for name in matfile_region_ids])
         except KeyError as e:
-            raise KeyError(f"String region name '{e.args[0]}' not found in atlas labels")
+            raise KeyError(f"String region name '{e.args[0]}' not found in atlas labels") from e
 
     output = np.zeros((n_atlas_labels, n_atlas_labels))
 
-    for row_index, conn in zip(new_row, connectivity):
+    for row_index, conn in zip(new_row, connectivity, strict=False):
         tmp = np.zeros(n_atlas_labels)
         tmp[in_this_mask] = conn
         output[row_index] = tmp

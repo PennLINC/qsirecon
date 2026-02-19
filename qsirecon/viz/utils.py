@@ -110,8 +110,8 @@ def slices_from_bbox(mask_data, cuts=3, padding=0):
     stop_coords = B.max(0) + 1
 
     vox_coords = []
-    for start, stop in zip(start_coords, stop_coords):
+    for start, stop in zip(start_coords, stop_coords, strict=False):
         inc = abs(stop - start) / (cuts + 2 * padding + 1)
         slices = [start + (i + 1) * inc for i in range(cuts + 2 * padding)]
         vox_coords.append(slices[padding:-padding])
-    return {k: [int(_v) for _v in v] for k, v in zip(['x', 'y', 'z'], vox_coords)}
+    return {k: [int(_v) for _v in v] for k, v in zip(['x', 'y', 'z'], vox_coords, strict=False)}

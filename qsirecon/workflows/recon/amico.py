@@ -29,7 +29,7 @@ def init_amico_noddi_fit_wf(
     inputs_dict,
     name='amico_noddi_recon',
     qsirecon_suffix='',
-    params={},
+    params=None,
 ):
     """Reconstruct NODDI scalars using AMICO.
 
@@ -91,6 +91,9 @@ def init_amico_noddi_fit_wf(
         name='outputnode',
     )
     omp_nthreads = config.nipype.omp_nthreads
+
+    if params is None:
+        params = {}
 
     plot_reports = params.pop('plot_reports', True)
 

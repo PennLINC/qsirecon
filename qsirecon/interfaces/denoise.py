@@ -48,7 +48,9 @@ class SeriesPreprocReport(reporting.ReportCapableInterface):
         pres = []
         posts = []
         differences = []
-        for orig_img, corrected_img in zip(iter_img(original_nii), iter_img(corrected_nii)):
+        for orig_img, corrected_img in zip(
+            iter_img(original_nii), iter_img(corrected_nii), strict=False
+        ):
             orig_data = orig_img.get_fdata()
             corrected_data = corrected_img.get_fdata()
             baseline = orig_data.mean()
