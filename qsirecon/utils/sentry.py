@@ -28,10 +28,10 @@ import re
 from nibabel.optpkg import optional_package
 from niworkflows.utils.misc import read_crashfile
 
+from qsirecon import config
+
 sentry_sdk = optional_package('sentry_sdk')[0]
 migas = optional_package('migas')[0]
-
-from .. import config
 
 CHUNK_SIZE = 16384
 # Group common events with pre specified fingerprints

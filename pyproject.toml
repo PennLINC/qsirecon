@@ -166,7 +166,6 @@ ignore = [
   "B905",  # `zip()` without an explicit `strict=` parameter
   "S101",  # Use of `assert` detected
   "W605",  # [*] Invalid escape sequence: `\s`
-  "E402",  # Module level import not at top of file
   "S607",  # Starting a process with a partial executable path
   "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
   "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
