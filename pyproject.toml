@@ -169,7 +169,6 @@ ignore = [
   "E402",  # Module level import not at top of file
   "S607",  # Starting a process with a partial executable path
   "B028",  # No explicit `stacklevel` keyword argument found
-  "S202",  # Uses of `tarfile.extractall()`
   "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
   "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
   "S608",  # Possible SQL injection vector through string-based query construction
