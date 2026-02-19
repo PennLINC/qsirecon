@@ -165,7 +165,6 @@ ignore = [
   "B017",  # Do not assert blind exception: `Exception`
   "B905",  # `zip()` without an explicit `strict=` parameter
   "S101",  # Use of `assert` detected
-  "W605",  # [*] Invalid escape sequence: `\s`
   "S607",  # Starting a process with a partial executable path
   "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
   "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
