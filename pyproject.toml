@@ -76,6 +76,7 @@ doc = [
 dev = [
     "ruff ~= 0.15.0",
     "pre-commit",
+    "tox",
 ]
 tests = [
     "coverage",
