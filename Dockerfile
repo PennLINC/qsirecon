@@ -1,15 +1,16 @@
-
 # Build into a wheel in a stage that has git installed
 FROM python:slim AS wheelstage
 RUN pip install build
 RUN apt-get update && \
     apt-get install -y --no-install-recommends git
+COPY . /src/qsirecon
+RUN python -m build /src/qsirecon
 
 FROM pennlinc/qsirecon_build:26.1.16
 
-# Install qsirecon
-COPY . /src/qsirecon
-RUN pip install --no-cache-dir "/src/qsirecon"
+# Install qsirecon wheel
+COPY --from=wheelstage /src/qsirecon/dist/*.whl .
+RUN pip install --no-cache-dir $( ls *.whl )
 
 # Precaching fonts, set 'Agg' as default backend for matplotlib
 RUN python -c "from matplotlib import font_manager" && \
