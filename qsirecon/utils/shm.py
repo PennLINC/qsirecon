@@ -504,7 +504,8 @@ def lazy_index(index):
     made index is returned as is.
     """
     index = np.array(index)
-    assert index.ndim == 1
+    if index.ndim != 1:
+        raise ValueError(f'index must be a 1D array, not {index.ndim}')
     if index.dtype.kind == 'b':
         index = index.nonzero()[0]
     if len(index) == 1:
@@ -599,7 +600,11 @@ class SphHarmFit(OdfFit):
         # Index mask
         if self.mask is not None:
             new_mask = self.mask[index]
-            assert new_mask.shape == new_coef.shape[:-1]
+            if new_mask.shape != new_coef.shape[:-1]:
+                raise ValueError(
+                    f'new_mask ({new_mask.shape}) and new_coef ({new_coef.shape[:-1]}) '
+                    'must have the same shape'
+                )
         else:
             new_mask = None
 
@@ -723,8 +728,13 @@ def bootstrap_data_array(data, H, R, permute=None):
 
     if permute is None:
         permute = randint(data.shape[-1], size=data.shape[-1])
-    assert R.shape == H.shape
-    assert len(permute) == R.shape[-1]
+    if not R.shape == H.shape:
+        raise ValueError(f'R ({R.shape}) and H ({H.shape}) must have the same shape')
+    if len(permute) != R.shape[-1]:
+        raise ValueError(
+            f'permute ({len(permute)}) must be the same length as the number of '
+            f'data points: {R.shape[-1]}'
+        )
     R = R[permute]
     data = dot(data, (H + R).T)
     return data

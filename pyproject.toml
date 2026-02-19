@@ -159,7 +159,6 @@ extend-select = [
   "Q",
 ]
 ignore = [
-  "S101",  # Use of `assert` detected
   "S607",  # Starting a process with a partial executable path
   "S608",  # ruff interprets informative error message as potential SQL injection vector
   "S108",  # Probable insecure usage of temporary file or directory: "/tmp"
@@ -172,7 +171,8 @@ ignore = [
 inline-quotes = "single"
 
 [tool.ruff.lint.extend-per-file-ignores]
-"*/test_*.py" = ["S101"]
+"qsirecon/tests/*.py" = ["S101"]
+"qsirecon/utils/testing.py" = ["S101"]
 "qsirecon/utils/debug.py" = ["A002", "T100"]
 "docs/conf.py" = ["A001"]
 "docs/sphinxext/github_link.py" = ["BLE001"]

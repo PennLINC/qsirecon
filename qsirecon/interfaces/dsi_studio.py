@@ -210,7 +210,8 @@ class DSIStudioGQIReconstruction(CommandLine):
         target = os.path.join(os.getcwd(), srcname) + '*gqi*.fib.gz'
         config.loggers.interface.info(f'search target: {target}')
         results = glob(target)
-        assert len(results) == 1
+        if len(results) != 1:
+            raise ValueError(f'Expected 1 result, got {len(results)}')
         outputs['output_fib'] = results[0]
 
         return outputs

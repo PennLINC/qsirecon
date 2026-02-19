@@ -463,7 +463,8 @@ class ParcellateScalars(SimpleInterface):
         source_suffix = source_suffixes.pop()
 
         atlas_config = self.inputs.atlas_config
-        assert len(atlas_config) == 1, 'Only one atlas config is supported'
+        if len(atlas_config) != 1:
+            raise ValueError('Only one atlas config is supported')
         atlas_name = list(atlas_config.keys())[0]
         atlas_config = atlas_config[atlas_name]
         atlas_file = atlas_config['dwi_resolution_file']

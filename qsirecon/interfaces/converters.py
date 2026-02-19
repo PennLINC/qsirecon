@@ -638,7 +638,8 @@ def fast_load_fibgz(fib_file):
     if zcatter is not None:
         p = subprocess.Popen([zcatter, fib_file], stdout=subprocess.PIPE)
         fh = StringIO(p.communicate()[0])
-        assert p.returncode == 0
+        if p.returncode != 0:
+            raise ValueError(f'Failed to load fib file: {fib_file}')
         return loadmat(fh)
 
     with gzip.open(fib_file, 'r') as f:
