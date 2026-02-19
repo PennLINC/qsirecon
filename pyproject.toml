@@ -166,9 +166,7 @@ ignore = [
   "B905",  # `zip()` without an explicit `strict=` parameter
   "S101",  # Use of `assert` detected
   "S607",  # Starting a process with a partial executable path
-  "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
-  "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
-  "S608",  # Possible SQL injection vector through string-based query construction
+  "S608",  # ruff interprets informative error message as potential SQL injection vector
   "S108",  # Probable insecure usage of temporary file or directory: "/tmp"
   "S105",
   "S311",  # We are not using random for cryptographic purposes

@@ -2,7 +2,7 @@
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """Version CLI helpers."""
 
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
@@ -34,11 +34,11 @@ def check_latest():
         else:
             try:
                 latest = Version(latest)
-                date = datetime.strptime(date, DATE_FMT)
+                date = datetime.strptime(date, DATE_FMT).replace(tzinfo=timezone.utc)
             except (InvalidVersion, ValueError):
                 latest = None
             else:
-                if abs((datetime.now() - date).days) > RELEASE_EXPIRY_DAYS:
+                if abs((datetime.now(tz=timezone.utc) - date).days) > RELEASE_EXPIRY_DAYS:
                     outdated = True
 
     if latest is None or outdated is True:
@@ -57,7 +57,9 @@ def check_latest():
 
     if cachefile is not None and latest is not None:
         try:
-            cachefile.write_text('|'.join((f'{latest}', datetime.now().strftime(DATE_FMT))))
+            cachefile.write_text(
+                '|'.join((f'{latest}', datetime.now(tz=timezone.utc).strftime(DATE_FMT)))
+            )
         except Exception:
             pass
 
