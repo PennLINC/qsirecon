@@ -222,7 +222,7 @@ class InteractiveReport(SimpleInterface):
         rms = np.sqrt((translations**2).sum(1))
         fdisp = df['framewise_displacement'].tolist()
         fdisp[0] = None
-        report['eddy_params'] = [[fd_, rms_] for fd_, rms_ in zip(fdisp, rms)]
+        report['eddy_params'] = [[fd_, rms_] for fd_, rms_ in zip(fdisp, rms, strict=False)]
 
         # Get the sampling scheme
         xyz = df[['grad_x', 'grad_y', 'grad_z']].values
@@ -468,7 +468,7 @@ def plot_scalar_map(
         tissue_colors = ['#1b60a5']
         dseg = mask
 
-    tissue_palette = dict(zip(tissue_types, tissue_colors))
+    tissue_palette = dict(zip(tissue_types, tissue_colors, strict=False))
 
     # Extract voxel-wise values for the histogram
     dfs = []
@@ -481,7 +481,12 @@ def plot_scalar_map(
         tissue_type_vals = masking.apply_mask(overlay, mask_img)
         df = pd.DataFrame(
             columns=['Data', 'Tissue Type'],
-            data=list(map(list, zip(*[tissue_type_vals, [tissue_type] * tissue_type_vals.size]))),
+            data=list(
+                map(
+                    list,
+                    zip(*[tissue_type_vals, [tissue_type] * tissue_type_vals.size], strict=False),
+                )
+            ),
         )
         dfs.append(df)
 

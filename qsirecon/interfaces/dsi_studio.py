@@ -557,7 +557,7 @@ def _sanitized_connectivity_matrix(conmat, official_labels):
 
     output = np.zeros((n_atlas_labels, n_atlas_labels))
 
-    for row_index, conn in zip(new_row, connectivity):
+    for row_index, conn in zip(new_row, connectivity, strict=False):
         tmp = np.zeros(n_atlas_labels)
         tmp[in_this_mask] = conn
         output[row_index] = tmp

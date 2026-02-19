@@ -101,7 +101,9 @@ class BundleMapper(ScalarMapper):
         bundle_dfs = []
         tdi_dfs = []
         source_suffix = self.inputs.mapping_metadata.get('qsirecon_suffix', 'QSIRecon')
-        for tck_name, tck_file in zip(self.inputs.bundle_names, self.inputs.tck_files):
+        for tck_name, tck_file in zip(
+            self.inputs.bundle_names, self.inputs.tck_files, strict=False
+        ):
             output_tdi_file = fname_presuffix(
                 tck_file, suffix='_tdi.nii', newpath=runtime.cwd, use_ext=False
             )

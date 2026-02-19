@@ -159,7 +159,6 @@ extend-select = [
   "Q",
 ]
 ignore = [
-  "B905",  # `zip()` without an explicit `strict=` parameter
   "S101",  # Use of `assert` detected
   "S607",  # Starting a process with a partial executable path
   "S608",  # ruff interprets informative error message as potential SQL injection vector
