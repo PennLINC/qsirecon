@@ -46,18 +46,17 @@ def _get_parser():
 def run_command(command, env=None):
     """Run a given shell command with certain environment variables set.
 
-    Keep this out of the real qsirecon code so that devs don't need to install
-    QSIRecon to run tests.
+    Keep this out of the real XCP-D code so that devs don't need to install XCP-D to run tests.
     """
-    merged_env = os.environ
+    merged_env = os.environ.copy()
     if env:
         merged_env.update(env)
 
     process = subprocess.Popen(
-        command,
+        command.split(),
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
-        shell=True,
+        shell=False,
         env=merged_env,
     )
     while True:

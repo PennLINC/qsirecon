@@ -174,8 +174,6 @@ ignore = [
   "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
   "S608",  # Possible SQL injection vector through string-based query construction
   "S108",  # Probable insecure usage of temporary file or directory: "/tmp"
-  "S602",  # `subprocess` call with `shell=True` identified, security issue
-  "S113",  # Probable use of `requests` call without timeout
   "S105",
   "S311",  # We are not using random for cryptographic purposes
   "S603",  # subprocess used only for trusted commands (git, pandoc, test runners)
