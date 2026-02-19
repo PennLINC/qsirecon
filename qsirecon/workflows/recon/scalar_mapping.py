@@ -32,7 +32,7 @@ from .utils import init_scalar_output_wf
 LOGGER = logging.getLogger('nipype.workflow')
 
 
-def init_scalar_to_bundle_wf(inputs_dict, name='scalar_to_bundle', qsirecon_suffix='', params={}):
+def init_scalar_to_bundle_wf(inputs_dict, name='scalar_to_bundle', qsirecon_suffix='', params=None):
     """Map scalar images to bundles
 
     Inputs
@@ -60,6 +60,9 @@ def init_scalar_to_bundle_wf(inputs_dict, name='scalar_to_bundle', qsirecon_suff
         name='inputnode',
     )
     outputnode = pe.Node(niu.IdentityInterface(fields=['bundle_summary']), name='outputnode')
+
+    if params is None:
+        params = {}
 
     bundle_mapper = pe.Node(BundleMapper(**params), name='bundle_mapper')
     ds_bundle_mapper = pe.Node(
@@ -96,7 +99,7 @@ def init_scalar_to_atlas_wf(
     inputs_dict,
     name='scalar_to_atlas_wf',
     qsirecon_suffix='',
-    params={},
+    params=None,
 ):
     """Parcellate scalar images using atlases.
 
@@ -122,6 +125,9 @@ def init_scalar_to_atlas_wf(
         niu.IdentityInterface(fields=input_fields),
         name='inputnode',
     )
+
+    if params is None:
+        params = {}
 
     split_atlas_configs = pe.Node(
         SplitAtlasConfigs(),
@@ -173,7 +179,7 @@ def init_scalar_to_template_wf(
     inputs_dict,
     name='scalar_to_template',
     qsirecon_suffix='',
-    params={},
+    params=None,
 ):
     """Maps scalar data to a volumetric template
 
@@ -211,6 +217,9 @@ def init_scalar_to_template_wf(
         name='outputnode',
     )
 
+    if params is None:
+        params = {}
+
     template_mapper = pe.Node(
         TemplateMapper(template_space=inputs_dict['template_output_space'], **params),
         name='template_mapper',
@@ -243,7 +252,10 @@ def init_scalar_to_surface_wf(
     inputs_dict,
     name='scalar_to_surface',
     qsirecon_suffix='',
-    params={},
+    params=None,
 ):
     """Maps scalar data to a surface."""
+    if params is None:
+        params = {}
+
     raise NotImplementedError()
