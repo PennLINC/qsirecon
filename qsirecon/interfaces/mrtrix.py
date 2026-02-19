@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
@@ -217,7 +215,7 @@ class Dwi2Response(ResponseSD):
         if self.inputs.algorithm not in ('dhollander', 'msmt_5tt'):
             if name in ('gm_file', 'csf_file'):
                 return ''
-        return super(Dwi2Response, self)._format_arg(name, spec, val)
+        return super()._format_arg(name, spec, val)
 
     def _gen_filename(self, name):
         if name in ('gm_file', 'csf_file', 'wm_file'):
@@ -448,7 +446,7 @@ class EstimateFOD(MRTrix3Base):
         if self.inputs.algorithm == 'csd':
             if name in ('gm_odf', 'gm_txt', 'csf_odf', 'csf_txt'):
                 return ''
-        return super(EstimateFOD, self)._format_arg(name, spec, value)
+        return super()._format_arg(name, spec, value)
 
     def _gen_filename(self, name):
         if name in ('gm_odf', 'gm_txt', 'wm_odf', 'wm_txt', 'csf_odf', 'csf_txt'):
@@ -856,7 +854,7 @@ class BuildConnectome(MRTrix3Base):
             if self.inputs.use_sift_weights:
                 return spec.argstr % val
             return ''
-        return super(BuildConnectome, self)._format_arg(name, spec, val)
+        return super()._format_arg(name, spec, val)
 
 
 class MRTrixAtlasGraphInputSpec(BuildConnectomeInputSpec):
@@ -916,9 +914,9 @@ class MRTrixAtlasGraph(SimpleInterface):
             name='outputnode',
         )
         workflow.connect([
-            (merge_mats, outputnode, [("out", "matfiles")]),
-            (merge_tcks, outputnode, [("out", "tckfiles")]),
-            (merge_weights, outputnode, [("out", "weights")]),
+            (merge_mats, outputnode, [('out', 'matfiles')]),
+            (merge_tcks, outputnode, [('out', 'tckfiles')]),
+            (merge_weights, outputnode, [('out', 'weights')]),
         ])  # fmt:skip
 
         in_num = 1
@@ -954,24 +952,24 @@ class MRTrixAtlasGraph(SimpleInterface):
                     )
                 )
                 workflow.connect([
-                    (nodes[-1], c2t_nodes[-1], [("out_assignments", "in_assignments")]),
-                    (nodes[-1], merge_mats, [("connectivity_matfile", f"in{in_num}")]),
-                    (nodes[-1], merge_csvs, [("out_file", f"in{in_num}")]),
-                    (c2t_nodes[-1], merge_tcks, [("exemplar_tck", f"in{in_num}")]),
+                    (nodes[-1], c2t_nodes[-1], [('out_assignments', 'in_assignments')]),
+                    (nodes[-1], merge_mats, [('connectivity_matfile', f'in{in_num}')]),
+                    (nodes[-1], merge_csvs, [('out_file', f'in{in_num}')]),
+                    (c2t_nodes[-1], merge_tcks, [('exemplar_tck', f'in{in_num}')]),
                 ])  # fmt:skip
                 if using_weights:
                     workflow.connect([
-                        (c2t_nodes[-1], merge_weights, [("exemplar_weights", f"in{in_num}")]),
+                        (c2t_nodes[-1], merge_weights, [('exemplar_weights', f'in{in_num}')]),
                     ])  # fmt:skip
                 in_num += 1
 
         # Get the exemplar tcks and weights
         workflow.connect([
-            (merge_tcks, merge_exemplars, [("out", "in1")]),
-            (merge_weights, merge_exemplars, [("out", "in2")]),
-            (merge_csvs, merge_exemplars, [("out", "in3")]),
-            (merge_exemplars, compress_exemplars, [("out", "files")]),
-            (compress_exemplars, outputnode, [("out_zip", "exemplar_files")])
+            (merge_tcks, merge_exemplars, [('out', 'in1')]),
+            (merge_weights, merge_exemplars, [('out', 'in2')]),
+            (merge_csvs, merge_exemplars, [('out', 'in3')]),
+            (merge_exemplars, compress_exemplars, [('out', 'files')]),
+            (compress_exemplars, outputnode, [('out_zip', 'exemplar_files')])
         ])  # fmt:skip
 
         workflow.config['execution']['stop_on_first_crash'] = 'true'
@@ -1069,7 +1067,7 @@ class Connectome2Tck(MRTrix3Base):
     def _list_outputs(self):
         if not self.inputs.output_files == 'single':
             raise NotImplementedError('Interface only supports single file output')
-        outputs = super(Connectome2Tck, self)._list_outputs()
+        outputs = super()._list_outputs()
         exemplar_weights = outputs['output_tck_weights'] + '.csv'
         if op.exists(exemplar_weights):
             outputs['exemplar_weights'] = exemplar_weights

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
@@ -14,7 +12,7 @@ import os.path as op
 import time
 from pathlib import Path
 
-import matplotlib
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -198,7 +196,7 @@ class InteractiveReport(SimpleInterface):
         )
         report['carpetplot'] = []
         if isdefined(self.inputs.carpetplot_data):
-            with open(self.inputs.carpetplot_data, 'r') as carpet_f:
+            with open(self.inputs.carpetplot_data) as carpet_f:
                 carpet_data = json.load(carpet_f)
             report.update(carpet_data)
 
@@ -242,7 +240,7 @@ class InteractiveReport(SimpleInterface):
 
 
 def _filename_to_colors(labels_column, colormap='rainbow'):
-    cmap = matplotlib.cm.get_cmap(colormap)
+    cmap = mpl.cm.get_cmap(colormap)
     labels, _ = pd.factorize(labels_column)
     n_samples = labels.shape[0]
     max_label = labels.max()
@@ -335,8 +333,8 @@ class ConnectivityReport(SimpleInterface):
         """Generate a reportlet."""
         mat = loadmat(self.inputs.connectivity_matfile)
         connectivity_keys = [key for key in mat.keys() if key.endswith('connectivity')]
-        atlases = sorted(set([key.split('_')[0] for key in connectivity_keys]))
-        measures = sorted(set(['_'.join(key.split('_')[1:-1]) for key in connectivity_keys]))
+        atlases = sorted({key.split('_')[0] for key in connectivity_keys})
+        measures = sorted({'_'.join(key.split('_')[1:-1]) for key in connectivity_keys})
         nrows = len(atlases)
         ncols = len(measures)
         fig, ax = plt.subplots(nrows=nrows, ncols=ncols, squeeze=False)
@@ -402,7 +400,7 @@ class ScalarReport(SimpleInterface):
             nrows=n_scalars,
             ncols=3,
             figsize=(43, 6 * n_scalars),
-            gridspec_kw=dict(width_ratios=[6, 36, 0.25], wspace=0),
+            gridspec_kw={'width_ratios': [6, 36, 0.25], 'wspace': 0},
         )
 
         underlay = self.inputs.underlay

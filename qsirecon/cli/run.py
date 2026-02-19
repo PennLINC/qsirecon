@@ -126,7 +126,7 @@ def main():
 
     config.loggers.workflow.log(
         15,
-        '\n'.join(['config:'] + ['\t\t%s' % s for s in config.dumps().splitlines()]),
+        '\n'.join(['config:'] + [f'\t\t{s}' for s in config.dumps().splitlines()]),
     )
     config.loggers.workflow.log(25, 'QSIRecon started!')
     errno = 1  # Default is error exit unless otherwise set

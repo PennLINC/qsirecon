@@ -86,7 +86,7 @@ def make_a_square(data_mat, include_last_dim=True):
     shapes = data_mat.shape if include_last_dim else data_mat.shape[:-1]
 
     # Is it already square?
-    if all([shape == shapes[0] for shape in shapes]):
+    if all(shape == shapes[0] for shape in shapes):
         return data_mat
     n_dims_to_pad = len(shapes)
     largest_side = np.argmax(shapes)
@@ -144,12 +144,12 @@ def create_sprite_from_tiles(tile, out_file=None, as_bytes=False):
 
     if as_bytes:
         img = mplfig(mosaic, out_file, as_bytes=as_bytes)
-        return dict(img=img, N=N, M=M, pix=pix, num_slices=num_slices)
+        return {'img': img, 'N': N, 'M': M, 'pix': pix, 'num_slices': num_slices}
 
     if out_file:
         img = mplfig(mosaic, out_file), N, M, pix, num_slices
 
-    return dict(mosaic=mosaic, N=N, M=M, pix=pix, num_slices=num_slices)
+    return {'mosaic': mosaic, 'N': N, 'M': M, 'pix': pix, 'num_slices': num_slices}
 
 
 def createSprite4D(dwi_file):
@@ -211,11 +211,21 @@ def embed_tiles_in_json_sprite(tile_list, as_bytes=True, out_file=None):
 
     if as_bytes:
         img = mplfig(mosaic, out_file, as_bytes=as_bytes)
-        return dict(img=img, N=num_tile_rows, M=num_tile_cols, pix=tile_size, num_slices=num_tiles)
+        return {
+            'img': img,
+            'N': num_tile_rows,
+            'M': num_tile_cols,
+            'pix': tile_size,
+            'num_slices': num_tiles,
+        }
 
-    return dict(
-        mosaic=mosaic, N=num_tile_rows, M=num_tile_cols, pix=tile_size, num_slices=num_tiles
-    )
+    return {
+        'mosaic': mosaic,
+        'N': num_tile_rows,
+        'M': num_tile_cols,
+        'pix': tile_size,
+        'num_slices': num_tiles,
+    }
 
 
 def get_middle_slice_tiles(data, slice_direction):

@@ -194,17 +194,17 @@ def init_scalar_output_wf(
     )
     workflow.connect([
         (inputnode, ds_scalar, [
-            ("source_file", "source_file"),
-            ("space", "space"),
+            ('source_file', 'source_file'),
+            ('space', 'space'),
         ]),
         (organize_scalar_data, ds_scalar, [
-            ("scalar_file", "in_file"),
-            ("metadata", "meta_dict"),
-            ("model", "model"),
-            ("param", "param"),
-            ("desc", "desc"),
+            ('scalar_file', 'in_file'),
+            ('metadata', 'meta_dict'),
+            ('model', 'model'),
+            ('param', 'param'),
+            ('desc', 'desc'),
         ]),
-        (ds_scalar, outputnode, [("out_file", "scalar_files")]),
+        (ds_scalar, outputnode, [('out_file', 'scalar_files')]),
     ])  # fmt:skip
 
     disorganize_scalar_data = pe.MapNode(
@@ -213,9 +213,9 @@ def init_scalar_output_wf(
         name='disorganize_scalar_data',
     )
     workflow.connect([
-        (inputnode, disorganize_scalar_data, [("scalar_configs", "scalar_config")]),
-        (ds_scalar, disorganize_scalar_data, [("out_file", "scalar_file")]),
-        (disorganize_scalar_data, outputnode, [("scalar_config", "scalar_configs")]),
+        (inputnode, disorganize_scalar_data, [('scalar_configs', 'scalar_config')]),
+        (ds_scalar, disorganize_scalar_data, [('out_file', 'scalar_file')]),
+        (disorganize_scalar_data, outputnode, [('scalar_config', 'scalar_configs')]),
     ])  # fmt:skip
 
     return workflow
@@ -250,9 +250,9 @@ def init_test_wf(inputs_dict, name='test_wf', qsirecon_suffix='test', params={})
         run_without_submitting=True,
     )
     workflow.connect([
-        (inputnode, plot_image, [("dwi_file", "dwi_file")]),
-        (write_metadata, ds_metadata, [("out_file", "in_file")]),
-        (plot_image, ds_plot, [("out_file", "in_file")]),
+        (inputnode, plot_image, [('dwi_file', 'dwi_file')]),
+        (write_metadata, ds_metadata, [('out_file', 'in_file')]),
+        (plot_image, ds_plot, [('out_file', 'in_file')]),
     ])  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)

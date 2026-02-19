@@ -212,7 +212,7 @@ def init_dipy_brainsuite_shore_recon_wf(
             ('cnr_image', 'cnr_image'),
             ('regularization_image', 'regularization_image'),
         ]),
-        (recon_scalars, outputnode, [("scalar_info", "recon_scalars")]),
+        (recon_scalars, outputnode, [('scalar_info', 'recon_scalars')]),
     ])  # fmt:skip
 
     if plot_reports:
@@ -585,8 +585,8 @@ def init_dipy_mapmri_recon_wf(
 
         scalar_output_wf = init_scalar_output_wf()
         workflow.connect([
-            (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
-            (recon_scalars, scalar_output_wf, [("scalar_info", "inputnode.scalar_configs")]),
+            (inputnode, scalar_output_wf, [('dwi_file', 'inputnode.source_file')]),
+            (recon_scalars, scalar_output_wf, [('scalar_info', 'inputnode.scalar_configs')]),
         ])  # fmt:skip
 
         plot_scalars = pe.Node(
@@ -596,13 +596,13 @@ def init_dipy_mapmri_recon_wf(
         )
         workflow.connect([
             (inputnode, plot_scalars, [
-                ("acpc_preproc", "underlay"),
-                ("acpc_seg", "dseg"),
-                ("dwi_mask", "mask_file"),
+                ('acpc_preproc', 'underlay'),
+                ('acpc_seg', 'dseg'),
+                ('dwi_mask', 'mask_file'),
             ]),
-            (recon_scalars, plot_scalars, [("scalar_info", "scalar_metadata")]),
-            (scalar_output_wf, plot_scalars, [("outputnode.scalar_files", "scalar_maps")]),
-            (scalar_output_wf, outputnode, [("outputnode.scalar_configs", "recon_scalars")]),
+            (recon_scalars, plot_scalars, [('scalar_info', 'scalar_metadata')]),
+            (scalar_output_wf, plot_scalars, [('outputnode.scalar_files', 'scalar_maps')]),
+            (scalar_output_wf, outputnode, [('outputnode.scalar_configs', 'recon_scalars')]),
         ])  # fmt:skip
 
         ds_report_scalars = pe.Node(
@@ -874,15 +874,15 @@ def init_dipy_dki_recon_wf(inputs_dict, name='dipy_dki_recon', qsirecon_suffix='
         )
         workflow.connect([
             (inputnode, plot_peaks, [
-                ("dwi_ref", "background_image"),
-                ("odf_rois", "odf_rois"),
-                ("dwi_mask", "mask_file"),
+                ('dwi_ref', 'background_image'),
+                ('odf_rois', 'odf_rois'),
+                ('dwi_mask', 'mask_file'),
             ]),
             (recon_dki, plot_peaks, [
-                ("odf_directions", "directions_file"),
-                ("odf_amplitudes", "odf_file"),
+                ('odf_directions', 'directions_file'),
+                ('odf_amplitudes', 'odf_file'),
             ]),
-            (plot_peaks, ds_report_peaks, [("peak_report", "in_file")]),
+            (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')]),
         ])  # fmt:skip
 
     if qsirecon_suffix:
@@ -890,8 +890,8 @@ def init_dipy_dki_recon_wf(inputs_dict, name='dipy_dki_recon', qsirecon_suffix='
 
         scalar_output_wf = init_scalar_output_wf()
         workflow.connect([
-            (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
-            (recon_scalars, scalar_output_wf, [("scalar_info", "inputnode.scalar_configs")]),
+            (inputnode, scalar_output_wf, [('dwi_file', 'inputnode.source_file')]),
+            (recon_scalars, scalar_output_wf, [('scalar_info', 'inputnode.scalar_configs')]),
         ])  # fmt:skip
 
         plot_scalars = pe.Node(
@@ -901,13 +901,13 @@ def init_dipy_dki_recon_wf(inputs_dict, name='dipy_dki_recon', qsirecon_suffix='
         )
         workflow.connect([
             (inputnode, plot_scalars, [
-                ("acpc_preproc", "underlay"),
-                ("acpc_seg", "dseg"),
-                ("dwi_mask", "mask_file"),
+                ('acpc_preproc', 'underlay'),
+                ('acpc_seg', 'dseg'),
+                ('dwi_mask', 'mask_file'),
             ]),
-            (recon_scalars, plot_scalars, [("scalar_info", "scalar_metadata")]),
-            (scalar_output_wf, plot_scalars, [("outputnode.scalar_files", "scalar_maps")]),
-            (scalar_output_wf, outputnode, [("outputnode.scalar_configs", "recon_scalars")]),
+            (recon_scalars, plot_scalars, [('scalar_info', 'scalar_metadata')]),
+            (scalar_output_wf, plot_scalars, [('outputnode.scalar_files', 'scalar_maps')]),
+            (scalar_output_wf, outputnode, [('outputnode.scalar_configs', 'recon_scalars')]),
         ])  # fmt:skip
 
         ds_report_scalars = pe.Node(

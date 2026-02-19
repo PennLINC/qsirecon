@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import os
 import sys
 import warnings
@@ -15,8 +14,9 @@ from fury import actor, window
 from nipype import logging
 from PIL import Image
 
-from ..viz.utils import slices_from_bbox
 from qsirecon.interfaces.converters import fib2amps, mif2amps
+
+from ..viz.utils import slices_from_bbox
 
 LOGGER = logging.getLogger('nipype.interface')
 
@@ -275,7 +275,7 @@ def peak_slice_series(
     # Render the axial slices
     z_image = Image.new('RGB', (tile_size, tile_size * n_cuts))
     for slicenum, z_slice in enumerate(slice_indices['z']):
-        png_file = '{}_tra_{:03d}.png'.format(prefix, z_slice)
+        png_file = f'{prefix}_tra_{z_slice:03d}.png'
         plot_peak_slice(
             odf_4d,
             sphere,
@@ -292,7 +292,7 @@ def peak_slice_series(
     # Render the sagittal slices
     x_image = Image.new('RGB', (tile_size, tile_size * n_cuts))
     for slicenum, x_slice in enumerate(slice_indices['x']):
-        png_file = '{}_sag_{:03d}.png'.format(prefix, x_slice)
+        png_file = f'{prefix}_sag_{x_slice:03d}.png'
         plot_peak_slice(
             odf_4d,
             sphere,
@@ -309,7 +309,7 @@ def peak_slice_series(
     # Render the coronal slices
     y_image = Image.new('RGB', (tile_size, tile_size * n_cuts))
     for slicenum, y_slice in enumerate(slice_indices['y']):
-        png_file = '{}_cor_{:03d}.png'.format(prefix, y_slice)
+        png_file = f'{prefix}_cor_{y_slice:03d}.png'
         plot_peak_slice(
             odf_4d,
             sphere,
@@ -349,10 +349,10 @@ def peaks_from_odfs(
             raise ValueError('Mask is not the same shape as data.')
 
     gfa_array = np.zeros(shape)
-    qa_array = np.zeros((shape + (npeaks,)))
+    qa_array = np.zeros(shape + (npeaks,))
 
-    peak_dirs = np.zeros((shape + (npeaks, 3)))
-    peak_values = np.zeros((shape + (npeaks,)))
+    peak_dirs = np.zeros(shape + (npeaks, 3))
+    peak_values = np.zeros(shape + (npeaks,))
     peak_indices = np.zeros((shape + (npeaks,)), dtype='int')
     peak_indices.fill(-1)
 
@@ -487,7 +487,7 @@ def odf_roi_plot(
 
     # Fill out the other half of the sphere
     odf_sphere = halfsphere.mirror()
-    semiovale_axial_file = '{}_semoivale_axial.png'.format(prefix)
+    semiovale_axial_file = f'{prefix}_semoivale_axial.png'
     plot_an_odf_slice(
         odf_4d,
         odf_sphere,
@@ -503,7 +503,7 @@ def odf_roi_plot(
     roi_image.paste(Image.open(semiovale_axial_file), (0, 0))
 
     # Render the coronal slice with a double-crossing
-    cst_x_cc_file = '{}_CSTxCC.png'.format(prefix)
+    cst_x_cc_file = f'{prefix}_CSTxCC.png'
     plot_an_odf_slice(
         odf_4d,
         odf_sphere,
@@ -519,7 +519,7 @@ def odf_roi_plot(
     roi_image.paste(Image.open(cst_x_cc_file), (tile_size, 0))
 
     # Render the corpus callosum
-    cc_file = '{}_CC.png'.format(prefix)
+    cc_file = f'{prefix}_CC.png'
     plot_an_odf_slice(
         odf_4d,
         odf_sphere,

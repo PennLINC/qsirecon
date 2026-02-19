@@ -10,6 +10,8 @@ import nipype.pipeline.engine as pe
 from nipype.interfaces import utility as niu
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
+from qsirecon.data import load as load_data
+
 from ... import config
 from ...interfaces.amico import NODDI, NODDITissueFraction
 from ...interfaces.bids import DerivativesDataSink
@@ -21,7 +23,6 @@ from ...utils.bids import clean_datasinks
 from ...utils.boilerplate import build_documentation
 from ...utils.misc import load_yaml
 from .utils import init_scalar_output_wf
-from qsirecon.data import load as load_data
 
 
 def init_amico_noddi_fit_wf(
@@ -149,36 +150,36 @@ def init_amico_noddi_fit_wf(
 
     if params.get('saveModulatedMaps', True):
         workflow.connect([
-            (inputnode, noddi_tissue_fraction, [("dwi_mask", "mask_image")]),
-            (noddi_fit, noddi_tissue_fraction, [("isovf", "isovf")]),
-            (noddi_tissue_fraction, outputnode, [("tf", "tf")]),
-            (noddi_tissue_fraction, recon_scalars, [("tf", "tf")]),
-            (noddi_fit, recon_scalars, [("isovf_metadata", "tf_metadata")]),
+            (inputnode, noddi_tissue_fraction, [('dwi_mask', 'mask_image')]),
+            (noddi_fit, noddi_tissue_fraction, [('isovf', 'isovf')]),
+            (noddi_tissue_fraction, outputnode, [('tf', 'tf')]),
+            (noddi_tissue_fraction, recon_scalars, [('tf', 'tf')]),
+            (noddi_fit, recon_scalars, [('isovf_metadata', 'tf_metadata')]),
             (noddi_fit, recon_scalars, [
-                ("modulated_icvf", "modulated_icvf"),
-                ("modulated_icvf_metadata", "modulated_icvf_metadata"),
-                ("modulated_od", "modulated_od"),
-                ("modulated_od_metadata", "modulated_od_metadata"),
+                ('modulated_icvf', 'modulated_icvf'),
+                ('modulated_icvf_metadata', 'modulated_icvf_metadata'),
+                ('modulated_od', 'modulated_od'),
+                ('modulated_od_metadata', 'modulated_od_metadata'),
             ]),
             (noddi_fit, convert_to_fibgz, [
-                ("modulated_icvf", "modulated_icvf"),
-                ("modulated_od", "modulated_od"),
+                ('modulated_icvf', 'modulated_icvf'),
+                ('modulated_od', 'modulated_od'),
             ]),
         ])  # fmt:skip
 
     if params.get('rmse', True):
         workflow.connect([
             (noddi_fit, recon_scalars, [
-                ("rmse", "rmse"),
-                ("rmse_metadata", "rmse_metadata"),
+                ('rmse', 'rmse'),
+                ('rmse_metadata', 'rmse_metadata'),
             ]),
         ])  # fmt:skip
 
     if params.get('nrmse', True):
         workflow.connect([
             (noddi_fit, recon_scalars, [
-                ("nrmse", "nrmse"),
-                ("nrmse_metadata", "nrmse_metadata"),
+                ('nrmse', 'nrmse'),
+                ('nrmse_metadata', 'nrmse_metadata'),
             ]),
         ])  # fmt:skip
 
@@ -219,8 +220,8 @@ def init_amico_noddi_fit_wf(
 
         scalar_output_wf = init_scalar_output_wf()
         workflow.connect([
-            (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
-            (recon_scalars, scalar_output_wf, [("scalar_info", "inputnode.scalar_configs")]),
+            (inputnode, scalar_output_wf, [('dwi_file', 'inputnode.source_file')]),
+            (recon_scalars, scalar_output_wf, [('scalar_info', 'inputnode.scalar_configs')]),
         ])  # fmt:skip
 
         ds_config = pe.Node(
@@ -241,13 +242,13 @@ def init_amico_noddi_fit_wf(
         )
         workflow.connect([
             (inputnode, plot_scalars, [
-                ("acpc_preproc", "underlay"),
-                ("acpc_seg", "dseg"),
-                ("dwi_mask", "mask_file"),
+                ('acpc_preproc', 'underlay'),
+                ('acpc_seg', 'dseg'),
+                ('dwi_mask', 'mask_file'),
             ]),
-            (recon_scalars, plot_scalars, [("scalar_info", "scalar_metadata")]),
-            (scalar_output_wf, plot_scalars, [("outputnode.scalar_files", "scalar_maps")]),
-            (scalar_output_wf, outputnode, [("outputnode.scalar_configs", "recon_scalars")]),
+            (recon_scalars, plot_scalars, [('scalar_info', 'scalar_metadata')]),
+            (scalar_output_wf, plot_scalars, [('outputnode.scalar_files', 'scalar_maps')]),
+            (scalar_output_wf, outputnode, [('outputnode.scalar_configs', 'recon_scalars')]),
         ])  # fmt:skip
 
         ds_report_scalars = pe.Node(

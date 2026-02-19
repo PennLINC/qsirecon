@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 
@@ -180,7 +178,7 @@ to workflows in *QSIRecon*'s documentation]\
             workflow.connect([
                 (anat_ingress_nodes[anat_input_file.path],
                  highres_anat_wfs[anat_input_file.path], [
-                     (key, f"inputnode.{key}")]),
+                     (key, f'inputnode.{key}')]),
             ])  # fmt:skip
 
         # Configure atlases _per_ anatomical workflow
@@ -293,22 +291,22 @@ to workflows in *QSIRecon*'s documentation]\
 
             # Session-specific anatomical data
             (dwi_ingress_nodes[dwi_file], dwi_anat_wfs[dwi_file], [
-                (trait, f"inputnode.{trait}") for trait in qsiprep_output_names
+                (trait, f'inputnode.{trait}') for trait in qsiprep_output_names
             ]),
 
             # subject dwi-specific anatomical to a special node in recon_full_inputs so
             # we have a record of what went in. Otherwise it would be lost in an IdentityInterface
             (dwi_anat_wfs[dwi_file], recon_full_inputs[dwi_file], [
-                (f"outputnode.{trait}", trait) for trait in recon_workflow_anatomical_input_fields
+                (f'outputnode.{trait}', trait) for trait in recon_workflow_anatomical_input_fields
             ]),
 
             # send the recon_full_inputs to the dwi recon workflow
             (recon_full_inputs[dwi_file], dwi_recon_wfs[dwi_file], [
-                (trait, f"inputnode.{trait}") for trait in recon_workflow_input_fields
+                (trait, f'inputnode.{trait}') for trait in recon_workflow_input_fields
             ]),
 
             (highres_anat_wfs[anat_input.path], dwi_anat_wfs[dwi_file], [
-                (f"outputnode.{trait}", f"inputnode.{trait}")
+                (f'outputnode.{trait}', f'inputnode.{trait}')
                 for trait in anatomical_workflow_outputs
             ]),
         ])  # fmt:skip
@@ -402,7 +400,7 @@ def _load_recon_spec(spec_name):
         raise Exception(f'{spec_name} is not a file that exists or in {prepackaged}')
 
     if recon_spec.endswith('.json'):
-        with open(recon_spec, 'r') as f:
+        with open(recon_spec) as f:
             try:
                 spec = json.load(f)
             except Exception:

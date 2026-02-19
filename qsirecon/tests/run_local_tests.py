@@ -2,10 +2,8 @@
 """Run tests locally by calling Docker."""
 
 import argparse
-import io
 import os
 import subprocess
-from contextlib import redirect_stdout
 
 
 def _get_parser():

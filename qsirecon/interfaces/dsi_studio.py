@@ -1,4 +1,3 @@
-#!python
 import logging
 import os
 import os.path as op
@@ -423,7 +422,7 @@ class DSIStudioAtlasGraph(SimpleInterface):
                     name=atlas_name,
                 )
             )
-            workflow.connect(nodes[-1], 'connectivity_matfile', merge_mats, 'in%d' % atlasnum)
+            workflow.connect(nodes[-1], 'connectivity_matfile', merge_mats, f'in{atlasnum}')
 
         workflow.config['execution']['stop_on_first_crash'] = 'true'
         workflow.config['execution']['remove_unnecessary_outputs'] = 'false'
@@ -468,7 +467,7 @@ def _parse_network_file(txtfile):
         Dictionary of parsed network measures keyed by measure name.
     """
 
-    with open(txtfile, 'r') as f:
+    with open(txtfile) as f:
         lines = f.readlines()
     network_data = {}
     for line in lines:
@@ -923,7 +922,7 @@ def stat_txt_to_df(stat_txt_file, bundle_name):
     bundle_stats = {'bundle_name': bundle_name}
     if stat_txt_file == 'NA':
         return bundle_stats
-    with open(stat_txt_file, 'r') as statf:
+    with open(stat_txt_file) as statf:
         lines = [
             line.strip().replace(' ', '_').replace('^', '').replace('(', '_').replace(')', '')
             for line in statf
@@ -945,7 +944,7 @@ def btable_from_bvals_bvecs(bval_file, bvec_file, output_file):
     bvals = np.loadtxt(bval_file).squeeze()
     bvecs = np.loadtxt(bvec_file).squeeze()
     if 3 not in bvecs.shape:
-        raise Exception('uninterpretable bval/bvec files\n\t{}\n\t{}'.format(bval_file, bvec_file))
+        raise Exception(f'uninterpretable bval/bvec files\n\t{bval_file}\n\t{bvec_file}')
     if not bvecs.shape[1] == 3:
         bvecs = bvecs.T
 
@@ -954,7 +953,7 @@ def btable_from_bvals_bvecs(bval_file, bvec_file, output_file):
 
     rows = []
     for row in map(tuple, np.column_stack([bvals, bvecs])):
-        rows.append('%d %.6f %.6f %.6f' % row)
+        rows.append(f'{int(row[0])} {row[1]:.6f} {row[2]:.6f} {row[3]:.6f}')
 
     # Write the actual file:
     with open(output_file, 'w') as btablef:
@@ -977,13 +976,13 @@ def _get_dsi_studio_bundles(desired_bundles='', version='hou'):
         'DSI_STUDIO_BUNDLES', op.join(bundle_dir, 'atlas/ICBM152_adult/ICBM152_adult.tt.gz.txt')
     )
     if not op.exists(bundle_file):
-        raise Exception('No such file {} for loading bundles'.format(bundle_file))
+        raise Exception(f'No such file {bundle_file} for loading bundles')
 
-    with open(bundle_file, 'r') as bundlef:
+    with open(bundle_file) as bundlef:
         all_bundles = [line.strip() for line in bundlef]
 
     if not desired_bundles:
-        LOGGER.info('Using all {} bundles from {}'.format(len(all_bundles), bundle_file))
+        LOGGER.info(f'Using all {len(all_bundles)} bundles from {bundle_file}')
         return all_bundles
 
     def get_bundles(search_string):
@@ -1015,9 +1014,7 @@ def _get_dsi_studio_bundles(desired_bundles='', version='hou'):
         if bundle.isdigit():
             bundle_index = int(bundle)
             if bundle_index < 0 or bundle_index > len(all_bundles):
-                raise Exception(
-                    '{} is not a valid bundle index, check {}'.format(bundle_index, bundle_file)
-                )
+                raise Exception(f'{bundle_index} is not a valid bundle index, check {bundle_file}')
             bundles_to_track.append(all_bundles[bundle_index])
         else:
             matching_bundles = get_bundles(bundle)

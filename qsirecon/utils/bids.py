@@ -28,7 +28,6 @@ import os
 import sys
 import warnings
 from pathlib import Path
-from typing import Union
 
 import filelock
 from bids import BIDSLayout
@@ -55,7 +54,7 @@ class BIDSError(ValueError):
             message=message,
             footer=''.join(['-'] * len(header)),
         )
-        super(BIDSError, self).__init__(self.msg)
+        super().__init__(self.msg)
         self.bids_root = bids_root
 
 
@@ -346,7 +345,7 @@ def write_derivative_description(
     lock_file = os.path.join(deriv_dir, 'qsirecon_dataset_description.lock')
     with filelock.SoftFileLock(lock_file, timeout=60):
         if os.path.isfile(out_dset_description):
-            with open(out_dset_description, 'r') as fo:
+            with open(out_dset_description) as fo:
                 old_dset_desc = json.load(fo)
 
             old_version = old_dset_desc['GeneratedBy'][0]['Version']
@@ -388,7 +387,7 @@ def write_atlas_dataset_description(atlas_dir):
 
     atlas_dset_description = os.path.join(atlas_dir, 'dataset_description.json')
     if os.path.isfile(atlas_dset_description):
-        with open(atlas_dset_description, 'r') as fo:
+        with open(atlas_dset_description) as fo:
             old_desc = json.load(fo)
 
         old_version = old_desc['GeneratedBy'][0]['Version']
@@ -467,8 +466,8 @@ def validate_input_dir(exec_env, bids_dir, participant_label):
     }
     # Limit validation only to data from requested participants
     if participant_label:
-        all_subs = set([s.name[4:] for s in bids_dir.glob('sub-*')])
-        selected_subs = set([s[4:] if s.startswith('sub-') else s for s in participant_label])
+        all_subs = {s.name[4:] for s in bids_dir.glob('sub-*')}
+        selected_subs = {s[4:] if s.startswith('sub-') else s for s in participant_label}
         bad_labels = selected_subs.difference(all_subs)
         if bad_labels:
             error_msg = (
@@ -495,7 +494,7 @@ def validate_input_dir(exec_env, bids_dir, participant_label):
         ignored_subs = all_subs.difference(selected_subs)
         if ignored_subs:
             for sub in ignored_subs:
-                validator_config_dict['ignoredFiles'].append('/sub-%s/**' % sub)
+                validator_config_dict['ignoredFiles'].append(f'/sub-{sub}/**')
     with tempfile.NamedTemporaryFile('w+') as temp:
         temp.write(json.dumps(validator_config_dict))
         temp.flush()
@@ -509,7 +508,7 @@ def _get_shub_version(singularity_url):
     raise ValueError('Not yet implemented')
 
 
-def clean_datasinks(workflow: pe.Workflow, qsirecon_suffix: Union[str, None]) -> pe.Workflow:
+def clean_datasinks(workflow: pe.Workflow, qsirecon_suffix: str | None) -> pe.Workflow:
     """Overwrite the base_directory of Datasinks."""
     out_dir = Path(config.execution.output_dir)
     if qsirecon_suffix:

@@ -13,14 +13,6 @@ import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
-from ... import config
-from ...interfaces.bids import DerivativesDataSink
-from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.recon_scalars import TORTOISEReconScalars
-from ...interfaces.reports import ScalarReport
-from ...utils.bids import clean_datasinks
-from ...utils.boilerplate import build_documentation
-from .utils import init_scalar_output_wf
 from qsirecon.interfaces.tortoise import (
     ComputeADMap,
     ComputeFAMap,
@@ -34,6 +26,15 @@ from qsirecon.interfaces.tortoise import (
     EstimateTensor,
     TORTOISEConvert,
 )
+
+from ... import config
+from ...interfaces.bids import DerivativesDataSink
+from ...interfaces.interchange import recon_workflow_input_fields
+from ...interfaces.recon_scalars import TORTOISEReconScalars
+from ...interfaces.reports import ScalarReport
+from ...utils.bids import clean_datasinks
+from ...utils.boilerplate import build_documentation
+from .utils import init_scalar_output_wf
 
 LOGGER = logging.getLogger('nipype.interface')
 
@@ -79,7 +80,7 @@ def init_tortoise_estimator_wf(inputs_dict, name='tortoise_recon', qsirecon_suff
     suffix_str = f' (outputs written to qsirecon-{qsirecon_suffix})' if qsirecon_suffix else ''
     workflow.__desc__ = (
         f'\n\n#### TORTOISE Reconstruction{suffix_str}\n\n'
-        + 'Methods implemented in TORTOISE (@tortoisev3) were used for reconstruction. '
+        'Methods implemented in TORTOISE (@tortoisev3) were used for reconstruction. '
     )
 
     inputnode = pe.Node(
@@ -168,31 +169,31 @@ def init_tortoise_estimator_wf(inputs_dict, name='tortoise_recon', qsirecon_suff
         )
         workflow.connect([
             (tortoise_convert, estimate_tensor, [
-                ("dwi_file", "in_file"),
-                ("mask_file", "mask"),
-                ("bmtxt_file", "bmtxt_file")]),
+                ('dwi_file', 'in_file'),
+                ('mask_file', 'mask'),
+                ('bmtxt_file', 'bmtxt_file')]),
             (estimate_tensor, compute_dt_fa, [
-                ("dt_file", "in_file"),
-                ("am_file", "am_file")]),
+                ('dt_file', 'in_file'),
+                ('am_file', 'am_file')]),
             (estimate_tensor, compute_dt_rd, [
-                ("dt_file", "in_file"),
-                ("am_file", "am_file")]),
+                ('dt_file', 'in_file'),
+                ('am_file', 'am_file')]),
             (estimate_tensor, compute_dt_ad, [
-                ("dt_file", "in_file"),
-                ("am_file", "am_file")]),
+                ('dt_file', 'in_file'),
+                ('am_file', 'am_file')]),
             (estimate_tensor, compute_dt_li, [
-                ("dt_file", "in_file"),
-                ("am_file", "am_file")]),
-            (estimate_tensor, recon_scalars, [("am_file", "am_file")]),
-            (compute_dt_fa, recon_scalars, [("fa_file", "fa_file")]),
-            (compute_dt_rd, recon_scalars, [("rd_file", "rd_file")]),
-            (compute_dt_ad, recon_scalars, [("ad_file", "ad_file")]),
-            (compute_dt_li, recon_scalars, [("li_file", "li_file")]),
-            (compute_dt_ad, compute_md, [("ad_file", "ad")]),
-            (compute_dt_rd, compute_md, [("rd_file", "rd")]),
+                ('dt_file', 'in_file'),
+                ('am_file', 'am_file')]),
+            (estimate_tensor, recon_scalars, [('am_file', 'am_file')]),
+            (compute_dt_fa, recon_scalars, [('fa_file', 'fa_file')]),
+            (compute_dt_rd, recon_scalars, [('rd_file', 'rd_file')]),
+            (compute_dt_ad, recon_scalars, [('ad_file', 'ad_file')]),
+            (compute_dt_li, recon_scalars, [('li_file', 'li_file')]),
+            (compute_dt_ad, compute_md, [('ad_file', 'ad')]),
+            (compute_dt_rd, compute_md, [('rd_file', 'rd')]),
             (compute_md, recon_scalars, [
-                ("md", "md"),
-                ("md_metadata", "md_metadata"),
+                ('md', 'md'),
+                ('md_metadata', 'md_metadata'),
             ]),
         ])  # fmt:skip
 
@@ -238,50 +239,50 @@ def init_tortoise_estimator_wf(inputs_dict, name='tortoise_recon', qsirecon_suff
         if estimate_tensor_separately:
             workflow.connect([
                 (estimate_tensor, estimate_mapmri, [
-                    ("dt_file", "dt_file"),
-                    ("am_file", "a0_file"),
+                    ('dt_file', 'dt_file'),
+                    ('am_file', 'a0_file'),
                 ]),
             ])  # fmt:skip
 
         workflow.connect([
             (tortoise_convert, estimate_mapmri, [
-                ("bmtxt_file", "bmtxt_file"),
-                ("dwi_file", "in_file"),
-                ("mask_file", "mask"),
+                ('bmtxt_file', 'bmtxt_file'),
+                ('dwi_file', 'in_file'),
+                ('mask_file', 'mask'),
             ]),
             (estimate_mapmri, compute_mapmri_pa, [
-                ("coeffs_file", "in_file"),
-                ("uvec_file", "uvec_file"),
+                ('coeffs_file', 'in_file'),
+                ('uvec_file', 'uvec_file'),
             ]),
             (compute_mapmri_pa, recon_scalars, [
-                ("pa_file", "pa_file"),
-                ("path_file", "path_file"),
+                ('pa_file', 'pa_file'),
+                ('path_file', 'path_file'),
             ]),
             (estimate_mapmri, compute_mapmri_rtop, [
-                ("coeffs_file", "in_file"),
-                ("uvec_file", "uvec_file"),
+                ('coeffs_file', 'in_file'),
+                ('uvec_file', 'uvec_file'),
             ]),
             (compute_mapmri_rtop, recon_scalars, [
-                ("rtop_file", "rtop_file"),
-                ("rtap_file", "rtap_file"),
-                ("rtpp_file", "rtpp_file"),
+                ('rtop_file', 'rtop_file'),
+                ('rtap_file', 'rtap_file'),
+                ('rtpp_file', 'rtpp_file'),
             ]),
             (estimate_mapmri, compute_mapmri_ng, [
-                ("coeffs_file", "in_file"),
-                ("uvec_file", "uvec_file"),
+                ('coeffs_file', 'in_file'),
+                ('uvec_file', 'uvec_file'),
             ]),
             (compute_mapmri_ng, recon_scalars, [
-                ("ng_file", "ng_file"),
-                ("ngpar_file", "ngpar_file"),
-                ("ngperp_file", "ngperp_file"),
+                ('ng_file', 'ng_file'),
+                ('ngpar_file', 'ngpar_file'),
+                ('ngperp_file', 'ngperp_file'),
             ]),
         ])  # fmt:skip
 
     if qsirecon_suffix:
         scalar_output_wf = init_scalar_output_wf()
         workflow.connect([
-            (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
-            (recon_scalars, scalar_output_wf, [("scalar_info", "inputnode.scalar_configs")]),
+            (inputnode, scalar_output_wf, [('dwi_file', 'inputnode.source_file')]),
+            (recon_scalars, scalar_output_wf, [('scalar_info', 'inputnode.scalar_configs')]),
         ])  # fmt:skip
 
         plot_scalars = pe.Node(
@@ -291,13 +292,13 @@ def init_tortoise_estimator_wf(inputs_dict, name='tortoise_recon', qsirecon_suff
         )
         workflow.connect([
             (inputnode, plot_scalars, [
-                ("acpc_preproc", "underlay"),
-                ("acpc_seg", "dseg"),
-                ("dwi_mask", "mask_file"),
+                ('acpc_preproc', 'underlay'),
+                ('acpc_seg', 'dseg'),
+                ('dwi_mask', 'mask_file'),
             ]),
-            (recon_scalars, plot_scalars, [("scalar_info", "scalar_metadata")]),
-            (scalar_output_wf, plot_scalars, [("outputnode.scalar_files", "scalar_maps")]),
-            (scalar_output_wf, outputnode, [("outputnode.scalar_configs", "recon_scalars")]),
+            (recon_scalars, plot_scalars, [('scalar_info', 'scalar_metadata')]),
+            (scalar_output_wf, plot_scalars, [('outputnode.scalar_files', 'scalar_maps')]),
+            (scalar_output_wf, outputnode, [('outputnode.scalar_configs', 'recon_scalars')]),
         ])  # fmt:skip
 
         ds_report_scalars = pe.Node(

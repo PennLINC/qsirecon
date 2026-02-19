@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
@@ -76,7 +75,7 @@ class QSIPrepDWIIngress(SimpleInterface):
         self._results = {key: val for key, val in list(params.items()) if val is not None}
         space = self._results.get('space_id')
         if space is None:
-            raise Exception('Unable to detect space of %s' % self.inputs.dwi_file)
+            raise Exception(f'Unable to detect space of {self.inputs.dwi_file}')
 
         # Find the additional files
         out_root, fname, _ = split_filename(self.inputs.dwi_file)
@@ -112,4 +111,4 @@ class QSIPrepDWIIngress(SimpleInterface):
     def _get_qc_filename(self, out_root, params, desc, suffix):
         used_keys = ['subject_id', 'session_id', 'acq_id', 'dir_id', 'run_id']
         fname = '_'.join([params[key] for key in used_keys if params[key]])
-        return out_root + '/' + fname + '_desc-%s_dwi.%s' % (desc, suffix)
+        return out_root + '/' + fname + f'_desc-{desc}_dwi.{suffix}'

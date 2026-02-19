@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
@@ -30,10 +28,11 @@ from nipype.interfaces.base import (
     traits,
 )
 
+from qsirecon.data import load as load_data
+
 from ..utils.bids import _get_bidsuris
 from ..utils.misc import deep_update_dict, load_yaml
 from .bids import get_recon_output_name
-from qsirecon.data import load as load_data
 
 
 class ReconScalarsInputSpec(BaseInterfaceInputSpec):
@@ -455,7 +454,7 @@ class ParcellateScalars(SimpleInterface):
 
     def _run_interface(self, runtime):
         # Measures to extract: mean, stdev, median
-        source_suffixes = set([cfg['qsirecon_suffix'] for cfg in self.inputs.scalars_config])
+        source_suffixes = {cfg['qsirecon_suffix'] for cfg in self.inputs.scalars_config}
         if len(source_suffixes) > 1:
             raise ValueError(
                 'All scalars must have the same qsirecon_suffix. '

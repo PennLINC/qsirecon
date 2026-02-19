@@ -614,7 +614,7 @@ class workflow(_Config):
             qsirecon_suffix = node_spec.get('qsirecon_suffix', None)
             qsirecon_suffixes += [qsirecon_suffix] if qsirecon_suffix else []
 
-        cls.qsirecon_suffixes = sorted(list(set(qsirecon_suffixes)))
+        cls.qsirecon_suffixes = sorted(set(qsirecon_suffixes))
 
 
 class loggers:

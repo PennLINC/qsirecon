@@ -120,7 +120,7 @@ def init_dwi_recon_workflow(
                     in_node = workflow.get_node(in_node_spec['name'])
                     workflow.connect([
                         (in_node, node, [
-                            ("outputnode.recon_scalars", "inputnode.collected_scalars"),
+                            ('outputnode.recon_scalars', 'inputnode.collected_scalars'),
                         ]),
                     ])  # fmt:skip
                     found = True
@@ -163,7 +163,7 @@ def init_dwi_recon_workflow(
                     inputnode,
                     node,
                     _as_connections(
-                        connect_from_qsirecon - set(("mapping_metadata",)),
+                        connect_from_qsirecon - {'mapping_metadata'},
                         dest_prefix='inputnode.',
                     ),
                 ),
@@ -181,7 +181,7 @@ def init_dwi_recon_workflow(
                     upstream_node,
                     node,
                     _as_connections(
-                        connect_from_upstream - set(("mapping_metadata",)),
+                        connect_from_upstream - {'mapping_metadata'},
                         src_prefix='outputnode.',
                         dest_prefix='inputnode.',
                     ),
@@ -192,9 +192,9 @@ def init_dwi_recon_workflow(
             # Send metadata about the upstream node into the downstream node
             workflow.connect(
                 workflow_metadata_nodes[node_spec['input']],
-                "input_metadata",
+                'input_metadata',
                 node,
-                "inputnode.mapping_metadata")  # fmt:skip
+                'inputnode.mapping_metadata')  # fmt:skip
 
         # There are some special cases where we need a second input node.
         if 'csd_input' in node_spec:
@@ -224,7 +224,7 @@ def init_dwi_recon_workflow(
                     special_upstream_node,
                     node,
                     _as_connections(
-                        connect_from_special_upstream - set(("mapping_metadata",)),
+                        connect_from_special_upstream - {'mapping_metadata'},
                         src_prefix='outputnode.',
                         dest_prefix='inputnode.',
                     ),
@@ -237,7 +237,7 @@ def init_dwi_recon_workflow(
         node_name = node.split('.')[-1]
         if node_name.startswith('ds_') or node_name.startswith('recon_scalars'):
             workflow.connect([
-                (inputnode, workflow.get_node(node), [("dwi_file", "source_file")]),
+                (inputnode, workflow.get_node(node), [('dwi_file', 'source_file')]),
             ])  # fmt:skip
 
     return workflow
@@ -263,7 +263,7 @@ def workflow_from_spec(inputs_dict, node_spec):
         parameters['plot_reports'] = False
 
     if node_name is None:
-        raise Exception('Node %s must have a "name" attribute' % node_spec)
+        raise Exception(f'Node {node_spec} must have a "name" attribute')
     kwargs = {
         'inputs_dict': inputs_dict,
         'name': node_name,
@@ -351,7 +351,7 @@ def workflow_from_spec(inputs_dict, node_spec):
         if node_spec['action'] == 'parcellate_scalars':
             return init_scalar_to_atlas_wf(**kwargs)
 
-    raise Exception('Unknown node %s' % pformat(node_spec))
+    raise Exception(f'Unknown node {pformat(node_spec)}')
 
 
 def _as_connections(attr_list, src_prefix='', dest_prefix=''):

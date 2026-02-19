@@ -3,12 +3,12 @@ This script comes from scikit-learn:
 https://github.com/scikit-learn/scikit-learn/blob/master/doc/sphinxext/github_link.py
 """
 
-from operator import attrgetter
 import inspect
-import subprocess
 import os
+import subprocess
 import sys
 from functools import partial
+from operator import attrgetter
 
 REVISION_CMD = 'git rev-parse --short HEAD'
 
@@ -45,7 +45,7 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
         return
 
     class_name = info['fullname'].split('.')[0]
-    if type(class_name) != str:
+    if not isinstance(class_name, str):
         # Python 2 only
         class_name = class_name.encode('utf-8')
     module = __import__(info['module'], fromlist=[class_name])

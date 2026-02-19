@@ -1,4 +1,3 @@
-#!python
 """
 Wrappers for the TORTOISE programs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -41,7 +40,7 @@ class TORTOISECommandLine(CommandLine):
     _num_threads = None
 
     def __init__(self, **inputs):
-        super(TORTOISECommandLine, self).__init__(**inputs)
+        super().__init__(**inputs)
         self.inputs.on_trait_change(self._num_threads_update, 'num_threads')
         if not self._num_threads:
             self._num_threads = os.environ.get('OMP_NUM_THREADS', None)
@@ -59,7 +58,7 @@ class TORTOISECommandLine(CommandLine):
         if 'num_threads' in inputs:
             self.inputs.num_threads = inputs['num_threads']
         self._num_threads_update()
-        return super(TORTOISECommandLine, self).run(**inputs)
+        return super().run(**inputs)
 
 
 class _TORTOISEConvertInputSpec(BaseInterfaceInputSpec):
@@ -131,7 +130,7 @@ class TORTOISEReconCommandLine(TORTOISECommandLine):
             raise Exception
         if name in self._link_me:
             return ''
-        return super(TORTOISEReconCommandLine, self)._format_arg(name, spec, value)
+        return super()._format_arg(name, spec, value)
 
 
 class _TORTOISEEstimatorInputSpec(TORTOISEInputSpec):
@@ -223,7 +222,7 @@ class EstimateTensor(TORTOISEReconCommandLine):
             return '--use_noise 1'
         if name == 'voxelwise_bmat_file':
             return '--use_voxelwise_bmat 1'
-        return super(EstimateTensor, self)._format_arg(name, spec, value)
+        return super()._format_arg(name, spec, value)
 
 
 class _TensorMapInputSpec(TORTOISEInputSpec):

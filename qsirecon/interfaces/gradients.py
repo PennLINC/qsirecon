@@ -319,7 +319,7 @@ class ExtractB0s(SimpleInterface):
             bvals = np.loadtxt(self.inputs.bval_file)
             indices = np.flatnonzero(bvals < self.inputs.b0_threshold)
             if indices.size == 0:
-                raise ValueError('No b<%d images found' % self.inputs.b0_threshold)
+                raise ValueError(f'No b<{self.inputs.b0_threshold} images found')
         else:
             raise ValueError('No gradient information available')
         new_data = nim.index_img(self.inputs.dwi_series, indices)
@@ -342,7 +342,7 @@ def concatenate_bvals(bval_list, out_file):
         collected_vals.append(np.loadtxt(bval_file, ndmin=1))
     final_bvals = np.concatenate(collected_vals).squeeze()
     if out_file is not None:
-        np.savetxt(out_file, final_bvals, fmt=str('%i'))
+        np.savetxt(out_file, final_bvals, fmt='%i')
     return final_bvals
 
 
@@ -406,7 +406,7 @@ def subset_dwi(
 
 def _select_lines(in_file, out_file, indices):
 
-    with open(in_file, 'r') as in_f:
+    with open(in_file) as in_f:
         in_lines = in_f.readlines()
         new_lines = [in_lines[lineno] for lineno in indices]
 

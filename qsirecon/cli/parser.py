@@ -560,10 +560,9 @@ def parse_args(args=None, namespace=None):
     if output_dir == input_dir:
         parser.error(
             'The selected output folder is the same as the input BIDS folder. '
-            'Please modify the output path (suggestion: %s).'
-            % input_dir
+            f'Please modify the output path (suggestion: {input_dir}).'
             / 'derivatives'
-            / ('qsirecon-%s' % version.split('+')[0])
+            / ('qsirecon-{}'.format(version.split('+')[0]))
         )
 
     if input_dir in work_dir.parents:
@@ -644,8 +643,9 @@ def parse_args(args=None, namespace=None):
     missing_subjects = participant_label - set(all_subjects)
     if missing_subjects:
         parser.error(
-            'One or more participant labels were not found in the BIDS directory: '
-            '%s.' % ', '.join(missing_subjects)
+            'One or more participant labels were not found in the BIDS directory: {}.'.format(
+                ', '.join(missing_subjects)
+            )
         )
 
     config.execution.participant_label = sorted(participant_label)

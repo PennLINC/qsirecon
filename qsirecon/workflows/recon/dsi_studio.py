@@ -502,16 +502,16 @@ def init_dsi_studio_autotrack_wf(
             ('map_file', 'in_file'),
             ('dsistudiotemplate', 'dsistudiotemplate')]),
         (actual_trk, aggregate_atk_results, [
-            ("native_trk_files", "trk_files"),
-            ("stat_files", "stat_files"),
+            ('native_trk_files', 'trk_files'),
+            ('stat_files', 'stat_files'),
         ]),
-        (aggregate_atk_results, convert_to_tck, [("found_bundle_files", "trk_file")]),
-        (aggregate_atk_results, clean_bundle_names, [("found_bundle_names", "input_string")]),
-        (clean_bundle_names, ds_tckfiles, [("bundle", "bundle")]),
-        (convert_to_tck, ds_tckfiles, [("tck_file", "in_file")]),
-        (aggregate_atk_results, ds_bundle_csv, [("bundle_csv", "in_file")]),
-        (convert_to_tck, outputnode, [("tck_file", "tck_files")]),
-        (aggregate_atk_results, outputnode, [("found_bundle_names", "bundle_names")])
+        (aggregate_atk_results, convert_to_tck, [('found_bundle_files', 'trk_file')]),
+        (aggregate_atk_results, clean_bundle_names, [('found_bundle_names', 'input_string')]),
+        (clean_bundle_names, ds_tckfiles, [('bundle', 'bundle')]),
+        (convert_to_tck, ds_tckfiles, [('tck_file', 'in_file')]),
+        (aggregate_atk_results, ds_bundle_csv, [('bundle_csv', 'in_file')]),
+        (convert_to_tck, outputnode, [('tck_file', 'tck_files')]),
+        (aggregate_atk_results, outputnode, [('found_bundle_names', 'bundle_names')])
     ])  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)
@@ -741,9 +741,9 @@ def init_dsi_studio_export_wf(
     if qsirecon_suffix:
         scalar_output_wf = init_scalar_output_wf()
         workflow.connect([
-            (inputnode, scalar_output_wf, [("dwi_file", "inputnode.source_file")]),
-            (recon_scalars, scalar_output_wf, [("scalar_info", "inputnode.scalar_configs")]),
-            (scalar_output_wf, outputnode, [("outputnode.scalar_configs", "recon_scalars")]),
+            (inputnode, scalar_output_wf, [('dwi_file', 'inputnode.source_file')]),
+            (recon_scalars, scalar_output_wf, [('scalar_info', 'inputnode.scalar_configs')]),
+            (scalar_output_wf, outputnode, [('outputnode.scalar_configs', 'recon_scalars')]),
         ])  # fmt:skip
 
         plot_scalars = pe.Node(
@@ -753,12 +753,12 @@ def init_dsi_studio_export_wf(
         )
         workflow.connect([
             (inputnode, plot_scalars, [
-                ("acpc_preproc", "underlay"),
-                ("acpc_seg", "dseg"),
-                ("dwi_mask", "mask_file"),
+                ('acpc_preproc', 'underlay'),
+                ('acpc_seg', 'dseg'),
+                ('dwi_mask', 'mask_file'),
             ]),
-            (recon_scalars, plot_scalars, [("scalar_info", "scalar_metadata")]),
-            (scalar_output_wf, plot_scalars, [("outputnode.scalar_files", "scalar_maps")]),
+            (recon_scalars, plot_scalars, [('scalar_info', 'scalar_metadata')]),
+            (scalar_output_wf, plot_scalars, [('outputnode.scalar_files', 'scalar_maps')]),
         ])  # fmt:skip
 
         ds_report_scalars = pe.Node(

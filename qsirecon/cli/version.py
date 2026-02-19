@@ -57,7 +57,7 @@ def check_latest():
 
     if cachefile is not None and latest is not None:
         try:
-            cachefile.write_text('|'.join(('%s' % latest, datetime.now().strftime(DATE_FMT))))
+            cachefile.write_text('|'.join((f'{latest}', datetime.now().strftime(DATE_FMT))))
         except Exception:
             pass
 
@@ -67,7 +67,7 @@ def check_latest():
 def is_flagged():
     """Check whether current version is flagged."""
     # https://raw.githubusercontent.com/pennlinc/qsirecon/main/.versions.json
-    flagged = tuple()
+    flagged = ()
     try:
         response = requests.get(
             url="""\

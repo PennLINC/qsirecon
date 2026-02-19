@@ -1,6 +1,7 @@
 import pandas as pd
-from qsirecon.interfaces import recon_scalars
+
 from qsirecon.data import load as load_data
+from qsirecon.interfaces import recon_scalars
 from qsirecon.utils.misc import load_yaml
 
 
