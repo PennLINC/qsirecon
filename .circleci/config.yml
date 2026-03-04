@@ -1,658 +1,483 @@
 version: 2.1
 orbs:
-  codecov: codecov/codecov@3.2.4
+  codecov: codecov/codecov@4.1.0
 
-.dockersetup: &dockersetup
-  docker:
-    - image: pennlinc/qsirecon_build:26.1.16
-  working_directory: /src/qsirecon
+_machine_defaults: &machine_defaults
+  environment:
+    TZ: "/usr/share/zoneinfo/America/New_York"
+  machine:
+    image: default
+    docker_layer_caching: true
+  working_directory: /tmp/src/qsirecon
+  resource_class: large
 
-runinstall: &runinstall
-    name: Install qsirecon
-    command: |
-      VERSION=0+build
-      if [[ -n "$CIRCLE_TAG" ]]; then
-        VERSION="$CIRCLE_TAG"
-      fi
-      git checkout $CIRCLE_BRANCH
-      echo "${VERSION}" > /src/qsirecon/qsirecon/VERSION
-      echo "include qsirecon/VERSION" >> /src/qsirecon/MANIFEST.in
-      pip install .[tests] --progress-bar off
+_docker_auth: &docker_auth
+  name: Docker authentication
+  command: |
+    if [[ -n "$DOCKERHUB_TOKEN" ]]; then
+      echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+    fi
 
-      # Precaching fonts, set 'Agg' as default backend for matplotlib
-      python -c "from matplotlib import font_manager"
-      sed -i 's/\(backend *: \).*$/\1Agg/g' $( python -c "import matplotlib; print(matplotlib.matplotlib_fname())" )
+_setup_docker_registry: &setup_docker_registry
+  name: Set up local Docker registry
+  command: |
+    if [[ -f /tmp/images/registry.tar.gz ]]; then
+      docker load < /tmp/images/registry.tar.gz
+    else
+      docker pull registry:2
+    fi
+    docker run -d -p 5000:5000 --restart=always --name=registry \
+      -v /tmp/docker:/var/lib/registry registry:2
 
-      # Write the config file
-      mkdir /root/.nipype
-      CFG=/root/.nipype/nipype.cfg
-      printf "[execution]\nstop_on_first_crash = true\n" > ${CFG}
-      echo "poll_sleep_duration = 0.01" >> ${CFG}
-      echo "hash_method = content" >> ${CFG}
-      ln -s /home/qsirecon/.dipy /root/.dipy
+_pull_from_registry: &pull_from_registry
+  name: Pull and tag production image from local registry
+  command: |
+    docker pull localhost:5000/qsirecon
+    docker tag localhost:5000/qsirecon pennlinc/qsirecon:latest
 
+_pull_test_image: &pull_test_image
+  name: Pull and tag test image from local registry
+  command: |
+    docker pull localhost:5000/qsirecon-test
+    docker tag localhost:5000/qsirecon-test pennlinc/qsirecon:test
+
+commands:
+  restore_build_and_data:
+    description: Restore Docker build cache and test data cache
+    steps:
+      - restore_cache:
+          keys:
+            - build-v3-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}
+      - restore_cache:
+          keys:
+            - data-v1-{{ .Branch }}-{{ .Revision }}
+            - data-v1--{{ .Revision }}
+            - data-v1-{{ .Branch }}-
+            - data-v1-main-
+            - data-v1-
+      - run: *docker_auth
+      - run: *setup_docker_registry
+      - run: *pull_test_image
+
+  run_integration_test:
+    description: Run a pytest marker inside test image
+    parameters:
+      marker:
+        type: string
+      cpus:
+        type: integer
+        default: 4
+      coverage_name:
+        type: string
+    steps:
+      - run:
+          name: Run qsirecon (<< parameters.marker >>)
+          no_output_timeout: 5h
+          command: |
+            mkdir -p /tmp/out /tmp/work /tmp/coverage
+            docker run --rm=false \
+              -e CIRCLE_CPUS=<< parameters.cpus >> \
+              -e COVERAGE_FILE=/coverage/.coverage.<< parameters.coverage_name >> \
+              -v /tmp/src/qsirecon:/tmp/src/qsirecon:ro \
+              -v /tmp/data:/data:ro \
+              -v /tmp/out:/out \
+              -v /tmp/work:/work \
+              -v /tmp/coverage:/coverage \
+              -w /tmp/src/qsirecon \
+              --entrypoint pytest \
+              pennlinc/qsirecon:test \
+              -rP -o log_cli=true -m "<< parameters.marker >>" \
+              --cov-append --cov-report term-missing --cov=qsirecon \
+              --data_dir=/data --output_dir=/out --working_dir=/work \
+              qsirecon
+      - run:
+          name: Clean large artifacts
+          when: always
+          command: |
+            find /tmp/out/ -name "*.nii.gz" -type f -delete 2>/dev/null || true
+            find /tmp/out/ -name "*.fib.gz" -type f -delete 2>/dev/null || true
+      - store_artifacts:
+          path: /tmp/out
+      - persist_to_workspace:
+          root: /tmp/coverage
+          paths:
+            - .coverage.<< parameters.coverage_name >>
 
 jobs:
-
-  build:
-    <<: *dockersetup
+  image_prep:
+    <<: *machine_defaults
+    environment:
+      TZ: "/usr/share/zoneinfo/America/New_York"
+      DOCKER_BUILDKIT: "1"
     steps:
-      - checkout
-      - run: *runinstall
-
-  download_singleshell_output:
-    <<: *dockersetup
-    steps:
-      - checkout
+      - checkout:
+          path: /tmp/src/qsirecon
       - restore_cache:
-          key: singleshell_output-02
-      - run: *runinstall
+          keys:
+            - build-v3-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}
+            - build-v1-{{ .Branch }}-{{ .Revision }}
+            - build-v1-main-
+      - run: *docker_auth
+      - run: *setup_docker_registry
       - run:
-          name: Download singleshell_output test data
+          name: Get base image information
           command: |
-            cd /src/qsirecon/.circleci
-            python get_data.py $PWD/data singleshell_output
+            export BASE_IMAGE=$( grep "BASE_IMAGE=" Dockerfile | head -1 | cut -d= -f2 )
+            export BASE_IMAGE_NAME=${BASE_IMAGE%:*}
+            export BASE_TAG=${BASE_IMAGE#*:}
+            echo "BASE_IMAGE=$BASE_IMAGE" >> "$BASH_ENV"
+            echo "BASE_IMAGE_NAME=$BASE_IMAGE_NAME" >> "$BASH_ENV"
+            echo "BASE_TAG=$BASE_TAG" >> "$BASH_ENV"
+      - run:
+          name: Determine build requirements
+          command: |
+            if [[ -f /tmp/images/imageprep-success.marker ]]; then
+              echo "BUILD_PRODUCTION_IMAGE=0" >> "$BASH_ENV"
+              echo "BUILD_TEST_IMAGE=0" >> "$BASH_ENV"
+            else
+              echo "BUILD_PRODUCTION_IMAGE=1" >> "$BASH_ENV"
+              echo "BUILD_TEST_IMAGE=1" >> "$BASH_ENV"
+            fi
+      - run:
+          name: Build base image if needed
+          no_output_timeout: 90m
+          command: |
+            if ! docker manifest inspect "$BASE_IMAGE" > /dev/null 2>&1; then
+              docker build -f Dockerfile.base \
+                --platform linux/amd64 \
+                -t "$BASE_IMAGE" \
+                -t "$BASE_IMAGE_NAME:latest" .
+              echo "BASE_WAS_BUILT=1" >> "$BASH_ENV"
+            else
+              echo "BASE_WAS_BUILT=0" >> "$BASH_ENV"
+            fi
+      - run:
+          name: Build production image
+          no_output_timeout: 3h
+          command: |
+            if [[ "$BUILD_PRODUCTION_IMAGE" == "1" || "$BASE_WAS_BUILT" == "1" ]]; then
+              if [[ -n "$CIRCLE_TAG" ]]; then THISVERSION="$CIRCLE_TAG"; else THISVERSION="0+build"; fi
+              e=1 && for i in {1..5}; do
+                docker build \
+                  --target qsirecon \
+                  --rm=false \
+                  -t pennlinc/qsirecon:latest \
+                  --platform linux/amd64 \
+                  --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+                  --build-arg VCS_REF="$(git rev-parse --short HEAD)" \
+                  --build-arg VERSION="$THISVERSION" . \
+                && e=0 && break || sleep 15
+              done && [ "$e" -eq "0" ]
+            fi
+      - run:
+          name: Build test image
+          no_output_timeout: 90m
+          command: |
+            if [[ "$BUILD_TEST_IMAGE" == "1" || "$BASE_WAS_BUILT" == "1" ]]; then
+              docker build --target test --rm=false -t pennlinc/qsirecon:test --platform linux/amd64 .
+            elif docker image inspect pennlinc/qsirecon:test > /dev/null 2>&1; then
+              echo "Reusing local test image."
+            elif docker pull localhost:5000/qsirecon-test; then
+              docker tag localhost:5000/qsirecon-test pennlinc/qsirecon:test
+            else
+              docker build --target test --rm=false -t pennlinc/qsirecon:test --platform linux/amd64 .
+            fi
+      - run:
+          name: Verify images
+          command: |
+            if [[ "$BUILD_PRODUCTION_IMAGE" == "1" || "$BASE_WAS_BUILT" == "1" ]]; then
+              docker run --rm pennlinc/qsirecon:latest --version
+            fi
+            docker run --rm --entrypoint pytest pennlinc/qsirecon:test --version
+      - run:
+          name: Push base image if newly built
+          command: |
+            if [[ "$BASE_WAS_BUILT" == "1" ]] && docker image inspect "$BASE_IMAGE" > /dev/null 2>&1; then
+              if [[ -n "$DOCKERHUB_TOKEN" ]]; then
+                docker push "$BASE_IMAGE"
+                docker push "$BASE_IMAGE_NAME:latest"
+              fi
+            fi
+      - run:
+          name: Push images to local registry
+          no_output_timeout: 40m
+          command: |
+            if [[ "$BUILD_PRODUCTION_IMAGE" == "1" || "$BASE_WAS_BUILT" == "1" ]]; then
+              docker tag pennlinc/qsirecon:latest localhost:5000/qsirecon
+              docker push localhost:5000/qsirecon
+            fi
+            docker tag pennlinc/qsirecon:test localhost:5000/qsirecon-test
+            docker push localhost:5000/qsirecon-test
+      - run:
+          name: Docker registry garbage collection
+          command: docker exec registry /bin/registry garbage-collect --delete-untagged /etc/docker/registry/config.yml
+      - run:
+          name: Record successful image prep
+          command: |
+            mkdir -p /tmp/images
+            touch /tmp/images/imageprep-success.marker
+            docker save registry:2 -o /tmp/images/registry.tar.gz
       - save_cache:
-          key: singleshell_output-02
+          key: build-v3-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}
           paths:
-            - /src/qsirecon/.circleci/data/singleshell_output
+            - /tmp/docker
+            - /tmp/images
 
-  download_multishell_output:
-    <<: *dockersetup
+  get_data:
+    <<: *machine_defaults
     steps:
-      - checkout
+      - checkout:
+          path: /tmp/src/qsirecon
       - restore_cache:
-          key: multishell_output-03
-      - run: *runinstall
+          keys:
+            - data-v1-{{ .Branch }}-{{ .Revision }}
+            - data-v1--{{ .Revision }}
+            - data-v1-{{ .Branch }}-
+            - data-v1-main-
+            - data-v1-
       - run:
-          name: Download multishell_output test data
+          name: Download integration datasets
           command: |
-            cd /src/qsirecon/.circleci
-            python get_data.py $PWD/data multishell_output
+            cd /tmp/src/qsirecon/.circleci
+            mkdir -p /tmp/data
+            python get_data.py /tmp/data singleshell_output
+            python get_data.py /tmp/data multishell_output
+            python get_data.py /tmp/data multises_pre1_output
+            python get_data.py /tmp/data multises_post1_output
+            python get_data.py /tmp/data hsvs_data
+            python get_data.py /tmp/data custom_atlases
       - save_cache:
-          key: multishell_output-03
+          key: data-v1-{{ .Branch }}-{{ .Revision }}
           paths:
-            - /src/qsirecon/.circleci/data/multishell_output
-
-  download_multises_pre1_output:
-    <<: *dockersetup
-    steps:
-      - checkout
-      - restore_cache:
-          key: multises_pre1_output-02
-      - run: *runinstall
-      - run:
-          name: Download multises pre-1.0 test data
-          command: |
-            cd /src/qsirecon/.circleci
-            python get_data.py $PWD/data multises_pre1_output
-      - save_cache:
-          key: multises_pre1_output-02
-          paths:
-            - /src/qsirecon/.circleci/data/multises_pre1_output
-
-  download_multises_post1_output:
-    <<: *dockersetup
-    steps:
-      - checkout
-      - restore_cache:
-          key: multises_post1_output-02
-      - run: *runinstall
-      - run:
-          name: Download multises post-1.0 test data
-          command: |
-            cd /src/qsirecon/.circleci
-            python get_data.py $PWD/data multises_post1_output
-      - save_cache:
-          key: multises_post1_output-02
-          paths:
-            - /src/qsirecon/.circleci/data/multises_post1_output
-
-  download_hsvs_data:
-    <<: *dockersetup
-    steps:
-      - checkout
-      - restore_cache:
-          key: hsvs_data-02
-      - run: *runinstall
-      - run:
-          name: Download HSVS test input data
-          command: |
-            cd /src/qsirecon/.circleci
-            python get_data.py $PWD/data hsvs_data
-      - save_cache:
-          key: hsvs_data-02
-          paths:
-            - /src/qsirecon/.circleci/data/hsvs_data
-
-  download_custom_atlases:
-    <<: *dockersetup
-    steps:
-      - checkout
-      - restore_cache:
-          key: custom_atlases-02
-      - run: *runinstall
-      - run:
-          name: Download custom atlases
-          command: |
-            cd /src/qsirecon/.circleci
-            python get_data.py $PWD/data custom_atlases
-      - save_cache:
-          key: custom_atlases-02
-          paths:
-            - /src/qsirecon/.circleci/data/custom_atlases
-
-  Recon_SS3T_FOD_AutoTrack:
-    <<: *dockersetup
-    steps:
-      - checkout
-      - restore_cache:
-          key: singleshell_output-02
-      - run: *runinstall
-      - run:
-          name: Test the SS3T AutoTrack workflow
-          no_output_timeout: 1h
-          command: |
-            pytest -rP -o log_cli=true -m "ss3t_fod_autotrack" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.ss3t_fod_autotrack
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.ss3t_fod_autotrack
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/ss3t_fod_autotrack/
+            - /tmp/data
 
   Recon_3Tissue_Singleshell_ACT:
-    <<: *dockersetup
+    <<: *machine_defaults
     steps:
-      - checkout
-      - restore_cache:
-          key: singleshell_output-02
-      - run: *runinstall
-      - run:
-          name: Test the 3Tissue recon workflows
-          no_output_timeout: 1h
-          command: |
-            pytest -rP -o log_cli=true -m "mrtrix_singleshell_ss3t_act" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.mrtrix_singleshell_ss3t_act
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.mrtrix_singleshell_ss3t_act
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/mrtrix_singleshell_ss3t_act/
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: mrtrix_singleshell_ss3t_act
+          coverage_name: mrtrix_singleshell_ss3t_act
 
-  Recon_3Tissue_Singleshell_NoACT:
-    <<: *dockersetup
+  Recon_SS3T_FOD_AutoTrack:
+    <<: *machine_defaults
     steps:
-      - checkout
-      - restore_cache:
-          key: singleshell_output-02
-      - restore_cache:
-          key: custom_atlases-02
-      - run: *runinstall
-      - run:
-          name: Test the 3Tissue recon workflows
-          no_output_timeout: 1h
-          command: |
-            pytest -rP -o log_cli=true -m "mrtrix_singleshell_ss3t_noact" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.mrtrix_singleshell_ss3t_noact
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.mrtrix_singleshell_ss3t_noact
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/mrtrix_singleshell_ss3t_noact/
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: ss3t_fod_autotrack
+          coverage_name: ss3t_fod_autotrack
 
   Recon_msmt_Multishell_HSVS:
-    <<: *dockersetup
+    <<: *machine_defaults
     steps:
-      - checkout
-      - restore_cache:
-          key: hsvs_data-02
-      - run: *runinstall
-      - run:
-          name: Test the HSVS recon workflows
-          no_output_timeout: 1h
-          command: |
-            pytest -rP -o log_cli=true -m "mrtrix_multishell_msmt_hsvs" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.mrtrix_multishell_msmt_hsvs
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.mrtrix_multishell_msmt_hsvs
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/mrtrix_multishell_msmt_hsvs/
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: mrtrix_multishell_msmt_hsvs
+          coverage_name: mrtrix_multishell_msmt_hsvs
 
   Recon_multises_pre1_IO_test:
-    <<: *dockersetup
+    <<: *machine_defaults
     steps:
-      - checkout
-      - restore_cache:
-          key: multises_pre1_output-02
-      - run: *runinstall
-      - run:
-          name: Test reading multi-ses data
-          no_output_timeout: 1h
-          command: |
-            mkdir /src/coverage
-            pytest -rP -o log_cli=true -m "multises_pre1_qsiprep" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.multises_pre1_qsiprep
-
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.multises_pre1_qsiprep
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/multises_pre1_qsiprep_reportroot/
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/multises_pre1_qsiprep_reportsubject/
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/multises_pre1_qsiprep_reportsession/
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: multises_pre1_qsiprep
+          coverage_name: multises_pre1_qsiprep
 
   Recon_multises_post1_IO_test:
-    <<: *dockersetup
+    <<: *machine_defaults
     steps:
-      - checkout
-      - restore_cache:
-          key: multises_post1_output-02
-      - run: *runinstall
-      - run:
-          name: Test reading multi-ses data (post 1.0.0rc0)
-          no_output_timeout: 1h
-          command: |
-            mkdir /src/coverage
-            pytest -rP -o log_cli=true -m "multises_post1_qsiprep" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.multises_post1_qsiprep
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: multises_post1_qsiprep
+          coverage_name: multises_post1_qsiprep
 
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.multises_post1_qsiprep
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/multises_post1_qsiprep_reportroot/
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/multises_post1_qsiprep_reportsubject/
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/multises_post1_qsiprep_reportsession/
-
-  Recon_Interfaces:
-    <<: *dockersetup
+  Recon_3Tissue_Singleshell_NoACT:
+    <<: *machine_defaults
     steps:
-      - checkout
-      - restore_cache:
-          key: multishell_output-03
-      - run: *runinstall
-      - run:
-          name: Pytest the recon interfaces
-          no_output_timeout: 1h
-          command: |
-            pytest -rP -o log_cli=true --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.recon_interfaces
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.recon_interfaces
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: mrtrix_singleshell_ss3t_noact
+          coverage_name: mrtrix_singleshell_ss3t_noact
 
   Recon_MRtrix3:
-    <<: *dockersetup
+    <<: *machine_defaults
     steps:
-      - checkout
-      - restore_cache:
-          key: multishell_output-03
-      - run: *runinstall
-      - run:
-          name: Test the CSD recon workflows
-          no_output_timeout: 1h
-          command: |
-            pytest -rP -o log_cli=true -m "mrtrix3_recon" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.mrtrix3_recon
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.mrtrix3_recon
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/mrtrix3_recon/
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: mrtrix3_recon
+          coverage_name: mrtrix3_recon
+
+  Recon_Interfaces:
+    <<: *machine_defaults
+    steps:
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: interfaces
+          coverage_name: recon_interfaces
 
   Recon_AutoTrack:
-    <<: *dockersetup
+    <<: *machine_defaults
     steps:
-      - checkout
-      - restore_cache:
-          key: multishell_output-03
-      - run: *runinstall
-      - run:
-          name: Test the AutoTrack workflow
-          no_output_timeout: 1h
-          command: |
-            pytest -rP -o log_cli=true -m "autotrack" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.autotrack
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.autotrack
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/autotrack/
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: autotrack
+          coverage_name: autotrack
 
   Recon_Tortoise:
-    <<: *dockersetup
+    <<: *machine_defaults
     steps:
-      - checkout
-      - restore_cache:
-          key: multishell_output-03
-      - run: *runinstall
-      - run:
-          name: Test the TORTOISE recon workflow
-          no_output_timeout: 1h
-          command: |
-            pytest -rP -o log_cli=true -m "tortoise_recon" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.tortoise_recon
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.tortoise_recon
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/tortoise_recon/
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: tortoise_recon
+          coverage_name: tortoise_recon
 
   Recon_DSI_Studio_GQI:
-    <<: *dockersetup
+    <<: *machine_defaults
     steps:
-      - checkout
-      - restore_cache:
-          key: multishell_output-03
-      - run: *runinstall
-      - run:
-          name: Test the DSI Studio GQI recon workflow
-          no_output_timeout: 1h
-          command: |
-            pytest -rP -o log_cli=true -m "dsi_studio_gqi_recon" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.dsi_studio_gqi_recon
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.dsi_studio_gqi_recon
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/dsi_studio_gqi_recon/
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: dsi_studio_gqi_recon
+          coverage_name: dsi_studio_gqi_recon
 
   Recon_DIPY_MAPMRI:
-    <<: *dockersetup
+    <<: *machine_defaults
     steps:
-      - checkout
-      - restore_cache:
-          key: multishell_output-03
-      - run: *runinstall
-      - run:
-          name: Test the DIPY recon workflows
-          no_output_timeout: 1h
-          command: |
-            pytest -rP -o log_cli=true -m "dipy_mapmri" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.dipy_mapmri
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.dipy_mapmri
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/dipy_mapmri/
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: dipy_mapmri
+          coverage_name: dipy_mapmri
 
   Recon_DIPY_DKI:
-    <<: *dockersetup
+    <<: *machine_defaults
     steps:
-      - checkout
-      - restore_cache:
-          key: multishell_output-03
-      - run: *runinstall
-      - run:
-          name: Test the DIPY recon workflows
-          no_output_timeout: 1h
-          command: |
-            pytest -rP -o log_cli=true -m "dipy_dki" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.dipy_dki
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.dipy_dki
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/dipy_dki/
-
-  Recon_PYAFQ:
-    <<: *dockersetup
-    steps:
-      - checkout
-      - restore_cache:
-          key: multishell_output-03
-      - run: *runinstall
-      - run:
-          name: Test the PYAFQ standalone recon workflow
-          no_output_timeout: 1h
-          command: |
-            pytest -rP -o log_cli=true -m "pyafq_recon_full" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.pyafq_recon_full
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.pyafq_recon_full
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/pyafq_recon_full/
-
-  Recon_PYAFQExternalTrk:
-    <<: *dockersetup
-    steps:
-      - checkout
-      - restore_cache:
-          key: multishell_output-03
-      - run: *runinstall
-      - run:
-          name: Test the PYAFQ workflow with mrtrix tractography
-          no_output_timeout: 1h
-          command: |
-            pytest -rP -o log_cli=true -m "pyafq_recon_external_trk" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.pyafq_recon_external_trk
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.pyafq_recon_external_trk
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/pyafq_recon_external_trk/
-
-  Recon_ScalarMap:
-    <<: *dockersetup
-    steps:
-      - checkout
-      - restore_cache:
-          key: multishell_output-03
-      - run: *runinstall
-      - run:
-          name: Test scalar_mapping workflow
-          no_output_timeout: 1h
-          command: |
-            pytest -rP -o log_cli=true -m "scalar_mapper" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.scalar_mapper
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.scalar_mapper
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/scalar_mapper/
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: dipy_dki
+          coverage_name: dipy_dki
 
   Recon_AMICO:
-    <<: *dockersetup
-    resource_class: medium+
-    environment:
-      CIRCLE_CPUS: 3
+    <<: *machine_defaults
     steps:
-      - checkout
-      - restore_cache:
-          key: singleshell_output-02
-      - run: *runinstall
-      - run:
-          name: Test the DIPY recon workflows
-          command: |
-            pytest -rP -o log_cli=true -m "amico_noddi" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.amico_noddi
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.amico_noddi
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/amico_noddi/
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: amico_noddi
+          coverage_name: amico_noddi
 
   mrtrix3_recon_with_response_functions:
-    <<: *dockersetup
-    resource_class: medium+
-    environment:
-      CIRCLE_CPUS: 3
+    <<: *machine_defaults
     steps:
-      - checkout
-      - restore_cache:
-          key: multishell_output-03
-      - run: *runinstall
-      - run:
-          name: Test the MRtrix3 recon workflow with response functions
-          command: |
-            pytest -rP -o log_cli=true -m "mrtrix3_recon_with_response_functions" --cov-config=/src/qsirecon/pyproject.toml --cov-append --cov-report term-missing --cov=qsirecon --data_dir=/src/qsirecon/.circleci/data --output_dir=/src/qsirecon/.circleci/out --working_dir=/src/qsirecon/.circleci/work qsirecon
-            mkdir /src/coverage
-            mv /src/qsirecon/.coverage /src/coverage/.coverage.mrtrix3_recon_with_response_functions
-            # remove nifti files before uploading artifacts
-            find /src/qsirecon/.circleci/out/ -name "*.nii.gz" -type f -delete
-            find /src/qsirecon/.circleci/out/ -name "*.fib.gz" -type f -delete
-      - persist_to_workspace:
-          root: /src/coverage/
-          paths:
-            - .coverage.mrtrix3_recon_with_response_functions
-      - store_artifacts:
-          path: /src/qsirecon/.circleci/out/mrtrix3_recon_with_response_functions/
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: mrtrix3_recon_with_response_functions
+          coverage_name: mrtrix3_recon_with_response_functions
+
+  Recon_PYAFQ:
+    <<: *machine_defaults
+    steps:
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: pyafq_recon_full
+          coverage_name: pyafq_recon_full
+
+  Recon_PYAFQExternalTrk:
+    <<: *machine_defaults
+    steps:
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: pyafq_recon_external_trk
+          coverage_name: pyafq_recon_external_trk
+
+  Recon_ScalarMap:
+    <<: *machine_defaults
+    steps:
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_build_and_data
+      - run_integration_test:
+          marker: scalar_mapper
+          coverage_name: scalar_mapper
 
   merge_coverage:
-    <<: *dockersetup
+    <<: *machine_defaults
     steps:
-      - checkout
+      - checkout:
+          path: /tmp/src/qsirecon
       - attach_workspace:
-          at: /src/coverage
-      - run: *runinstall
+          at: /tmp/coverage
       - run:
           name: Merge coverage files
           command: |
-            cd /src/coverage/
-            coverage combine
-            coverage xml
+            pyenv local 3
+            pip install coverage
+            cd /tmp/src/qsirecon
+            coverage combine /tmp/coverage/
+            coverage xml -o /tmp/coverage/coverage.xml
       - store_artifacts:
-          path: /src/coverage
+          path: /tmp/coverage
       - codecov/upload:
-          file: /src/coverage/coverage.xml
+          file: /tmp/coverage/coverage.xml
 
   deployable:
-    resource_class: small
     docker:
       - image: busybox:latest
     steps:
       - run: echo Deploying!
 
-  build_and_deploy:
-    environment:
-      TZ: "/usr/share/zoneinfo/America/New_York"
-    docker:
-      - image: cimg/base:2020.09
-    working_directory: /tmp/src/qsirecon_build
+  deploy_docker:
+    <<: *machine_defaults
     steps:
-      - checkout
-      - setup_remote_docker:
-         version: docker24
-         docker_layer_caching: true
-      - run:
-          name: Build Docker image
-          no_output_timeout: 3h
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y python3-pip
-            pip install hatch
-            # Get version, update files.
-            THISVERSION=$(hatch version)
-            if [[ ${THISVERSION:0:1} == "0" ]] ; then
-              echo "WARNING: latest git tag could not be found"
-              echo "Please, make sure you fetch all tags from upstream with"
-              echo "the command ``git fetch --tags --verbose`` and push"
-              echo "them to your fork with ``git push origin --tags``"
-            fi
-            sed -i "s/title = {qsirecon}/title = {qsirecon ${CIRCLE_TAG:-$THISVERSION}}/" qsirecon/data/boilerplate.bib
-            # Build docker image
-            e=1 && for i in {1..5}; do
-              docker build \
-                --cache-from=pennlinc/qsirecon \
-                --rm=false \
-                -t pennlinc/qsirecon:latest \
-                --build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-                --build-arg VCS_REF=`git rev-parse --short HEAD` \
-                --build-arg VERSION="${CIRCLE_TAG:-$THISVERSION}" . \
-              && e=0 && break || sleep 15
-            done && [ "$e" -eq "0" ]
+      - checkout:
+          path: /tmp/src/qsirecon
+      - restore_cache:
+          keys:
+            - build-v3-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}
+      - run: *docker_auth
+      - run: *setup_docker_registry
+      - run: *pull_from_registry
       - run:
           name: Deploy to Docker Hub
           no_output_timeout: 40m
           command: |
-            if [[ -n "$DOCKER_PASS" ]]; then
-              docker login -u $DOCKER_USER -p $DOCKER_PASS
-              docker tag pennlinc/qsirecon pennlinc/qsirecon:unstable
+            if [[ -n "$DOCKERHUB_TOKEN" ]]; then
+              docker tag pennlinc/qsirecon:latest pennlinc/qsirecon:unstable
               docker push pennlinc/qsirecon:unstable
               if [[ -n "$CIRCLE_TAG" ]]; then
+                docker tag pennlinc/qsirecon:latest pennlinc/qsirecon:$CIRCLE_TAG
                 docker push pennlinc/qsirecon:latest
-                docker tag pennlinc/qsirecon pennlinc/qsirecon:$CIRCLE_TAG
                 docker push pennlinc/qsirecon:$CIRCLE_TAG
               fi
             fi
@@ -661,181 +486,54 @@ workflows:
   version: 2
   build_test_deploy:
     jobs:
-
-      - build:
+      - image_prep:
           filters:
             tags:
               only: /.*/
-
-      - download_singleshell_output:
-          requires:
-            - build
+      - get_data:
           filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
             tags:
               only: /.*/
-
-      - download_multishell_output:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /.*/
-
-      - download_multises_pre1_output:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /.*/
-
-      - download_multises_post1_output:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /.*/
-
-      - download_hsvs_data:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /.*/
-
-      - download_custom_atlases:
-          requires:
-            - build
-          filters:
-            tags:
-              only: /.*/
-
       - Recon_3Tissue_Singleshell_ACT:
-          requires:
-            - download_singleshell_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_SS3T_FOD_AutoTrack:
-          requires:
-            - download_singleshell_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_msmt_Multishell_HSVS:
-          requires:
-            - download_hsvs_data
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_multises_pre1_IO_test:
-          requires:
-            - download_multises_pre1_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_multises_post1_IO_test:
-          requires:
-            - download_multises_post1_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_3Tissue_Singleshell_NoACT:
-          requires:
-            - download_singleshell_output
-            - download_custom_atlases
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_MRtrix3:
-          requires:
-            - download_multishell_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_Interfaces:
-          requires:
-            - download_multishell_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_AutoTrack:
-          requires:
-            - download_multishell_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_Tortoise:
-          requires:
-            - download_multishell_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_DSI_Studio_GQI:
-          requires:
-            - download_multishell_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_DIPY_MAPMRI:
-          requires:
-            - download_multishell_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_DIPY_DKI:
-          requires:
-            - download_multishell_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_AMICO:
-          requires:
-            - download_singleshell_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - mrtrix3_recon_with_response_functions:
-          requires:
-            - download_multishell_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_PYAFQ:
-          requires:
-            - download_multishell_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_PYAFQExternalTrk:
-          requires:
-            - download_multishell_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - Recon_ScalarMap:
-          requires:
-            - download_multishell_output
-          filters:
-            tags:
-              only: /.*/
-
+          requires: [image_prep, get_data]
       - merge_coverage:
           requires:
             - Recon_3Tissue_Singleshell_ACT
@@ -863,15 +561,14 @@ workflows:
                 - /tests?\/.*/
             tags:
               only: /.*/
-
       - deployable:
           requires:
+            - image_prep
             - Recon_3Tissue_Singleshell_ACT
             - Recon_3Tissue_Singleshell_NoACT
             - Recon_SS3T_FOD_AutoTrack
             - Recon_MRtrix3
             - Recon_Interfaces
-            - Recon_msmt_Multishell_HSVS
             - Recon_AutoTrack
             - Recon_Tortoise
             - Recon_DSI_Studio_GQI
@@ -884,15 +581,14 @@ workflows:
             - Recon_ScalarMap
             - Recon_multises_pre1_IO_test
             - Recon_multises_post1_IO_test
+            - Recon_msmt_Multishell_HSVS
           filters:
             branches:
               only: main
             tags:
               only: /.*/
-
-      - build_and_deploy:
-          requires:
-            - deployable
+      - deploy_docker:
+          requires: [deployable]
           filters:
             branches:
               only: main

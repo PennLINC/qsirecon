@@ -1,27 +1,49 @@
-# Build into a wheel in a stage that has git installed
-FROM python:slim AS wheelstage
-RUN pip install build
+ARG BASE_IMAGE=pennlinc/qsirecon-base:20260304
+
+FROM ghcr.io/prefix-dev/pixi:0.58.0 AS build
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends git
-COPY . /src/qsirecon
-RUN python -m build /src/qsirecon
+    apt-get install -y --no-install-recommends \
+                    ca-certificates \
+                    build-essential \
+                    git && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN pixi config set --global run-post-link-scripts insecure
 
-FROM pennlinc/qsirecon_build:26.1.16
+RUN mkdir /app
+COPY pixi.lock pyproject.toml /app
+WORKDIR /app
+RUN --mount=type=cache,target=/root/.cache/rattler pixi install -e qsirecon -e test --frozen --skip qsirecon
+RUN --mount=type=cache,target=/root/.npm pixi run --as-is -e qsirecon npm install -g svgo@^3.2.0 bids-validator@1.14.10
+RUN pixi shell-hook -e qsirecon --as-is | grep -v PATH > /shell-hook.sh
+RUN pixi shell-hook -e test --as-is | grep -v PATH > /test-shell-hook.sh
 
-# Install qsirecon wheel
-COPY --from=wheelstage /src/qsirecon/dist/*.whl .
-RUN pip install --no-cache-dir $( ls *.whl )
+COPY . /app
+RUN --mount=type=cache,target=/root/.cache/rattler pixi install -e test --frozen
+RUN --mount=type=cache,target=/root/.cache/rattler pixi install -e qsirecon --frozen
 
-# Precaching fonts, set 'Agg' as default backend for matplotlib
-RUN python -c "from matplotlib import font_manager" && \
-    sed -i 's/\(backend *: \).*$/\1Agg/g' $( python -c "import matplotlib; print(matplotlib.matplotlib_fname())" )
+FROM ${BASE_IMAGE} AS base
+WORKDIR /home/qsirecon
+ENV HOME="/home/qsirecon"
 
-RUN find $HOME -type d -exec chmod go=u {} + && \
-    find $HOME -type f -exec chmod go=u {} +
+RUN chmod -R go=u $HOME
+WORKDIR /tmp
 
-RUN ldconfig
-WORKDIR /tmp/
-ENTRYPOINT ["/opt/conda/envs/qsiprep/bin/qsirecon"]
+FROM base AS test
+COPY --link --from=build /app/.pixi/envs/test /app/.pixi/envs/test
+COPY --link --from=build /test-shell-hook.sh /shell-hook.sh
+RUN cat /shell-hook.sh >> $HOME/.bashrc
+ENV PATH="/app/.pixi/envs/test/bin:$PATH"
+ENV FSLDIR="/app/.pixi/envs/test"
+
+FROM base AS qsirecon
+COPY --link --from=build /app/.pixi/envs/qsirecon /app/.pixi/envs/qsirecon
+COPY --link --from=build /shell-hook.sh /shell-hook.sh
+RUN cat /shell-hook.sh >> $HOME/.bashrc
+ENV PATH="/app/.pixi/envs/qsirecon/bin:$PATH"
+ENV FSLDIR="/app/.pixi/envs/qsirecon"
+ENV IS_DOCKER_8395080871=1
+
+ENTRYPOINT ["/app/.pixi/envs/qsirecon/bin/qsirecon"]
 ARG BUILD_DATE
 ARG VCS_REF
 ARG VERSION
