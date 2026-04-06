@@ -740,7 +740,7 @@ class _AutoTrackInputSpec(CommandLineInputSpec):
         desc="""specify the id number or the name of the bundle. The id can be found in
             /atlas/ICBM152/HCP1065.tt.gz.txt . This text file is included in DSI
             Studio package (For Mac, right-click on dsi_studio_64.app to find
-            content). You can specify partial name of the bundle. Examples: use
+            content). You can specify partial name of the bundle. For example, use
             ``--track_id=0,1`` or ``--track_id=arcuate`` for left and right arcuate
             fasciculus (DSI Studio matches bundle names containing "arcuate", case
             insensitive). Use ``-track_id=0,1,2,3`` or ``-track_id=arcuate,cingulum``
