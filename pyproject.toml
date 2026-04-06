@@ -61,7 +61,6 @@ Paper = "https://doi.org/10.1038/s41592-022-01458-7"
 
 [project.optional-dependencies]
 doc = [
-    "acres >= 0.4",
     "doctest-ignore-unicode",
     "lxml_html_clean",
     "nbsphinx",
