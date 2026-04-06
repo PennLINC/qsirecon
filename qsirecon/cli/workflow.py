@@ -35,7 +35,7 @@ a hard-limited memory-scope.
 
 from pathlib import Path
 
-from pkg_resources import resource_filename as pkgrf
+from qsirecon.data import load as load_data
 
 
 def build_workflow(config_file, retval):
@@ -59,7 +59,7 @@ def build_workflow(config_file, retval):
     retval['workflow'] = None
 
     banner = [f'Running QSIRecon version {version}']
-    notice_path = Path(pkgrf('qsirecon', 'data/NOTICE'))
+    notice_path = load_data('NOTICE')
     if notice_path.exists():
         banner[0] += '\n'
         banner += [f'License NOTICE {"#" * 50}']
@@ -174,7 +174,7 @@ def build_boilerplate(config_file, workflow):
     if citation_files['md'].exists():
         from subprocess import CalledProcessError, TimeoutExpired, check_call
 
-        bib_text = Path(pkgrf('qsirecon', 'data/boilerplate.bib')).read_text()
+        bib_text = load_data('boilerplate.bib').read_text()
         citation_files['bib'].write_text(
             bib_text.replace('QSIRecon <version>', f'QSIRecon {config.environment.version}')
         )
