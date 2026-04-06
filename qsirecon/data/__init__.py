@@ -1,4 +1,4 @@
-"""ASLPrep data files
+"""QSIRecon data files
 
 .. autofunction:: load
 
