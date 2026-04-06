@@ -32,6 +32,9 @@ and provided closed-form formulas for MK and RK.
 :cite:t:`fieremans2011dki` extended DKI toward microstructural modeling of white matter,
 deriving Axonal Water Fraction (AWF) and extra-axonal tortuosity from DKI data
 and aligning DKI-derived parameters with known tissue features.
+
+.. _msdki_model:
+
 :cite:t:`henriques2021dki` introduced Mean Signal DKI (MSDKI),
 which estimates DKI parameters more robustly.
 

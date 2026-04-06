@@ -203,8 +203,6 @@ apidoc_excluded_paths += [
     'config.py',
     # Skip problematic utils/shm.py from docs
     'utils/shm.py',
-    # Avoid duplicate/invalid module references from package docstring
-    'workflows/recon/__init__.py',
 ]
 apidoc_separate_modules = True
 apidoc_extra_args = ['--module-first', '-d 1', '-T']
@@ -419,7 +417,11 @@ intersphinx_mapping = {
     'nipype': ('https://nipype.readthedocs.io/en/latest/', None),
     'dipy': (f'https://docs.dipy.org/{dipy_version}', None),
 }
-suppress_warnings = ['image.nonlocal_uri']
+suppress_warnings = [
+    'image.nonlocal_uri',
+    # Per-page bibliographies share numeric labels across footcite keys; rendering is correct.
+    'bibtex.duplicate_label',
+]
 
 # -----------------------------------------------------------------------------
 # sphinxcontrib-bibtex

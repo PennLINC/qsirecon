@@ -18,12 +18,12 @@ cvxpy, have_cvxpy, _ = optional_package('cvxpy')
 
 class BrainSuiteShoreModel(Cache):
     r"""Simple Harmonic Oscillator based Reconstruction and Estimation
-    (SHORE) [1]_ of the diffusion signal.
+    (SHORE) [bs_merlet_cls]_ of the diffusion signal.
 
     The main idea is to model the diffusion signal as a linear combination of
     continuous functions $\phi_i$,
 
-    ..math::
+    .. math::
         :nowrap:
             \begin{equation}
                 S(\mathbf{q})= \sum_{i=0}^I  c_{i} \phi_{i}(\mathbf{q}).
@@ -31,12 +31,12 @@ class BrainSuiteShoreModel(Cache):
 
     where $\mathbf{q}$ is the wave vector which corresponds to different
     gradient directions. Numerous continuous functions $\phi_i$ can be used to
-    model $S$. This specifically comes from [1].
+    model $S$. This specifically comes from [bs_merlet_cls]_.
 
     References
     ----------
 
-    .. [1] Merlet S. et al., "Continuous diffusion signal, EAP and ODF
+    .. [bs_merlet_cls] Merlet S. et al., "Continuous diffusion signal, EAP and ODF
            estimation via Compressive Sensing in diffusion MRI", Medical
            Image Analysis, 2013.
 
@@ -67,15 +67,15 @@ class BrainSuiteShoreModel(Cache):
         pos_radius=20e-03,
     ):
         r"""Analytical and continuous modeling of the diffusion signal with
-        respect to the SHORE basis [1,2]_.
-        This implementation is a modification of SHORE presented in [1]_.
+        respect to the SHORE basis [bs_merlet_init]_.
+        This implementation is a modification of SHORE presented in [bs_merlet_init]_.
         The modification was made to obtain the same ordering of the basis
-        presented in [2,3]_.
+        presented in [bs_merlet_init]_.
 
         The main idea is to model the diffusion signal as a linear
         combination of continuous functions $\phi_i$,
 
-        ..math::
+        .. math::
             :nowrap:
                 \begin{equation}
                     S(\mathbf{q})= \sum_{i=0}^I  c_{i} \phi_{i}(\mathbf{q}).
@@ -113,9 +113,9 @@ class BrainSuiteShoreModel(Cache):
 
         References
         ----------
-        .. [1] Merlet S. et al., "Continuous diffusion signal, EAP and
-        ODF estimation via Compressive Sensing in diffusion MRI", Medical
-        Image Analysis, 2013.
+        .. [bs_merlet_init] Merlet S. et al., "Continuous diffusion signal, EAP and
+           ODF estimation via Compressive Sensing in diffusion MRI", Medical
+           Image Analysis, 2013.
 
         Examples
         --------
@@ -124,22 +124,24 @@ class BrainSuiteShoreModel(Cache):
         with respect to the SHORE basis and compute the real and analytical
         ODF.
 
-        from dipy.data import get_data,get_sphere
-        sphere = get_sphere('symmetric724')
-        fimg, fbvals, fbvecs = get_data('ISBI_testing_2shells_table')
-        bvals, bvecs = read_bvals_bvecs(fbvals, fbvecs)
-        gtab = gradient_table(bvals, bvecs)
-        from dipy.sims.voxel import SticksAndBall
-        data, golden_directions = SticksAndBall(
-            gtab, d=0.0015, S0=1., angles=[(0, 0), (90, 0)],
-            fractions=[50, 50], snr=None)
-        from dipy.reconst.canal import ShoreModel
-        radial_order = 4
-        zeta = 700
-        asm = ShoreModel(gtab, radial_order=radial_order, zeta=zeta,
-                         lambdaN=1e-8, lambdaL=1e-8)
-        asmfit = asm.fit(data)
-        odf= asmfit.odf(sphere)
+        ::
+
+            from dipy.data import get_data,get_sphere
+            sphere = get_sphere('symmetric724')
+            fimg, fbvals, fbvecs = get_data('ISBI_testing_2shells_table')
+            bvals, bvecs = read_bvals_bvecs(fbvals, fbvecs)
+            gtab = gradient_table(bvals, bvecs)
+            from dipy.sims.voxel import SticksAndBall
+            data, golden_directions = SticksAndBall(
+                gtab, d=0.0015, S0=1., angles=[(0, 0), (90, 0)],
+                fractions=[50, 50], snr=None)
+            from dipy.reconst.canal import ShoreModel
+            radial_order = 4
+            zeta = 700
+            asm = ShoreModel(gtab, radial_order=radial_order, zeta=zeta,
+                             lambdaN=1e-8, lambdaL=1e-8)
+            asmfit = asm.fit(data)
+            odf= asmfit.odf(sphere)
         """
 
         self.bvals = gtab.bvals
@@ -376,11 +378,11 @@ class BrainSuiteShoreFit:
 
     def rtop_signal(self):
         r"""Calculates the analytical return to origin probability (RTOP)
-        from the signal [1]_.
+        from the signal [bs_rtop_sig]_.
 
         References
         ----------
-        .. [1] Ozarslan E. et al., "Mean apparent propagator (MAP) MRI: A novel
+        .. [bs_rtop_sig] Ozarslan E. et al., "Mean apparent propagator (MAP) MRI: A novel
         diffusion imaging method for mapping tissue microstructure",
         NeuroImage, 2013.
         """
@@ -398,11 +400,11 @@ class BrainSuiteShoreFit:
 
     def rtop_pdf(self):
         r"""Calculates the analytical return to origin probability (RTOP)
-        from the pdf [1]_.
+        from the pdf [bs_rtop_pdf]_.
 
         References
         ----------
-        .. [1] Ozarslan E. et al., "Mean apparent propagator (MAP) MRI: A novel
+        .. [bs_rtop_pdf] Ozarslan E. et al., "Mean apparent propagator (MAP) MRI: A novel
         diffusion imaging method for mapping tissue microstructure",
         NeuroImage, 2013.
         """
@@ -419,9 +421,9 @@ class BrainSuiteShoreFit:
         return np.clip(rtop, 0, rtop.max())
 
     def msd(self):
-        r"""Calculates the analytical mean squared displacement (MSD) [1]_
+        r"""Calculates the analytical mean squared displacement (MSD) [bs_msd_wu]_
 
-        ..math::
+        .. math::
             :nowrap:
                 \begin{equation}
                     MSD:{DSI}=\int_{-\infty}^{\infty}\int_{-\infty}^{\infty}
@@ -430,11 +432,11 @@ class BrainSuiteShoreFit:
                 \end{equation}
 
         where $\hat{\mathbf{r}}$ is a point in the 3D propagator space (see Wu
-        et al. [1]_).
+        et al. [bs_msd_wu]_).
 
         References
         ----------
-        .. [1] Wu Y. et al., "Hybrid diffusion imaging", NeuroImage, vol 36,
+        .. [bs_msd_wu] Wu Y. et al., "Hybrid diffusion imaging", NeuroImage, vol 36,
         p. 617-629, 2007.
         """
         msd = 0
@@ -531,7 +533,7 @@ def brainsuite_shore_basis(radial_order, zeta, gtab, tau=1 / (4 * np.pi**2)):
 
 
 def brainsuite_shore_matrix_pdf(radial_order, zeta, rtab):
-    r"""Compute the SHORE propagator matrix [1]_"
+    r"""Compute the SHORE propagator matrix [bs_merlet_pdf]_.
 
     Parameters
     ----------
@@ -544,7 +546,7 @@ def brainsuite_shore_matrix_pdf(radial_order, zeta, rtab):
 
     References
     ----------
-    .. [1] Merlet S. et al., "Continuous diffusion signal, EAP and
+    .. [bs_merlet_pdf] Merlet S. et al., "Continuous diffusion signal, EAP and
     ODF estimation via Compressive Sensing in diffusion MRI", Medical
     Image Analysis, 2013.
     """
@@ -577,7 +579,7 @@ def _kappa_pdf(zeta, n, ell):
 
 
 def shore_matrix_odf(radial_order, zeta, sphere_vertices):
-    r"""Compute the SHORE ODF matrix [1]_"
+    r"""Compute the SHORE ODF matrix [bs_merlet_odf]_.
 
     Parameters
     ----------
@@ -590,7 +592,7 @@ def shore_matrix_odf(radial_order, zeta, sphere_vertices):
 
     References
     ----------
-    .. [1] Merlet S. et al., "Continuous diffusion signal, EAP and
+    .. [bs_merlet_odf] Merlet S. et al., "Continuous diffusion signal, EAP and
     ODF estimation via Compressive Sensing in diffusion MRI", Medical
     Image Analysis, 2013.
     """

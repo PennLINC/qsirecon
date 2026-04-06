@@ -59,6 +59,7 @@ Paper = "https://doi.org/10.1038/s41592-022-01458-7"
 
 [project.optional-dependencies]
 doc = [
+    "acres",
     "doctest-ignore-unicode",
     "lxml_html_clean",
     "nbsphinx",
@@ -72,6 +73,7 @@ doc = [
     "sphinxcontrib-apidoc",
     "sphinxcontrib-bibtex",
     "sphinx_design",
+    "setuptools",
 ]
 dev = [
     "ruff ~= 0.15.0",
