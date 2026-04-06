@@ -2,8 +2,6 @@
 AMICO Reconstruction workflows
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: init_amico_noddi_fit_wf
-
 """
 
 import nipype.pipeline.engine as pe
@@ -33,31 +31,12 @@ def init_amico_noddi_fit_wf(
 ):
     """Reconstruct NODDI scalars using AMICO.
 
-    Inputs
-
-        *qsirecon outputs*
-
-    Outputs
-
-        directions
-            Image of directions
-        icvf
-            Voxelwise ICVF.
-        od
-            Voxelwise Orientation Dispersion
-        isovf
-            Voxelwise ISOVF
-        modulated_icvf
-            Voxelwise modulated ICVF (ICVF * (1 - ISOVF))
-        modulated_od
-            Voxelwise modulated Orientation Dispersion  (OD * (1 - ISOVF))
-        rmse
-            Voxelwise root mean square error between predicted and measured signal
-        nrmse
-            Voxelwise normalized root mean square error between predicted and measured signal
-        config
-            Pickle file with model configurations in it
-        fibgz
+    Notes
+    -----
+    Expects prior qsirecon outputs as inputs. The workflow outputnode exposes
+    ``directions``, ``icvf``, ``od``, ``isovf``, ``modulated_icvf``, ``modulated_od``,
+    ``rmse``, ``nrmse``, ``config``, and ``fibgz`` (see the outputnode field list in the
+    workflow source for descriptions).
 
     """
     workflow = Workflow(name=name)

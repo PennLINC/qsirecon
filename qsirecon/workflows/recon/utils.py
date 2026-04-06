@@ -2,10 +2,6 @@
 Miscellaneous workflows
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: init_discard_repeated_samples_wf
-.. autofunction:: init_conform_dwi_wf
-
-
 """
 
 import nipype.interfaces.utility as niu
