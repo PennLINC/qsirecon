@@ -421,6 +421,8 @@ suppress_warnings = [
     'image.nonlocal_uri',
     # Per-page bibliographies share numeric labels across footcite keys; rendering is correct.
     'bibtex.duplicate_label',
+    # Same key can appear in filtered bibliographies when footcite keys overlap across pages.
+    'bibtex.duplicate_citation',
 ]
 
 # -----------------------------------------------------------------------------

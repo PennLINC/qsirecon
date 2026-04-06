@@ -24,10 +24,8 @@ class BrainSuiteShoreModel(Cache):
     continuous functions $\phi_i$,
 
     .. math::
-        :nowrap:
-            \begin{equation}
-                S(\mathbf{q})= \sum_{i=0}^I  c_{i} \phi_{i}(\mathbf{q}).
-            \end{equation}
+
+        S(\mathbf{q})= \sum_{i=0}^I  c_{i} \phi_{i}(\mathbf{q}).
 
     where $\mathbf{q}$ is the wave vector which corresponds to different
     gradient directions. Numerous continuous functions $\phi_i$ can be used to
@@ -36,9 +34,9 @@ class BrainSuiteShoreModel(Cache):
     References
     ----------
 
-    .. [bs_merlet_cls] Merlet S. et al., "Continuous diffusion signal, EAP and ODF
-           estimation via Compressive Sensing in diffusion MRI", Medical
-           Image Analysis, 2013.
+    .. [bs_merlet_cls] Merlet S. et al.,
+       "Continuous diffusion signal, EAP and ODF estimation via Compressive Sensing
+       in diffusion MRI", Medical Image Analysis, 2013.
 
     Notes
     -----
@@ -76,10 +74,8 @@ class BrainSuiteShoreModel(Cache):
         combination of continuous functions $\phi_i$,
 
         .. math::
-            :nowrap:
-                \begin{equation}
-                    S(\mathbf{q})= \sum_{i=0}^I  c_{i} \phi_{i}(\mathbf{q}).
-                \end{equation}
+
+            S(\mathbf{q})= \sum_{i=0}^I  c_{i} \phi_{i}(\mathbf{q}).
 
         where $\mathbf{q}$ is the wave vector which corresponds to different
         gradient directions.
@@ -113,9 +109,9 @@ class BrainSuiteShoreModel(Cache):
 
         References
         ----------
-        .. [bs_merlet_init] Merlet S. et al., "Continuous diffusion signal, EAP and
-           ODF estimation via Compressive Sensing in diffusion MRI", Medical
-           Image Analysis, 2013.
+        .. [bs_merlet_init] Merlet S. et al.,
+           "Continuous diffusion signal, EAP and ODF estimation via Compressive Sensing
+           in diffusion MRI", Medical Image Analysis, 2013.
 
         Examples
         --------
@@ -382,9 +378,9 @@ class BrainSuiteShoreFit:
 
         References
         ----------
-        .. [bs_rtop_sig] Ozarslan E. et al., "Mean apparent propagator (MAP) MRI: A novel
-        diffusion imaging method for mapping tissue microstructure",
-        NeuroImage, 2013.
+        .. [bs_rtop_sig] Ozarslan E. et al.,
+           "Mean apparent propagator (MAP) MRI: A novel diffusion imaging method
+           for mapping tissue microstructure", NeuroImage, 2013.
         """
         rtop = 0
         c = self._shore_coef
@@ -404,9 +400,9 @@ class BrainSuiteShoreFit:
 
         References
         ----------
-        .. [bs_rtop_pdf] Ozarslan E. et al., "Mean apparent propagator (MAP) MRI: A novel
-        diffusion imaging method for mapping tissue microstructure",
-        NeuroImage, 2013.
+        .. [bs_rtop_pdf] Ozarslan E. et al.,
+           "Mean apparent propagator (MAP) MRI: A novel diffusion imaging method
+           for mapping tissue microstructure", NeuroImage, 2013.
         """
         rtop = 0
         c = self._shore_coef
@@ -424,12 +420,11 @@ class BrainSuiteShoreFit:
         r"""Calculates the analytical mean squared displacement (MSD) [bs_msd_wu]_
 
         .. math::
-            :nowrap:
-                \begin{equation}
-                    MSD:{DSI}=\int_{-\infty}^{\infty}\int_{-\infty}^{\infty}
-                    \int_{-\infty}^{\infty} P(\hat{\mathbf{r}}) \cdot
-                    \hat{\mathbf{r}}^{2} \ dr_x \ dr_y \ dr_z
-                \end{equation}
+
+            \mathrm{MSD}_{\mathrm{DSI}} =
+            \int_{-\infty}^{\infty}\int_{-\infty}^{\infty}
+            \int_{-\infty}^{\infty} P(\hat{\mathbf{r}}) \cdot
+            \hat{\mathbf{r}}^{2} \, dr_x \, dr_y \, dr_z
 
         where $\hat{\mathbf{r}}$ is a point in the 3D propagator space (see Wu
         et al. [bs_msd_wu]_).
@@ -437,7 +432,7 @@ class BrainSuiteShoreFit:
         References
         ----------
         .. [bs_msd_wu] Wu Y. et al., "Hybrid diffusion imaging", NeuroImage, vol 36,
-        p. 617-629, 2007.
+           p. 617-629, 2007.
         """
         msd = 0
         c = self._shore_coef
@@ -546,9 +541,9 @@ def brainsuite_shore_matrix_pdf(radial_order, zeta, rtab):
 
     References
     ----------
-    .. [bs_merlet_pdf] Merlet S. et al., "Continuous diffusion signal, EAP and
-    ODF estimation via Compressive Sensing in diffusion MRI", Medical
-    Image Analysis, 2013.
+    .. [bs_merlet_pdf] Merlet S. et al.,
+       "Continuous diffusion signal, EAP and ODF estimation via Compressive Sensing
+       in diffusion MRI", Medical Image Analysis, 2013.
     """
 
     r, theta, phi = cart2sphere(rtab[:, 0], rtab[:, 1], rtab[:, 2])
@@ -592,9 +587,9 @@ def shore_matrix_odf(radial_order, zeta, sphere_vertices):
 
     References
     ----------
-    .. [bs_merlet_odf] Merlet S. et al., "Continuous diffusion signal, EAP and
-    ODF estimation via Compressive Sensing in diffusion MRI", Medical
-    Image Analysis, 2013.
+    .. [bs_merlet_odf] Merlet S. et al.,
+       "Continuous diffusion signal, EAP and ODF estimation via Compressive Sensing
+       in diffusion MRI", Medical Image Analysis, 2013.
     """
 
     _, theta, phi = cart2sphere(
