@@ -74,6 +74,8 @@ class TckGenInputSpec(TractographyInputSpec):
 
 
 class TckGen(Tractography):
+    """MRtrix3 ``tckgen`` tractography; see MRtrix3 tracking docs for algorithm options."""
+
     input_spec = TckGenInputSpec
 
 

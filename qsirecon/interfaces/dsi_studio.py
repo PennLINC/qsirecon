@@ -740,16 +740,11 @@ class _AutoTrackInputSpec(CommandLineInputSpec):
         desc="""specify the id number or the name of the bundle. The id can be found in
             /atlas/ICBM152/HCP1065.tt.gz.txt . This text file is included in DSI
             Studio package (For Mac, right-click on dsi_studio_64.app to find
-            content). You can specify partial name of the bundle:
-
-            example:
-            for tracking left and right arcuate fasciculus, assign
-            --track_id=0,1 or --track_id=arcuate (DSI Studio will find bundles
-            with names containing "arcuate", case insensitive)
-
-            example:
-            for tracking left and right arcuate and cingulum, assign
-            -track_id=0,1,2,3 or -track_id=arcuate,cingulum""",
+            content). You can specify partial name of the bundle. For example, use
+            ``--track_id=0,1`` or ``--track_id=arcuate`` for left and right arcuate
+            fasciculus (DSI Studio matches bundle names containing "arcuate", case
+            insensitive). Use ``-track_id=0,1,2,3`` or ``-track_id=arcuate,cingulum``
+            for arcuate and cingulum bundles.""",
     )
     track_voxel_ratio = traits.CFloat(
         2.0,
@@ -761,9 +756,11 @@ class _AutoTrackInputSpec(CommandLineInputSpec):
     tolerance = traits.Str(
         '22,26,30',
         argstr='--tolerance=%s',
-        desc="""the tolerance for the bundle recognition. The unit is in mm. Multiple values
-            can be assigned using comma separator. A larger value may include larger track
-            variation but also subject to more false results.""",
+        desc=(
+            'the tolerance for the bundle recognition. The unit is in mm. Multiple values '
+            'can be assigned using comma separator. A larger value may include larger track '
+            'variation but also subject to more false results.'
+        ),
     )
     yield_rate = traits.CFloat(
         0.00001,

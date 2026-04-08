@@ -2,8 +2,6 @@
 PyAFQ tractometry and visualization
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: init_pyafq_wf
-
 """
 
 import AFQ
