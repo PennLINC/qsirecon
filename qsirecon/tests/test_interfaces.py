@@ -61,7 +61,7 @@ def test_real_shells():
 
     # DSIQ5 should raise an exception
     dsi_bval = np.loadtxt(load_data('schemes/DSIQ5.bval'))
-    with pytest.raises(Exception, match='Too many possible shells detected.'):
+    with pytest.raises(Exception, match=r'Too many possible shells detected\.'):
         _find_shells(dsi_bval, 100)
 
     # Some other assorted test schemes that should fail
@@ -70,14 +70,14 @@ def test_real_shells():
         bval_file = Path(get_test_data_path()) / f'{scheme}.bval'
         test_bvals = np.loadtxt(bval_file)
 
-        with pytest.raises(Exception, match='Too many possible shells detected.'):
+        with pytest.raises(Exception, match=r'Too many possible shells detected\.'):
             _find_shells(test_bvals, 100)
 
     # DSIQ7 actually _passes_ the mrtrix test, but fails silhouette
     bval_file = Path(get_test_data_path()) / 'Q7.bval'
     test_bvals = np.loadtxt(bval_file)
 
-    with pytest.raises(Exception, match='Silhouette score is low. Is this is a DSI scheme?'):
+    with pytest.raises(Exception, match=r'Silhouette score is low\. Is this is a DSI scheme\?'):
         _find_shells(test_bvals, 100)
 
 

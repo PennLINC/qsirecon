@@ -212,34 +212,57 @@ extend-select = [
   "FA",
   "ISC",
   "ICN",
+  "LOG",
+  "PIE",
+  "PYI",
   "PT",
   "Q",
+  # "SIM",
+  # "TID",
+  "FLY",
+  # "PD",
+  "PERF",
+  "W",
+  "PGH",
+  "PLC",
+  "PLE",
+  "PLW",
+  "FURB",
+  "RUF",
 ]
 ignore = [
-  "B006",  # Do not use mutable data structures for argument defaults (keep in ignore)
-  "S110",  # `try`-`except`-`pass` detected
-  "B904",  # Within an `except` clause, raise exceptions
-  "BLE001",  # Do not catch blind exceptions
-  "B017",  # Do not assert blind exception: `Exception`
-  "B905",  # `zip()` without an explicit `strict=` parameter
-  "S101",  # Use of `assert` detected
-  "PT009",  # Use a regular `assert` instead of unittest-style `assertIn`
-  "PT027",  # Use `pytest.raises` instead of unittest-style `assertRaises`
-  "W605",  # [*] Invalid escape sequence: `\s`
-  "E402",  # Module level import not at top of file
-  "S607",  # Starting a process with a partial executable path
-  "B028",  # No explicit `stacklevel` keyword argument found
-  "S202",  # Uses of `tarfile.extractall()`
-  "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
-  "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
-  "A004",  # Import `ConnectionError` is shadowing a Python builtin
-  "S608",  # Possible SQL injection vector through string-based query construction
-  "S108",  # Probable insecure usage of temporary file or directory: "/tmp"
-  "S602",  # `subprocess` call with `shell=True` identified, security issue
-  "S113",  # Probable use of `requests` call without timeout
-  "S105",
+  # --- Shared with xcp_d ---
+  "S105",  # Possible hardcoded password
   "S311",  # We are not using random for cryptographic purposes
-  "S603",  # subprocess used only for trusted commands (git, pandoc, test runners)
+  "S603",  # subprocess used only for trusted commands
+  "PIE790",  # Unnecessary `...` literal
+  "PERF203",  # `try`-`except` within a loop
+  "PLC0415",  # `import` should be at the top of the file
+  "PLW2901",  # Outer variable overwritten by inner assignment
+  "RUF005",  # Consider unpacking instead of concatenation
+  "RUF012",  # Mutable class variables should use `ClassVar`
+  # --- qsirecon-specific (to be addressed incrementally) ---
+  "B006",  # Mutable data structures for argument defaults (~30 workflow functions)
+  "B017",  # Do not assert blind exception: `Exception`
+  "B028",  # No explicit `stacklevel` keyword argument found
+  "B904",  # Within an `except` clause, raise exceptions with `from`
+  "B905",  # `zip()` without an explicit `strict=` parameter
+  "BLE001",  # Do not catch blind exceptions
+  "S101",  # Use of `assert` detected
+  "S108",  # Probable insecure usage of temporary file or directory
+  "S110",  # `try`-`except`-`pass` detected
+  "S113",  # Probable use of `requests` call without timeout
+  "S202",  # Uses of `tarfile.extractall()`
+  "S602",  # `subprocess` call with `shell=True`
+  "S607",  # Starting a process with a partial executable path
+  "S608",  # Possible SQL injection vector through string-based query construction
+  "A004",  # Import is shadowing a Python builtin
+  "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
+  "DTZ007",  # Naive datetime constructed using `strptime()` without %z
+  "E402",  # Module level import not at top of file
+  "W605",  # Invalid escape sequence
+  "PT009",  # Use a regular `assert` instead of unittest-style
+  "PT027",  # Use `pytest.raises` instead of unittest-style
 ]
 
 [tool.ruff.lint.flake8-quotes]

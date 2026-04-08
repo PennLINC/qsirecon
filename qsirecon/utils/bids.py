@@ -124,7 +124,7 @@ def collect_participants(bids_dir, participant_label=None, strict=False, bids_va
         participant_label = [participant_label]
 
     # Drop sub- prefixes
-    participant_label = [sub[4:] if sub.startswith('sub-') else sub for sub in participant_label]
+    participant_label = [sub.removeprefix('sub-') for sub in participant_label]
     # Remove duplicates
     participant_label = sorted(set(participant_label))
     # Remove labels not found
@@ -467,7 +467,7 @@ def validate_input_dir(exec_env, bids_dir, participant_label):
     # Limit validation only to data from requested participants
     if participant_label:
         all_subs = {s.name[4:] for s in bids_dir.glob('sub-*')}
-        selected_subs = {s[4:] if s.startswith('sub-') else s for s in participant_label}
+        selected_subs = {s.removeprefix('sub-') for s in participant_label}
         bad_labels = selected_subs.difference(all_subs)
         if bad_labels:
             error_msg = (
@@ -516,7 +516,7 @@ def clean_datasinks(workflow: pe.Workflow, qsirecon_suffix: str | None) -> pe.Wo
 
     for node in workflow.list_node_names():
         node_name = node.split('.')[-1]
-        if node_name.startswith('ds_') or node_name.startswith('_ds_'):
+        if node_name.startswith(('ds_', '_ds_')):
             workflow.get_node(node).inputs.base_directory = str(out_dir)
 
     return workflow
@@ -597,7 +597,7 @@ def get_iterable_dwis_and_anats(layout):
         if not (session_level_anats or subject_level_anats):
             anat_scan = None
         else:
-            best_anat_source = session_level_anats if session_level_anats else subject_level_anats
+            best_anat_source = session_level_anats or subject_level_anats
             anat_scan = best_anat_source[0]
 
         dwis_and_anats.append((dwi_scan, anat_scan))
@@ -679,4 +679,4 @@ def _get_bidsuris(in_files, dataset_links, out_dir):
     updated_keys['bids::'] = Path(out_dir)
     # Convert the paths to BIDS URIs
     out = [_find_nearest_path(updated_keys, f) for f in in_files]
-    return out
+    return out

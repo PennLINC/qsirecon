@@ -747,7 +747,7 @@ class TensorReconstruction(DipyReconInterface):
         gtab = self._get_gtab()
         dwi_img = nb.load(self.inputs.dwi_file)
         dwi_data = dwi_img.get_fdata(dtype='float32')
-        mask_img, mask_array = self._get_mask(dwi_img, gtab)
+        _mask_img, mask_array = self._get_mask(dwi_img, gtab)
 
         # Fit it
         tenmodel = dti.TensorModel(gtab)
@@ -883,7 +883,7 @@ class KurtosisReconstructionMicrostructure(DipyReconInterface):
         gtab = self._get_gtab()
         dwi_img = nb.load(self.inputs.dwi_file)
         dwi_data = dwi_img.get_fdata(dtype='float32')
-        mask_img, mask_array = self._get_mask(dwi_img, gtab)
+        _mask_img, mask_array = self._get_mask(dwi_img, gtab)
 
         # Fit it
         dkimodel = dki_micro.KurtosisMicrostructureModel(gtab)
@@ -943,7 +943,7 @@ class KurtosisReconstructionMSDKI(DipyReconInterface):
         gtab = self._get_gtab()
         dwi_img = nb.load(self.inputs.dwi_file)
         dwi_data = dwi_img.get_fdata(dtype='float32')
-        mask_img, mask_array = self._get_mask(dwi_img, gtab)
+        _mask_img, mask_array = self._get_mask(dwi_img, gtab)
 
         # Fit it
         dkimodel = msdki.MeanDiffusionKurtosisModel(gtab)

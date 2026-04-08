@@ -109,7 +109,7 @@ class DSIStudioCreateSrc(CommandLine):
         if not name == 'output_src':
             return None
         if isdefined(self.inputs.input_nifti_file):
-            _, fname, ext = split_filename(self.inputs.input_nifti_file)
+            _, fname, _ext = split_filename(self.inputs.input_nifti_file)
         elif isdefined(self.inputs.input_dicom_dir):
             fname = op.split(self.inputs.dicom_dir)[1]
         else:
@@ -951,9 +951,10 @@ def btable_from_bvals_bvecs(bval_file, bvec_file, output_file):
     if not bvecs.shape[0] == bvals.shape[0]:
         raise Exception('Bval/Bvec mismatch')
 
-    rows = []
-    for row in map(tuple, np.column_stack([bvals, bvecs])):
-        rows.append(f'{int(row[0])} {row[1]:.6f} {row[2]:.6f} {row[3]:.6f}')
+    rows = [
+        f'{int(row[0])} {row[1]:.6f} {row[2]:.6f} {row[3]:.6f}'
+        for row in map(tuple, np.column_stack([bvals, bvecs]))
+    ]
 
     # Write the actual file:
     with open(output_file, 'w') as btablef:

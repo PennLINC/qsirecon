@@ -379,7 +379,7 @@ to workflows in *QSIRecon*'s documentation]\
 
 
 def _get_wf_name(dwi_file):
-    basedir, fname, ext = split_filename(dwi_file)
+    _basedir, fname, _ext = split_filename(dwi_file)
     tokens = fname.split('_')
     return '_'.join(tokens[:-1]).replace('-', '_')
 

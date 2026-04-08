@@ -135,12 +135,10 @@ class BundleMapper(ScalarMapper):
             )
 
             # Then get the same stats for the scalars
-            for recon_scalar in self.inputs.recon_scalars:
-                bundle_dfs.append(
-                    calculate_mask_stats(
-                        bundle_masker, tck_name, 'bundle', recon_scalar, tdi_weights
-                    )
-                )
+            bundle_dfs.extend(
+                calculate_mask_stats(bundle_masker, tck_name, 'bundle', recon_scalar, tdi_weights)
+                for recon_scalar in self.inputs.recon_scalars
+            )
 
         # Write the scalar summary df
         self._update_with_bids_info(bundle_dfs)
@@ -265,4 +263,4 @@ class TemplateMapper(ScalarMapper):
 
         self._results['template_space_scalars'] = resampled_images
         self._results['template_space_scalar_info'] = resampled_image_metadata
-        self._results['template_space'] = self.inputs.template_space
+        self._results['template_space'] = self.inputs.template_space

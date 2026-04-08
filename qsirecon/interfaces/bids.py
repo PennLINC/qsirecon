@@ -337,7 +337,7 @@ class ReconDerivativesDataSink(DerivativesDataSink):
             source_file = source_file[0]
 
         src_fname, _ = _splitext(source_file)
-        src_fname, dtype = src_fname.rsplit('_', 1)
+        src_fname, _dtype = src_fname.rsplit('_', 1)
         _, ext = _splitext(self.inputs.in_file[0])
         if self.inputs.compress is True and not ext.endswith('.gz'):
             ext += '.gz'

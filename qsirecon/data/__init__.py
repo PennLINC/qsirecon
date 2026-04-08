@@ -28,7 +28,7 @@ except ImportError:  # PY38
 try:  # Prefer backport to leave consistency to dependency spec
     from importlib_resources import as_file, files
 except ImportError:
-    from importlib.resources import as_file, files  # type: ignore
+    from importlib.resources import as_file, files  # type: ignore[import-not-found]
 
 try:  # Prefer stdlib so Sphinx can link to authoritative documentation
     from importlib.resources.abc import Traversable

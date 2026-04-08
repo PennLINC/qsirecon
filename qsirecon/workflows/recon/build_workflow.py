@@ -235,7 +235,7 @@ def init_dwi_recon_workflow(
     # Set the source_file for any datasinks
     for node in workflow.list_node_names():
         node_name = node.split('.')[-1]
-        if node_name.startswith('ds_') or node_name.startswith('recon_scalars'):
+        if node_name.startswith(('ds_', 'recon_scalars')):
             workflow.connect([
                 (inputnode, workflow.get_node(node), [('dwi_file', 'source_file')]),
             ])  # fmt:skip
@@ -253,7 +253,7 @@ def workflow_from_spec(inputs_dict, node_spec):
     # It makes more sense intuitively to have scalars_from in the
     # root of a recon spec "node". But to pass it to the workflow
     # it needs to go in parameters
-    if 'scalars_from' in node_spec and node_spec['scalars_from']:
+    if node_spec.get('scalars_from'):
         if parameters.get('scalars_from'):
             config.loggers.workflow.warning('overwriting scalars_from in parameters')
         parameters['scalars_from'] = node_spec['scalars_from']
@@ -355,4 +355,4 @@ def workflow_from_spec(inputs_dict, node_spec):
 
 
 def _as_connections(attr_list, src_prefix='', dest_prefix=''):
-    return [(src_prefix + item, dest_prefix + item) for item in attr_list]
+    return [(src_prefix + item, dest_prefix + item) for item in attr_list]
