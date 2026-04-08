@@ -19,9 +19,9 @@ from nipype.utils.filemanip import split_filename
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from niworkflows.utils.misc import fix_multi_T1w_source_name
 from packaging.version import Version
-from pkg_resources import resource_filename as pkgrf
 
 from .. import config
+from ..data import load as load_data
 from ..interfaces.bids import CopyAtlas
 
 
@@ -379,7 +379,7 @@ to workflows in *QSIRecon*'s documentation]\
 
 
 def _get_wf_name(dwi_file):
-    _basedir, fname, _ext = split_filename(dwi_file)
+    basedir, fname, ext = split_filename(dwi_file)
     tokens = fname.split('_')
     return '_'.join(tokens[:-1]).replace('-', '_')
 
@@ -390,7 +390,7 @@ def _load_recon_spec(spec_name):
     from ..utils.misc import load_yaml
     from ..utils.sloppy_recon import make_sloppy
 
-    prepackaged_dir = pkgrf('qsirecon', 'data/pipelines')
+    prepackaged_dir = load_data('pipelines')
     prepackaged = [op.split(fname)[1][:-5] for fname in glob(op.join(prepackaged_dir, '*.yaml'))]
     if op.exists(spec_name):
         recon_spec = spec_name

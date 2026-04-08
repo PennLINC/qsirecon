@@ -20,6 +20,7 @@ Pipeline-level metadata
 At the root level of the Recon Spec there are
 
 .. code-block:: yaml
+
   name: dsistudio_pipeline
   anatomical:
   - mrtrix_5tt_hsvs

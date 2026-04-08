@@ -26,8 +26,8 @@ from nipype.interfaces.base import (
     traits,
 )
 from nipype.utils.filemanip import fname_presuffix
-from pkg_resources import resource_filename as pkgr
 
+from ..data import load as load_data
 from ..interfaces.mrtrix import _convert_fsl_to_mrtrix
 from ..utils.boilerplate import ConditionalDoc
 from ..utils.brainsuite_shore import BrainSuiteShoreModel, brainsuite_shore_basis
@@ -207,8 +207,8 @@ class DipyReconInterface(SimpleInterface):
             use_ext=False,
         )
         # Copy in the bval and bvecs
-        bval_file = pkgr('qsirecon', f'data/schemes/{scheme_name}.bval')
-        bvec_file = pkgr('qsirecon', f'data/schemes/{scheme_name}.bvec')
+        bval_file = load_data(f'schemes/{scheme_name}.bval')
+        bvec_file = load_data(f'schemes/{scheme_name}.bvec')
         shutil.copyfile(bval_file, output_bval_file)
         shutil.copyfile(bvec_file, output_bvec_file)
         self._results['extrapolated_bvecs'] = bvec_file
@@ -617,8 +617,8 @@ class BrainSuiteShoreReconstruction(DipyReconInterface):
             use_ext=False,
         )
         # Copy in the bval and bvecs
-        bval_file = pkgr('qsirecon', f'data/schemes/{scheme_name}.bval')
-        bvec_file = pkgr('qsirecon', f'data/schemes/{scheme_name}.bvec')
+        bval_file = load_data(f'schemes/{scheme_name}.bval')
+        bvec_file = load_data(f'schemes/{scheme_name}.bvec')
         shutil.copyfile(bval_file, output_bval_file)
         shutil.copyfile(bvec_file, output_bvec_file)
         self._results['extrapolated_bvecs'] = bvec_file

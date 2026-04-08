@@ -140,6 +140,7 @@ and cerebrospinal fluid using *single shell (DTI) acquisitions*. The white matte
 used for tractography with no T1w-based anatomical constraints.
 This workflow produces :ref:`mrtrix_dwi_outputs`.
 
+.. _pyafq_input_trk:
 .. _pyafq_tractometry:
 
 ``pyafq_tractometry``
@@ -300,9 +301,9 @@ If more than one shell is present in the input data, only the highest b-value sh
 Scalar Maps
 -----------
 .. csv-table::
-   :header: "Model", "Parameter", "Description"
+   :header: "Model", "Parameter", "Single Shell", "Multi Shell", "Description"
    :file: recon_scalars/dsi_studio_gqi.csv
-   :widths: 15, 10, 30
+   :widths: 15, 10, 10, 10, 30
 
 Other Outputs
 -------------

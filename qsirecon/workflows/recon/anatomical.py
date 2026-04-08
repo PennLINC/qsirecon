@@ -9,9 +9,9 @@ from nipype.interfaces import utility as niu
 from nipype.interfaces.base import traits
 from nipype.pipeline import engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
-from pkg_resources import resource_filename as pkgrf
 
 from ... import config
+from ...data import load as load_data
 from ...interfaces.anatomical import GetTemplate, VoxelSizeChooser
 from ...interfaces.ants import ConvertTransformFile
 from ...interfaces.bids import DerivativesDataSink
@@ -205,7 +205,10 @@ def init_highres_recon_anatomical_wf(
 
 def check_hsv_inputs(subj_fs_path):
     """Determine if a FreeSurfer directory has the required files for HSV."""
-    missing = [req for req in HSV_REQUIREMENTS if not (subj_fs_path / req).exists()]
+    missing = []
+    for requirement in HSV_REQUIREMENTS:
+        if not (subj_fs_path / requirement).exists():
+            missing.append(requirement)
     return missing
 
 
@@ -254,7 +257,7 @@ def init_register_fs_to_qsiprep_wf(
     )
 
     # Register the brain to the QSIRecon reference
-    ants_settings = pkgrf('qsirecon', 'data/freesurfer_to_qsiprep.json')
+    ants_settings = load_data('freesurfer_to_qsiprep.json')
     register_to_qsiprep = pe.Node(
         ants.Registration(from_file=ants_settings), name='register_to_qsiprep'
     )
@@ -560,7 +563,7 @@ def init_dwi_recon_anatomical_workflow(
     #             ("composite_transform", "acpc_to_template_xfm"),
     #             ("inverse_composite_transform", "template_to_acpc_xfm")
     #         ])
-    #     ])
+    #     ])  # fmt:skip
     #     # TODO: add datasinks here
 
     # Check the status of the T1wACPC-to-template transforms
@@ -621,7 +624,7 @@ def init_dwi_recon_anatomical_workflow(
     if has_qsiprep_t1w_transforms:
         config.loggers.workflow.info('Transforming ODF ROIs into DWI space for visual report.')
         # Resample ROI targets to DWI resolution for ODF plotting
-        crossing_rois_file = pkgrf('qsirecon', 'data/crossing_rois.nii.gz')
+        crossing_rois_file = load_data('crossing_rois.nii.gz')
         odf_rois = pe.Node(
             ants.ApplyTransforms(interpolation='MultiLabel', dimension=3), name='odf_rois'
         )
