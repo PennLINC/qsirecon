@@ -9,8 +9,8 @@ import os
 import tarfile
 import urllib.request
 from gzip import GzipFile
-from urllib.parse import urlparse
 from io import BytesIO
+from urllib.parse import urlparse
 
 _INTEGRATION_TEST_DATA_URLS = {
     'multishell_output': (

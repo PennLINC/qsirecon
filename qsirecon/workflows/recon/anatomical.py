@@ -205,11 +205,11 @@ def init_highres_recon_anatomical_wf(
 
 def check_hsv_inputs(subj_fs_path):
     """Determine if a FreeSurfer directory has the required files for HSV."""
-    missing = []
-    for requirement in HSV_REQUIREMENTS:
-        if not (subj_fs_path / requirement).exists():
-            missing.append(requirement)
-    return missing
+    return [
+        requirement
+        for requirement in HSV_REQUIREMENTS
+        if not (subj_fs_path / requirement).exists()
+    ]
 
 
 def _check_zipped_unzipped(path_to_check):
@@ -563,7 +563,7 @@ def init_dwi_recon_anatomical_workflow(
     #             ("composite_transform", "acpc_to_template_xfm"),
     #             ("inverse_composite_transform", "template_to_acpc_xfm")
     #         ])
-    #     ])  # fmt:skip
+    #     ])
     #     # TODO: add datasinks here
 
     # Check the status of the T1wACPC-to-template transforms
