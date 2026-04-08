@@ -9,6 +9,7 @@ import os
 import tarfile
 import urllib.request
 from gzip import GzipFile
+from urllib.parse import urlparse
 from io import BytesIO
 
 _INTEGRATION_TEST_DATA_URLS = {
@@ -25,9 +26,7 @@ _INTEGRATION_TEST_DATA_URLS = {
     'multises_post1_output': (
         'https://upenn.box.com/shared/static/ipqhy6a9p0pl7q1tw4zejj47mro4dtfh.xz'
     ),
-    'custom_atlases': (
-        'https://upenn.box.com/shared/static/2x5jqj7he20lminc3v4jtwhyiq7pyr8i.gz'
-    ),
+    'custom_atlases': ('https://upenn.box.com/shared/static/2x5jqj7he20lminc3v4jtwhyiq7pyr8i.gz'),
 }
 
 
@@ -62,7 +61,10 @@ def download_test_data(dset, data_dir=None, info=print):
 
     os.makedirs(out_dir, exist_ok=True)
     url = URLS[dset]
-    with urllib.request.urlopen(url) as resp:
+    if urlparse(url).scheme != 'https':
+        raise ValueError(f'Only https download URLs are supported ({dset=!r})')
+    # ``url`` is only ever taken from ``_INTEGRATION_TEST_DATA_URLS`` (https), not user input.
+    with urllib.request.urlopen(url) as resp:  # noqa: S310
         raw = resp.read()
 
     if url.endswith('.xz'):

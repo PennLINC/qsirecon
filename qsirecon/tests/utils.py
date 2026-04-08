@@ -7,7 +7,6 @@ from glob import glob
 from nipype import logging
 
 from qsirecon import config
-
 from qsirecon.tests.integration_test_data import download_test_data as _download_test_data
 
 LOGGER = logging.getLogger('nipype.utils')
