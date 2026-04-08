@@ -7,7 +7,7 @@ import numpy as np
 import pytest
 
 from qsirecon.data import load as load_data
-from qsirecon.interfaces.gradients import GradientSelect, _find_shells
+from qsirecon.interfaces.gradients import GradientSelect, _classify_shell_scheme, _find_shells
 from qsirecon.tests.utils import download_test_data, get_test_data_path
 
 
@@ -47,6 +47,7 @@ def test_shell_selection(data_dir):
 
 @pytest.mark.interfaces
 def test_real_shells():
+    """Test the _find_shells function."""
     # Check some other sequences we might run into
     # ABCD has 4 shells + b=0s
     abcd_bval = np.loadtxt(load_data('schemes/ABCD.bval'))
@@ -78,3 +79,61 @@ def test_real_shells():
 
     with pytest.raises(Exception, match='Silhouette score is low. Is this is a DSI scheme?'):
         _find_shells(test_bvals, 100)
+
+
+def test_classify_shell_scheme(tmp_path_factory):
+    """Test the _classify_shell_scheme function."""
+    tmpdir = tmp_path_factory.mktemp('test_classify_shell_scheme')
+    # Check some other sequences we might run into
+    # ABCD has 4 shells + b=0s
+    abcd_bval = load_data('schemes/ABCD.bval')
+    scheme = _classify_shell_scheme(abcd_bval, 5)
+    assert scheme == 'multishell'
+
+    # HCP has 3 shells + b=0s
+    hcp_bval = load_data('schemes/HCP.bval')
+    scheme = _classify_shell_scheme(hcp_bval, 5)
+    assert scheme == 'multishell'
+
+    # DSIQ5 should raise an exception
+    dsi_bval = load_data('schemes/DSIQ5.bval')
+    scheme = _classify_shell_scheme(dsi_bval, 5)
+    assert scheme == 'non-shelled'
+
+    # Some other assorted test schemes that should fail
+    nonshelled_schemes = ['HASC55-1', 'HASC55-2', 'HASC92', 'RAND57']
+    for scheme_name in nonshelled_schemes:
+        bval_file = Path(get_test_data_path()) / f'{scheme_name}.bval'
+        scheme = _classify_shell_scheme(bval_file, 5)
+        assert scheme == 'non-shelled'
+
+    oasis = [
+        0,
+        50,
+        350,
+        600,
+        900,
+        1150,
+        100,
+        400,
+        650,
+        950,
+        150,
+        450,
+        700,
+        1000,
+        1300,
+        200,
+        500,
+        800,
+        1050,
+        1350,
+        300,
+        850,
+        1100,
+        1400,
+    ]
+    oasis_bval_file = str(tmpdir / 'oasis.bval')
+    np.savetxt(oasis_bval_file, np.array(oasis))
+    scheme = _classify_shell_scheme(oasis_bval_file, 5)
+    assert scheme == 'unknown'

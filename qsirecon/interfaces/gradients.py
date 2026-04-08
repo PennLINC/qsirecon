@@ -424,7 +424,11 @@ def _classify_shell_scheme(bval_file, max_distance=5):
     n_clusters = len(np.unique(shells))
 
     # Check if it's a DSI protocol
-    score = silhouette_score(X, shells)
+    try:
+        score = silhouette_score(X, shells)
+    except ValueError:
+        return 'unknown'
+
     if score < 0.8:
         return 'non-shelled'
 
