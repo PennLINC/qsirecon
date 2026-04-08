@@ -295,3 +295,16 @@ exclude_lines = [
     'raise NotImplementedError',
     'warnings\.warn',
 ]
+
+[tool.codespell]
+skip = '.git,*.pdf,*.svg,*.html,dataset_description.json,*.gii,pixi.lock'
+# te - TE (echo time)
+# Weill - name
+# reson - Reson. abbreviation in citation
+# DNE - acronym for does not exist
+# fo - acronym for file object
+# fixel/fixels - real neuroimaging term
+# pres - variable name
+# Gage, Joo, Sepulcre - author names
+# numer - abbreviation for numerator
+ignore-words-list = 'te,weill,reson,DNE,fo,fixel,fixels,pres,Gage,Joo,Sepulcre,numer'
