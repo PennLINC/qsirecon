@@ -1203,4 +1203,4 @@ class _TransformHeaderOutputSpec(TraitedSpec):
 class TransformHeader(CommandLine):
     input_spec = _TransformHeaderInputSpec
     output_spec = _TransformHeaderOutputSpec
-    _cmd = 'mrtransform -strides -1,-2,3'
+    _cmd = 'mrtransform -strides -1,-2,3'

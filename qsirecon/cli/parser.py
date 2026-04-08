@@ -35,7 +35,7 @@ from ..utils.bids import get_iterable_dwis_and_anats
 class ToDict(Action):
     """A custom argparse "store" action to handle a list of key=value pairs."""
 
-    def __call__(self, parser, namespace, values, option_string=None):  # noqa: U100
+    def __call__(self, parser, namespace, values, option_string=None):
         """Call the argument."""
         d = {}
         for spec in values:
@@ -93,10 +93,10 @@ def _build_parser(**kwargs):
         return int(digits) * scale[units[0]]
 
     def _drop_sub(value):
-        return value[4:] if value.startswith('sub-') else value
+        return value.removeprefix('sub-')
 
     def _drop_ses(value):
-        return value[4:] if value.startswith('ses-') else value
+        return value.removeprefix('ses-')
 
     def _process_value(value):
         import bids

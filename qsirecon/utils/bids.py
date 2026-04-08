@@ -679,4 +679,4 @@ def _get_bidsuris(in_files, dataset_links, out_dir):
     updated_keys['bids::'] = Path(out_dir)
     # Convert the paths to BIDS URIs
     out = [_find_nearest_path(updated_keys, f) for f in in_files]
-    return out
+    return out

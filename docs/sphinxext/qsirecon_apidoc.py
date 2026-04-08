@@ -474,4 +474,4 @@ def _format_recon_spec_blocks(inputs, items):
         '',
     ]
 
-    return lines
+    return lines

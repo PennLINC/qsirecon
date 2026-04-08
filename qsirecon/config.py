@@ -801,4 +801,3 @@ def init_spaces(checkpoint=True):
 
     # Make the SpatialReferences object available
     workflow.spaces = spaces
-                 

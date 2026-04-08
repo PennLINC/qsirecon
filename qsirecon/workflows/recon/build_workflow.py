@@ -355,4 +355,4 @@ def workflow_from_spec(inputs_dict, node_spec):
 
 
 def _as_connections(attr_list, src_prefix='', dest_prefix=''):
-    return [(src_prefix + item, dest_prefix + item) for item in attr_list]
+    return [(src_prefix + item, dest_prefix + item) for item in attr_list]

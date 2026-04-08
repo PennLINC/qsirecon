@@ -263,4 +263,4 @@ class TemplateMapper(ScalarMapper):
 
         self._results['template_space_scalars'] = resampled_images
         self._results['template_space_scalar_info'] = resampled_image_metadata
-        self._results['template_space'] = self.inputs.template_space
+        self._results['template_space'] = self.inputs.template_space

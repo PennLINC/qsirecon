@@ -420,4 +420,4 @@ class ComputeMDMap(SimpleInterface):
         md_img.to_filename(md_file)
         self._results['md'] = md_file
         self._results['md_metadata'] = {}
-        return runtime
+        return runtime

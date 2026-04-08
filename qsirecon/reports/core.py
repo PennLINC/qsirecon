@@ -144,4 +144,4 @@ def generate_reports(
         # Someday, when we have anatomical reports, add a section here that
         # finds sessions and makes the reports.
 
-    return errors
+    return errors
