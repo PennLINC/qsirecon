@@ -831,7 +831,7 @@ class BuildConnectome(MRTrix3Base):
         # Aggregate the connectivity/network data from DSI Studio
         connectivity_data = {
             f'atlas_{atlas_name}_region_ids': atlas_labels_df['index'].values,
-            f'atlas_{atlas_name}_region_labels': atlas_labels_df['label'].values,
+            f'atlas_{atlas_name}_region_labels': atlas_labels_df['name'].values,
         }
 
         # get the connectivity matrix

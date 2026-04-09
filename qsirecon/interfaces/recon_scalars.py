@@ -474,7 +474,7 @@ class ParcellateScalars(SimpleInterface):
         atlas_labels_df = pd.read_table(atlas_labels_file, index_col='index')
         atlas_img, atlas_labels_df = _sanitize_nifti_atlas(atlas_file, atlas_labels_df)
 
-        node_labels = atlas_labels_df['label'].tolist()
+        node_labels = atlas_labels_df['name'].tolist()
 
         # Build empty DataFrame
         columns = ['node', 'scalar', 'qsirecon_suffix', 'mean', 'stdev', 'median']

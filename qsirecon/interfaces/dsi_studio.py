@@ -332,7 +332,7 @@ class DSIStudioConnectivityMatrix(CommandLine):
             atlas_labels_df = atlas_labels_df.loc[atlas_labels_df['index'] != 0]
 
         # Aggregate the connectivity/network data from DSI Studio
-        official_labels = atlas_labels_df['label'].values
+        official_labels = atlas_labels_df['name'].values
         connectivity_data = {
             f'atlas_{atlas_name}_region_ids': atlas_labels_df['index'].values,
             f'atlas_{atlas_name}_region_labels': official_labels,
