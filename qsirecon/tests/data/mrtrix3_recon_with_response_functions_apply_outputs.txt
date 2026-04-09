@@ -1,9 +1,10 @@
-atlases
-atlases/atlas-Gordon333Ext
-atlases/atlas-Gordon333Ext/atlas-Gordon333Ext_dseg.tsv
-atlases/atlas-Gordon333Ext/atlas-Gordon333Ext_space-MNI152NLin2009cAsym_res-01_dseg.json
-atlases/atlas-Gordon333Ext/atlas-Gordon333Ext_space-MNI152NLin2009cAsym_res-01_dseg.nii.gz
-atlases/dataset_description.json
+sourcedata
+sourcedata/atlases
+sourcedata/atlases/tpl-MNI152NLin2009cAsym
+sourcedata/atlases/tpl-MNI152NLin2009cAsym/tpl-MNI152NLin2009cAsym_atlas-Gordon333Ext_res-01_dseg.tsv
+sourcedata/atlases/tpl-MNI152NLin2009cAsym/tpl-MNI152NLin2009cAsym_atlas-Gordon333Ext_res-01_dseg.json
+sourcedata/atlases/tpl-MNI152NLin2009cAsym/tpl-MNI152NLin2009cAsym_atlas-Gordon333Ext_res-01_dseg.nii.gz
+sourcedata/atlases/dataset_description.json
 dataset_description.json
 derivatives
 derivatives/qsirecon-MRtrix3_act-None_response-common
