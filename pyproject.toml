@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling", "hatch-vcs", "nipreps-versions", "cython", "numpy"]
+requires = ["hatchling", "hatch-vcs", "nipreps-versions", "cython", "numpy", "setuptools_scm<10"]
 build-backend = "hatchling.build"
 
 [project]
