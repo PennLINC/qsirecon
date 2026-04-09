@@ -476,7 +476,7 @@ def parse_args(args=None, namespace=None):
     opts.datasets = opts.datasets or {}
     if opts.atlases:
         if 'qsireconatlases' not in opts.datasets:
-            opts.datasets['qsireconatlases'] = Path('/home/qsirecon/.cache/qsirecon/XCPDAtlases')
+            opts.datasets['qsireconatlases'] = Path('/home/qsirecon/.cache/qsirecon/QSIReconAtlases')
             if not opts.datasets['qsireconatlases'].is_dir():
                 raise NotADirectoryError(
                     f'QSIRecon atlases is not a directory: {opts.datasets["qsireconatlases"]}'
