@@ -29,12 +29,6 @@ _setup_docker_registry: &setup_docker_registry
     docker run -d -p 5000:5000 --restart=always --name=registry \
       -v /tmp/docker:/var/lib/registry registry:2
 
-_pull_from_registry: &pull_from_registry
-  name: Pull and tag production image from local registry
-  command: |
-    docker pull localhost:5000/qsirecon
-    docker tag localhost:5000/qsirecon pennlinc/qsirecon:latest
-
 _pull_test_image: &pull_test_image
   name: Pull and tag test image from local registry
   command: |
@@ -129,13 +123,12 @@ jobs:
             echo "BASE_IMAGE_NAME=$BASE_IMAGE_NAME" >> "$BASH_ENV"
             echo "BASE_TAG=$BASE_TAG" >> "$BASH_ENV"
       - run:
-          name: Determine build requirements
+          name: Determine whether test image build is required
           command: |
             if [[ -f /tmp/images/imageprep-success.marker ]]; then
-              echo "BUILD_PRODUCTION_IMAGE=0" >> "$BASH_ENV"
               echo "BUILD_TEST_IMAGE=0" >> "$BASH_ENV"
             else
-              echo "BUILD_PRODUCTION_IMAGE=1" >> "$BASH_ENV"
+              echo "No successful cached image prep for current Docker inputs; rebuilding test image."
               echo "BUILD_TEST_IMAGE=1" >> "$BASH_ENV"
             fi
       - run:
@@ -152,24 +145,6 @@ jobs:
               echo "BASE_WAS_BUILT=0" >> "$BASH_ENV"
             fi
       - run:
-          name: Build production image
-          no_output_timeout: 3h
-          command: |
-            if [[ "$BUILD_PRODUCTION_IMAGE" == "1" || "$BASE_WAS_BUILT" == "1" ]]; then
-              if [[ -n "$CIRCLE_TAG" ]]; then THISVERSION="$CIRCLE_TAG"; else THISVERSION="0+build"; fi
-              e=1 && for i in {1..5}; do
-                docker build \
-                  --target qsirecon \
-                  --rm=false \
-                  -t pennlinc/qsirecon:latest \
-                  --platform linux/amd64 \
-                  --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
-                  --build-arg VCS_REF="$(git rev-parse --short HEAD)" \
-                  --build-arg VERSION="$THISVERSION" . \
-                && e=0 && break || sleep 15
-              done && [ "$e" -eq "0" ]
-            fi
-      - run:
           name: Build test image
           no_output_timeout: 90m
           command: |
@@ -183,12 +158,8 @@ jobs:
               docker build --target test --rm=false -t pennlinc/qsirecon:test --platform linux/amd64 .
             fi
       - run:
-          name: Verify images
-          command: |
-            if [[ "$BUILD_PRODUCTION_IMAGE" == "1" || "$BASE_WAS_BUILT" == "1" ]]; then
-              docker run --rm pennlinc/qsirecon:latest --version
-            fi
-            docker run --rm --entrypoint pytest pennlinc/qsirecon:test --version
+          name: Verify test image
+          command: docker run --rm --entrypoint pytest pennlinc/qsirecon:test --version
       - run:
           name: Push base image if newly built
           command: |
@@ -199,13 +170,9 @@ jobs:
               fi
             fi
       - run:
-          name: Push images to local registry
+          name: Push test image to local registry
           no_output_timeout: 40m
           command: |
-            if [[ "$BUILD_PRODUCTION_IMAGE" == "1" || "$BASE_WAS_BUILT" == "1" ]]; then
-              docker tag pennlinc/qsirecon:latest localhost:5000/qsirecon
-              docker push localhost:5000/qsirecon
-            fi
             docker tag pennlinc/qsirecon:test localhost:5000/qsirecon-test
             docker push localhost:5000/qsirecon-test
       - run:
@@ -459,6 +426,9 @@ jobs:
 
   deploy_docker:
     <<: *machine_defaults
+    environment:
+      TZ: "/usr/share/zoneinfo/America/New_York"
+      DOCKER_BUILDKIT: "1"
     steps:
       - checkout:
           path: /tmp/src/qsirecon
@@ -466,8 +436,25 @@ jobs:
           keys:
             - build-v3-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}
       - run: *docker_auth
-      - run: *setup_docker_registry
-      - run: *pull_from_registry
+      - run:
+          name: Build production image
+          no_output_timeout: 3h
+          command: |
+            if [[ -n "$CIRCLE_TAG" ]]; then THISVERSION="$CIRCLE_TAG"; else THISVERSION="0+build"; fi
+            e=1 && for i in {1..5}; do
+              docker build \
+                --target qsirecon \
+                --rm=false \
+                -t pennlinc/qsirecon:latest \
+                --platform linux/amd64 \
+                --build-arg BUILD_DATE="$(date -u +"%Y-%m-%dT%H:%M:%SZ")" \
+                --build-arg VCS_REF="$(git rev-parse --short HEAD)" \
+                --build-arg VERSION="$THISVERSION" . \
+              && e=0 && break || sleep 15
+            done && [ "$e" -eq "0" ]
+      - run:
+          name: Verify production image
+          command: docker run --rm pennlinc/qsirecon:latest --version
       - run:
           name: Deploy to Docker Hub
           no_output_timeout: 40m
