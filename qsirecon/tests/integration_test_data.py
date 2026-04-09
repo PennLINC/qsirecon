@@ -26,7 +26,7 @@ _INTEGRATION_TEST_DATA_URLS = {
     'multises_post1_output': (
         'https://upenn.box.com/shared/static/ipqhy6a9p0pl7q1tw4zejj47mro4dtfh.xz'
     ),
-    'custom_atlases': ('https://upenn.box.com/shared/static/2x5jqj7he20lminc3v4jtwhyiq7pyr8i.gz'),
+    'custom_atlases': ('https://upenn.box.com/shared/static/x07l09sc5v6hlsaio5mjng979ue0lvhn.gz'),
 }
 
 

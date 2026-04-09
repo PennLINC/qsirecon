@@ -44,11 +44,11 @@ commands:
             - build-v4-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}-{{ .Revision }}
       - restore_cache:
           keys:
-            - data-v1-{{ .Branch }}-{{ .Revision }}
-            - data-v1--{{ .Revision }}
-            - data-v1-{{ .Branch }}-
-            - data-v1-main-
-            - data-v1-
+            - data-v2-{{ .Branch }}-{{ .Revision }}
+            - data-v2--{{ .Revision }}
+            - data-v2-{{ .Branch }}-
+            - data-v2-main-
+            - data-v2-
       - run: *docker_auth
       - run: *setup_docker_registry
       - run: *pull_test_image
@@ -216,11 +216,11 @@ jobs:
           path: /tmp/src/qsirecon
       - restore_cache:
           keys:
-            - data-v1-{{ .Branch }}-{{ .Revision }}
-            - data-v1--{{ .Revision }}
-            - data-v1-{{ .Branch }}-
-            - data-v1-main-
-            - data-v1-
+            - data-v2-{{ .Branch }}-{{ .Revision }}
+            - data-v2--{{ .Revision }}
+            - data-v2-{{ .Branch }}-
+            - data-v2-main-
+            - data-v2-
       - run:
           name: Download integration datasets
           command: |
@@ -233,7 +233,7 @@ jobs:
             python get_data.py /tmp/data hsvs_data
             python get_data.py /tmp/data custom_atlases
       - save_cache:
-          key: data-v1-{{ .Branch }}-{{ .Revision }}
+          key: data-v2-{{ .Branch }}-{{ .Revision }}
           paths:
             - /tmp/data
 
