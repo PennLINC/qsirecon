@@ -157,6 +157,7 @@ def test_mrtrix_singleshell_ss3t_noact(data_dir, output_dir, working_dir):
     dataset_dir = download_test_data('singleshell_output', data_dir)
     dataset_dir = os.path.join(dataset_dir, 'qsiprep')
     custom_atlases_dir = download_test_data('custom_atlases', data_dir)
+    custom_atlases_dir = os.path.join(custom_atlases_dir, 'custom_atlases')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
 
@@ -800,7 +801,7 @@ def _run_and_generate(test_name, parameters, test_main=False):
         )
 
         if config.execution.atlases:
-            write_atlas_dataset_description(config.execution.output_dir / 'atlases')
+            write_atlas_dataset_description(config.execution.output_dir / 'sourcedata' / 'atlases')
 
         # Compile list of output folders
         qsirecon_suffixes = config.workflow.qsirecon_suffixes

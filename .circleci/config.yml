@@ -73,7 +73,7 @@ commands:
               -e CIRCLE_CPUS=<< parameters.cpus >> \
               -e COVERAGE_FILE=/coverage/.coverage.<< parameters.coverage_name >> \
               -v /tmp/src/qsirecon:/tmp/src/qsirecon:ro \
-              -v /tmp/data:/data:ro \
+              -v /tmp/data:/data \
               -v /tmp/out:/out \
               -v /tmp/work:/work \
               -v /tmp/coverage:/coverage \
