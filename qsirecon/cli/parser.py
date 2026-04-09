@@ -476,15 +476,19 @@ def parse_args(args=None, namespace=None):
     opts.datasets = opts.datasets or {}
     if opts.atlases:
         if 'qsireconatlases' not in opts.datasets:
-            opts.datasets['qsireconatlases'] = Path(
-                os.getenv('QSIRECON_ATLAS', '/atlas/qsirecon_atlases')
-            )
+            opts.datasets['qsireconatlases'] = Path('/home/qsirecon/.cache/qsirecon/XCPDAtlases')
+            if not opts.datasets['qsireconatlases'].is_dir():
+                raise NotADirectoryError(
+                    f'QSIRecon atlases is not a directory: {opts.datasets["qsireconatlases"]}'
+                )
 
         if any(atlas.startswith('4S') for atlas in opts.atlases):
             if 'qsirecon4s' not in opts.datasets:
-                opts.datasets['qsirecon4s'] = Path(
-                    os.getenv('QSIRECON_ATLASPACK', '/atlas/AtlasPack')
-                )
+                opts.datasets['qsirecon4s'] = Path('/home/qsirecon/.cache/qsirecon/AtlasPack')
+                if not opts.datasets['qsirecon4s'].is_dir():
+                    raise NotADirectoryError(
+                        f'AtlasPack is not a directory: {opts.datasets["qsirecon4s"]}'
+                    )
 
     if opts.fs_license_file is not None:
         opts.fs_license_file = opts.fs_license_file.resolve()

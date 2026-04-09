@@ -18,7 +18,6 @@ FROM pennlinc/qsiprep-dsistudio-chen:${TAG_DSISTUDIOCHEN} AS build_dsistudio_che
 FROM afni/afni_make_build:${TAG_AFNI} AS build_afni
 FROM pennlinc/qsiprep-drbuddi:${TAG_TORTOISE} AS build_tortoise
 FROM pennlinc/qsiprep-drbuddicuda:${TAG_TORTOISECUDA} AS build_tortoisecuda
-FROM pennlinc/atlaspack:0.1.0 AS atlaspack
 FROM nvidia/cuda:12.2.2-runtime-ubuntu22.04 AS base
 
 COPY --from=build_ants /opt/ants /opt/ants
@@ -163,13 +162,21 @@ RUN if [ -f /usr/lib/x86_64-linux-gnu/libQt5Core.so.5 ]; then \
       strip --remove-section=.note.ABI-tag /usr/lib/x86_64-linux-gnu/libQt5Core.so.5; \
     fi && ldconfig
 
-RUN mkdir -p /atlas/AtlasPack
-COPY --from=atlaspack /AtlasPack/tpl-fsLR_*.dlabel.nii /atlas/AtlasPack/
-COPY --from=atlaspack /AtlasPack/tpl-MNI152NLin6Asym_*.nii.gz /atlas/AtlasPack/
-COPY --from=atlaspack /AtlasPack/tpl-MNI152NLin2009cAsym_*.nii.gz /atlas/AtlasPack/
-COPY --from=atlaspack /AtlasPack/atlas-4S*.tsv /atlas/AtlasPack/
-COPY --from=atlaspack /AtlasPack/*.json /atlas/AtlasPack/
-ENV QSIRECON_ATLASPACK=/atlas/AtlasPack
+# Download atlases from AtlasPack (stored in tar.gz file on Box)
+RUN mkdir -p "/home/qsirecon/.cache/qsirecon" && \
+    curl -o AtlasPack.tar.gz -sSL "https://upenn.box.com/shared/static/0gxdoe77tuih5p9ainn4utdqj3kcq7p1.tar.gz" && \
+    tar -xzf AtlasPack.tar.gz && \
+    mv AtlasPack "/home/qsirecon/.cache/qsirecon/AtlasPack" && \
+    rm AtlasPack.tar.gz
+
+# Download XCP-D atlases (stored in tar.gz file on Box)
+RUN mkdir -p "/home/qsirecon/.cache/qsirecon" && \
+    curl -o XCPDAtlases.tar.gz -sSL "https://upenn.box.com/shared/static/4amxp72grenmp1up689k5oyn1i6nhunq.tar.gz" && \
+    tar -xzf XCPDAtlases.tar.gz && \
+    mv XCPDAtlases "/home/qsirecon/.cache/qsirecon/XCPDAtlases" && \
+    rm XCPDAtlases.tar.gz && \
+    find "/home/qsirecon/.cache/qsirecon" -type d -exec chmod go=u {} + && \
+    find "/home/qsirecon/.cache/qsirecon" -type f -exec chmod go=u {} +
 
 RUN bash -c \
     'cd /atlas \
