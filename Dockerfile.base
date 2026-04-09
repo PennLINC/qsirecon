@@ -172,19 +172,12 @@ RUN mkdir -p "/home/qsirecon/.cache/qsirecon" && \
 
 # Download XCP-D atlases (stored in tar.gz file on Box)
 RUN mkdir -p "/home/qsirecon/.cache/qsirecon" && \
-    curl -o XCPDAtlases.tar.gz -sSL "https://upenn.box.com/shared/static/4amxp72grenmp1up689k5oyn1i6nhunq.tar.gz" && \
-    tar -xzf XCPDAtlases.tar.gz && \
-    mv XCPDAtlases "/home/qsirecon/.cache/qsirecon/XCPDAtlases" && \
-    rm XCPDAtlases.tar.gz && \
+    curl -o QSIReconAtlases.tar.gz -sSL "https://upenn.box.com/shared/static/2p5lfjw3435h9dd8c2oul5j5r6v2ie00.tar.gz" && \
+    tar -xzf QSIReconAtlases.tar.gz && \
+    mv qsirecon_atlases "/home/qsirecon/.cache/qsirecon/QSIReconAtlases" && \
+    rm QSIReconAtlases.tar.gz && \
     find "/home/qsirecon/.cache/qsirecon" -type d -exec chmod go=u {} + && \
     find "/home/qsirecon/.cache/qsirecon" -type f -exec chmod go=u {} +
-
-RUN bash -c \
-    'cd /atlas \
-    && wget -nv https://upenn.box.com/shared/static/5k1tvg6soelxdhi9nvrkry6w0z49ctne.xz \
-    && tar xvfJm 5k1tvg6soelxdhi9nvrkry6w0z49ctne.xz \
-    && rm 5k1tvg6soelxdhi9nvrkry6w0z49ctne.xz'
-ENV QSIRECON_ATLAS=/atlas/qsirecon_atlases
 
 RUN mkdir -p /sngl/data \
     && mkdir /sngl/qsirecon-output \
