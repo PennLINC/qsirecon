@@ -25,6 +25,7 @@ import re
 from json import dump, loads
 from shutil import copyfile, copyfileobj, copytree
 
+import filelock
 import nibabel as nb
 import numpy as np
 from bids.layout import Config, parse_file_entities
@@ -115,7 +116,7 @@ class DerivativesDataSink(BaseDerivativesDataSink):
 
 
 class _CopyAtlasInputSpec(BaseInterfaceInputSpec):
-    source_file = traits.Str(
+    name_source = traits.Str(
         desc="The source file's name.",
         mandatory=False,
     )
@@ -130,7 +131,7 @@ class _CopyAtlasInputSpec(BaseInterfaceInputSpec):
         desc='The atlas metadata dictionary.',
         mandatory=False,
     )
-    out_dir = Directory(
+    output_dir = Directory(
         exists=True,
         desc='The output directory.',
         mandatory=True,
@@ -158,11 +159,11 @@ class CopyAtlas(SimpleInterface):
 
     Parameters
     ----------
-    source_file : :obj:`str`
+    name_source : :obj:`str`
         The source name of the atlas file.
     in_file : :obj:`str`
         The atlas file to copy.
-    out_dir : :obj:`str`
+    output_dir : :obj:`str`
         The output directory.
     atlas : :obj:`str`
         The name of the atlas.
@@ -189,35 +190,52 @@ class CopyAtlas(SimpleInterface):
     output_spec = _CopyAtlasOutputSpec
 
     def _run_interface(self, runtime):
-        out_dir = self.inputs.out_dir
+        output_dir = self.inputs.output_dir
         in_file = self.inputs.in_file
         meta_dict = self.inputs.meta_dict
-        source_file = self.inputs.source_file
+        name_source = self.inputs.name_source
         atlas = self.inputs.atlas
         Sources = self.inputs.Sources
 
-        atlas_out_dir = os.path.join(out_dir, f'atlases/atlas-{atlas}')
+        tpl = get_entity(name_source, 'tpl')
+        if not tpl:
+            tpl = get_entity(name_source, 'space')
 
+        if not tpl:
+            raise ValueError(f'Could not determine template from {name_source}')
+
+        cohort, cohort_str = None, ''
+        if '+' in tpl:
+            # Split the template and cohort
+            tpl, cohort = tpl.split('+')
+            cohort_str = f'cohort-{cohort}_'
+
+        if not cohort:
+            cohort = get_entity(name_source, 'cohort')
+            cohort_str = f'cohort-{cohort}_' if cohort else ''
+
+        tpl_str = f'tpl-{tpl}_'
+
+        output_dir = os.path.join(output_dir, f'tpl-{tpl}')
+        if cohort:
+            output_dir = os.path.join(output_dir, f'cohort-{cohort}')
+
+        res = get_entity(name_source, 'res')
+        res_str = f'_res-{res}' if res else ''
+
+        den = get_entity(name_source, 'den')
+        den_str = f'_den-{den}' if den else ''
+
+        out_basename = f'{tpl_str}{cohort_str}atlas-{atlas}{res_str}{den_str}_dseg'
         if in_file.endswith('.tsv'):
-            out_basename = f'atlas-{atlas}_dseg'
             extension = '.tsv'
+        elif in_file.endswith('.dlabel.nii'):
+            extension = '.dlabel.nii'
         else:
-            extension = '.nii.gz' if source_file.endswith('.nii.gz') else '.dlabel.nii'
-            space = get_entity(source_file, 'space')
-            res = get_entity(source_file, 'res')
-            den = get_entity(source_file, 'den')
-            cohort = get_entity(source_file, 'cohort')
+            extension = '.nii.gz'
 
-            cohort_str = f'_cohort-{cohort}' if cohort else ''
-            res_str = f'_res-{res}' if res else ''
-            den_str = f'_den-{den}' if den else ''
-            if extension == '.dlabel.nii':
-                out_basename = f'atlas-{atlas}_space-{space}{den_str}{cohort_str}_dseg'
-            elif extension == '.nii.gz':
-                out_basename = f'atlas-{atlas}_space-{space}{res_str}{cohort_str}_dseg'
-
-        os.makedirs(atlas_out_dir, exist_ok=True)
-        out_file = os.path.join(atlas_out_dir, f'{out_basename}{extension}')
+        os.makedirs(output_dir, exist_ok=True)
+        out_file = os.path.join(output_dir, f'{out_basename}{extension}')
 
         if out_file.endswith('.nii.gz') and os.path.isfile(out_file):
             # Check that native-resolution atlas doesn't have a different resolution from the last
@@ -233,18 +251,22 @@ class CopyAtlas(SimpleInterface):
         # Don't copy the file if it exists, to prevent any race conditions between parallel
         # processes.
         if not os.path.isfile(out_file):
-            copyfile(in_file, out_file)
+            lock_file = os.path.join(output_dir, f'{out_basename}{extension}.lock')
+            with filelock.SoftFileLock(lock_file, timeout=60):
+                copyfile(in_file, out_file)
 
         # Only write out a sidecar if metadata are provided
         if meta_dict or Sources:
-            meta_file = os.path.join(atlas_out_dir, f'{out_basename}.json')
+            meta_file = os.path.join(output_dir, f'{out_basename}.json')
+            lock_meta = os.path.join(output_dir, f'{out_basename}.json.lock')
             meta_dict = meta_dict or {}
             meta_dict = meta_dict.copy()
             if Sources:
                 meta_dict['Sources'] = meta_dict.get('Sources', []) + Sources
 
-            with open(meta_file, 'w') as fo:
-                dump(meta_dict, fo, sort_keys=True, indent=4)
+            with filelock.SoftFileLock(lock_meta, timeout=60):
+                with open(meta_file, 'w') as fobj:
+                    dump(meta_dict, fobj, sort_keys=True, indent=4)
 
         self._results['out_file'] = out_file
 
