@@ -92,10 +92,6 @@ def init_single_subject_recon_wf(subject_id):
     )
     from .recon.build_workflow import init_dwi_recon_workflow
 
-    output_dir = config.execution.output_dir
-    atlas_output_dir = os.path.join(output_dir, 'sourcedata', 'atlases')
-    os.makedirs(atlas_output_dir, exist_ok=True)
-
     spec = _load_recon_spec(config.workflow.recon_spec)
     workflow = Workflow(name=f'sub-{subject_id}_{spec["name"]}')
 
@@ -188,6 +184,9 @@ to workflows in *QSIRecon*'s documentation]\
         # Configure atlases _per_ anatomical workflow
         atlas_configs = {}
         if config.execution.atlases:
+            atlas_output_dir = os.path.join(config.execution.output_dir, 'sourcedata', 'atlases')
+            os.makedirs(atlas_output_dir, exist_ok=True)
+
             # Limit atlases to ones in the specified space.
             xfm_to_anat = anat_data['template_to_acpc_xfm']
             template_space = get_entity(xfm_to_anat, 'from')
