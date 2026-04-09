@@ -12,10 +12,10 @@ from qsirecon.tests.utils import download_test_data, get_test_data_path
 
 
 @pytest.mark.interfaces
-def test_shell_selection(data_dir):
+def test_shell_selection(data_dir, tmp_path_factory):
     """Run reconstruction workflow tests."""
     dwi_prefix = 'sub-ABCD_acq-10per000_space-T1w_desc-preproc_dwi'
-    data_dir = '/home/matt/projects/qsirecon/.circleci/data'
+    tmpdir = tmp_path_factory.mktemp('test_shell_selection')
     dataset_dir = Path(download_test_data('multishell_output', data_dir))
     dataset_dir = Path(dataset_dir) / 'multishell_output' / 'qsiprep'
     data_stem = str(dataset_dir / 'sub-ABCD' / 'dwi' / dwi_prefix)
@@ -30,19 +30,19 @@ def test_shell_selection(data_dir):
         expected_n_input_shells=5,
         requested_shells=[0, 'lowest', 'highest'],
     )
-    grad_select.run()
+    grad_select.run(cwd=tmpdir)
     correct_n = 73
-    sel_nii = nb.load(dwi_prefix + '_selected.nii.gz')
+    sel_nii = nb.load(tmpdir / (dwi_prefix + '_selected.nii.gz'))
     assert sel_nii.shape[3] == correct_n
-    sel_bval = np.loadtxt(dwi_prefix + '_selected.bval')
+    sel_bval = np.loadtxt(tmpdir / (dwi_prefix + '_selected.bval'))
     assert sel_bval.shape == (correct_n,)
-    sel_bvec = np.loadtxt(dwi_prefix + '_selected.bvec')
+    sel_bvec = np.loadtxt(tmpdir / (dwi_prefix + '_selected.bvec'))
     assert sel_bvec.shape == (3, correct_n)
-    sel_b = np.loadtxt(dwi_prefix + '_selected.b')
+    sel_b = np.loadtxt(tmpdir / (dwi_prefix + '_selected.b'))
     assert sel_b.shape[0] == correct_n
     # There is no btable from this dataset because it was created
     # before those were written in the outputs.
-    assert not Path(dwi_prefix + '_selected.txt').exists()
+    assert not Path(tmpdir / (dwi_prefix + '_selected.txt')).exists()
 
 
 @pytest.mark.interfaces
