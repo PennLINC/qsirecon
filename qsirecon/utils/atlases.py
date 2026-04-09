@@ -57,8 +57,8 @@ def collect_atlases(datasets, atlases, bids_filters={}):
     atlas_filter = bids_filters.get('atlas', {})
     atlas_filter['suffix'] = atlas_filter.get('suffix') or 'dseg'  # XCP-D only supports dsegs
     atlas_filter['extension'] = ['.nii.gz', '.nii']
-    # Hardcoded spaces for now
-    atlas_filter['space'] = atlas_filter.get('space') or 'MNI152NLin2009cAsym'
+    # Hardcoded templates for now
+    atlas_filter['template'] = atlas_filter.get('template') or 'MNI152NLin2009cAsym'
 
     atlas_cache = {}
     for dataset_name, dataset_path in datasets.items():
