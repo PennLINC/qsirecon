@@ -41,7 +41,7 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - build-v3-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}
+            - build-v4-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}-{{ .Revision }}
       - restore_cache:
           keys:
             - data-v1-{{ .Branch }}-{{ .Revision }}
@@ -108,9 +108,7 @@ jobs:
           path: /tmp/src/qsirecon
       - restore_cache:
           keys:
-            - build-v3-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}
-            - build-v1-{{ .Branch }}-{{ .Revision }}
-            - build-v1-main-
+            - build-v4-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}-{{ .Revision }}
       - run: *docker_auth
       - run: *setup_docker_registry
       - run:
@@ -149,13 +147,34 @@ jobs:
           no_output_timeout: 90m
           command: |
             if [[ "$BUILD_TEST_IMAGE" == "1" || "$BASE_WAS_BUILT" == "1" ]]; then
-              docker build --target test --rm=false -t pennlinc/qsirecon:test --platform linux/amd64 .
+              docker build \
+                --target test \
+                --rm=false \
+                -t pennlinc/qsirecon:test \
+                --platform linux/amd64 \
+                --build-arg VCS_REF="$(git rev-parse --short HEAD)" .
             elif docker image inspect pennlinc/qsirecon:test > /dev/null 2>&1; then
               echo "Reusing local test image."
             elif docker pull localhost:5000/qsirecon-test; then
               docker tag localhost:5000/qsirecon-test pennlinc/qsirecon:test
             else
-              docker build --target test --rm=false -t pennlinc/qsirecon:test --platform linux/amd64 .
+              docker build \
+                --target test \
+                --rm=false \
+                -t pennlinc/qsirecon:test \
+                --platform linux/amd64 \
+                --build-arg VCS_REF="$(git rev-parse --short HEAD)" .
+            fi
+      - run:
+          name: Guard test image revision
+          command: |
+            EXPECTED_REF="$(git rev-parse --short HEAD)"
+            IMAGE_REF="$(docker image inspect pennlinc/qsirecon:test --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}')"
+            echo "Expected test image ref: ${EXPECTED_REF}"
+            echo "Actual test image ref: ${IMAGE_REF:-<missing>}"
+            if [[ -z "$IMAGE_REF" || "$IMAGE_REF" != "$EXPECTED_REF" ]]; then
+              echo "Test image revision does not match checkout. Refusing to run tests with stale image."
+              exit 1
             fi
       - run:
           name: Verify test image
@@ -185,7 +204,7 @@ jobs:
             touch /tmp/images/imageprep-success.marker
             docker save registry:2 -o /tmp/images/registry.tar.gz
       - save_cache:
-          key: build-v3-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}
+          key: build-v4-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}-{{ .Revision }}
           paths:
             - /tmp/docker
             - /tmp/images
@@ -434,7 +453,7 @@ jobs:
           path: /tmp/src/qsirecon
       - restore_cache:
           keys:
-            - build-v3-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}
+            - build-v4-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}-{{ .Revision }}
       - run: *docker_auth
       - run:
           name: Build production image

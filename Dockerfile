@@ -52,6 +52,9 @@ RUN chmod -R go=u $HOME
 WORKDIR /tmp
 
 FROM base AS test
+ARG VCS_REF
+LABEL org.opencontainers.image.revision=$VCS_REF \
+      org.label-schema.vcs-ref=$VCS_REF
 COPY --link --from=build /app/.pixi/envs/test /app/.pixi/envs/test
 COPY --link --from=build /test-shell-hook.sh /shell-hook.sh
 RUN cat /shell-hook.sh >> $HOME/.bashrc

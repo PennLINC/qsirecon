@@ -130,8 +130,11 @@ This keeps strict deploy gating while avoiding production builds on routine PR C
 Primary cache key:
 
 ```text
-build-v3-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}
+build-v4-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}-{{ .Revision }}
 ```
+
+The key includes the commit revision, so test-image cache reuse is scoped to the
+same commit and does not cross into later commits.
 
 When `/tmp/images/imageprep-success.marker` is restored:
 
@@ -151,6 +154,13 @@ Production image behavior:
 - Verified with `qsirecon --version`
 - Pushed as `unstable` on `main`; additionally pushed as `latest` and
   `<CIRCLE_TAG>` on tagged builds
+
+Test-image guard behavior:
+
+- `image_prep` builds the test image with `VCS_REF=$(git rev-parse --short HEAD)`.
+- The test image is labeled with `org.opencontainers.image.revision`.
+- Before tests run, CircleCI compares that label to the checkout SHA and fails
+  early on mismatch to prevent stale-image test runs.
 
 #### File edits vs CI image behavior
 
