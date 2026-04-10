@@ -51,12 +51,18 @@ RUN chmod -R go=u $HOME
 
 WORKDIR /tmp
 
+FROM base AS amico_cache
+COPY --link --from=build /app/.pixi/envs/qsirecon /app/.pixi/envs/qsirecon
+COPY scripts/set_up_amico.py set_up_amico.py
+RUN mkdir -p ${HOME}/.dipy && /app/.pixi/envs/qsirecon/bin/python set_up_amico.py
+
 FROM base AS test
 ARG VCS_REF
 LABEL org.opencontainers.image.revision=$VCS_REF \
       org.label-schema.vcs-ref=$VCS_REF
 COPY --link --from=build /app/.pixi/envs/test /app/.pixi/envs/test
 COPY --link --from=build /test-shell-hook.sh /shell-hook.sh
+COPY --link --from=amico_cache /home/qsirecon/.dipy /home/qsirecon/.dipy
 RUN cat /shell-hook.sh >> $HOME/.bashrc
 ENV PATH="/app/.pixi/envs/test/bin:$PATH"
 ENV FSLDIR="/app/.pixi/envs/test"
@@ -64,17 +70,13 @@ ENV FSLDIR="/app/.pixi/envs/test"
 FROM base AS qsirecon
 COPY --link --from=build /app/.pixi/envs/qsirecon /app/.pixi/envs/qsirecon
 COPY --link --from=build /shell-hook.sh /shell-hook.sh
+COPY --link --from=amico_cache /home/qsirecon/.dipy /home/qsirecon/.dipy
 RUN cat /shell-hook.sh >> $HOME/.bashrc
 ENV PATH="/app/.pixi/envs/qsirecon/bin:$PATH"
 ENV FSLDIR="/app/.pixi/envs/qsirecon"
 ENV IS_DOCKER_8395080871=1
 # Verify the runtime image can import qsirecon without source tree mounts.
 RUN /app/.pixi/envs/qsirecon/bin/python -c "import qsirecon"
-
-# Pre-compute AMICO matrices
-FROM qsirecon AS setup_amico
-COPY scripts/set_up_amico.py set_up_amico.py
-RUN mkdir -p ${HOME}/.dipy && /app/.pixi/envs/qsirecon/bin/python set_up_amico.py
 
 ENTRYPOINT ["/app/.pixi/envs/qsirecon/bin/qsirecon"]
 
