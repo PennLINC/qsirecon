@@ -270,6 +270,49 @@ jobs:
           marker: << parameters.marker >>
           cpus: << parameters.cpus >>
 
+  # ── Unit tests ───────────────────────────────────────────────────────
+
+  unit_tests:
+    <<: *machine_defaults
+    steps:
+      - checkout:
+          path: /tmp/src/qsirecon
+      - run:
+          name: Check whether build should be skipped
+          command: |
+            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?unit_tests\]' )" != "" ]]; then
+              echo "Skipping unit tests"
+              circleci step halt
+            fi
+      - restore_build_and_data
+      - run:
+          name: Run pytest on tests directory
+          no_output_timeout: 1h
+          command: |
+            mkdir -p /tmp/out /tmp/work /tmp/coverage
+            # Run from the checked-out repo so pytest loads qsirecon/tests/conftest.py,
+            # which registers custom CLI options like --data_dir/--output_dir/--working_dir.
+            docker run --rm=false \
+              -e CIRCLE_CPUS=2 \
+              -e COVERAGE_FILE=/coverage/.coverage.unit_tests \
+              -v /tmp/src/qsirecon:/tmp/src/qsirecon:ro \
+              -v /tmp/data:/data:ro \
+              -v /tmp/out:/out \
+              -v /tmp/work:/work \
+              -v /tmp/coverage:/coverage \
+              -w /tmp/src/qsirecon \
+              --entrypoint pytest \
+              pennlinc/qsirecon:test \
+              --cov-append --cov-report term-missing --cov=qsirecon \
+              --data_dir=/data --output_dir=/out --working_dir=/work \
+              qsirecon/tests
+      - persist_to_workspace:
+          root: /tmp/coverage
+          paths:
+            - .coverage.unit_tests
+      - store_artifacts:
+          path: /tmp/out
+
   # ── Coverage & deployment ────────────────────────────────────────────
 
   merge_coverage:
@@ -450,18 +493,6 @@ workflows:
               only: /.*/
 
       - integration_test:
-          name: interfaces
-          marker: interfaces
-          requires: [image_prep, get_data]
-          filters:
-            branches:
-              ignore:
-                - /docs?\/.*/
-                - /tests?\/.*/
-            tags:
-              only: /.*/
-
-      - integration_test:
           name: autotrack
           marker: autotrack
           requires: [image_prep, get_data]
@@ -581,13 +612,24 @@ workflows:
             tags:
               only: /.*/
 
+      - unit_tests:
+          requires:
+            - image_prep
+            - get_data
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
       - merge_coverage:
           requires:
             - mrtrix_singleshell_ss3t_act
             - mrtrix_singleshell_ss3t_noact
             - ss3t_fod_autotrack
             - mrtrix3_recon
-            - interfaces
             - autotrack
             - tortoise_recon
             - dsi_studio_gqi_recon
@@ -601,6 +643,7 @@ workflows:
             - multises_pre1_qsiprep
             - multises_post1_qsiprep
             - mrtrix_multishell_msmt_hsvs
+            - unit_tests
           filters:
             branches:
               ignore:

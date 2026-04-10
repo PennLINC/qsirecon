@@ -11,7 +11,6 @@ from qsirecon.interfaces.gradients import GradientSelect, _classify_shell_scheme
 from qsirecon.tests.utils import download_test_data, get_test_data_path
 
 
-@pytest.mark.interfaces
 def test_shell_selection(data_dir, tmp_path_factory):
     """Run reconstruction workflow tests."""
     dwi_prefix = 'sub-ABCD_acq-10per000_space-T1w_desc-preproc_dwi'
@@ -45,7 +44,6 @@ def test_shell_selection(data_dir, tmp_path_factory):
     assert not Path(tmpdir / (dwi_prefix + '_selected.txt')).exists()
 
 
-@pytest.mark.interfaces
 def test_real_shells():
     """Test the _find_shells function."""
     # Check some other sequences we might run into
