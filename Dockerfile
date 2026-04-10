@@ -71,6 +71,11 @@ ENV IS_DOCKER_8395080871=1
 # Verify the runtime image can import qsirecon without source tree mounts.
 RUN /app/.pixi/envs/qsirecon/bin/python -c "import qsirecon"
 
+# Pre-compute AMICO matrices
+FROM qsirecon AS setup_amico
+COPY scripts/set_up_amico.py set_up_amico.py
+RUN mkdir -p ${HOME}/.dipy && /app/.pixi/envs/qsirecon/bin/python set_up_amico.py
+
 ENTRYPOINT ["/app/.pixi/envs/qsirecon/bin/qsirecon"]
 
 ARG BUILD_DATE
