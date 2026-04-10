@@ -20,7 +20,7 @@ dependencies = [
     "numpy <= 1.26.3",
     'importlib_resources; python_version < "3.11"',
     "dipy>=1.10.0,<1.11.0",
-    "dmri-amico == 2.0.3",
+    "dmri-amico == 2.1.1",
     "filelock",
     "fury",
     "indexed_gzip <= 1.8.7",

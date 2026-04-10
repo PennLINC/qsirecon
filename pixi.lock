@@ -270,7 +270,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/f7/e6/efe534ef0952b531b630780e19cabd416e2032697019d5295defc6ef9bd9/deepdiff-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/84/d0/205d54408c08b13550c733c4b85429e7ead111c7f0014309637425520a9a/deprecated-1.3.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/21/37/a3fe64e3867f2c681e0052e6f6e9069c4e77c25ed96dc07c08b59512527b/dipy-1.10.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/e7/78/66446d53d338a865150e3273293176728aa816e498127e195c49704b8089/dmri_amico-2.0.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/67/37/0c0d01f9861418c7f7960e9919155571c678280ba8d393e0d0c4ce576ff1/dmri_amico-2.1.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/43/1d/0cbd02295daf88bd2199e1e4c5165b198222efd2924f7caaa15b93bed9f8/dmri_dicelib-1.2.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/a2/55/8f8cab2afd404cf578136ef2cc5dfb50baa1761b68c9da1fb1e4eed343c9/docopt-0.6.2.tar.gz
       - pypi: https://files.pythonhosted.org/packages/44/8e/250fab1cafeea43f4eb11f1d64cd6313f639965ff62cb0d9da3883655781/docrep-0.3.2.tar.gz
@@ -661,7 +661,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/f7/e6/efe534ef0952b531b630780e19cabd416e2032697019d5295defc6ef9bd9/deepdiff-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/84/d0/205d54408c08b13550c733c4b85429e7ead111c7f0014309637425520a9a/deprecated-1.3.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/21/37/a3fe64e3867f2c681e0052e6f6e9069c4e77c25ed96dc07c08b59512527b/dipy-1.10.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/e7/78/66446d53d338a865150e3273293176728aa816e498127e195c49704b8089/dmri_amico-2.0.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/67/37/0c0d01f9861418c7f7960e9919155571c678280ba8d393e0d0c4ce576ff1/dmri_amico-2.1.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/43/1d/0cbd02295daf88bd2199e1e4c5165b198222efd2924f7caaa15b93bed9f8/dmri_dicelib-1.2.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/a2/55/8f8cab2afd404cf578136ef2cc5dfb50baa1761b68c9da1fb1e4eed343c9/docopt-0.6.2.tar.gz
       - pypi: https://files.pythonhosted.org/packages/44/8e/250fab1cafeea43f4eb11f1d64cd6313f639965ff62cb0d9da3883655781/docrep-0.3.2.tar.gz
@@ -1027,7 +1027,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/f7/e6/efe534ef0952b531b630780e19cabd416e2032697019d5295defc6ef9bd9/deepdiff-8.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/84/d0/205d54408c08b13550c733c4b85429e7ead111c7f0014309637425520a9a/deprecated-1.3.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/21/37/a3fe64e3867f2c681e0052e6f6e9069c4e77c25ed96dc07c08b59512527b/dipy-1.10.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/e7/78/66446d53d338a865150e3273293176728aa816e498127e195c49704b8089/dmri_amico-2.0.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/67/37/0c0d01f9861418c7f7960e9919155571c678280ba8d393e0d0c4ce576ff1/dmri_amico-2.1.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/43/1d/0cbd02295daf88bd2199e1e4c5165b198222efd2924f7caaa15b93bed9f8/dmri_dicelib-1.2.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/a2/55/8f8cab2afd404cf578136ef2cc5dfb50baa1761b68c9da1fb1e4eed343c9/docopt-0.6.2.tar.gz
       - pypi: https://files.pythonhosted.org/packages/44/8e/250fab1cafeea43f4eb11f1d64cd6313f639965ff62cb0d9da3883655781/docrep-0.3.2.tar.gz
@@ -1781,12 +1781,12 @@ packages:
   - grg-sphinx-theme>=0.4.0 ; extra == 'doc'
   - jinja2 ; extra == 'doc'
   requires_python: '>=3.9'
-- pypi: https://files.pythonhosted.org/packages/e7/78/66446d53d338a865150e3273293176728aa816e498127e195c49704b8089/dmri_amico-2.0.3-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+- pypi: https://files.pythonhosted.org/packages/67/37/0c0d01f9861418c7f7960e9919155571c678280ba8d393e0d0c4ce576ff1/dmri_amico-2.1.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
   name: dmri-amico
-  version: 2.0.3
-  sha256: 87b64fb6f04981506f08eff6042e32f11432d4cf1d1537d64796f6d548f96884
+  version: 2.1.1
+  sha256: 73c46253b855944e550f180147ab9bdaec2144981b289630e6d5b10d1d9cf77e
   requires_dist:
-  - numpy>=1.19.5,<2.0.0
+  - numpy>=1.19.5
   - scipy>=1.5.4
   - dipy>=1.4.1
   - threadpoolctl>=3.1.0
@@ -5800,11 +5800,11 @@ packages:
   timestamp: 1770223379599
 - pypi: ./
   name: qsirecon
-  version: 1.2.1.dev29+g701a29b11.d20260409
-  sha256: bb3a6fb4f162c54cce161b2deb1da99e9abba6c2979535e10c1958828d1ac865
+  version: 1.2.1.dev41+gd2b07581d.d20260410
+  sha256: 4801c591336b78765b5a664646d9e44b66e21e1d978b882597caa306f9ef79bc
   requires_dist:
   - dipy>=1.10.0,<1.11.0
-  - dmri-amico==2.0.3
+  - dmri-amico==2.1.1
   - filelock
   - fury
   - importlib-resources ; python_full_version < '3.11'
