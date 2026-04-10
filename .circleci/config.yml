@@ -2,6 +2,8 @@ version: 2.1
 orbs:
   codecov: codecov/codecov@4.1.0
 
+# ── Reusable anchors ──────────────────────────────────────────────────
+
 _machine_defaults: &machine_defaults
   environment:
     TZ: "/usr/share/zoneinfo/America/New_York"
@@ -15,19 +17,21 @@ _docker_auth: &docker_auth
   name: Docker authentication
   command: |
     if [[ -n "$DOCKERHUB_TOKEN" ]]; then
-      echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+      echo "$DOCKERHUB_TOKEN" | docker login -u $DOCKERHUB_USERNAME --password-stdin
     fi
 
 _setup_docker_registry: &setup_docker_registry
   name: Set up local Docker registry
   command: |
     if [[ -f /tmp/images/registry.tar.gz ]]; then
+      echo "Loading saved registry image"
       docker load < /tmp/images/registry.tar.gz
     else
+      echo "Pulling registry image from DockerHub"
       docker pull registry:2
     fi
     docker run -d -p 5000:5000 --restart=always --name=registry \
-      -v /tmp/docker:/var/lib/registry registry:2
+        -v /tmp/docker:/var/lib/registry registry:2
 
 _pull_test_image: &pull_test_image
   name: Pull and tag test image from local registry
@@ -35,34 +39,31 @@ _pull_test_image: &pull_test_image
     docker pull localhost:5000/qsirecon-test
     docker tag localhost:5000/qsirecon-test pennlinc/qsirecon:test
 
+# ── Reusable commands ─────────────────────────────────────────────────
+
 commands:
   restore_build_and_data:
-    description: Restore Docker build cache and test data cache
+    description: Restore Docker image cache and test data cache, then start the registry
     steps:
       - restore_cache:
           keys:
             - build-v4-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}-{{ .Revision }}
+            - build-v3-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}
       - restore_cache:
           keys:
             - data-v2-{{ .Branch }}-{{ .Revision }}
-            - data-v2--{{ .Revision }}
-            - data-v2-{{ .Branch }}-
-            - data-v2-main-
-            - data-v2-
       - run: *docker_auth
       - run: *setup_docker_registry
       - run: *pull_test_image
 
   run_integration_test:
-    description: Run a pytest marker inside test image
+    description: Run a pytest-marked integration test inside the test Docker image
     parameters:
       marker:
         type: string
       cpus:
         type: integer
         default: 4
-      coverage_name:
-        type: string
     steps:
       - run:
           name: Run qsirecon (<< parameters.marker >>)
@@ -71,9 +72,9 @@ commands:
             mkdir -p /tmp/out /tmp/work /tmp/coverage
             docker run --rm=false \
               -e CIRCLE_CPUS=<< parameters.cpus >> \
-              -e COVERAGE_FILE=/coverage/.coverage.<< parameters.coverage_name >> \
+              -e COVERAGE_FILE=/coverage/.coverage.<< parameters.marker >> \
               -v /tmp/src/qsirecon:/tmp/src/qsirecon:ro \
-              -v /tmp/data:/data \
+              -v /tmp/data:/data:ro \
               -v /tmp/out:/out \
               -v /tmp/work:/work \
               -v /tmp/coverage:/coverage \
@@ -85,17 +86,17 @@ commands:
               --data_dir=/data --output_dir=/out --working_dir=/work \
               qsirecon
       - run:
-          name: Clean large artifacts
+          name: Clean up large artifacts
           when: always
-          command: |
-            find /tmp/out/ -name "*.nii.gz" -type f -delete 2>/dev/null || true
-            find /tmp/out/ -name "*.fib.gz" -type f -delete 2>/dev/null || true
+          command: find /tmp/out/ -name "*.nii.gz" -type f -delete 2>/dev/null || true
       - store_artifacts:
           path: /tmp/out
       - persist_to_workspace:
           root: /tmp/coverage
           paths:
-            - .coverage.<< parameters.coverage_name >>
+            - .coverage.<< parameters.marker >>
+
+# ── Jobs ──────────────────────────────────────────────────────────────
 
 jobs:
   image_prep:
@@ -109,6 +110,7 @@ jobs:
       - restore_cache:
           keys:
             - build-v4-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}-{{ .Revision }}
+            - build-v3-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}
       - run: *docker_auth
       - run: *setup_docker_registry
       - run:
@@ -117,9 +119,9 @@ jobs:
             export BASE_IMAGE=$( grep "BASE_IMAGE=" Dockerfile | head -1 | cut -d= -f2 )
             export BASE_IMAGE_NAME=${BASE_IMAGE%:*}
             export BASE_TAG=${BASE_IMAGE#*:}
-            echo "BASE_IMAGE=$BASE_IMAGE" >> "$BASH_ENV"
-            echo "BASE_IMAGE_NAME=$BASE_IMAGE_NAME" >> "$BASH_ENV"
-            echo "BASE_TAG=$BASE_TAG" >> "$BASH_ENV"
+            echo "BASE_IMAGE=$BASE_IMAGE" >> $BASH_ENV
+            echo "BASE_IMAGE_NAME=$BASE_IMAGE_NAME" >> $BASH_ENV
+            echo "BASE_TAG=$BASE_TAG" >> $BASH_ENV
       - run:
           name: Determine whether test image build is required
           command: |
@@ -133,17 +135,19 @@ jobs:
           name: Build base image if needed
           no_output_timeout: 90m
           command: |
-            if ! docker manifest inspect "$BASE_IMAGE" > /dev/null 2>&1; then
+            if ! docker manifest inspect $BASE_IMAGE > /dev/null 2>&1; then
+              echo "Base image $BASE_IMAGE not found, building..."
               docker build -f Dockerfile.base \
                 --platform linux/amd64 \
-                -t "$BASE_IMAGE" \
-                -t "$BASE_IMAGE_NAME:latest" .
+                -t $BASE_IMAGE \
+                -t $BASE_IMAGE_NAME:latest .
               echo "BASE_WAS_BUILT=1" >> "$BASH_ENV"
             else
+              echo "Base image $BASE_IMAGE already exists."
               echo "BASE_WAS_BUILT=0" >> "$BASH_ENV"
             fi
       - run:
-          name: Build test image
+          name: Build Docker image (test)
           no_output_timeout: 90m
           command: |
             if [[ "$BUILD_TEST_IMAGE" == "1" || "$BASE_WAS_BUILT" == "1" ]]; then
@@ -154,10 +158,12 @@ jobs:
                 --platform linux/amd64 \
                 --build-arg VCS_REF="$(git rev-parse --short HEAD)" .
             elif docker image inspect pennlinc/qsirecon:test > /dev/null 2>&1; then
-              echo "Reusing local test image."
+              echo "Reusing existing local test image (no Dockerfile/pixi/base-triggered rebuild required)."
             elif docker pull localhost:5000/qsirecon-test; then
               docker tag localhost:5000/qsirecon-test pennlinc/qsirecon:test
+              echo "Reusing cached test image from local registry (no Dockerfile/pixi/base-triggered rebuild required)."
             else
+              echo "No reusable test image found; rebuilding test image."
               docker build \
                 --target test \
                 --rm=false \
@@ -180,12 +186,12 @@ jobs:
           name: Verify test image
           command: docker run --rm --entrypoint pytest pennlinc/qsirecon:test --version
       - run:
-          name: Push base image if newly built
+          name: Push base image to Docker Hub (if newly built)
           command: |
-            if [[ "$BASE_WAS_BUILT" == "1" ]] && docker image inspect "$BASE_IMAGE" > /dev/null 2>&1; then
+            if [[ "$BASE_WAS_BUILT" == "1" ]] && docker image inspect $BASE_IMAGE > /dev/null 2>&1; then
               if [[ -n "$DOCKERHUB_TOKEN" ]]; then
-                docker push "$BASE_IMAGE"
-                docker push "$BASE_IMAGE_NAME:latest"
+                docker push $BASE_IMAGE
+                docker push $BASE_IMAGE_NAME:latest
               fi
             fi
       - run:
@@ -196,7 +202,9 @@ jobs:
             docker push localhost:5000/qsirecon-test
       - run:
           name: Docker registry garbage collection
-          command: docker exec registry /bin/registry garbage-collect --delete-untagged /etc/docker/registry/config.yml
+          command: |
+            docker exec registry /bin/registry garbage-collect --delete-untagged \
+              /etc/docker/registry/config.yml
       - run:
           name: Record successful image prep
           command: |
@@ -237,185 +245,32 @@ jobs:
           paths:
             - /tmp/data
 
-  Recon_3Tissue_Singleshell_ACT:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: mrtrix_singleshell_ss3t_act
-          coverage_name: mrtrix_singleshell_ss3t_act
+  # ── Integration tests ────────────────────────────────────────────────
 
-  Recon_SS3T_FOD_AutoTrack:
+  integration_test:
     <<: *machine_defaults
+    parameters:
+      marker:
+        type: string
+      cpus:
+        type: integer
+        default: 4
     steps:
       - checkout:
           path: /tmp/src/qsirecon
+      - run:
+          name: Check whether build should be skipped
+          command: |
+            if [[ "$( git log --format=oneline -n 1 $CIRCLE_SHA1 | grep -i -E '\[skip[ _]?<< parameters.marker >>\]' )" != "" ]]; then
+              echo "Skipping << parameters.marker >>"
+              circleci step halt
+            fi
       - restore_build_and_data
       - run_integration_test:
-          marker: ss3t_fod_autotrack
-          coverage_name: ss3t_fod_autotrack
+          marker: << parameters.marker >>
+          cpus: << parameters.cpus >>
 
-  Recon_msmt_Multishell_HSVS:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: mrtrix_multishell_msmt_hsvs
-          coverage_name: mrtrix_multishell_msmt_hsvs
-
-  Recon_multises_pre1_IO_test:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: multises_pre1_qsiprep
-          coverage_name: multises_pre1_qsiprep
-
-  Recon_multises_post1_IO_test:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: multises_post1_qsiprep
-          coverage_name: multises_post1_qsiprep
-
-  Recon_3Tissue_Singleshell_NoACT:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: mrtrix_singleshell_ss3t_noact
-          coverage_name: mrtrix_singleshell_ss3t_noact
-
-  Recon_MRtrix3:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: mrtrix3_recon
-          coverage_name: mrtrix3_recon
-
-  Recon_Interfaces:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: interfaces
-          coverage_name: recon_interfaces
-
-  Recon_AutoTrack:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: autotrack
-          coverage_name: autotrack
-
-  Recon_Tortoise:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: tortoise_recon
-          coverage_name: tortoise_recon
-
-  Recon_DSI_Studio_GQI:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: dsi_studio_gqi_recon
-          coverage_name: dsi_studio_gqi_recon
-
-  Recon_DIPY_MAPMRI:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: dipy_mapmri
-          coverage_name: dipy_mapmri
-
-  Recon_DIPY_DKI:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: dipy_dki
-          coverage_name: dipy_dki
-
-  Recon_AMICO:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: amico_noddi
-          coverage_name: amico_noddi
-
-  mrtrix3_recon_with_response_functions:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: mrtrix3_recon_with_response_functions
-          coverage_name: mrtrix3_recon_with_response_functions
-
-  Recon_PYAFQ:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: pyafq_recon_full
-          coverage_name: pyafq_recon_full
-
-  Recon_PYAFQExternalTrk:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: pyafq_recon_external_trk
-          coverage_name: pyafq_recon_external_trk
-
-  Recon_ScalarMap:
-    <<: *machine_defaults
-    steps:
-      - checkout:
-          path: /tmp/src/qsirecon
-      - restore_build_and_data
-      - run_integration_test:
-          marker: scalar_mapper
-          coverage_name: scalar_mapper
+  # ── Coverage & deployment ────────────────────────────────────────────
 
   merge_coverage:
     <<: *machine_defaults
@@ -434,16 +289,13 @@ jobs:
             coverage xml -o /tmp/coverage/coverage.xml
       - store_artifacts:
           path: /tmp/coverage
+      - run:
+          name: Quick fix for GPG error in Codecov
+          command: mkdir -p ~/.gnupg
       - codecov/upload:
           file: /tmp/coverage/coverage.xml
 
-  deployable:
-    docker:
-      - image: busybox:latest
-    steps:
-      - run: echo Deploying!
-
-  deploy_docker:
+  build_and_deploy_docker:
     <<: *machine_defaults
     environment:
       TZ: "/usr/share/zoneinfo/America/New_York"
@@ -451,15 +303,16 @@ jobs:
     steps:
       - checkout:
           path: /tmp/src/qsirecon
-      - restore_cache:
-          keys:
-            - build-v4-{{ checksum "Dockerfile" }}-{{ checksum "pixi.lock" }}-{{ .Revision }}
       - run: *docker_auth
       - run:
-          name: Build production image
+          name: Build Docker image (production)
           no_output_timeout: 3h
           command: |
-            if [[ -n "$CIRCLE_TAG" ]]; then THISVERSION="$CIRCLE_TAG"; else THISVERSION="0+build"; fi
+            if [[ -n "$CIRCLE_TAG" ]]; then
+              THISVERSION="$CIRCLE_TAG"
+            else
+              THISVERSION="0+build"
+            fi
             e=1 && for i in {1..5}; do
               docker build \
                 --target qsirecon \
@@ -488,14 +341,21 @@ jobs:
               fi
             fi
 
+# ── Workflows ─────────────────────────────────────────────────────────
+
 workflows:
   version: 2
-  build_test_deploy:
+  run_tests:
     jobs:
       - image_prep:
           filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
             tags:
               only: /.*/
+
       - get_data:
           filters:
             branches:
@@ -504,62 +364,11 @@ workflows:
                 - /tests?\/.*/
             tags:
               only: /.*/
-      - Recon_3Tissue_Singleshell_ACT:
+
+      - integration_test:
+          name: mrtrix_singleshell_ss3t_act
+          marker: mrtrix_singleshell_ss3t_act
           requires: [image_prep, get_data]
-      - Recon_SS3T_FOD_AutoTrack:
-          requires: [image_prep, get_data]
-      - Recon_msmt_Multishell_HSVS:
-          requires: [image_prep, get_data]
-      - Recon_multises_pre1_IO_test:
-          requires: [image_prep, get_data]
-      - Recon_multises_post1_IO_test:
-          requires: [image_prep, get_data]
-      - Recon_3Tissue_Singleshell_NoACT:
-          requires: [image_prep, get_data]
-      - Recon_MRtrix3:
-          requires: [image_prep, get_data]
-      - Recon_Interfaces:
-          requires: [image_prep, get_data]
-      - Recon_AutoTrack:
-          requires: [image_prep, get_data]
-      - Recon_Tortoise:
-          requires: [image_prep, get_data]
-      - Recon_DSI_Studio_GQI:
-          requires: [image_prep, get_data]
-      - Recon_DIPY_MAPMRI:
-          requires: [image_prep, get_data]
-      - Recon_DIPY_DKI:
-          requires: [image_prep, get_data]
-      - Recon_AMICO:
-          requires: [image_prep, get_data]
-      - mrtrix3_recon_with_response_functions:
-          requires: [image_prep, get_data]
-      - Recon_PYAFQ:
-          requires: [image_prep, get_data]
-      - Recon_PYAFQExternalTrk:
-          requires: [image_prep, get_data]
-      - Recon_ScalarMap:
-          requires: [image_prep, get_data]
-      - merge_coverage:
-          requires:
-            - Recon_3Tissue_Singleshell_ACT
-            - Recon_3Tissue_Singleshell_NoACT
-            - Recon_SS3T_FOD_AutoTrack
-            - Recon_MRtrix3
-            - Recon_Interfaces
-            - Recon_AutoTrack
-            - Recon_Tortoise
-            - Recon_DSI_Studio_GQI
-            - Recon_DIPY_MAPMRI
-            - Recon_DIPY_DKI
-            - Recon_AMICO
-            - mrtrix3_recon_with_response_functions
-            - Recon_PYAFQ
-            - Recon_PYAFQExternalTrk
-            - Recon_ScalarMap
-            - Recon_multises_pre1_IO_test
-            - Recon_multises_post1_IO_test
-            - Recon_msmt_Multishell_HSVS
           filters:
             branches:
               ignore:
@@ -567,34 +376,242 @@ workflows:
                 - /tests?\/.*/
             tags:
               only: /.*/
-      - deployable:
-          requires:
-            - image_prep
-            - Recon_3Tissue_Singleshell_ACT
-            - Recon_3Tissue_Singleshell_NoACT
-            - Recon_SS3T_FOD_AutoTrack
-            - Recon_MRtrix3
-            - Recon_Interfaces
-            - Recon_AutoTrack
-            - Recon_Tortoise
-            - Recon_DSI_Studio_GQI
-            - Recon_DIPY_MAPMRI
-            - Recon_DIPY_DKI
-            - Recon_AMICO
-            - mrtrix3_recon_with_response_functions
-            - Recon_PYAFQ
-            - Recon_PYAFQExternalTrk
-            - Recon_ScalarMap
-            - Recon_multises_pre1_IO_test
-            - Recon_multises_post1_IO_test
-            - Recon_msmt_Multishell_HSVS
+
+      - integration_test:
+          name: ss3t_fod_autotrack
+          marker: ss3t_fod_autotrack
+          requires: [image_prep, get_data]
           filters:
             branches:
-              only: main
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
             tags:
               only: /.*/
-      - deploy_docker:
-          requires: [deployable]
+
+      - integration_test:
+          name: mrtrix_multishell_msmt_hsvs
+          marker: mrtrix_multishell_msmt_hsvs
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
+          name: multises_pre1_qsiprep
+          marker: multises_pre1_qsiprep
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
+          name: multises_post1_qsiprep
+          marker: multises_post1_qsiprep
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
+          name: mrtrix_singleshell_ss3t_noact
+          marker: mrtrix_singleshell_ss3t_noact
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
+          name: mrtrix3_recon
+          marker: mrtrix3_recon
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
+          name: interfaces
+          marker: interfaces
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
+          name: autotrack
+          marker: autotrack
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
+          name: tortoise_recon
+          marker: tortoise_recon
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
+          name: dsi_studio_gqi_recon
+          marker: dsi_studio_gqi_recon
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
+          name: dipy_mapmri
+          marker: dipy_mapmri
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
+          name: dipy_dki
+          marker: dipy_dki
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
+          name: amico_noddi
+          marker: amico_noddi
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
+          name: mrtrix3_recon_with_response_functions
+          marker: mrtrix3_recon_with_response_functions
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
+          name: pyafq_recon_full
+          marker: pyafq_recon_full
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
+          name: pyafq_recon_external_trk
+          marker: pyafq_recon_external_trk
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
+          name: scalar_mapper
+          marker: scalar_mapper
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - merge_coverage:
+          requires:
+            - mrtrix_singleshell_ss3t_act
+            - mrtrix_singleshell_ss3t_noact
+            - ss3t_fod_autotrack
+            - mrtrix3_recon
+            - interfaces
+            - autotrack
+            - tortoise_recon
+            - dsi_studio_gqi_recon
+            - dipy_mapmri
+            - dipy_dki
+            - amico_noddi
+            - mrtrix3_recon_with_response_functions
+            - pyafq_recon_full
+            - pyafq_recon_external_trk
+            - scalar_mapper
+            - multises_pre1_qsiprep
+            - multises_post1_qsiprep
+            - mrtrix_multishell_msmt_hsvs
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - build_and_deploy_docker:
+          requires:
+            - image_prep
           filters:
             branches:
               only: main
