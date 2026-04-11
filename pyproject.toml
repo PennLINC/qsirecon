@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling", "hatch-vcs", "nipreps-versions", "cython", "numpy"]
+requires = ["hatchling", "hatch-vcs", "nipreps-versions", "cython", "numpy", "setuptools_scm<10"]
 build-backend = "hatchling.build"
 
 [project]
@@ -17,7 +17,6 @@ classifiers = [
 license = {file = "LICENSE"}
 requires-python = ">=3.10"
 dependencies = [
-    "numpy <= 1.26.3",
     'importlib_resources; python_version < "3.11"',
     "dipy>=1.10.0,<1.11.0",
     "dmri-amico == 2.0.3",
@@ -26,7 +25,6 @@ dependencies = [
     "indexed_gzip <= 1.8.7",
     "Ingress2QSIRecon ~= 0.3",
     "jinja2 < 3.1",
-    "matplotlib",
     "networkx ~= 2.8.8",
     "nibabel <= 6.0.0",
     "nilearn == 0.10.1",
@@ -34,7 +32,6 @@ dependencies = [
     "nireports >= 24.0.3",
     "niworkflows >= 1.13,< 1.14",
     "packaging",  # for version string parsing
-    "pandas < 2.0.0",
     "psutil <= 5.9.8",
     "pyAFQ == 2.0",
     "pybids",
@@ -42,7 +39,6 @@ dependencies = [
     "scikit-image",
     "scikit-learn <= 1.4.0",
     "seaborn",
-    "setuptools",
     "sentry_sdk",
     "SimpleITK",
     "svgutils <= 0.3.4",
@@ -126,6 +122,63 @@ source = "vcs"
 version-file = "qsirecon/_version.py"
 
 #
+# Pixi configuration
+#
+
+[tool.pixi.workspace]
+channels = ["https://fsl.fmrib.ox.ac.uk/fsldownloads/fslconda/public", "conda-forge"]
+platforms = ["linux-64"]
+
+[tool.pixi.activation.env]
+FSLDIR = "$CONDA_PREFIX"
+FSLOUTPUTTYPE = "NIFTI_GZ"
+
+[tool.pixi.environments]
+default = { features = ["editable"], solve-group = "default" }
+test = { features = ["editable", "tests"], solve-group = "default" }
+qsirecon = { features = ["production", "container"], solve-group = "production" }
+
+[tool.pixi.feature.editable.pypi-dependencies]
+qsirecon = { path = ".", editable = true }
+
+[tool.pixi.feature.production.pypi-dependencies]
+qsirecon = { path = ".", editable = false }
+
+[tool.pixi.tasks]
+
+[tool.pixi.pypi-options.dependency-overrides]
+numpy = ">=1.26,<1.27"
+
+[tool.pixi.dependencies]
+python = "3.10.*"
+nodejs = "20.*"
+mkl = "*"
+mkl-service = "*"
+numpy = "1.26.*"
+scipy = "1.11.*"
+matplotlib = "3.8.*"
+pandas = "1.5.*"
+h5py = "3.10.*"
+graphviz = "*"
+pandoc = "*"
+ants = "2.6.*"
+connectome-workbench-cli = { version = "2.0.*", build = "*qt6*" }
+fsl-base = "*"
+fsl-avwutils = "*"
+fsl-bet2 = "*"
+fsl-flirt = "*"
+fsl-fugue = "*"
+fsl-mcflirt = "*"
+fsl-miscmaths = "*"
+fsl-topup = "*"
+fsl-warpfns = "*"
+setuptools = "<82.0.0"
+
+[tool.pixi.feature.container.dependencies]
+git = "*"
+git-annex = { version = "*", build = "alldep*" }
+
+#
 # Developer tool configurations
 #
 
@@ -157,34 +210,57 @@ extend-select = [
   "FA",
   "ISC",
   "ICN",
+  "LOG",
+  "PIE",
+  "PYI",
   "PT",
   "Q",
+  # "SIM",
+  # "TID",
+  "FLY",
+  # "PD",
+  "PERF",
+  "W",
+  "PGH",
+  "PLC",
+  "PLE",
+  "PLW",
+  "FURB",
+  "RUF",
 ]
 ignore = [
-  "B006",  # Do not use mutable data structures for argument defaults (keep in ignore)
-  "S110",  # `try`-`except`-`pass` detected
-  "B904",  # Within an `except` clause, raise exceptions
-  "BLE001",  # Do not catch blind exceptions
-  "B017",  # Do not assert blind exception: `Exception`
-  "B905",  # `zip()` without an explicit `strict=` parameter
-  "S101",  # Use of `assert` detected
-  "PT009",  # Use a regular `assert` instead of unittest-style `assertIn`
-  "PT027",  # Use `pytest.raises` instead of unittest-style `assertRaises`
-  "W605",  # [*] Invalid escape sequence: `\s`
-  "E402",  # Module level import not at top of file
-  "S607",  # Starting a process with a partial executable path
-  "B028",  # No explicit `stacklevel` keyword argument found
-  "S202",  # Uses of `tarfile.extractall()`
-  "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
-  "DTZ007",  # Naive datetime constructed using `datetime.datetime.strptime()` without %z
-  "A004",  # Import `ConnectionError` is shadowing a Python builtin
-  "S608",  # Possible SQL injection vector through string-based query construction
-  "S108",  # Probable insecure usage of temporary file or directory: "/tmp"
-  "S602",  # `subprocess` call with `shell=True` identified, security issue
-  "S113",  # Probable use of `requests` call without timeout
-  "S105",
+  # --- Shared with xcp_d ---
+  "S105",  # Possible hardcoded password
   "S311",  # We are not using random for cryptographic purposes
-  "S603",  # subprocess used only for trusted commands (git, pandoc, test runners)
+  "S603",  # subprocess used only for trusted commands
+  "PIE790",  # Unnecessary `...` literal
+  "PERF203",  # `try`-`except` within a loop
+  "PLC0415",  # `import` should be at the top of the file
+  "PLW2901",  # Outer variable overwritten by inner assignment
+  "RUF005",  # Consider unpacking instead of concatenation
+  "RUF012",  # Mutable class variables should use `ClassVar`
+  # --- qsirecon-specific (to be addressed incrementally) ---
+  "B006",  # Mutable data structures for argument defaults (~30 workflow functions)
+  "B017",  # Do not assert blind exception: `Exception`
+  "B028",  # No explicit `stacklevel` keyword argument found
+  "B904",  # Within an `except` clause, raise exceptions with `from`
+  "B905",  # `zip()` without an explicit `strict=` parameter
+  "BLE001",  # Do not catch blind exceptions
+  "S101",  # Use of `assert` detected
+  "S108",  # Probable insecure usage of temporary file or directory
+  "S110",  # `try`-`except`-`pass` detected
+  "S113",  # Probable use of `requests` call without timeout
+  "S202",  # Uses of `tarfile.extractall()`
+  "S602",  # `subprocess` call with `shell=True`
+  "S607",  # Starting a process with a partial executable path
+  "S608",  # Possible SQL injection vector through string-based query construction
+  "A004",  # Import is shadowing a Python builtin
+  "DTZ005",  # `datetime.datetime.now()` called without a `tz` argument
+  "DTZ007",  # Naive datetime constructed using `strptime()` without %z
+  "E402",  # Module level import not at top of file
+  "W605",  # Invalid escape sequence
+  "PT009",  # Use a regular `assert` instead of unittest-style
+  "PT027",  # Use `pytest.raises` instead of unittest-style
 ]
 
 [tool.ruff.lint.flake8-quotes]
@@ -218,7 +294,6 @@ markers = [
     "ss3t_fod_autotrack: test 24",
     "multises_post1_qsiprep: test 25",
     "multises_pre1_qsiprep: test 26",
-    "interfaces: test 27",
     "mrtrix3_recon_with_response_functions: test 28",
 ]
 env = [
@@ -240,3 +315,16 @@ exclude_lines = [
     'raise NotImplementedError',
     'warnings\.warn',
 ]
+
+[tool.codespell]
+skip = '.git,*.pdf,*.svg,*.html,dataset_description.json,*.gii,pixi.lock'
+# te - TE (echo time)
+# Weill - name
+# reson - Reson. abbreviation in citation
+# DNE - acronym for does not exist
+# fo - acronym for file object
+# fixel/fixels - real neuroimaging term
+# pres - variable name
+# Gage, Joo, Sepulcre - author names
+# numer - abbreviation for numerator
+ignore-words-list = 'te,weill,reson,DNE,fo,fixel,fixels,pres,Gage,Joo,Sepulcre,numer'

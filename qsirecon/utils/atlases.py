@@ -57,17 +57,22 @@ def collect_atlases(datasets, atlases, bids_filters={}):
     atlas_filter = bids_filters.get('atlas', {})
     atlas_filter['suffix'] = atlas_filter.get('suffix') or 'dseg'  # XCP-D only supports dsegs
     atlas_filter['extension'] = ['.nii.gz', '.nii']
-    # Hardcoded spaces for now
-    atlas_filter['space'] = atlas_filter.get('space') or 'MNI152NLin2009cAsym'
+    # Hardcoded templates for now
+    atlas_filter['template'] = atlas_filter.get('template') or 'MNI152NLin2009cAsym'
 
     atlas_cache = {}
     for dataset_name, dataset_path in datasets.items():
+        LOGGER.info(f'Collecting atlases from {dataset_name}: {dataset_path}')
         if not isinstance(dataset_path, BIDSLayout):
-            layout = BIDSLayout(dataset_path, config=[atlas_cfg], validate=False)
+            layout = BIDSLayout(
+                dataset_path,
+                config=['bids', 'derivatives', atlas_cfg],
+                validate=False,
+            )
         else:
             layout = dataset_path
 
-        if layout.get_dataset_description().get('DatasetType') != 'atlas':
+        if layout.get_dataset_description().get('DatasetType') != 'derivative':
             continue
 
         for atlas in atlases:
@@ -113,15 +118,15 @@ def collect_atlases(datasets, atlases, bids_filters={}):
             LOGGER.warning(f'No atlas images found for {atlas} with query {atlas_filter}')
             errors.append(f'No atlas images found for {atlas} with query {atlas_filter}')
 
-    for _atlas, atlas_info in atlas_cache.items():
+    for atlas_info in atlas_cache.values():
         if not atlas_info['labels']:
             errors.append(f'No TSV file found for {atlas_info["image"]}')
             continue
 
         # Check the contents of the labels file
         df = pd.read_table(atlas_info['labels'])
-        if 'label' not in df.columns:
-            errors.append(f"'label' column not found in {atlas_info['labels']}")
+        if 'name' not in df.columns:
+            errors.append(f"'name' column not found in {atlas_info['labels']}")
 
         if 'index' not in df.columns:
             errors.append(f"'index' column not found in {atlas_info['labels']}")

@@ -1,1 +1,9 @@
 qsirecon/_version.py export-subst
+pixi.lock merge=binary linguist-language=YAML linguist-generated=true
+# SCM syntax highlighting
+*.py diff=python
+*.py text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.ini text eol=lf

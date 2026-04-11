@@ -19,7 +19,7 @@ except Exception:  # pragma: no cover - environment-dependent
 # Reuse Nipype's internals so behavior stays consistent unless overridden
 from nipype.sphinxext.apidoc import __version__ as NIPYPE_VERSION
 from nipype.sphinxext.apidoc import _skip_member as nipype_skip_member
-from nipype.sphinxext.apidoc.docstring import (  # noqa: F401
+from nipype.sphinxext.apidoc.docstring import (
     NipypeDocstring as BaseNipypeDocstring,
 )
 from nipype.sphinxext.apidoc.docstring import _parse_spec as nipype_parse_spec
@@ -207,7 +207,7 @@ def _format_recon_spec_item(inputs, name, spec):
             default = spec.default_value()[1]
             if isinstance(default, (bytes, str)) and not default:
                 default = '""'
-            desc_lines += [f'(Default value: ``{str(default)}``)']
+            desc_lines += [f'(Default value: ``{default!s}``)']
     except Exception:
         pass
 
@@ -223,8 +223,7 @@ def _format_recon_spec_item(inputs, name, spec):
         lines.append(f'- {name}')
 
     # Indent description under the bullet point
-    for dl in desc_lines:
-        lines.append(f'  {dl}')
+    lines.extend(f'  {dl}' for dl in desc_lines)
 
     return lines
 
@@ -251,8 +250,7 @@ def _format_recon_spec_card(inputs, name, spec):
             desc = ''.join([spec.desc[0].capitalize(), spec.desc[1:]])
             if not desc.endswith('.') and not desc.endswith('\n'):
                 desc = f'{desc}.'
-            for dl in desc.splitlines():
-                lines.append(f'      {dl}')
+            lines.extend(f'      {dl}' for dl in desc.splitlines())
             lines.append('')
     except Exception:
         pass
@@ -270,7 +268,7 @@ def _format_recon_spec_card(inputs, name, spec):
             default = spec.default_value()[1]
             if isinstance(default, (bytes, str)) and not default:
                 default = '""'
-            lines += [f'      :bdg-info:`Default` {str(default)}']
+            lines += [f'      :bdg-info:`Default` {default!s}']
     except Exception:
         pass
 

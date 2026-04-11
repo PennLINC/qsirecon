@@ -402,7 +402,7 @@ def amplitudes_to_fibgz(
     n_voxels = int(np.prod(dsi_mat['dimension']))
     LOGGER.info('Detecting Peaks')
     for odfnum in range(n_odfs):
-        dirs, vals, indices = peak_directions(masked_odfs[odfnum], hs)
+        _dirs, vals, indices = peak_directions(masked_odfs[odfnum], hs)
         for dirnum, (val, idx) in enumerate(zip(vals, indices)):
             if dirnum == num_fibers:
                 break

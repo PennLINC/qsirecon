@@ -513,14 +513,14 @@ def brainsuite_shore_basis(radial_order, zeta, gtab, tau=1 / (4 * np.pi**2)):
     for n in range(radial_order + 1):
         for ell in range(0, n + 1, 2):
             Snew.append(S[:, L == ell])
-            for _ in range(-ell, ell + 1):
-                # Radial part
-                R.append(
-                    genlaguerre(n - ell, ell + 0.5)(r**2 / zeta)
-                    * np.exp(-(r**2) / (2.0 * zeta))
-                    * _kappa(zeta, n, ell)
-                    * (r**2 / zeta) ** (ell / 2)
-                )
+            # Radial part
+            R.extend(
+                genlaguerre(n - ell, ell + 0.5)(r**2 / zeta)
+                * np.exp(-(r**2) / (2.0 * zeta))
+                * _kappa(zeta, n, ell)
+                * (r**2 / zeta) ** (ell / 2)
+                for _ in range(-ell, ell + 1)
+            )
     R = np.column_stack(R)
     Snew = np.column_stack(Snew)
     Sh = R * Snew
@@ -557,14 +557,14 @@ def brainsuite_shore_matrix_pdf(radial_order, zeta, rtab):
     for n in range(radial_order + 1):
         for ell in range(0, n + 1, 2):
             Snew.append(S[:, L == ell])
-            for _ in range(-ell, ell + 1):
-                psi.append(
-                    genlaguerre(n - ell, ell + 0.5)(4 * np.pi**2 * zeta * r**2)
-                    * np.exp(-2 * np.pi**2 * zeta * r**2)
-                    * _kappa_pdf(zeta, n, ell)
-                    * (4 * np.pi**2 * zeta * r**2) ** (ell / 2)
-                    * (-1) ** (n - ell / 2)
-                )
+            psi.extend(
+                genlaguerre(n - ell, ell + 0.5)(4 * np.pi**2 * zeta * r**2)
+                * np.exp(-2 * np.pi**2 * zeta * r**2)
+                * _kappa_pdf(zeta, n, ell)
+                * (4 * np.pi**2 * zeta * r**2) ** (ell / 2)
+                * (-1) ** (n - ell / 2)
+                for _ in range(-ell, ell + 1)
+            )
 
     return np.column_stack(psi) * np.column_stack(Snew)
 
@@ -605,12 +605,12 @@ def shore_matrix_odf(radial_order, zeta, sphere_vertices):
     for n in range(radial_order + 1):
         for ell in range(0, n + 1, 2):
             Snew.append(S[:, L == ell])
-            for _ in range(-ell, ell + 1):
-                upsilon.append(
-                    (-1) ** (n - ell / 2.0)
-                    * _kappa_odf(zeta, n, ell)
-                    * hyp2f1(ell - n, ell / 2.0 + 1.5, ell + 1.5, 2.0)
-                )
+            upsilon.extend(
+                (-1) ** (n - ell / 2.0)
+                * _kappa_odf(zeta, n, ell)
+                * hyp2f1(ell - n, ell / 2.0 + 1.5, ell + 1.5, 2.0)
+                for _ in range(-ell, ell + 1)
+            )
 
     return np.column_stack(upsilon) * np.column_stack(Snew)
 
@@ -642,11 +642,12 @@ def create_rspace(gridsize, radius_max):
     """
 
     radius = gridsize // 2
-    vecs = []
-    for i in range(-radius, radius + 1):
-        for j in range(-radius, radius + 1):
-            for k in range(-radius, radius + 1):
-                vecs.append([i, j, k])
+    vecs = [
+        [i, j, k]
+        for i in range(-radius, radius + 1)
+        for j in range(-radius, radius + 1)
+        for k in range(-radius, radius + 1)
+    ]
 
     vecs = np.array(vecs, dtype='float32')
     tab = vecs / radius
@@ -657,11 +658,12 @@ def create_rspace(gridsize, radius_max):
 
 
 def shore_index_matrix(radial_order):
-    indices = []
-    for n in range(radial_order + 1):
-        for ell in range(0, n + 1, 2):
-            for m in range(-ell, ell + 1):
-                indices.append((n, ell, m))
+    indices = [
+        (n, ell, m)
+        for n in range(radial_order + 1)
+        for ell in range(0, n + 1, 2)
+        for m in range(-ell, ell + 1)
+    ]
     return np.array(indices).astype(int)
 
 

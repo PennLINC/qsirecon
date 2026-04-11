@@ -59,7 +59,6 @@ else:
 
 class TckGenInputSpec(TractographyInputSpec):
     power = traits.CFloat(argstr='-power %f')
-    select = traits.CInt(argstr='-select %d')
     select = traits.CInt(
         argstr='-select %d',
         desc=(
@@ -223,7 +222,7 @@ class Dwi2Response(ResponseSD):
         if name in ('gm_file', 'csf_file', 'wm_file'):
             output = getattr(self.inputs, name)
             if not isdefined(output):
-                _, fname, ext = split_filename(self.inputs.in_file)
+                _, fname, _ext = split_filename(self.inputs.in_file)
                 output = fname + '_' + name.split('_')[0] + '.txt'
             return output
         return None
@@ -832,7 +831,7 @@ class BuildConnectome(MRTrix3Base):
         # Aggregate the connectivity/network data from DSI Studio
         connectivity_data = {
             f'atlas_{atlas_name}_region_ids': atlas_labels_df['index'].values,
-            f'atlas_{atlas_name}_region_labels': atlas_labels_df['label'].values,
+            f'atlas_{atlas_name}_region_labels': atlas_labels_df['name'].values,
         }
 
         # get the connectivity matrix
@@ -1119,11 +1118,7 @@ class CompressConnectome2Tck(SimpleInterface):
             )
 
         # Get the tck files
-        tckfiles = [
-            fname
-            for fname in self.inputs.files
-            if fname.endswith('.tck') or fname.endswith('.tck.gz')
-        ]
+        tckfiles = [fname for fname in self.inputs.files if fname.endswith(('.tck', '.tck.gz'))]
         for tckfile in tckfiles:
             zipfh.write(
                 tckfile,

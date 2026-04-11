@@ -3,7 +3,7 @@
 
 
 import json
-import os.path as op
+import os
 import sys
 from copy import deepcopy
 from glob import glob
@@ -184,12 +184,15 @@ to workflows in *QSIRecon*'s documentation]\
         # Configure atlases _per_ anatomical workflow
         atlas_configs = {}
         if config.execution.atlases:
+            atlas_output_dir = os.path.join(config.execution.output_dir, 'sourcedata', 'atlases')
+            os.makedirs(atlas_output_dir, exist_ok=True)
+
             # Limit atlases to ones in the specified space.
             xfm_to_anat = anat_data['template_to_acpc_xfm']
             template_space = get_entity(xfm_to_anat, 'from')
             bids_filters = (config.execution.bids_filters or {}).copy()
             bids_filters['atlas'] = bids_filters.get('atlas', {})
-            bids_filters['atlas']['space'] = template_space
+            bids_filters['atlas']['template'] = template_space
 
             # Collect atlases across datasets, including built-in atlases.
             atlas_configs = collect_atlases(
@@ -205,14 +208,14 @@ to workflows in *QSIRecon*'s documentation]\
             # Prepare the atlases.
             # Reorient to LPS+ and zero out the sform.
             for atlas_name, atlas_config in atlas_configs.items():
-                # Node is named dataset_ instead of ds_ so no clean_datasinks step will affect it.
+                # Node is named datasink_ instead of ds_ so no clean_datasinks step will affect it.
                 # XXX: We should pass the outputs from these datasinks to any steps that use the
                 # atlases in order to track Sources.
                 ds_atlas_orig = pe.Node(
                     CopyAtlas(
                         in_file=atlas_config['image'],
-                        source_file=atlas_config['image'],
-                        out_dir=config.execution.output_dir,
+                        name_source=atlas_config['image'],
+                        output_dir=atlas_output_dir,
                         atlas=atlas_name,
                         meta_dict=atlas_config['metadata'],
                     ),
@@ -223,8 +226,8 @@ to workflows in *QSIRecon*'s documentation]\
                 ds_atlas_labels_orig = pe.Node(
                     CopyAtlas(
                         in_file=atlas_config['labels'],
-                        source_file=atlas_config['labels'],
-                        out_dir=config.execution.output_dir,
+                        name_source=atlas_config['labels'],
+                        output_dir=atlas_output_dir,
                         atlas=atlas_name,
                     ),
                     name=f'datasink_atlas_labels_orig_{atlas_name}_{anat_num}',
@@ -379,7 +382,7 @@ to workflows in *QSIRecon*'s documentation]\
 
 
 def _get_wf_name(dwi_file):
-    basedir, fname, ext = split_filename(dwi_file)
+    _, fname, _ = split_filename(dwi_file)
     tokens = fname.split('_')
     return '_'.join(tokens[:-1]).replace('-', '_')
 
@@ -391,11 +394,13 @@ def _load_recon_spec(spec_name):
     from ..utils.sloppy_recon import make_sloppy
 
     prepackaged_dir = load_data('pipelines')
-    prepackaged = [op.split(fname)[1][:-5] for fname in glob(op.join(prepackaged_dir, '*.yaml'))]
-    if op.exists(spec_name):
+    prepackaged = [
+        os.path.split(fname)[1][:-5] for fname in glob(os.path.join(prepackaged_dir, '*.yaml'))
+    ]
+    if os.path.exists(spec_name):
         recon_spec = spec_name
     elif spec_name in prepackaged:
-        recon_spec = op.join(prepackaged_dir, f'{spec_name}.yaml')
+        recon_spec = os.path.join(prepackaged_dir, f'{spec_name}.yaml')
     else:
         raise Exception(f'{spec_name} is not a file that exists or in {prepackaged}')
 

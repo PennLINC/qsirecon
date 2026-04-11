@@ -77,7 +77,7 @@ def init_pyafq_wf(inputs_dict, name='afq', qsirecon_suffix='', params={}):
     kwargs = _parse_qsirecon_params_dict(params)
     kwargs['omp_nthreads'] = config.nipype.omp_nthreads
 
-    workflow.__desc__ += f'{str(kwargs)}.'
+    workflow.__desc__ += f'{kwargs!s}.'
 
     run_afq = pe.Node(
         PyAFQRecon(kwargs=kwargs, n_procs=omp_nthreads), name='run_afq', n_procs=omp_nthreads

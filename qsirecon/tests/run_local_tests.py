@@ -76,7 +76,8 @@ def run_command(command, env=None):
 def run_tests(test_regex, test_mark, check_path):
     """Run the tests."""
     local_patch = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    mounted_code = '/opt/conda/envs/qsiprep/lib/python3.10/site-packages/qsirecon'
+    mounted_site_packages = '/app/.pixi/envs/qsirecon/lib/python3.10/site-packages'
+    mounted_code = f'{mounted_site_packages}/qsirecon'
 
     if check_path:
         run_str = (
@@ -91,13 +92,13 @@ def run_tests(test_regex, test_mark, check_path):
     else:
         run_str = (
             'docker run --rm -ti '
-            f'-v {local_patch}:{mounted_code} '
+            f'-v {local_patch}:{mounted_site_packages} '
             '--entrypoint pytest '
             'pennlinc/qsirecon:unstable '
-            f'{mounted_code}/qsirecon '
-            f'--data_dir={mounted_code}/qsirecon/tests/test_data '
-            f'--output_dir={mounted_code}/qsirecon/tests/pytests/out '
-            f'--working_dir={mounted_code}/qsirecon/tests/pytests/work '
+            f'{mounted_code} '
+            f'--data_dir={mounted_code}/tests/test_data '
+            f'--output_dir={mounted_code}/tests/pytests/out '
+            f'--working_dir={mounted_code}/tests/pytests/work '
         )
         if test_regex:
             run_str += f'-k {test_regex} '

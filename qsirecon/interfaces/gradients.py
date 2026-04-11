@@ -337,9 +337,7 @@ class ExtractB0s(SimpleInterface):
 
 def concatenate_bvals(bval_list, out_file):
     """Create an FSL-style bvals file from split bval files."""
-    collected_vals = []
-    for bval_file in bval_list:
-        collected_vals.append(np.loadtxt(bval_file, ndmin=1))
+    collected_vals = [np.loadtxt(bval_file, ndmin=1) for bval_file in bval_list]
     final_bvals = np.concatenate(collected_vals).squeeze()
     if out_file is not None:
         np.savetxt(out_file, final_bvals, fmt='%i')

@@ -201,7 +201,7 @@ try:
                 _oc_limit = _proc_oc_kbytes.read_text().strip()
             if _oc_limit in ('0', 'n/a') and Path('/proc/sys/vm/overcommit_ratio').exists():
                 _oc_limit = '{}%'.format(Path('/proc/sys/vm/overcommit_ratio').read_text().strip())
-except Exception:  # noqa: S110, BLE001
+except Exception:
     pass
 
 
@@ -458,8 +458,6 @@ class execution(_Config):
     """Write out the computational graph corresponding to the planned postprocessing."""
     dataset_links = {}
     """A dictionary of dataset links to be used to track Sources in sidecars."""
-    dataset_links = {}
-    """A dictionary of dataset links to be used to track Sources in sidecars."""
 
     _layout = None
     _processing_list = None
@@ -569,8 +567,7 @@ class execution(_Config):
         if cls.recon_spec_aux_files:
             dataset_links['aux'] = cls.recon_spec_aux_files
 
-        for dset_name, dset_path in cls.datasets.items():
-            dataset_links[dset_name] = dset_path
+        dataset_links = cls.datasets.copy()
         cls.dataset_links = dataset_links
 
         if 'all' in cls.debug:
@@ -767,9 +764,7 @@ def get(flat=False):
         return settings
 
     return {
-        '.'.join((section, k)): v
-        for section, configs in settings.items()
-        for k, v in configs.items()
+        f'{section}.{k}': v for section, configs in settings.items() for k, v in configs.items()
     }
 
 
