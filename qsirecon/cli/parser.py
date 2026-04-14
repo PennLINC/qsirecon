@@ -337,7 +337,8 @@ def _build_parser(**kwargs):
         '--recon-spec',
         action='store',
         type=str,
-        help='json file specifying a reconstruction pipeline to be run after preprocessing',
+        help='YAML file specifying a reconstruction pipeline to be run.',
+        required=True,
     )
     g_recon.add_argument(
         '--input-type',
@@ -422,8 +423,11 @@ def _build_parser(**kwargs):
         '--config-file',
         action='store',
         metavar='FILE',
-        help='Use pre-generated configuration file. Values in file will be overridden '
-        'by command-line arguments.',
+        help=(
+            'Use pre-generated configuration file. Values in file will be overridden '
+            'by command-line arguments. '
+            'This is not currently used by QSIRecon.'
+        ),
     )
     g_other.add_argument(
         '--write-graph',
