@@ -6,8 +6,6 @@ environments:
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
     - https://pypi.org/simple
-    options:
-      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-7_kmp_llvm.conda
@@ -371,8 +369,6 @@ environments:
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
     - https://pypi.org/simple
-    options:
-      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-7_kmp_llvm.conda
@@ -762,8 +758,6 @@ environments:
     - url: https://conda.anaconda.org/conda-forge/
     indexes:
     - https://pypi.org/simple
-    options:
-      pypi-prerelease-mode: if-necessary-or-explicit
     packages:
       linux-64:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-7_kmp_llvm.conda
@@ -5798,8 +5792,87 @@ packages:
   timestamp: 1770223379599
 - pypi: ./
   name: qsirecon
-  version: 1.2.1.dev44+g595f78582.d20260410
-  sha256: 8500f6bec6443c22b373eea2ad8a10185c0cfed18f22993c93618bf14597039c
+  version: 26.0.0.dev16+g5f456a40b
+  sha256: 020648c3cba8cf203319db8f522a43cd0c88a8e9051edeebce8025fd7ae85905
+  requires_dist:
+  - dipy>=1.10.0,<1.11.0
+  - dmri-amico==2.0.3
+  - filelock
+  - fury
+  - importlib-resources ; python_full_version < '3.11'
+  - indexed-gzip<=1.8.7
+  - ingress2qsirecon~=0.3
+  - jinja2<3.1
+  - networkx~=2.8.8
+  - nibabel<=6.0.0
+  - nilearn==0.10.1
+  - nipype==1.9.1
+  - nireports>=24.0.3
+  - niworkflows>=1.13,<1.14
+  - packaging
+  - psutil<=5.9.8
+  - pyafq==2.0
+  - pybids
+  - pyyaml
+  - scikit-image
+  - scikit-learn<=1.4.0
+  - seaborn
+  - sentry-sdk
+  - simpleitk
+  - svgutils<=0.3.4
+  - transforms3d
+  - vtk
+  - xvfbwrapper
+  - coverage ; extra == 'all'
+  - doctest-ignore-unicode ; extra == 'all'
+  - fuzzywuzzy ; extra == 'all'
+  - lxml-html-clean ; extra == 'all'
+  - nbsphinx ; extra == 'all'
+  - pre-commit ; extra == 'all'
+  - pydot>=1.2.3 ; extra == 'all'
+  - pydotplus ; extra == 'all'
+  - pytest ; extra == 'all'
+  - pytest-cov ; extra == 'all'
+  - pytest-env ; extra == 'all'
+  - python-levenshtein ; extra == 'all'
+  - recommonmark ; extra == 'all'
+  - ruff~=0.15.0 ; extra == 'all'
+  - sphinx-argparse ; extra == 'all'
+  - sphinx-design ; extra == 'all'
+  - sphinx-markdown-tables ; extra == 'all'
+  - sphinx-rtd-theme ; extra == 'all'
+  - sphinx>=4.2.0 ; extra == 'all'
+  - sphinxcontrib-apidoc ; extra == 'all'
+  - sphinxcontrib-bibtex ; extra == 'all'
+  - tox ; extra == 'all'
+  - pre-commit ; extra == 'dev'
+  - ruff~=0.15.0 ; extra == 'dev'
+  - tox ; extra == 'dev'
+  - doctest-ignore-unicode ; extra == 'doc'
+  - lxml-html-clean ; extra == 'doc'
+  - nbsphinx ; extra == 'doc'
+  - pydot>=1.2.3 ; extra == 'doc'
+  - pydotplus ; extra == 'doc'
+  - recommonmark ; extra == 'doc'
+  - sphinx-argparse ; extra == 'doc'
+  - sphinx-design ; extra == 'doc'
+  - sphinx-markdown-tables ; extra == 'doc'
+  - sphinx-rtd-theme ; extra == 'doc'
+  - sphinx>=4.2.0 ; extra == 'doc'
+  - sphinxcontrib-apidoc ; extra == 'doc'
+  - sphinxcontrib-bibtex ; extra == 'doc'
+  - fuzzywuzzy ; extra == 'maint'
+  - python-levenshtein ; extra == 'maint'
+  - coverage ; extra == 'tests'
+  - pytest ; extra == 'tests'
+  - pytest-cov ; extra == 'tests'
+  - pytest-env ; extra == 'tests'
+  requires_python: '>=3.10'
+  editable: true
+- pypi: ./
+  name: qsirecon
+  version: 26.0.0.dev16+g5f456a40b
+  sha256: 020648c3cba8cf203319db8f522a43cd0c88a8e9051edeebce8025fd7ae85905
   requires_dist:
   - dipy>=1.10.0,<1.11.0
   - dmri-amico==2.0.3
