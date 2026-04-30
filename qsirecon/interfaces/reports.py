@@ -451,7 +451,7 @@ def plot_scalar_map(
     dseg=None,
     vmin=None,
     vmax=None,
-    cmap='Reds',
+    cmap='viridis',
 ):
     """Plot a scalar map with a histogram of the voxel-wise values."""
     import seaborn as sns
@@ -459,7 +459,7 @@ def plot_scalar_map(
     from nilearn import image, masking, plotting
 
     if dseg is not None:
-        tissue_types = ['GM', 'WM', 'CSF']
+        tissue_types = ['CSF', 'GM', 'WM']
         tissue_values = [1, 2, 3]
         tissue_colors = ['#1b60a5', '#2da467', '#9d8f25']
     else:
