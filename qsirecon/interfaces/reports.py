@@ -451,7 +451,7 @@ def plot_scalar_map(
     dseg=None,
     vmin=None,
     vmax=None,
-    cmap='Reds',
+    cmap='viridis',
 ):
     """Plot a scalar map with a histogram of the voxel-wise values."""
     import seaborn as sns
