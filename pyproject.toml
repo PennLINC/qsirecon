@@ -282,6 +282,7 @@ markers = [
     "mrtrix_singleshell_ss3t_act: test 1",
     "mrtrix_singleshell_ss3t_noact: test 2",
     "amico_noddi: test 5",
+    "dsi_studio_gqi_recon: test 6",
     "dipy_mapmri: test 7",
     "dipy_dki: test 8",
     "scalar_mapper: test 17",
