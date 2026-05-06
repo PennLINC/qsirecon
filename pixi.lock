@@ -5792,8 +5792,8 @@ packages:
   timestamp: 1770223379599
 - pypi: ./
   name: qsirecon
-  version: 26.0.0.dev16+g5f456a40b
-  sha256: 020648c3cba8cf203319db8f522a43cd0c88a8e9051edeebce8025fd7ae85905
+  version: 26.1.0.dev3+g23081d79a
+  sha256: e63322b91c92b3630c5e275dfe1eee711d76e68c9b03ad80ee24726acbe1ae6e
   requires_dist:
   - dipy>=1.10.0,<1.11.0
   - dmri-amico==2.0.3
@@ -5871,8 +5871,8 @@ packages:
   editable: true
 - pypi: ./
   name: qsirecon
-  version: 26.0.0.dev16+g5f456a40b
-  sha256: 020648c3cba8cf203319db8f522a43cd0c88a8e9051edeebce8025fd7ae85905
+  version: 26.1.0.dev3+g23081d79a
+  sha256: e63322b91c92b3630c5e275dfe1eee711d76e68c9b03ad80ee24726acbe1ae6e
   requires_dist:
   - dipy>=1.10.0,<1.11.0
   - dmri-amico==2.0.3
