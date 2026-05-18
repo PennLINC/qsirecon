@@ -45,6 +45,7 @@ RUN python fetch_templates.py
 FROM ${BASE_IMAGE} AS base
 WORKDIR /home/qsirecon
 ENV HOME="/home/qsirecon"
+ENV DIPY_HOME="/home/qsirecon/.dipy"
 
 COPY --link --from=templates /templateflow /home/qsirecon/.cache/templateflow
 RUN chmod -R go=u $HOME
