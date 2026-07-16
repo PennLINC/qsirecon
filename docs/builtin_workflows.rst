@@ -294,6 +294,9 @@ A GQI reconstruction is performed first based on the entire input data.
 The QA and ISO images from GQI are used to register the ACPC data to DSI Studio's ICBM 152 template.
 The GQI-based registration is used to transform the template bundles to subject ACPC space,
 where the SS3T-based FODs are used for tractography.
+The GQI-derived mapping file is passed through the intermediate FOD-to-FIB merge and is saved
+once, with ``model-ss3t``, by the final AutoTrack node after DSI Studio can associate it with
+the SS3T FOD fib.gz file used for tracking.
 
 This is a good workflow for doing tractometry on low-quality single shell data.
 If more than one shell is present in the input data, only the highest b-value shell is used.

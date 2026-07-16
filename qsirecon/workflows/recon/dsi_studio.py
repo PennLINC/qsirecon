@@ -456,6 +456,14 @@ def init_dsi_studio_autotrack_wf(
         name='clean_bundle_names',
         iterfield=['input_string'],
     )
+    clean_template_name = pe.Node(
+        niu.Function(
+            input_names=['input_string'],
+            output_names=['template'],
+            function=remove_non_alphanumeric,
+        ),
+        name='clean_template_name',
+    )
 
     # Save tck files of the bundles into the outputs
     ds_tckfiles = pe.MapNode(
@@ -497,8 +505,7 @@ def init_dsi_studio_autotrack_wf(
     # Save the mapping file
     ds_mapping = pe.Node(
         DerivativesDataSink(
-            dismiss_entities=('desc',),
-            suffix='dwimap',
+            suffix='mapping',
             model=model_name,
             extension='map.gz',
             compress=True,
@@ -513,9 +520,10 @@ def init_dsi_studio_autotrack_wf(
             ('fibgz_map', 'map_file')]),
         (inputnode, aggregate_atk_results, [('dwi_file', 'source_file')]),
         (inputnode, convert_to_tck, [('dwi_file', 'reference_nifti')]),
+        (actual_trk, clean_template_name, [('dsistudiotemplate', 'input_string')]),
+        (clean_template_name, ds_mapping, [('template', 'desc')]),
         (actual_trk, ds_mapping, [
-            ('map_file', 'in_file'),
-            ('dsistudiotemplate', 'dsistudiotemplate')]),
+            ('map_file', 'in_file')]),
         (actual_trk, aggregate_atk_results, [
             ('native_trk_files', 'trk_files'),
             ('stat_files', 'stat_files'),

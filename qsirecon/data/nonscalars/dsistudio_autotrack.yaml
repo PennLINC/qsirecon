@@ -47,7 +47,10 @@ fibgz:
 mapping:
     bids:
         space: ACPC|T1w
-        suffix: dwimap
+        desc: DSIStudioTemplate
+        suffix: mapping
         extension: map.gz
     metadata:
-        Description: Mapping file produced by DSI Studio.
+        Description: |
+            Mapping file produced by DSI Studio. The ``desc-`` entity specifies
+            the DSI Studio template used for registration.

@@ -63,11 +63,14 @@ mapping:
     bids:
         space: ACPC|T1w
         model: ss3t
-        suffix: dwimap
+        desc: DSIStudioTemplate
+        suffix: mapping
         extension: map.gz
     metadata:
         Description: |
-            Mapping file produced by DSI Studio. Here the model entity
-            specifies ss3t so that DSI Studio associates the mapping
-            with the model-ss3t fib.gz file. Be aware that this mapping
-            was created using the model-gqi fib.gz file.
+            Mapping file produced by DSI Studio during GQI-based AutoTrack
+            registration and reused for SS3T FOD AutoTrack. The ``desc-`` entity
+            specifies the DSI Studio template used for registration. The
+            GQI-derived mapping is passed through intermediate workflow nodes and
+            saved once, with ``model-ss3t``, after it has been associated with
+            the SS3T FOD fib.gz file used for tracking.
