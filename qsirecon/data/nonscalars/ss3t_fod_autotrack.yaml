@@ -9,6 +9,17 @@ bundles:
             specified in the ``bundle-`` tag. Bundles were tracked using the
             SS3t FODs.
 
+tt_bundles:
+    bids:
+        suffix: streamlines
+        model: ss3t
+        extension: tt.gz
+    metadata:
+        Description: |
+            Optional DSI Studio Tiny Track files, written when ``save_tt`` is
+            enabled. The bundle represented by this file is specified in the
+            ``bundle-`` tag. Bundles were tracked using the SS3t FODs.
+
 tdistats:
     bids:
         bundles: DSIStudio

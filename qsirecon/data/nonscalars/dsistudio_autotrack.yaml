@@ -7,6 +7,16 @@ bundles:
             One tck.gz per bundle. The bundle represented by this file is
             specified in the ``bundle-`` tag.
 
+tt_bundles:
+    bids:
+        suffix: streamlines
+        extension: tt.gz
+    metadata:
+        Description: |
+            Optional DSI Studio Tiny Track files, written when ``save_tt`` is
+            enabled. The bundle represented by this file is specified in the
+            ``bundle-`` tag.
+
 tdistats:
     bids:
         bundles: DSIStudio
