@@ -199,7 +199,6 @@ class DSIStudioTrkToTck(SimpleInterface):
     output_spec = _DSIStudioTrkToTckOutputSpec
 
     def _run_interface(self, runtime):
-
         if self.inputs.trk_file.endswith('.gz'):
             with gzip.open(self.inputs.trk_file, 'r') as trkf:
                 dsi_trk = nb.streamlines.load(trkf)
@@ -228,6 +227,41 @@ class DSIStudioTrkToTck(SimpleInterface):
         return runtime
 
 
+class _DSIStudioTrkToTTInputSpec(BaseInterfaceInputSpec):
+    trk_file = File(exists=True, mandatory=True)
+
+
+class _DSIStudioTrkToTTOutputSpec(TraitedSpec):
+    tt_file = File(exists=True)
+
+
+class DSIStudioTrkToTT(SimpleInterface):
+    input_spec = _DSIStudioTrkToTTInputSpec
+    output_spec = _DSIStudioTrkToTTOutputSpec
+
+    def _run_interface(self, runtime):
+        trk_file = Path(self.inputs.trk_file)
+        if trk_file.name.endswith('.trk.gz'):
+            output_name = trk_file.name.replace('.trk.gz', '.tt.gz')
+        else:
+            output_name = trk_file.with_suffix('').name + '.tt.gz'
+        tt_file = str(Path(runtime.cwd) / output_name)
+
+        subprocess.run(
+            [
+                'dsi_studio',
+                '--action=exp',
+                f'--source={self.inputs.trk_file}',
+                f'--output={tt_file}',
+            ],
+            check=True,
+        )
+        if not Path(tt_file).exists():
+            raise FileNotFoundError(f'DSI Studio did not create expected file: {tt_file}')
+        self._results['tt_file'] = tt_file
+        return runtime
+
+
 class _MergeFODGQIFibsInputSpec(BaseInterfaceInputSpec):
     csd_fib_file = File(exists=True, mandatory=True)
     reference_fib_file = File(exists=True, mandatory=True)
@@ -246,7 +280,6 @@ class MergeFODGQIFibs(SimpleInterface):
     output_spec = _MergeFODGQIFibsOutputSpec
 
     def _run_interface(self, runtime):
-
         # fname presuffix doesn't work with .fib.gz
         fib_name = Path(self.inputs.reference_fib_file).name.replace('.odf.', '.odf.FOD.')
         merged_fib_file = str(Path(runtime.cwd) / fib_name)
