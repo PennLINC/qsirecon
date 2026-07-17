@@ -1,0 +1,9 @@
+# Test data URLs for the get_data job. The data cache key in
+# continue_config.yml is {{ checksum ".circleci/data_versions.txt" }}, so
+# changing a URL here automatically invalidates the cache.
+MULTISHELL_OUTPUT_URL=https://upenn.box.com/shared/static/q066t33ojqk1phljr6064ilcrrqip87q.gz
+SINGLESHELL_OUTPUT_URL=https://upenn.box.com/shared/static/rc4oh9tqf20f2xu2p8587q44vwr1i7uf.gz
+HSVS_DATA_URL=https://upenn.box.com/shared/static/kic35jscwqhtezi6t398k4nfuo09ppty.xz
+MULTISES_PRE1_OUTPUT_URL=https://upenn.box.com/shared/static/g6hb4ylraejqn8sjz2xodj6fog4lp6sb.xz
+MULTISES_POST1_OUTPUT_URL=https://upenn.box.com/shared/static/ipqhy6a9p0pl7q1tw4zejj47mro4dtfh.xz
+CUSTOM_ATLASES_URL=https://upenn.box.com/shared/static/x07l09sc5v6hlsaio5mjng979ue0lvhn.gz
