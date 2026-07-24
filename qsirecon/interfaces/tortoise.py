@@ -109,7 +109,6 @@ class TORTOISEReconCommandLine(TORTOISECommandLine):
     # Most TORTOISE commandline programs don't offer an option for
     # what the output file should be called. The input file
     def _list_outputs(self):
-
         # If this is a special case where in_file is not defined and
         # there is no _suffix_map, do the normal version
         if not hasattr(self.inputs, 'in_file'):

@@ -16,6 +16,7 @@ from qsirecon.tests.utils import (
     download_test_data,
     freesurfer_license,
     get_test_data_path,
+    shrink_dataset_fov,
 )
 from qsirecon.utils.bids import (
     write_atlas_dataset_description,
@@ -399,6 +400,55 @@ def test_autotrack(data_dir, output_dir, working_dir):
         f'-w={work_dir}',
         '--sloppy',
         '--recon-spec=dsi_studio_autotrack',
+    ]
+
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
+
+
+@pytest.mark.integration
+@pytest.mark.chen_autotrack
+def test_chen_autotrack_small_fov(data_dir, output_dir, working_dir):
+    """Reproduce the DSI Studio "Chen" autotrack small-head/infant crash.
+
+    The HBCD ``hbcd_scalar_maps`` pipeline runs DSI Studio "Chen" autotrack, which crashes
+    on infant DWI with "no tractography atlas in dHCP_neonate template" when the DSI Studio
+    binary's internal ``is_human_size`` field-of-view check (~130 mm threshold) selects a
+    neonate template. We have no infant test data (real HBCD data cannot be used), so this
+    test synthesizes a neonate-sized input by uniformly shrinking the physical field of view
+    of the adult ``multishell_output`` derivative to ~100 mm (a header-only affine edit that
+    leaves bvecs untouched), then runs GQI + Chen autotrack.
+
+    With a fixed DSI Studio (Chen SHA b7b1f10d) this completes and the autotrack map file is
+    registered to ``icbm152_adult``; a broken build crashes on the missing dHCP_neonate
+    atlas (or would emit a ``dhcp_neonate`` map), either of which fails this test.
+
+    Inputs
+    ------
+    - DSDTI BIDS data (data/multishell_output), field of view shrunk to neonate size
+    """
+    TEST_NAME = 'chen_autotrack'
+
+    dataset_dir = download_test_data('multishell_output', data_dir)
+    # XXX: Having to modify dataset_dirs is suboptimal.
+    dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
+    out_dir = os.path.join(output_dir, TEST_NAME)
+    work_dir = os.path.join(working_dir, TEST_NAME)
+
+    # Synthesize a neonate-sized ("small head") input so DSI Studio's is_human_size check
+    # selects a non-adult template -- the condition that triggers the Chen autotrack crash.
+    shrunk_dir = shrink_dataset_fov(
+        dataset_dir,
+        os.path.join(work_dir, 'shrunk_qsiprep'),
+        target_fov_mm=100.0,
+    )
+
+    parameters = [
+        shrunk_dir,
+        out_dir,
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=chen_autotrack_test',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)

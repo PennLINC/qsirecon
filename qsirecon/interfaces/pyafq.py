@@ -48,7 +48,6 @@ class PyAFQRecon(SimpleInterface):
     output_spec = PyAFQOutputSpec
 
     def _run_interface(self, runtime):
-
         # shim the expected inputs
         shim_dir = op.join(runtime.cwd, 'study/subject')
         os.makedirs(shim_dir)

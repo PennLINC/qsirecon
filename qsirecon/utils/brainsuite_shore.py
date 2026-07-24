@@ -184,7 +184,6 @@ class BrainSuiteShoreModel(Cache):
 
     @multi_voxel_fit
     def fit(self, data):
-
         # Generate the SHORE basis
         M = self.cache_get('shore_matrix', key=self.gtab)
         if M is None:
@@ -224,7 +223,7 @@ class BrainSuiteShoreModel(Cache):
                 try:
                     lasso_fit = lasso.fit(M, data)
                     coef = lasso_fit.coef_
-                    alpha = lasso_fit.alpha_
+                    alpha = getattr(lasso_fit, 'alpha_', lasso_fit.alpha)
                     fitted = lasso_fit.predict(M)
 
                 except Warning as this_warning:

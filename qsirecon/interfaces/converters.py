@@ -199,7 +199,6 @@ class DSIStudioTrkToTck(SimpleInterface):
     output_spec = _DSIStudioTrkToTckOutputSpec
 
     def _run_interface(self, runtime):
-
         if self.inputs.trk_file.endswith('.gz'):
             with gzip.open(self.inputs.trk_file, 'r') as trkf:
                 dsi_trk = nb.streamlines.load(trkf)
@@ -246,7 +245,6 @@ class MergeFODGQIFibs(SimpleInterface):
     output_spec = _MergeFODGQIFibsOutputSpec
 
     def _run_interface(self, runtime):
-
         # fname presuffix doesn't work with .fib.gz
         fib_name = Path(self.inputs.reference_fib_file).name.replace('.odf.', '.odf.FOD.')
         merged_fib_file = str(Path(runtime.cwd) / fib_name)

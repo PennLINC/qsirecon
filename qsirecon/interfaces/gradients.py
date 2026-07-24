@@ -163,7 +163,6 @@ def _parse_shell_selection(requested_bvals, bval_df, max_distance):
 
 
 def _find_shells(bvals, max_distance):
-
     import pandas as pd
     from sklearn.metrics import silhouette_score
 
@@ -403,7 +402,6 @@ def subset_dwi(
 
 
 def _select_lines(in_file, out_file, indices):
-
     with open(in_file) as in_f:
         in_lines = in_f.readlines()
         new_lines = [in_lines[lineno] for lineno in indices]
