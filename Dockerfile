@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=pennlinc/qsirecon-base:20260414
+ARG BASE_IMAGE=pennlinc/qsirecon-base:20260724
 
 FROM ghcr.io/prefix-dev/pixi:0.58.0 AS build
 RUN apt-get update && \
