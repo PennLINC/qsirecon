@@ -4,7 +4,7 @@ from .bids import DerivativesDataSink
 from .images import ConformDwi, ValidateImage
 
 __all__ = [
-    'DerivativesDataSink',
     'ConformDwi',
+    'DerivativesDataSink',
     'ValidateImage',
 ]

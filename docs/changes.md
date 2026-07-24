@@ -1,6 +1,32 @@
 # What's New
 
-## 1.2.0
+
+## 26.0.0 (April 20, 2026)
+
+### 🛠 Breaking Changes
+
+* Bring packaging in line with NiPreps and adopt BIDS atlas organization by @tsalo in https://github.com/PennLINC/qsirecon/pull/367
+
+### 🐛 Bug Fixes
+
+* Allow schemes to be classified as "unknown" by @tsalo in https://github.com/PennLINC/qsirecon/pull/364
+* Replace np.complex with complex by @tsalo in https://github.com/PennLINC/qsirecon/pull/372
+* Change shutil.copy to shutil.copyfile by @tsalo in https://github.com/PennLINC/qsirecon/pull/373
+* Make `--recon-spec` a required argument by @tsalo in https://github.com/PennLINC/qsirecon/pull/375
+
+### Other Changes
+
+* Migrate from flake8 + black + isort to ruff by @tsalo in https://github.com/PennLINC/qsirecon/pull/351
+* Address easy style issues by @tsalo in https://github.com/PennLINC/qsirecon/pull/352
+* Fix version string issue by @tsalo in https://github.com/PennLINC/qsirecon/pull/355
+* Add tox, pre-commit config, and dependabot by @tsalo in https://github.com/PennLINC/qsirecon/pull/353
+* Address Sphinx build issues by @tsalo in https://github.com/PennLINC/qsirecon/pull/366
+* Remove undefined `FSFAST_HOME` variable by @tsalo in https://github.com/PennLINC/qsirecon/pull/376
+
+**Full Changelog**: https://github.com/PennLINC/qsirecon/compare/1.2.0...26.0.0
+
+
+## 1.2.0 (February 18, 2026)
 
 ### 🛠 Breaking Changes
 
@@ -62,7 +88,7 @@
 **Full Changelog**: https://github.com/PennLINC/qsirecon/compare/1.1.1...1.2.0
 
 
-## 1.1.1
+## 1.1.1 (August 19, 2025)
 
 This release fixes a major bug in QSIRecon's handling of multi-session and multi-run datasets.
 When processing multiple sessions or runs in a single QSIRecon call, the reconstruction workflow was being modified in place,
@@ -100,7 +126,7 @@ The built-in workflows should be largely unaffected.
 **Full Changelog**: https://github.com/PennLINC/qsirecon/compare/1.1.0...1.1.1
 
 
-## 1.1.0
+## 1.1.0 (April 14, 2025)
 
 ### 🎉 Exciting New Features
 
@@ -118,7 +144,7 @@ The built-in workflows should be largely unaffected.
 
 **Full Changelog**: https://github.com/PennLINC/qsirecon/compare/1.0.1...1.1.0
 
-## 1.0.1
+## 1.0.1 (March 12, 2025)
 
 ### 🎉 Exciting New Features
 
@@ -139,7 +165,7 @@ The built-in workflows should be largely unaffected.
 
 **Full Changelog**: https://github.com/PennLINC/qsirecon/compare/1.0.0...1.0.1
 
-## 1.0.0
+## 1.0.0 (March 11, 2025)
 
 ### 🛠 Breaking Changes
 

@@ -2,9 +2,6 @@
 Converting between file formats
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. autofunction:: init_mif_to_fibgz_wf
-.. autofunction:: init_fibgz_to_mif_wf
-
 """
 
 import logging

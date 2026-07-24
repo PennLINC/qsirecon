@@ -2,9 +2,6 @@
 TORTOISE recon workflows
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-
-.. autofunction:: init_tortoise_estimator_wf
-
 """
 
 import logging

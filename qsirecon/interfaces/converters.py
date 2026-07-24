@@ -29,8 +29,9 @@ from nipype.interfaces.base import (
     traits,
 )
 from nipype.utils.filemanip import fname_presuffix
-from pkg_resources import resource_filename as pkgr
 from scipy.io.matlab import loadmat, savemat
+
+from qsirecon.data import load as load_data
 
 LOGGER = logging.getLogger('nipype.workflow')
 ODF_COLS = 20000  # Number of columns in DSI Studio odf split
@@ -285,7 +286,7 @@ class MergeFODGQIFibs(SimpleInterface):
 
 
 def get_dsi_studio_ODF_geometry(odf_key):
-    mat_path = pkgr('qsirecon', 'data/odfs.mat')
+    mat_path = load_data('odfs.mat')
     m = loadmat(mat_path)
     odf_vertices = m[odf_key + '_vertices'].T
     odf_faces = m[odf_key + '_faces'].T
@@ -401,7 +402,7 @@ def amplitudes_to_fibgz(
     n_voxels = int(np.prod(dsi_mat['dimension']))
     LOGGER.info('Detecting Peaks')
     for odfnum in range(n_odfs):
-        dirs, vals, indices = peak_directions(masked_odfs[odfnum], hs)
+        _dirs, vals, indices = peak_directions(masked_odfs[odfnum], hs)
         for dirnum, (val, idx) in enumerate(zip(vals, indices)):
             if dirnum == num_fibers:
                 break

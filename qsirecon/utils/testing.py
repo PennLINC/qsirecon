@@ -18,8 +18,10 @@ logging.disable(logging.INFO)  # <- do we really want to do this?
 
 
 class TestWorkflow(unittest.TestCase):
-    """Subclass for test within the workflow module.
-    invoke tests with ``python -m unittest discover test"""
+    """Subclass for tests within the workflow module.
+
+    Invoke tests with ``python -m unittest discover test``.
+    """
 
     def assertIsAlmostExpectedWorkflow(
         self, expected_name, expected_interfaces, expected_inputs, expected_outputs, actual
@@ -63,10 +65,18 @@ class TestWorkflow(unittest.TestCase):
         return actual_inputs, actual_outputs
 
     def assert_circular(self, workflow, circular_connections):
-        """check key paths in workflow by specifying some connections that should induce
-        circular paths, which trips a NetworkX error.
-        circular_connections is a list of tuples:
-            [('from_node_name', 'to_node_name', ('from_node.output_field','to_node.input_field'))]
+        """Check key paths in workflow by specifying connections that should induce
+        circular paths (NetworkX error).
+
+        ``circular_connections`` is a list of tuples, for example::
+
+            [
+                (
+                    "from_node_name",
+                    "to_node_name",
+                    ("from_node.output_field", "to_node.input_field"),
+                ),
+            ]
         """
 
         for from_node, to_node, fields in circular_connections:
@@ -79,14 +89,17 @@ class TestWorkflow(unittest.TestCase):
             workflow.disconnect([(from_node, to_node, fields)])
 
     def assert_inputs_set(self, workflow, additional_inputs={}):
-        """Check that all mandatory inputs of nodes in the workflow (at the first level) are
-        already set. Additionally, check that inputs in additional_inputs are set. An input is
-        "set" if it is
-            a) defined explicitly (e.g. in the Interface declaration)
-            OR
-            b) connected to another node's output (e.g. using the workflow.connect method)
-        additional_inputs is a dict:
-            {'node_name': ['mandatory', 'input', 'fields']}"""
+        """Check mandatory inputs for nodes in the workflow (first level) are set.
+
+        Also checks keys in ``additional_inputs``. An input counts as set if:
+
+        - it is defined explicitly (e.g. in the interface declaration), or
+        - it is connected to another node's output (e.g. via ``workflow.connect``).
+
+        ``additional_inputs`` maps node names to lists of field names, for example::
+
+            {"node_name": ["mandatory", "input", "fields"]}
+        """
         dummy_node = pe.Node(niu.IdentityInterface(fields=['dummy']), name='DummyNode')
         node_names = [name for name in workflow.list_node_names() if name.count('.') == 0]
         for node_name in set(node_names + list(additional_inputs.keys())):

@@ -337,9 +337,7 @@ class ExtractB0s(SimpleInterface):
 
 def concatenate_bvals(bval_list, out_file):
     """Create an FSL-style bvals file from split bval files."""
-    collected_vals = []
-    for bval_file in bval_list:
-        collected_vals.append(np.loadtxt(bval_file, ndmin=1))
+    collected_vals = [np.loadtxt(bval_file, ndmin=1) for bval_file in bval_list]
     final_bvals = np.concatenate(collected_vals).squeeze()
     if out_file is not None:
         np.savetxt(out_file, final_bvals, fmt='%i')
@@ -424,7 +422,11 @@ def _classify_shell_scheme(bval_file, max_distance=5):
     n_clusters = len(np.unique(shells))
 
     # Check if it's a DSI protocol
-    score = silhouette_score(X, shells)
+    try:
+        score = silhouette_score(X, shells)
+    except ValueError:
+        return 'unknown'
+
     if score < 0.8:
         return 'non-shelled'
 

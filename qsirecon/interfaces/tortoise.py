@@ -381,7 +381,9 @@ class ComputeMAPMRI_NG(TORTOISEReconCommandLine):
 
 
 def make_bmat_file(bvals, bvecs):
-    pout = subprocess.run(['FSLBVecsToTORTOISEBmatrix', op.abspath(bvals), op.abspath(bvecs)])
+    pout = subprocess.run(
+        ['FSLBVecsToTORTOISEBmatrix', op.abspath(bvals), op.abspath(bvecs)], check=False
+    )
     print(pout)
     return bvals.replace('bval', 'bmtxt')
 

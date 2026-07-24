@@ -35,7 +35,7 @@ from ..utils.bids import get_iterable_dwis_and_anats
 class ToDict(Action):
     """A custom argparse "store" action to handle a list of key=value pairs."""
 
-    def __call__(self, parser, namespace, values, option_string=None):  # noqa: U100
+    def __call__(self, parser, namespace, values, option_string=None):
         """Call the argument."""
         d = {}
         for spec in values:
@@ -93,10 +93,10 @@ def _build_parser(**kwargs):
         return int(digits) * scale[units[0]]
 
     def _drop_sub(value):
-        return value[4:] if value.startswith('sub-') else value
+        return value.removeprefix('sub-')
 
     def _drop_ses(value):
-        return value[4:] if value.startswith('ses-') else value
+        return value.removeprefix('ses-')
 
     def _process_value(value):
         import bids
@@ -337,7 +337,8 @@ def _build_parser(**kwargs):
         '--recon-spec',
         action='store',
         type=str,
-        help='json file specifying a reconstruction pipeline to be run after preprocessing',
+        help='YAML file specifying a reconstruction pipeline to be run.',
+        required=True,
     )
     g_recon.add_argument(
         '--input-type',
@@ -422,8 +423,11 @@ def _build_parser(**kwargs):
         '--config-file',
         action='store',
         metavar='FILE',
-        help='Use pre-generated configuration file. Values in file will be overridden '
-        'by command-line arguments.',
+        help=(
+            'Use pre-generated configuration file. Values in file will be overridden '
+            'by command-line arguments. '
+            'This is not currently used by QSIRecon.'
+        ),
     )
     g_other.add_argument(
         '--write-graph',
@@ -477,14 +481,20 @@ def parse_args(args=None, namespace=None):
     if opts.atlases:
         if 'qsireconatlases' not in opts.datasets:
             opts.datasets['qsireconatlases'] = Path(
-                os.getenv('QSIRECON_ATLAS', '/atlas/qsirecon_atlases')
+                '/home/qsirecon/.cache/qsirecon/QSIReconAtlases'
             )
+            if not opts.datasets['qsireconatlases'].is_dir():
+                raise NotADirectoryError(
+                    f'QSIRecon atlases is not a directory: {opts.datasets["qsireconatlases"]}'
+                )
 
         if any(atlas.startswith('4S') for atlas in opts.atlases):
             if 'qsirecon4s' not in opts.datasets:
-                opts.datasets['qsirecon4s'] = Path(
-                    os.getenv('QSIRECON_ATLASPACK', '/atlas/AtlasPack')
-                )
+                opts.datasets['qsirecon4s'] = Path('/home/qsirecon/.cache/qsirecon/AtlasPack')
+                if not opts.datasets['qsirecon4s'].is_dir():
+                    raise NotADirectoryError(
+                        f'AtlasPack is not a directory: {opts.datasets["qsirecon4s"]}'
+                    )
 
     if opts.fs_license_file is not None:
         opts.fs_license_file = opts.fs_license_file.resolve()

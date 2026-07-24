@@ -275,9 +275,7 @@ def real_sym_sh_brainsuite(sh_order, theta, phi):
     """
 
     def _legendre(n, X):
-        res = []
-        for m in range(n + 1):
-            res.append(lpmv(m, n, X))
+        res = [lpmv(m, n, X) for m in range(n + 1)]
         return np.row_stack(res)
 
     # Original code used matlab conventions: convert dipy to matlab
@@ -570,7 +568,7 @@ class SphHarmModel(OdfModel, Cache):
             sh_order = self.sh_order
             theta = sphere.theta
             phi = sphere.phi
-            sampling_matrix, m, n = real_sym_sh_basis(sh_order, theta, phi)
+            sampling_matrix, _m, _n = real_sym_sh_basis(sh_order, theta, phi)
             self.cache_set('sampling_matrix', sphere, sampling_matrix)
         return sampling_matrix
 
@@ -679,7 +677,7 @@ def normalize_data(data, where_b0, min_signal=1.0, out=None):
 def hat(B):
     """Returns the hat matrix for the design matrix B"""
 
-    U, S, V = svd(B, False)
+    U, _S, _V = svd(B, False)
     H = dot(U, U.T)
     return H
 
@@ -773,7 +771,7 @@ def sf_to_sh(sf, sphere, sh_order=4, basis_type=None, smooth=0.0):
 
     if sph_harm_basis is None:
         raise ValueError('Invalid basis name.')
-    B, m, n = sph_harm_basis(sh_order, sphere.theta, sphere.phi)
+    B, _m, n = sph_harm_basis(sh_order, sphere.theta, sphere.phi)
 
     L = -n * (n + 1)
     invB = smooth_pinv(B, sqrt(smooth) * L)
@@ -810,7 +808,7 @@ def sh_to_sf(sh, sphere, sh_order, basis_type=None):
 
     if sph_harm_basis is None:
         raise ValueError('Invalid basis name.')
-    B, m, n = sph_harm_basis(sh_order, sphere.theta, sphere.phi)
+    B, _m, _n = sph_harm_basis(sh_order, sphere.theta, sphere.phi)
 
     sf = np.dot(sh, B.T)
 
@@ -851,7 +849,7 @@ def sh_to_sf_matrix(sphere, sh_order, basis_type=None, return_inv=True, smooth=0
 
     if sph_harm_basis is None:
         raise ValueError('Invalid basis name.')
-    B, m, n = sph_harm_basis(sh_order, sphere.theta, sphere.phi)
+    B, _m, n = sph_harm_basis(sh_order, sphere.theta, sphere.phi)
 
     if return_inv:
         L = -n * (n + 1)

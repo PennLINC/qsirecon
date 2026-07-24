@@ -8,11 +8,6 @@ To keep threading consistent between nipype and mrtrix, the
 ``nthreads`` attribute needs to be set in the interface and the
 ``n_procs`` attribute needs to be set on the Node.
 
-
-.. autofunction:: init_mrtrix_csd_recon_wf
-.. autofunction:: init_mrtrix_tractography_wf
-.. autofunction:: init_mrtrix_connectivity_wf
-
 """
 
 import logging

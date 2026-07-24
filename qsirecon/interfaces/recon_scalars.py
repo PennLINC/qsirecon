@@ -464,7 +464,7 @@ class ParcellateScalars(SimpleInterface):
 
         atlas_config = self.inputs.atlas_config
         assert len(atlas_config) == 1, 'Only one atlas config is supported'
-        atlas_name = list(atlas_config.keys())[0]
+        atlas_name = next(iter(atlas_config))
         atlas_config = atlas_config[atlas_name]
         atlas_file = atlas_config['dwi_resolution_file']
         atlas_labels_file = atlas_config['labels']
@@ -474,7 +474,7 @@ class ParcellateScalars(SimpleInterface):
         atlas_labels_df = pd.read_table(atlas_labels_file, index_col='index')
         atlas_img, atlas_labels_df = _sanitize_nifti_atlas(atlas_file, atlas_labels_df)
 
-        node_labels = atlas_labels_df['label'].tolist()
+        node_labels = atlas_labels_df['name'].tolist()
 
         # Build empty DataFrame
         columns = ['node', 'scalar', 'qsirecon_suffix', 'mean', 'stdev', 'median']

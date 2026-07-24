@@ -183,7 +183,7 @@ def main():
         )
 
         if config.execution.atlases:
-            write_atlas_dataset_description(config.execution.output_dir / 'atlases')
+            write_atlas_dataset_description(config.execution.output_dir / 'sourcedata' / 'atlases')
 
         write_bidsignore(config.execution.output_dir)
 

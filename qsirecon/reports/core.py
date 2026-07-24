@@ -87,7 +87,7 @@ def generate_reports(
 
     bids_filters = config.execution.bids_filters or {}
     for subject_label in config.execution.participant_label:
-        subject_id = subject_label[4:] if subject_label.startswith('sub-') else subject_label
+        subject_id = subject_label.removeprefix('sub-')
 
         # Extract session IDs from the processed DWIs
         sessions = config.execution.layout.get_sessions(
@@ -110,10 +110,10 @@ def generate_reports(
 
         for session_label in sessions:
             if session_label == Query.NONE:
-                html_report = html_report = f'sub-{subject_id}.html'
+                html_report = f'sub-{subject_id}.html'
                 session_label = None
             else:
-                html_report = html_report = f'sub-{subject_id}_ses-{session_label}.html'
+                html_report = f'sub-{subject_id}_ses-{session_label}.html'
 
             if output_level == 'root':
                 report_dir = output_dir
