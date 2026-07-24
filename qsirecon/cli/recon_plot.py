@@ -262,7 +262,6 @@ def peak_slice_series(
     padding=4,
     normalize_peaks=True,
 ):
-
     # Make a slice mask to reduce memory
     if mask_image is None:
         LOGGER.info('No mask image for plotting peaks')
@@ -340,7 +339,6 @@ def peaks_from_odfs(
     normalize_peaks=False,
     npeaks=5,
 ):
-
     shape = odf4d.shape[:-1]
     if mask is None:
         mask = np.ones(shape, dtype='bool')
@@ -471,7 +469,6 @@ def odf_roi_plot(
     subtract_iso=False,
     mask=None,
 ):
-
     roi_data = nb.load(roi_file).get_fdata()
     roi_image = Image.new('RGB', (tile_size * 3, tile_size))
     roi1_centroid, roi1_distance = get_camera_for_roi(roi_data, 1, 2)

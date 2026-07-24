@@ -184,7 +184,6 @@ class BrainSuiteShoreModel(Cache):
 
     @multi_voxel_fit
     def fit(self, data):
-
         # Generate the SHORE basis
         M = self.cache_get('shore_matrix', key=self.gtab)
         if M is None:

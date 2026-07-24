@@ -230,7 +230,6 @@ class CalculateSOP(SimpleInterface):
     output_spec = CalculateSOPOutputSpec
 
     def _run_interface(self, runtime):
-
         # load the input nifti image
         img = nb.load(self.inputs.sh_nifti)
 

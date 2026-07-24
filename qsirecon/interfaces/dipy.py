@@ -145,7 +145,6 @@ class DipyReconInterface(SimpleInterface):
         return output_fname
 
     def _write_external_formats(self, runtime, fit_obj, mask_img, suffix):
-
         # Convert to amplitudes for other software
         verts, faces = get_dsi_studio_ODF_geometry('odf8')
         num_dirs, _ = verts.shape

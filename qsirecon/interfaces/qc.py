@@ -153,7 +153,6 @@ def create_sprite_from_tiles(tile, out_file=None, as_bytes=False):
 
 
 def createSprite4D(dwi_file):
-
     # initialize output dict
     output = []
 

@@ -348,7 +348,6 @@ class ReconDerivativesDataSink(DerivativesDataSink):
     out_path_base = 'qsirecon'
 
     def _run_interface(self, runtime):
-
         # If there is no qsirecon suffix, then we're not saving this file
         if not self.inputs.qsirecon_suffix:
             return runtime

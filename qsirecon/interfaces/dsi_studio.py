@@ -884,7 +884,6 @@ class AggregateAutoTrackResults(SimpleInterface):
     output_spec = _AggregateAutoTrackResultsOutputSpec
 
     def _run_interface(self, runtime):
-
         def bundle_from_file(file_name):
             return Path(file_name).parts[-2]
 
@@ -959,7 +958,6 @@ def btable_from_bvals_bvecs(bval_file, bvec_file, output_file):
 
 
 def _get_dsi_studio_bundles(desired_bundles='', version='hou'):
-
     if version == 'hou':
         dsi_studio_exe = which('dsi_studio')
     elif version == 'chen':
