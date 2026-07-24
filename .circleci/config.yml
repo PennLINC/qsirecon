@@ -505,6 +505,18 @@ workflows:
               only: /.*/
 
       - integration_test:
+          name: chen_autotrack
+          marker: chen_autotrack
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
           name: tortoise_recon
           marker: tortoise_recon
           requires: [image_prep, get_data]
@@ -631,6 +643,7 @@ workflows:
             - ss3t_fod_autotrack
             - mrtrix3_recon
             - autotrack
+            - chen_autotrack
             - tortoise_recon
             - dsi_studio_gqi_recon
             - dipy_mapmri
