@@ -3,11 +3,14 @@
 import base64
 import lzma
 import os
+import shutil
 import tarfile
 from glob import glob
 from gzip import GzipFile
 from io import BytesIO
 
+import nibabel as nb
+import numpy as np
 import requests
 from nipype import logging
 
@@ -73,6 +76,80 @@ def download_test_data(dset, data_dir=None):
             raise ValueError(f'Unknown file type for {dset} ({url})')
 
     return out_dir
+
+
+def shrink_dataset_fov(src_qsiprep_dir, dest_qsiprep_dir, target_fov_mm=100.0):
+    """Copy a QSIPrep-derivative tree and uniformly shrink the physical field of view.
+
+    Every ``.nii``/``.nii.gz`` under ``src_qsiprep_dir`` is copied to ``dest_qsiprep_dir``
+    and its affine is left-multiplied by ``diag([S, S, S, 1])`` (and its three spatial
+    pixdims scaled by ``S``), where ``S`` is chosen so the largest field-of-view axis of the
+    preprocessed DWI becomes ``target_fov_mm`` millimeters. The voxel matrix and data are
+    unchanged -- this is a header-only edit, so it is near-instant regardless of image size,
+    and it needs no gradient (bvec) rotation because a uniform scale has no rotational
+    component. The identical scaling is applied to *all* images so they stay mutually
+    registered (the recon brain mask is resampled onto the DWI grid with an identity
+    transform, so a partial shrink would misalign it). ``.bval``/``.bvec``/``.json``/``.tsv``
+    and ``.h5`` transforms are copied verbatim.
+
+    This is used to synthesize a neonate-sized ("small head") input from an adult test
+    dataset, so DSI Studio's internal ``is_human_size`` field-of-view check (~130 mm
+    threshold) selects a non-adult template -- the condition that triggers the HBCD "Chen"
+    autotrack crash on a broken DSI Studio build.
+
+    Parameters
+    ----------
+    src_qsiprep_dir : str
+        Path to a QSIPrep-derivative directory (the qsirecon input directory).
+    dest_qsiprep_dir : str
+        Where to write the shrunken copy. Overwritten if it already exists.
+    target_fov_mm : float
+        Target size (mm) for the DWI's largest field-of-view axis. Default 100.0, which is
+        neonate-sized and comfortably below DSI Studio's ~130 mm adult threshold.
+
+    Returns
+    -------
+    str
+        ``dest_qsiprep_dir`` (for use as the qsirecon input directory).
+    """
+    if os.path.isdir(dest_qsiprep_dir):
+        shutil.rmtree(dest_qsiprep_dir)
+    shutil.copytree(src_qsiprep_dir, dest_qsiprep_dir)
+
+    dwi_files = sorted(
+        glob(
+            os.path.join(dest_qsiprep_dir, '**', '*_desc-preproc_dwi.nii.gz'),
+            recursive=True,
+        )
+    )
+    if not dwi_files:
+        raise ValueError(f'No *_desc-preproc_dwi.nii.gz found under {dest_qsiprep_dir}')
+
+    ref_img = nb.load(dwi_files[0])
+    fov = np.array(ref_img.shape[:3]) * np.array(ref_img.header.get_zooms()[:3])
+    scale = float(target_fov_mm) / float(fov.max())
+
+    scale_affine = np.diag([scale, scale, scale, 1.0])
+    for nii_file in sorted(glob(os.path.join(dest_qsiprep_dir, '**', '*.nii*'), recursive=True)):
+        img = nb.load(nii_file)
+        # Materialize the data so we can safely overwrite the file in place.
+        data = np.asanyarray(img.dataobj)
+        new_affine = scale_affine @ img.affine
+        new_img = nb.Nifti1Image(data, new_affine, img.header)
+
+        # Scale the recorded spatial voxel sizes, leaving any 4th (non-spatial) zoom alone.
+        zooms = list(img.header.get_zooms())
+        new_img.header.set_zooms([z * scale for z in zooms[:3]] + list(zooms[3:]))
+
+        # Write the shrunken affine into both forms, preserving the original codes.
+        _, scode = img.header.get_sform(coded=True)
+        _, qcode = img.header.get_qform(coded=True)
+        new_img.set_sform(new_affine, code=int(scode) if scode else 1)
+        new_img.set_qform(new_affine, code=int(qcode) if qcode else 1)
+
+        new_img.to_filename(nii_file)
+
+    return dest_qsiprep_dir
 
 
 def get_test_data_path():

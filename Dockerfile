@@ -6,7 +6,7 @@ RUN apt-get update && \
 COPY . /src/qsirecon
 RUN python -m build /src/qsirecon
 
-FROM pennlinc/qsirecon_build:26.1.16
+FROM pennlinc/qsirecon_build:26.7.1
 
 # Install qsirecon wheel
 COPY --from=wheelstage /src/qsirecon/dist/*.whl .
