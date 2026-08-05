@@ -6322,10 +6322,10 @@ packages:
   timestamp: 1770223702917
 - pypi: ./
   name: qsirecon
-  version: 26.1.0.dev4+g2f5ae7e63.d20260803
-  sha256: d5031da0ac589783219ed1a4b91973f2812e889ad28aeba72c42c3f9c81b6d0a
+  version: 26.1.0.dev5+g3ceb0bce4
+  sha256: 37b4f69aeff28419ec39f402c82f8444d1ebfb266ca0678a46625131da90f6a5
   requires_dist:
-  - dipy>=1.12.0,<1.13.0
+  - dipy>=1.12.1,<1.13.0
   - dmri-amico==2.0.3
   - filelock
   - fury
@@ -6401,10 +6401,10 @@ packages:
   editable: true
 - pypi: ./
   name: qsirecon
-  version: 26.1.0.dev4+g2f5ae7e63.d20260803
-  sha256: d5031da0ac589783219ed1a4b91973f2812e889ad28aeba72c42c3f9c81b6d0a
+  version: 26.1.0.dev5+g3ceb0bce4
+  sha256: 37b4f69aeff28419ec39f402c82f8444d1ebfb266ca0678a46625131da90f6a5
   requires_dist:
-  - dipy>=1.12.0,<1.13.0
+  - dipy>=1.12.1,<1.13.0
   - dmri-amico==2.0.3
   - filelock
   - fury
