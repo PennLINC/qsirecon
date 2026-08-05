@@ -565,6 +565,18 @@ workflows:
               only: /.*/
 
       - integration_test:
+          name: dipy_force
+          marker: dipy_force
+          requires: [image_prep, get_data]
+          filters:
+            branches:
+              ignore:
+                - /docs?\/.*/
+                - /tests?\/.*/
+            tags:
+              only: /.*/
+
+      - integration_test:
           name: amico_noddi
           marker: amico_noddi
           requires: [image_prep, get_data]
@@ -648,6 +660,7 @@ workflows:
             - dsi_studio_gqi_recon
             - dipy_mapmri
             - dipy_dki
+            - dipy_force
             - amico_noddi
             - mrtrix3_recon_with_response_functions
             - pyafq_recon_full
