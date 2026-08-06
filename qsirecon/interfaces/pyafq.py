@@ -63,7 +63,6 @@ class PyAFQRecon(SimpleInterface):
         os.symlink(self.inputs.itk_file, itk_file)
 
         kwargs = self.inputs.kwargs
-        raise Exception(kwargs)
 
         if self.inputs.tck_file and isdefined(self.inputs.tck_file):
             tck_file = fname_presuffix(self.inputs.tck_file, newpath=shim_dir)
