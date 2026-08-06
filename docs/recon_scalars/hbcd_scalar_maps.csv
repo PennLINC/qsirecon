@@ -1,31 +1,57 @@
-dki,ad,DKI Axial Diffusivity
-dki,ak,DKI Axial Kurtosis
-dki,kfa,DKI Kurtosis Fractional Anisotropy
-dki,md,DKI Mean Diffusivity
-dki,mk,DKI Mean Kurtosis
-dki,mkt,DKI Mean Kurtosis Tensor
-dki,rd,DKI Radial Diffusivity
-dki,rk,DKI Radial Kurtosis
-gqi,gfa,Generalized Fractional Anisotropy
-gqi,iso,Isotropic Diffusion from GQI
+dki,ad,DKI axial diffusivity
+dki,ak,DKI axial kurtosis
+dki,fa,DKI fractional anisotropy
+dki,kfa,DKI kurtosis fractional anisotropy
+dki,linearity,DKI linearity
+dki,md,DKI mean diffusivity
+dki,mk,DKI mean kurtosis
+dki,mkt,DKI mean of the kurtosis tensor
+dki,planarity,DKI planarity
+dki,rd,DKI radial diffusivity
+dki,rk,DKI radial kurtosis
+dki,sphericity,DKI sphericity
+dkimicro,ad,DKI Microstructural Axial Diffusivity
+dkimicro,ade,DKI Microstructural Axial Diffusivity of the Extra-Cellular Compartment
+dkimicro,ak,DKI Microstructural Axial Kurtosis
+dkimicro,awf,DKI axonal water fraction
+dkimicro,axonald,DKI Microstructural Axonal Diffusivity
+dkimicro,kfa,DKI Microstructural Kurtosis Fractional Anisotropy
+dkimicro,md,DKI Microstructural Mean Diffusivity
+dkimicro,rd,DKI Microstructural Radial Diffusivity
+dkimicro,rde,DKI radial diffusivity of the extra-cellular compartment
+dkimicro,tortuosity,DKI Microstructural Tortuosity
+dkimicro,trace,DKI Microstructural Trace
+gqi,gfa,Generalized Fractional Anisotropy from a GQI fit
+gqi,iso,Isotropic Diffusion from a GQI fit
+gqi,nrdi02L,Non-restricted Diffusion Imaging from a GQI fit. The total amount of non-restricted diffusion regardless of orientation at a 0.2 diffusion sampling length ratio.
+gqi,nrdi04L,Non-restricted Diffusion Imaging from a GQI fit. The total amount of non-restricted diffusion regardless of orientation at a 0.4 diffusion sampling length ratio.
+gqi,nrdi06L,Non-restricted Diffusion Imaging from a GQI fit. The total amount of non-restricted diffusion regardless of orientation at a 0.6 diffusion sampling length ratio.
 gqi,qa,Quantitative Anisotropy from a GQI fit
+gqi,rdi,Restricted Diffusion Imaging from a GQI fit. Indexes the the total amount of restricted diffusion regardless of orientation.
 mapmri,ng,Non-Gaussianity from MAPMRI
 mapmri,ngpar,Non-Gaussianity parallel from MAPMRI
 mapmri,ngperp,Non-Gaussianity perpendicular from MAPMRI
 mapmri,pa,PA from MAPMRI
-mapmri,path,PAth from MAPMRI
+mapmri,path,Path from MAPMRI
 mapmri,rtap,Return to axis probability from MAPMRI
 mapmri,rtop,Return to origin probability from MAPMRI
 mapmri,rtpp,Return to plane probability from MAPMRI
-tensor,ad,Axial Diffusivity (first eigenvalue) from a tensor fit
+msdki,awf,MSDKI Axonal Water Fraction from the mean signal diffusional kurtosis parameters assuming the 2-compartmental spherical mean technique model.
+msdki,di,MSDKI intrinsic diffusivity from the mean signal diffusional kurtosis parameters assuming the 2-compartmental spherical mean technique model.
+msdki,mfa,MSDKI Microscopic Fractional Anisotropy from the mean signal diffusional kurtosis parameters assuming the 2-compartmental spherical mean technique model.
+msdki,msd,MSDKI Mean Signal Diffusivity
+msdki,msk,MSDKI Mean Signal Kurtosis
+tensor,ad,Axial Diffusivity from a tensor fit. The first eigenvalue of the tensor.
 tensor,am,A0 from a tensor fit
 tensor,fa,Fractional Anisotropy from a tensor fit
-tensor,ha,Helix Angle from tensor fit
+tensor,fa,Fractional Anisotropy from a tensor fit
+tensor,ha,Helix Angle from a tensor fit
 tensor,li,LI from a tensor fit
 tensor,md,Mean Diffusivity from a tensor fit
-tensor,rd,Radial Diffusivity from a tensor fit
-tensor,rd1,Lambda 2 (second eigenvalue) from a tensor fit
-tesnor,rd2,Lambda 3 (third eigenvalue) from a tensor fit
+tensor,md,Mean Diffusivity from a tensor fit. The mean of the three eigenvalues.
+tensor,rd,Radial Diffusivity from a tensor fit. The mean of the second and third eigenvalues (rd1 and rd2).
+tensor,rd1,Lambda 2 (second eigenvalue) from a tensor fit.
+tensor,rd2,Lambda 3 (third eigenvalue) from a tensor fit.
 tensor,txx,Tensor fit txx
 tensor,txy,Tensor fit txy
 tensor,txz,Tensor fit txz
