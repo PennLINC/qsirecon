@@ -752,7 +752,7 @@ class TensorReconstruction(DipyReconInterface):
 
         # Fit it
         tenmodel = dti.TensorModel(gtab)
-        ten_fit = tenmodel.fit(dwi_data, mask_array)
+        ten_fit = tenmodel.fit(dwi_data, mask=mask_array)
         lower_triangular = ten_fit.lower_triangular()
         tensor_img = nifti1_symmat(lower_triangular, dwi_img.affine)
         output_tensor_file = fname_presuffix(
@@ -807,7 +807,7 @@ class KurtosisReconstruction(DipyReconInterface):
 
         # Fit it
         dkimodel = dki.DiffusionKurtosisModel(gtab)
-        dkifit = dkimodel.fit(dwi_data, mask_array)
+        dkifit = dkimodel.fit(dwi_data, mask=mask_array)
         lower_triangular = dkifit.lower_triangular()
         tensor_img = nifti1_symmat(lower_triangular, dwi_img.affine)
         output_tensor_file = fname_presuffix(
@@ -888,7 +888,7 @@ class KurtosisReconstructionMicrostructure(DipyReconInterface):
 
         # Fit it
         dkimodel = dki_micro.KurtosisMicrostructureModel(gtab)
-        dkifit = dkimodel.fit(dwi_data, mask_array)
+        dkifit = dkimodel.fit(dwi_data, mask=mask_array)
 
         # FA MD RD and AD
         metric_attrs = {
@@ -948,7 +948,7 @@ class KurtosisReconstructionMSDKI(DipyReconInterface):
 
         # Fit it
         dkimodel = msdki.MeanDiffusionKurtosisModel(gtab)
-        dkifit = dkimodel.fit(dwi_data, mask_array)
+        dkifit = dkimodel.fit(dwi_data, mask=mask_array)
 
         # MSD MSK DI AWF MFA
         metric_attrs = {
