@@ -365,7 +365,11 @@ def peaks_from_odfs(
             continue
         # Get peaks of odf
         direction, pk, ind = peak_directions(
-            odf, sphere, relative_peak_threshold, min_separation_angle
+            odf=odf,
+            sphere=sphere,
+            relative_peak_threshold=relative_peak_threshold,
+            min_separation_angle=min_separation_angle,
+            is_symmetric=True,  # the default
         )
         # Calculate peak metrics
         if pk.shape[0] != 0:
