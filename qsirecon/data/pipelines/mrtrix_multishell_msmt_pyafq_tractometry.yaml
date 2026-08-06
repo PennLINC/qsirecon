@@ -71,8 +71,6 @@ nodes:
         nb_points: false
         nb_streamlines: false
         odf_model: CSD
-        parallel_segmentation: '{''n_jobs'': -1, ''engine'': ''joblib'', ''backend'':
-            ''loky''}'
         presegment_bundle_dict: null
         presegment_kwargs: '{}'
         prob_threshold: 0
