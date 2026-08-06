@@ -331,4 +331,5 @@ skip = '.git,*.pdf,*.svg,*.html,dataset_description.json,*.gii,pixi.lock'
 # pres - variable name
 # Gage, Joo, Sepulcre - author names
 # numer - abbreviation for numerator
-ignore-words-list = 'te,weill,reson,DNE,fo,fixel,fixels,pres,Gage,Joo,Sepulcre,numer'
+# nd - abbreviation for a scalar
+ignore-words-list = 'te,weill,reson,DNE,fo,fixel,fixels,pres,Gage,Joo,Sepulcre,numer,nd'
