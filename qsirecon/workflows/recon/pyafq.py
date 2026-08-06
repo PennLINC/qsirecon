@@ -16,19 +16,9 @@ from ...interfaces.pyafq import PyAFQRecon
 from ...utils.bids import clean_datasinks
 
 
-# Spec parameters that QSIRecon consumes itself rather than forwarding to pyAFQ. They are
-# legitimately absent from pyAFQ's argument dictionary, so they must not be reported as
-# dropped. ``export`` selects which ParticipantAFQ export method to call after the object is
-# built, so it is never a constructor kwarg. Everything else is derived from pyAFQ at runtime.
-QSIRECON_ONLY_PARAMS = frozenset({'export', 'use_external_tracking'})
-
-
 def _parse_qsirecon_params_dict(params_dict):
     arg_dict = afb.func_dict_to_arg_dict()
     kwargs = {}
-    # Every name pyAFQ would accept, collected as we walk its argument dictionary so the
-    # check stays in sync with whatever pyAFQ version is installed.
-    known_args = set()
 
     special_args = {
         'CLEANING': 'clean_params',
@@ -42,33 +32,17 @@ def _parse_qsirecon_params_dict(params_dict):
         for arg, arg_info in args.items():
             if arg in special_args.keys():
                 kwargs[special_args[arg]] = {}
-                known_args.update(arg_info.keys())
                 for actual_arg in arg_info.keys():
                     if actual_arg in params_dict:
                         kwargs[special_args[arg]][actual_arg] = afb.pyafq_str_to_val(
                             params_dict[actual_arg]
                         )
             else:
-                known_args.add(arg)
                 if arg in params_dict:
                     kwargs[arg] = afb.pyafq_str_to_val(params_dict[arg])
 
     for ignore_param in afb.qsi_prep_ignore_params:
         kwargs.pop(ignore_param, None)
-
-    # Parameters the spec asks for that this pyAFQ no longer recognizes. They are dropped
-    # silently otherwise, so the requested settings would simply not take effect.
-    dropped = sorted(
-        set(params_dict) - known_args - set(afb.qsi_prep_ignore_params) - QSIRECON_ONLY_PARAMS
-    )
-    if dropped:
-        config.loggers.workflow.warning(
-            'The following pyAFQ parameters are not recognized by pyAFQ %s and will be '
-            'ignored: %s. They were most likely renamed or removed upstream; check the '
-            'pyAFQ documentation and update the recon spec.',
-            AFQ.__version__,
-            ', '.join(dropped),
-        )
 
     return kwargs
 
@@ -106,13 +80,7 @@ def init_pyafq_wf(inputs_dict, name='afq', qsirecon_suffix='', params={}):
     workflow.__desc__ += f'{kwargs!s}.'
 
     run_afq = pe.Node(
-        PyAFQRecon(
-            kwargs=kwargs,
-            n_procs=omp_nthreads,
-            export=params.get('export', 'all'),
-        ),
-        name='run_afq',
-        n_procs=omp_nthreads,
+        PyAFQRecon(kwargs=kwargs, n_procs=omp_nthreads), name='run_afq', n_procs=omp_nthreads
     )
 
     if params.get('use_external_tracking', False):
@@ -125,9 +93,6 @@ def init_pyafq_wf(inputs_dict, name='afq', qsirecon_suffix='', params={}):
             ('bvec_file', 'bvec_file'),
             ('dwi_mask', 'mask_file'),
             ('template_to_acpc_xfm', 'itk_file'),
-            # pyAFQ requires a T1w already registered to (but not resampled onto) the
-            # DWIs. This spec runs in T1w/ACPC space, so acpc_preproc satisfies that.
-            ('acpc_preproc', 't1_file'),
         ]),
         (run_afq, outputnode, [('afq_dir', 'afq_dir')]),
     ])  # fmt:skip

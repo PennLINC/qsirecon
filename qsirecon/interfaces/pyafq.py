@@ -34,12 +34,9 @@ class PyAFQInputSpec(BaseInterfaceInputSpec):
     dwi_file = File(exists=True, mandatory=True)
     mask_file = File(exists=True, mandatory=True)
     itk_file = File(exists=True, mandatory=True)
-    t1_file = File(exists=True, mandatory=True)
     kwargs = traits.Dict(exists=True, mandatory=True)
     tck_file = traits.Either(None, File(exists=True))
     n_procs = traits.Int(1, usedefault=True)
-    # Name of a single ParticipantAFQ output to export, or 'all' for export_all().
-    export = traits.Str('all', usedefault=True)
 
 
 class PyAFQOutputSpec(TraitedSpec):
@@ -59,15 +56,14 @@ class PyAFQRecon(SimpleInterface):
         dwi_file = fname_presuffix(self.inputs.dwi_file, newpath=shim_dir)
         mask_file = fname_presuffix(self.inputs.mask_file, newpath=shim_dir)
         itk_file = fname_presuffix(self.inputs.itk_file, newpath=shim_dir)
-        t1_file = fname_presuffix(self.inputs.t1_file, newpath=shim_dir)
         os.symlink(self.inputs.bval_file, bval_file)
         os.symlink(self.inputs.bvec_file, bvec_file)
         os.symlink(self.inputs.dwi_file, dwi_file)
         os.symlink(self.inputs.mask_file, mask_file)
         os.symlink(self.inputs.itk_file, itk_file)
-        os.symlink(self.inputs.t1_file, t1_file)
 
         kwargs = self.inputs.kwargs
+        raise Exception(kwargs)
 
         if self.inputs.tck_file and isdefined(self.inputs.tck_file):
             tck_file = fname_presuffix(self.inputs.tck_file, newpath=shim_dir)
@@ -84,9 +80,21 @@ class PyAFQRecon(SimpleInterface):
             brain_mask_definition = kwargs['brain_mask_definition']
         kwargs.pop('brain_mask_definition', None)
 
-        # pyAFQ 3.x dropped ``parallel_segmentation``. The only parallelism knob left is
-        # ``GroupAFQ(parallel_params=...)``, which distributes *across participants* and so
-        # has no ParticipantAFQ equivalent. There is nothing to set here from n_procs.
+        # if "parallel_segmentation" in kwargs:
+        #     if (
+        #         "n_jobs" not in kwargs["parallel_segmentation"]
+        #         or kwargs["parallel_segmentation"]["n_jobs"] == -1
+        #     ):
+        #         kwargs["parallel_segmentation"]["n_jobs"] = self.inputs.kwargs["omp_nthreads"]
+        # else:
+        #     kwargs["parallel_segmentation"] = {}
+        #     kwargs["parallel_segmentation"]["n_jobs"] = self.inputs.kwargs["omp_nthreads"]
+
+        if self.inputs.n_procs > 1:
+            kwargs['parallel_segmentation']['n_jobs'] = self.inputs.n_procs
+        else:
+            kwargs['parallel_segmentation'] = {}
+            kwargs['parallel_segmentation']['n_jobs'] = self.inputs.n_procs
 
         output_dir = shim_dir + '/PYAFQ/'
         os.makedirs(output_dir, exist_ok=True)
@@ -94,7 +102,6 @@ class PyAFQRecon(SimpleInterface):
             dwi_file,
             bval_file,
             bvec_file,
-            t1_file,
             output_dir,
             import_tract=tck_file,
             brain_mask_definition=brain_mask_definition,
@@ -102,10 +109,10 @@ class PyAFQRecon(SimpleInterface):
             **kwargs,
         )
 
-        if self.inputs.export == 'all':
+        if 'export' not in kwargs or kwargs['export'] == 'all':
             myafq.export_all()
         else:
-            myafq.export(self.inputs.export)
+            myafq.export(kwargs['export'])
 
         self._results['afq_dir'] = output_dir
 
