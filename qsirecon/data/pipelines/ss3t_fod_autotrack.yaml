@@ -17,11 +17,13 @@ nodes:
     qsirecon_suffix: SS3TAutoTrack
     software: DSI Studio
 
-    # Perform the registration using the GQI-based QA+ISO
+    # Perform registration using the GQI-based QA+ISO images. This creates an
+    # internal map.gz that is passed forward, but it is not saved as a derivative here.
 -   action: autotrack_registration
     input: dsistudio_gqi
     name: autotrack_gqi_registration
-    # qsirecon_suffix: Don't include here - the map.gz is saved in autotrack
+    # qsirecon_suffix: Don't include here - the map.gz is saved by the final
+    # SS3T AutoTrack node after it is associated with the model-ss3t FIB.
     software: DSI Studio
 
     # Select just one shell + b=0 for autotrack
@@ -49,14 +51,16 @@ nodes:
 
 -   action: fod_fib_merge
     name: create_fod_fib
-    # to include the fib file AND the map file
+    # Merge the SS3T FODs into a DSI Studio FIB and pass through the GQI-derived
+    # mapping file so DSI Studio can associate it with the model-ss3t FIB.
     input: autotrack_gqi_registration
     csd_input: ss3t_csd
-    # outputs include the FOD fib file and the map file is passed through
     qsirecon_suffix: SS3TAutoTrack
     parameters:
         model: ss3t
 
+    # Track bundles with the SS3T FOD FIB. This is the only node that saves the
+    # mapping file as a derivative, using model-ss3t in the output name.
 -   action: autotrack
     input: create_fod_fib
     name: autotrack_fod

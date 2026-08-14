@@ -227,6 +227,41 @@ class DSIStudioTrkToTck(SimpleInterface):
         return runtime
 
 
+class _DSIStudioTrkToTTInputSpec(BaseInterfaceInputSpec):
+    trk_file = File(exists=True, mandatory=True)
+
+
+class _DSIStudioTrkToTTOutputSpec(TraitedSpec):
+    tt_file = File(exists=True)
+
+
+class DSIStudioTrkToTT(SimpleInterface):
+    input_spec = _DSIStudioTrkToTTInputSpec
+    output_spec = _DSIStudioTrkToTTOutputSpec
+
+    def _run_interface(self, runtime):
+        trk_file = Path(self.inputs.trk_file)
+        if trk_file.name.endswith('.trk.gz'):
+            output_name = trk_file.name.replace('.trk.gz', '.tt.gz')
+        else:
+            output_name = trk_file.with_suffix('').name + '.tt.gz'
+        tt_file = str(Path(runtime.cwd) / output_name)
+
+        subprocess.run(
+            [
+                'dsi_studio',
+                '--action=exp',
+                f'--source={self.inputs.trk_file}',
+                f'--output={tt_file}',
+            ],
+            check=True,
+        )
+        if not Path(tt_file).exists():
+            raise FileNotFoundError(f'DSI Studio did not create expected file: {tt_file}')
+        self._results['tt_file'] = tt_file
+        return runtime
+
+
 class _MergeFODGQIFibsInputSpec(BaseInterfaceInputSpec):
     csd_fib_file = File(exists=True, mandatory=True)
     reference_fib_file = File(exists=True, mandatory=True)

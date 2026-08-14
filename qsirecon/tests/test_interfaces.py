@@ -7,8 +7,10 @@ import numpy as np
 import pytest
 
 from qsirecon.data import load as load_data
+from qsirecon.interfaces.converters import DSIStudioTrkToTT
 from qsirecon.interfaces.gradients import GradientSelect, _classify_shell_scheme, _find_shells
 from qsirecon.tests.utils import download_test_data, get_test_data_path
+from qsirecon.workflows.recon.dsi_studio import init_dsi_studio_autotrack_wf
 
 
 def test_shell_selection(data_dir, tmp_path_factory):
@@ -42,6 +44,39 @@ def test_shell_selection(data_dir, tmp_path_factory):
     # There is no btable from this dataset because it was created
     # before those were written in the outputs.
     assert not Path(tmpdir / (dwi_prefix + '_selected.txt')).exists()
+
+
+def test_dsi_studio_trk_to_tt(tmp_path, monkeypatch):
+    """Check that TRK-to-TT conversion delegates to DSI Studio."""
+    trk_file = tmp_path / 'bundle.trk.gz'
+    trk_file.write_bytes(b'not a real trk')
+    commands = []
+
+    def _fake_run(command, check):
+        commands.append(command)
+        assert check is True
+        output = command[-1].removeprefix('--output=')
+        Path(output).write_bytes(b'not a real tt')
+
+    monkeypatch.setattr('qsirecon.interfaces.converters.subprocess.run', _fake_run)
+
+    result = DSIStudioTrkToTT(trk_file=str(trk_file)).run(cwd=tmp_path)
+
+    assert Path(result.outputs.tt_file).name == 'bundle.tt.gz'
+    assert commands == [
+        [
+            'dsi_studio',
+            '--action=exp',
+            f'--source={trk_file}',
+            f'--output={result.outputs.tt_file}',
+        ]
+    ]
+
+
+def test_autotrack_rejects_trk_format():
+    """The public AutoTrack workflow option is save_tt, not trk_format."""
+    with pytest.raises(ValueError, match='Use save_tt to save TT files'):
+        init_dsi_studio_autotrack_wf(inputs_dict={}, params={'trk_format': 'tt.gz'})
 
 
 def test_real_shells():

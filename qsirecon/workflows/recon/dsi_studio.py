@@ -12,7 +12,7 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ... import config
 from ...interfaces.bids import DerivativesDataSink
-from ...interfaces.converters import DSIStudioTrkToTck
+from ...interfaces.converters import DSIStudioTrkToTck, DSIStudioTrkToTT
 from ...interfaces.dsi_studio import (
     DSI_STUDIO_VERSION,
     AggregateAutoTrackResults,
@@ -387,6 +387,9 @@ def init_dsi_studio_autotrack_wf(
 
         model_name: str
             The name of the model used for ODFs (default "gqi")
+
+        save_tt: bool
+            Save DSI Studio Tiny Track files in addition to the standard TCK files.
     """
     workflow = Workflow(name=name)
     suffix_str = f' (outputs written to qsirecon-{qsirecon_suffix})' if qsirecon_suffix else ''
@@ -409,6 +412,11 @@ def init_dsi_studio_autotrack_wf(
     model_name = params.pop('model', 'gqi')
     omp_nthreads = config.nipype.omp_nthreads
     dsi_studio_version = params.pop('dsi_studio_version', 'hou')
+    if 'trk_format' in params:
+        raise ValueError(
+            'AutoTrack trk_format is no longer supported. Use save_tt to save TT files.'
+        )
+    save_tt = params.pop('save_tt', False)
 
     bundle_names = _get_dsi_studio_bundles(params.get('track_id', ''), version=dsi_studio_version)
     bundle_desc = (
@@ -423,7 +431,7 @@ def init_dsi_studio_autotrack_wf(
 
     # Run autotrack!
     actual_trk = pe.Node(
-        _AutoTrack(num_threads=omp_nthreads, **params),
+        _AutoTrack(num_threads=omp_nthreads, trk_format='trk.gz', **params),
         name='actual_trk',
         n_procs=omp_nthreads,  # An extra thread is needed
     )
@@ -436,6 +444,9 @@ def init_dsi_studio_autotrack_wf(
 
     convert_to_tck = pe.MapNode(DSIStudioTrkToTck(), name='convert_to_tck', iterfield='trk_file')
 
+    if save_tt:
+        convert_to_tt = pe.MapNode(DSIStudioTrkToTT(), name='convert_to_tt', iterfield='trk_file')
+
     clean_bundle_names = pe.MapNode(
         niu.Function(
             input_names=['input_string'],
@@ -444,6 +455,14 @@ def init_dsi_studio_autotrack_wf(
         ),
         name='clean_bundle_names',
         iterfield=['input_string'],
+    )
+    clean_template_name = pe.Node(
+        niu.Function(
+            input_names=['input_string'],
+            output_names=['template'],
+            function=remove_non_alphanumeric,
+        ),
+        name='clean_template_name',
     )
 
     # Save tck files of the bundles into the outputs
@@ -458,6 +477,18 @@ def init_dsi_studio_autotrack_wf(
         iterfield=['in_file', 'bundle'],
         name='ds_tckfiles',
     )
+    if save_tt:
+        # Save DSI Studio Tiny Track files of the bundles into the outputs
+        ds_ttfiles = pe.MapNode(
+            DerivativesDataSink(
+                dismiss_entities=('desc',),
+                suffix='streamlines',
+                model=model_name,
+                extension='.tt.gz',
+            ),
+            iterfield=['in_file', 'bundle'],
+            name='ds_ttfiles',
+        )
 
     # Save the bundle csv
     ds_bundle_csv = pe.Node(
@@ -474,8 +505,7 @@ def init_dsi_studio_autotrack_wf(
     # Save the mapping file
     ds_mapping = pe.Node(
         DerivativesDataSink(
-            dismiss_entities=('desc',),
-            suffix='dwimap',
+            suffix='mapping',
             model=model_name,
             extension='map.gz',
             compress=True,
@@ -490,9 +520,10 @@ def init_dsi_studio_autotrack_wf(
             ('fibgz_map', 'map_file')]),
         (inputnode, aggregate_atk_results, [('dwi_file', 'source_file')]),
         (inputnode, convert_to_tck, [('dwi_file', 'reference_nifti')]),
+        (actual_trk, clean_template_name, [('dsistudiotemplate', 'input_string')]),
+        (clean_template_name, ds_mapping, [('template', 'desc')]),
         (actual_trk, ds_mapping, [
-            ('map_file', 'in_file'),
-            ('dsistudiotemplate', 'dsistudiotemplate')]),
+            ('map_file', 'in_file')]),
         (actual_trk, aggregate_atk_results, [
             ('native_trk_files', 'trk_files'),
             ('stat_files', 'stat_files'),
@@ -505,6 +536,13 @@ def init_dsi_studio_autotrack_wf(
         (convert_to_tck, outputnode, [('tck_file', 'tck_files')]),
         (aggregate_atk_results, outputnode, [('found_bundle_names', 'bundle_names')])
     ])  # fmt:skip
+
+    if save_tt:
+        workflow.connect([
+            (aggregate_atk_results, convert_to_tt, [('found_bundle_files', 'trk_file')]),
+            (clean_bundle_names, ds_ttfiles, [('bundle', 'bundle')]),
+            (convert_to_tt, ds_ttfiles, [('tt_file', 'in_file')]),
+        ])  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)
 
