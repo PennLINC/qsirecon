@@ -120,7 +120,6 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='
     # Response estimation
     response = params.get('response', {})
     response_algorithm = response.get('algorithm', 'dhollander')
-    estimate_only = response.get('estimate_only', False)
 
     if response_algorithm == 'fast':
         response_algorithm = 'dhollander'
