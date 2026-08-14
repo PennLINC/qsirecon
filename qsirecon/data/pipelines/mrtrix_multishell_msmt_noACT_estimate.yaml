@@ -10,12 +10,6 @@ nodes:
     input: qsirecon
     name: msmt_csd
     parameters:
-        fod:
-            algorithm: msmt_csd
-            max_sh:
-            - 8
-            - 8
-            - 8
         response:
             algorithm: dhollander
     qsirecon_suffix: MRtrix3_act-None_response-subject
