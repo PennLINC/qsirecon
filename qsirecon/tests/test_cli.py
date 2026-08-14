@@ -24,7 +24,6 @@ from qsirecon.utils.bids import (
     write_bidsignore,
     write_derivative_description,
 )
-from qsirecon.utils.misc import bids_response_function_to_mrtrix
 
 nipype_config.enable_debug_mode()
 
@@ -754,8 +753,6 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
     ------
     - qsirecon multi shell results (data/DSDTI_fmap)
     """
-
-    import numpy as np
 
     TEST_NAME = 'mrtrix3_recon_with_response_functions'
 
