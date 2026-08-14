@@ -403,20 +403,6 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
             (estimate_fod, ds_wm_odf, [('wm_odf_metadata', 'meta_dict')]),
         ])  # fmt:skip
 
-        ds_wm_txt = pe.Node(
-            DerivativesDataSink(
-                dismiss_entities=('desc',),
-                model=model_name,
-                param='fod',
-                label='WM',
-                suffix='dwimap',
-                extension='.txt',
-            ),
-            name='ds_wm_txt',
-            run_without_submitting=True,
-        )
-        workflow.connect([(outputnode, ds_wm_txt, [('wm_txt', 'in_file')])])
-
         # If multitissue write out FODs for csf, gm
         if using_multitissue:
             ds_gm_odf = pe.Node(
@@ -432,22 +418,9 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
                 name='ds_gm_odf',
                 run_without_submitting=True,
             )
-            ds_gm_txt = pe.Node(
-                DerivativesDataSink(
-                    dismiss_entities=('desc',),
-                    model=model_name,
-                    param='fod',
-                    label='GM',
-                    suffix='dwimap',
-                    extension='.txt',
-                ),
-                name='ds_gm_txt',
-                run_without_submitting=True,
-            )
             workflow.connect([
                 (outputnode, ds_gm_odf, [('gm_odf', 'in_file')]),
                 (estimate_fod, ds_gm_odf, [('gm_odf_metadata', 'meta_dict')]),
-                (outputnode, ds_gm_txt, [('gm_txt', 'in_file')]),
             ])  # fmt:skip
 
             ds_csf_odf = pe.Node(
@@ -463,22 +436,9 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
                 name='ds_csf_odf',
                 run_without_submitting=True,
             )
-            ds_csf_txt = pe.Node(
-                DerivativesDataSink(
-                    dismiss_entities=('desc',),
-                    model=model_name,
-                    param='fod',
-                    label='CSF',
-                    suffix='dwimap',
-                    extension='.txt',
-                ),
-                name='ds_csf_txt',
-                run_without_submitting=True,
-            )
             workflow.connect([
                 (outputnode, ds_csf_odf, [('csf_odf', 'in_file')]),
                 (estimate_fod, ds_csf_odf, [('csf_odf_metadata', 'meta_dict')]),
-                (outputnode, ds_csf_txt, [('csf_txt', 'in_file')]),
             ])  # fmt:skip
 
             if run_mtnormalize:
@@ -493,8 +453,8 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
                     name='ds_mt_norm',
                     run_without_submitting=True,
                 )
-                workflow.connect(intensity_norm, 'norm_image',
-                                 ds_mt_norm, 'in_file')  # fmt:skip
+                workflow.connect([(intensity_norm, ds_mt_norm, [('norm_image', 'in_file')])])
+
                 ds_inlier_mask = pe.Node(
                     DerivativesDataSink(
                         dismiss_entities=('desc',),
