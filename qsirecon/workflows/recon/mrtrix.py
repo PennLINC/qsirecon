@@ -299,7 +299,6 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
     if using_multitissue:
         workflow.connect([
             (response_buffer, estimate_fod, [
-                ('wm_txt', 'wm_txt'),
                 ('gm_txt', 'gm_txt'),
                 ('csf_txt', 'csf_txt'),
             ]),
