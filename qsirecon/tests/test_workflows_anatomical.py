@@ -18,6 +18,8 @@ def _mrtrix_grid(in_file):
 
     ``mrinfo`` reports both in MRtrix's canonical (stride-normalized) form, so two files
     covering the same physical grid give the same answer whether they are NIfTIs or MIFs.
+
+    XXX: It would be nice to replace mrinfo with nibabel when that's possible.
     """
 
     def _mrinfo(flag):
