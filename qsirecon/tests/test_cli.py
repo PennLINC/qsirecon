@@ -1,6 +1,7 @@
 """Command-line interface tests."""
 
 import os
+import shutil
 import sys
 from unittest.mock import patch
 
@@ -23,7 +24,6 @@ from qsirecon.utils.bids import (
     write_bidsignore,
     write_derivative_description,
 )
-from qsirecon.utils.misc import bids_response_function_to_mrtrix
 
 nipype_config.enable_debug_mode()
 
@@ -754,8 +754,6 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
     - qsirecon multi shell results (data/DSDTI_fmap)
     """
 
-    import numpy as np
-
     TEST_NAME = 'mrtrix3_recon_with_response_functions'
 
     dataset_dir = download_test_data('multishell_output', data_dir)
@@ -779,19 +777,16 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
     # Now convert the response functions from JSON to MRtrix format
     for tissue in ['wm', 'gm', 'csf']:
         label = tissue.upper()
-        json_file = os.path.join(
+        in_txt_file = os.path.join(
             estimate_dir,
             'derivatives',
             'qsirecon-MRtrix3_act-None_response-subject',
             'sub-ABCD',
             'dwi',
-            f'sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-{label}_dwimap.json',
+            f'sub-ABCD_acq-10per000_space-T1w_model-dhollander_label-{label}_response.txt',
         )
-        assert os.path.exists(json_file)
-        arr = bids_response_function_to_mrtrix(json_file)
-        txt_file = os.path.join(test_dir, f'{tissue}.txt')
-        with open(txt_file, 'w') as f:
-            np.savetxt(f, arr)
+        out_txt_file = os.path.join(test_dir, f'{tissue}.txt')
+        shutil.copyfile(in_txt_file, out_txt_file)
 
     # Now apply the response functions
     apply_work_dir = os.path.join(working_dir, f'{TEST_NAME}_apply')

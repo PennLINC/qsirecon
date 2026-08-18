@@ -8,14 +8,8 @@ space: T1w
 nodes:
 -   action: csd
     input: qsirecon
-    name: msmt_csd
+    name: estimate_response_functions
     parameters:
-        fod:
-            algorithm: msmt_csd
-            max_sh:
-            - 8
-            - 8
-            - 8
         response:
             algorithm: dhollander
     qsirecon_suffix: MRtrix3_act-None_response-subject
