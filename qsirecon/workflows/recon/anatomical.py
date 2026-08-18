@@ -733,11 +733,9 @@ def init_warp_atlases_wf(atlas_configs):
         iterfield=['in_file', 'in_lut', 'in_config', 'out_file'],
         name='convert_labels',
     )
-    # XXX: These are the template-space atlases, so the mif files are on the template
-    # grid while their NIfTI counterparts are on the DWI grid. See #399.
-    convert_labels.inputs.in_file = atlas_images
     convert_labels.inputs.out_file = [f'{name}_to_dwi.mif' for name in atlas_names]
     workflow.connect([
+        (warp_atlases, convert_labels, [('output_image', 'in_file')]),
         (make_atlas_luts, convert_labels, [
             ('orig_lut', 'in_lut'),
             ('mrtrix_lut', 'in_config'),
