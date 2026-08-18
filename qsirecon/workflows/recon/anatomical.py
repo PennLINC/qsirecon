@@ -703,7 +703,7 @@ def init_warp_atlases_wf(atlas_configs):
     )
     conform_atlases.inputs.in_file = atlas_images
 
-    # Resample all atlases to dwi_file's resolution
+    # Resample all atlases to source_file's resolution
     warp_atlases = pe.MapNode(
         ants.ApplyTransforms(interpolation='MultiLabel', dimension=3),
         iterfield=['input_image'],
@@ -711,7 +711,7 @@ def init_warp_atlases_wf(atlas_configs):
     )
     workflow.connect([
         (inputnode, warp_atlases, [
-            ('dwi_file', 'reference_image'),
+            ('source_file', 'reference_image'),
             ('template_to_acpc_xfm', 'transforms'),
         ]),
         (conform_atlases, warp_atlases, [('out_file', 'input_image')]),
