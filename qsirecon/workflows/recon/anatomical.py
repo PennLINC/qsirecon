@@ -639,143 +639,14 @@ def init_dwi_recon_anatomical_workflow(
 
         # Similarly, if we need atlases, transform them into DWI space
         if atlas_configs:
-            atlas_str = describe_atlases(sorted(atlas_configs.keys()))
-            workflow.__desc__ += (
-                f'The following atlases were used in the workflow: {atlas_str}. '
-                'Cortical parcellations were mapped from template space to DWIS '
-                'using the T1w-based spatial normalization. '
-            )
-
-            # The atlas configs are known when the workflow is built, so the per-atlas files
-            # can be collected into lists here and fed to MapNodes.
-            atlas_names = sorted(atlas_configs.keys())
-            atlas_images = [atlas_configs[name]['image'] for name in atlas_names]
-            atlas_labels = [atlas_configs[name]['labels'] for name in atlas_names]
-
-            # Reorient the atlases to LPS+ before resampling them
-            conform_atlases = pe.MapNode(
-                ConformAtlas(orientation='LPS'),
-                iterfield=['in_file'],
-                name='conform_atlases',
-                run_without_submitting=True,
-            )
-            conform_atlases.inputs.in_file = atlas_images
-
-            # Resample all atlases to dwi_file's resolution
-            warp_atlases = pe.MapNode(
-                ants.ApplyTransforms(interpolation='MultiLabel', dimension=3),
-                iterfield=['input_image'],
-                name='warp_atlases',
-            )
+            warp_atlases_wf = init_warp_atlases_wf(atlas_configs=atlas_configs)
             workflow.connect([
-                (inputnode, warp_atlases, [('dwi_file', 'reference_image')]),
-                (_get_source_node('template_to_acpc_xfm'), warp_atlases, [
-                    ('template_to_acpc_xfm', 'transforms'),
+                (inputnode, warp_atlases_wf, [('dwi_file', 'inputnode.source_file')]),
+                (_get_source_node('template_to_acpc_xfm'), warp_atlases_wf, [
+                    ('template_to_acpc_xfm', 'inputnode.template_to_acpc_xfm'),
                 ]),
-                (conform_atlases, warp_atlases, [('out_file', 'input_image')]),
+                (warp_atlases_wf, buffernode, [('outputnode.atlas_configs', 'atlas_configs')]),
             ])  # fmt:skip
-
-            # Write out the lookup tables labelconvert needs to renumber each atlas's
-            # indices into the sequential ones MRtrix's connectivity tools expect
-            make_atlas_luts = pe.MapNode(
-                AtlasLUTs(),
-                iterfield=['atlas_labels_file'],
-                name='make_atlas_luts',
-                run_without_submitting=True,
-            )
-            make_atlas_luts.inputs.atlas_labels_file = atlas_labels
-
-            # Renumber the atlas indices and convert the atlases to mif format
-            convert_labels = pe.MapNode(
-                mrtrix3.LabelConvert(),
-                iterfield=['in_file', 'in_lut', 'in_config', 'out_file'],
-                name='convert_labels',
-            )
-            # XXX: These are the template-space atlases, so the mif files are on the template
-            # grid while their NIfTI counterparts are on the DWI grid. See #399.
-            convert_labels.inputs.in_file = atlas_images
-            convert_labels.inputs.out_file = [f'{name}_to_dwi.mif' for name in atlas_names]
-            workflow.connect([
-                (make_atlas_luts, convert_labels, [
-                    ('orig_lut', 'in_lut'),
-                    ('mrtrix_lut', 'in_config'),
-                ]),
-            ])  # fmt:skip
-
-            ds_atlas = pe.MapNode(
-                DerivativesDataSink(
-                    dismiss_entities=('desc',),
-                    suffix='dseg',
-                    compress=True,
-                ),
-                iterfield=['in_file', 'seg'],
-                name='ds_atlas',
-                run_without_submitting=True,
-            )
-            ds_atlas_mifs = pe.MapNode(
-                DerivativesDataSink(
-                    dismiss_entities=('desc',),
-                    suffix='dseg',
-                    extension='.mif.gz',
-                    compress=True,
-                ),
-                iterfield=['in_file', 'seg'],
-                name='ds_atlas_mifs',
-                run_without_submitting=True,
-            )
-            ds_atlas_mrtrix_lut = pe.MapNode(
-                DerivativesDataSink(
-                    dismiss_entities=('desc',),
-                    desc='mrtrix',
-                    suffix='dseg',
-                    extension='.txt',
-                ),
-                iterfield=['in_file', 'seg'],
-                name='ds_atlas_mrtrix_lut',
-                run_without_submitting=True,
-            )
-            ds_atlas_orig_lut = pe.MapNode(
-                DerivativesDataSink(
-                    dismiss_entities=('desc',),
-                    suffix='dseg',
-                    extension='.txt',
-                ),
-                iterfield=['in_file', 'seg'],
-                name='ds_atlas_orig_lut',
-                run_without_submitting=True,
-            )
-            for ds_node in (ds_atlas, ds_atlas_mifs, ds_atlas_mrtrix_lut, ds_atlas_orig_lut):
-                ds_node.inputs.seg = atlas_names
-
-            workflow.connect([
-                (warp_atlases, ds_atlas, [('output_image', 'in_file')]),
-                (convert_labels, ds_atlas_mifs, [('out_file', 'in_file')]),
-                (make_atlas_luts, ds_atlas_mrtrix_lut, [('mrtrix_lut', 'in_file')]),
-                (make_atlas_luts, ds_atlas_orig_lut, [('orig_lut', 'in_file')]),
-            ])  # fmt:skip
-
-            # Collect the datasinked files back into the atlas configs, so that later nodes
-            # that use the atlas configs reference the written-out files.
-            recombine_atlas_configs = pe.Node(
-                RecombineAtlasConfigs(atlas_configs=atlas_configs, atlases=atlas_names),
-                name='recombine_atlas_configs',
-                run_without_submitting=True,
-            )
-            workflow.connect([
-                (ds_atlas, recombine_atlas_configs, [('out_file', 'nifti_files')]),
-                (ds_atlas_mifs, recombine_atlas_configs, [('out_file', 'mif_files')]),
-                (ds_atlas_mrtrix_lut, recombine_atlas_configs, [('out_file', 'mrtrix_lut_files')]),
-                (ds_atlas_orig_lut, recombine_atlas_configs, [('out_file', 'orig_lut_files')]),
-                (recombine_atlas_configs, buffernode, [('atlas_configs', 'atlas_configs')]),
-            ])  # fmt:skip
-
-            # Fill in the atlas datasinks
-            for node in workflow.list_node_names():
-                node_suffix = node.split('.')[-1]
-                if node_suffix.startswith('ds_atlas'):
-                    workflow.connect([
-                        (inputnode, workflow.get_node(node), [('dwi_file', 'source_file')]),
-                    ])  # fmt:skip
 
     if 'mrtrix_5tt_hsvs' in extras_to_make and not has_qsiprep_5tt_hsvs:
         raise Exception('Unable to create a 5tt HSV image given input data.')
@@ -788,6 +659,167 @@ def init_dwi_recon_anatomical_workflow(
 
     workflow = clean_datasinks(workflow, qsirecon_suffix)
     return workflow, _get_status()
+
+
+def init_warp_atlases_wf(atlas_configs):
+    """Warp atlases to ACPC space and convert to MIF format."""
+    workflow = Workflow(name='warp_atlases_wf')
+
+    inputnode = pe.Node(
+        niu.IdentityInterface(
+            fields=[
+                'source_file',
+                'template_to_acpc_xfm',
+            ],
+        ),
+        name='inputnode',
+    )
+    outputnode = pe.Node(
+        niu.IdentityInterface(
+            fields=['atlas_configs'],
+        ),
+        name='outputnode',
+    )
+
+    atlas_str = describe_atlases(sorted(atlas_configs.keys()))
+    workflow.__desc__ += (
+        f'The following atlases were used in the workflow: {atlas_str}. '
+        'Cortical parcellations were mapped from template space to DWIS '
+        'using the T1w-based spatial normalization. '
+    )
+
+    # The atlas configs are known when the workflow is built, so the per-atlas files
+    # can be collected into lists here and fed to MapNodes.
+    atlas_names = sorted(atlas_configs.keys())
+    atlas_images = [atlas_configs[name]['image'] for name in atlas_names]
+    atlas_labels = [atlas_configs[name]['labels'] for name in atlas_names]
+
+    # Reorient the atlases to LPS+ before resampling them
+    conform_atlases = pe.MapNode(
+        ConformAtlas(orientation='LPS'),
+        iterfield=['in_file'],
+        name='conform_atlases',
+        run_without_submitting=True,
+    )
+    conform_atlases.inputs.in_file = atlas_images
+
+    # Resample all atlases to dwi_file's resolution
+    warp_atlases = pe.MapNode(
+        ants.ApplyTransforms(interpolation='MultiLabel', dimension=3),
+        iterfield=['input_image'],
+        name='warp_atlases',
+    )
+    workflow.connect([
+        (inputnode, warp_atlases, [
+            ('dwi_file', 'reference_image'),
+            ('template_to_acpc_xfm', 'transforms'),
+        ]),
+        (conform_atlases, warp_atlases, [('out_file', 'input_image')]),
+    ])  # fmt:skip
+
+    # Write out the lookup tables labelconvert needs to renumber each atlas's
+    # indices into the sequential ones MRtrix's connectivity tools expect
+    make_atlas_luts = pe.MapNode(
+        AtlasLUTs(),
+        iterfield=['atlas_labels_file'],
+        name='make_atlas_luts',
+        run_without_submitting=True,
+    )
+    make_atlas_luts.inputs.atlas_labels_file = atlas_labels
+
+    # Renumber the atlas indices and convert the atlases to mif format
+    convert_labels = pe.MapNode(
+        mrtrix3.LabelConvert(),
+        iterfield=['in_file', 'in_lut', 'in_config', 'out_file'],
+        name='convert_labels',
+    )
+    # XXX: These are the template-space atlases, so the mif files are on the template
+    # grid while their NIfTI counterparts are on the DWI grid. See #399.
+    convert_labels.inputs.in_file = atlas_images
+    convert_labels.inputs.out_file = [f'{name}_to_dwi.mif' for name in atlas_names]
+    workflow.connect([
+        (make_atlas_luts, convert_labels, [
+            ('orig_lut', 'in_lut'),
+            ('mrtrix_lut', 'in_config'),
+        ]),
+    ])  # fmt:skip
+
+    ds_atlas = pe.MapNode(
+        DerivativesDataSink(
+            dismiss_entities=('desc',),
+            suffix='dseg',
+            compress=True,
+        ),
+        iterfield=['in_file', 'seg'],
+        name='ds_atlas',
+        run_without_submitting=True,
+    )
+    ds_atlas_mifs = pe.MapNode(
+        DerivativesDataSink(
+            dismiss_entities=('desc',),
+            suffix='dseg',
+            extension='.mif.gz',
+            compress=True,
+        ),
+        iterfield=['in_file', 'seg'],
+        name='ds_atlas_mifs',
+        run_without_submitting=True,
+    )
+    ds_atlas_mrtrix_lut = pe.MapNode(
+        DerivativesDataSink(
+            dismiss_entities=('desc',),
+            desc='mrtrix',
+            suffix='dseg',
+            extension='.txt',
+        ),
+        iterfield=['in_file', 'seg'],
+        name='ds_atlas_mrtrix_lut',
+        run_without_submitting=True,
+    )
+    ds_atlas_orig_lut = pe.MapNode(
+        DerivativesDataSink(
+            dismiss_entities=('desc',),
+            suffix='dseg',
+            extension='.txt',
+        ),
+        iterfield=['in_file', 'seg'],
+        name='ds_atlas_orig_lut',
+        run_without_submitting=True,
+    )
+    for ds_node in (ds_atlas, ds_atlas_mifs, ds_atlas_mrtrix_lut, ds_atlas_orig_lut):
+        ds_node.inputs.seg = atlas_names
+
+    workflow.connect([
+        (warp_atlases, ds_atlas, [('output_image', 'in_file')]),
+        (convert_labels, ds_atlas_mifs, [('out_file', 'in_file')]),
+        (make_atlas_luts, ds_atlas_mrtrix_lut, [('mrtrix_lut', 'in_file')]),
+        (make_atlas_luts, ds_atlas_orig_lut, [('orig_lut', 'in_file')]),
+    ])  # fmt:skip
+
+    # Collect the datasinked files back into the atlas configs, so that later nodes
+    # that use the atlas configs reference the written-out files.
+    recombine_atlas_configs = pe.Node(
+        RecombineAtlasConfigs(atlas_configs=atlas_configs, atlases=atlas_names),
+        name='recombine_atlas_configs',
+        run_without_submitting=True,
+    )
+    workflow.connect([
+        (ds_atlas, recombine_atlas_configs, [('out_file', 'nifti_files')]),
+        (ds_atlas_mifs, recombine_atlas_configs, [('out_file', 'mif_files')]),
+        (ds_atlas_mrtrix_lut, recombine_atlas_configs, [('out_file', 'mrtrix_lut_files')]),
+        (ds_atlas_orig_lut, recombine_atlas_configs, [('out_file', 'orig_lut_files')]),
+        (recombine_atlas_configs, outputnode, [('atlas_configs', 'atlas_configs')]),
+    ])  # fmt:skip
+
+    # Fill in the atlas datasinks
+    for node in workflow.list_node_names():
+        node_suffix = node.split('.')[-1]
+        if node_suffix.startswith('ds_atlas'):
+            workflow.connect([
+                (inputnode, workflow.get_node(node), [('source_file', 'source_file')]),
+            ])  # fmt:skip
+
+    return workflow
 
 
 def _get_first(item):
