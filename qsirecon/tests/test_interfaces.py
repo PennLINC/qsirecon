@@ -8,7 +8,48 @@ import pytest
 
 from qsirecon.data import load as load_data
 from qsirecon.interfaces.gradients import GradientSelect, _classify_shell_scheme, _find_shells
+from qsirecon.interfaces.utils import AtlasLUTs
 from qsirecon.tests.utils import download_test_data, get_test_data_path
+
+
+def _write_labels_file(tmpdir, rows):
+    """Write a minimal atlas labels TSV with index and name columns."""
+    labels_file = Path(tmpdir) / 'atlas_dseg.tsv'
+    with open(labels_file, 'w') as fo:
+        fo.write('index\tname\n')
+        fo.writelines(f'{index}\t{name}\n' for index, name in rows)
+
+    return labels_file
+
+
+def test_atlas_luts(tmp_path_factory):
+    """AtlasLUTs writes the original indices and sequential MRtrix indices."""
+    tmpdir = tmp_path_factory.mktemp('test_atlas_luts')
+    labels_file = _write_labels_file(tmpdir, [(5, 'Left Thalamus'), (12, 'Right Thalamus')])
+
+    interface = AtlasLUTs(atlas_labels_file=str(labels_file))
+    results = interface.run(cwd=str(tmpdir))
+
+    with open(results.outputs.orig_lut) as fo:
+        assert fo.read() == '5\tLeft-Thalamus\n12\tRight-Thalamus\n'
+
+    with open(results.outputs.mrtrix_lut) as fo:
+        assert fo.read() == '1\tLeft-Thalamus\n2\tRight-Thalamus\n'
+
+
+def test_atlas_luts_drops_zero_index(tmp_path_factory):
+    """AtlasLUTs drops the background (0) index from both LUTs."""
+    tmpdir = tmp_path_factory.mktemp('test_atlas_luts_drops_zero_index')
+    labels_file = _write_labels_file(tmpdir, [(0, 'background'), (5, 'Left Thalamus')])
+
+    interface = AtlasLUTs(atlas_labels_file=str(labels_file))
+    results = interface.run(cwd=str(tmpdir))
+
+    with open(results.outputs.orig_lut) as fo:
+        assert fo.read() == '5\tLeft-Thalamus\n'
+
+    with open(results.outputs.mrtrix_lut) as fo:
+        assert fo.read() == '1\tLeft-Thalamus\n'
 
 
 def test_shell_selection(data_dir, tmp_path_factory):
