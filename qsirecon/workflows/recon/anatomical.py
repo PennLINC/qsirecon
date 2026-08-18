@@ -703,7 +703,7 @@ def init_warp_atlases_wf(atlas_configs):
     )
     conform_atlases.inputs.in_file = atlas_images
 
-    # Resample all atlases to source_file's resolution
+    # Warp all atlases to source_file's space/resolution
     warp_atlases = pe.MapNode(
         ants.ApplyTransforms(interpolation='MultiLabel', dimension=3),
         iterfield=['input_image'],

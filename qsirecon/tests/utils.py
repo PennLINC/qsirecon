@@ -175,3 +175,8 @@ def freesurfer_license(base_dir):
     with license_file.open('w') as licensef:
         licensef.write(base64.b64decode(_lic).decode('utf-8'))
     return license_file
+
+
+def get_nodes(wf_results):
+    """Load nodes from a Nipype workflow's results."""
+    return {node.fullname: node for node in wf_results.nodes}
