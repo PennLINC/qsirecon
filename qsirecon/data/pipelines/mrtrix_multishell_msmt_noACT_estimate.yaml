@@ -8,7 +8,7 @@ space: T1w
 nodes:
 -   action: csd
     input: qsirecon
-    name: msmt_csd
+    name: estimate_response_functions
     parameters:
         response:
             algorithm: dhollander

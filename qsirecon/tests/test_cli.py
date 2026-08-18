@@ -783,7 +783,7 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
             'qsirecon-MRtrix3_act-None_response-subject',
             'sub-ABCD',
             'dwi',
-            f'sub-ABCD_acq-10per000_space-T1w_model-dhollander_param-fod_label-{label}_dwimap.txt',
+            f'sub-ABCD_acq-10per000_space-T1w_model-dhollander_label-{label}_response.txt',
         )
         out_txt_file = os.path.join(test_dir, f'{tissue}.txt')
         shutil.copyfile(in_txt_file, out_txt_file)

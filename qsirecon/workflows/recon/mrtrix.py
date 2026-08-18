@@ -47,7 +47,7 @@ CITATIONS = {
 
 
 def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='', params={}):
-    """Create FOD images for WM, GM and CSF.
+    """Estimate response functions and optionally compute FOD images for WM, GM and CSF.
 
     This workflow uses mrtrix tools to run csd on multishell data. At the end,
     mtnormalise is run.
@@ -217,9 +217,8 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='
             DerivativesDataSink(
                 dismiss_entities=('desc',),
                 model=response_name,
-                param='fod',
                 label='WM',
-                suffix='dwimap',
+                suffix='response',
                 extension='.txt',
                 # metadata
                 ResponseAlgorithm=response_algorithm,
@@ -235,9 +234,8 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='
             DerivativesDataSink(
                 dismiss_entities=('desc',),
                 model=response_name,
-                param='fod',
                 label='GM',
-                suffix='dwimap',
+                suffix='response',
                 extension='.txt',
                 # metadata
                 ResponseAlgorithm=response_algorithm,
@@ -252,9 +250,8 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='
             DerivativesDataSink(
                 dismiss_entities=('desc',),
                 model=response_name,
-                param='fod',
                 label='CSF',
-                suffix='dwimap',
+                suffix='response',
                 extension='.txt',
                 # metadata
                 ResponseAlgorithm=response_algorithm,
