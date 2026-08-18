@@ -682,7 +682,7 @@ def init_warp_atlases_wf(atlas_configs):
     )
 
     atlas_str = describe_atlases(sorted(atlas_configs.keys()))
-    workflow.__desc__ += (
+    workflow.__desc__ = (
         f'The following atlases were used in the workflow: {atlas_str}. '
         'Cortical parcellations were mapped from template space to DWIS '
         'using the T1w-based spatial normalization. '
