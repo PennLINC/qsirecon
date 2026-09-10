@@ -1,0 +1,15 @@
+description: Reconstruct dwis using DIPY's FORCE forward-modeling estimator.
+name: dipy_force_recon
+nodes:
+-   action: FORCE_reconstruction
+    input: qsirecon
+    name: force_recon
+    parameters:
+        compute_dki: true
+        n_neighbors: 50
+        num_simulations: 500000
+        uncertainty_maps: false
+        use_posterior: false
+    qsirecon_suffix: DIPYFORCE
+    software: Dipy
+space: T1w

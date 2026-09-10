@@ -8,6 +8,10 @@ def make_sloppy(spec):
             'msdki': False,
             'wmti': False,
         },
+        ('Dipy', 'FORCE_reconstruction'): {
+            'num_simulations': 5000,
+            'compute_dki': False,
+        },
         ('Dipy', 'MAPMRI_reconstruction'): {
             'extrapolate_scheme': 'ABCD',
             'anisotropic_scaling': False,

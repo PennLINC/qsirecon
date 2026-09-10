@@ -5,12 +5,24 @@ from qsirecon.interfaces import recon_scalars
 from qsirecon.utils.misc import load_yaml
 
 
+def scalar_to_parameter(bids):
+    """Name a scalar's parameter, qualified by ``desc`` when one is used.
+
+    Some models distinguish variants of the same parameter with the ``desc`` entity
+    (FORCE's uncertainty and ambiguity maps, NODDI's modulated maps). Without it those
+    rows are indistinguishable in the docs tables.
+    """
+    param = bids.get('param', '')
+    desc = bids.get('desc')
+    return f'{param} ({desc})' if desc else param
+
+
 def scalars_to_csv(scalar_def, output_csv):
     print('creating', output_csv)
     as_data = [
         {
             'Model': value['bids']['model'],
-            'Parameter': value['bids'].get('param', ''),
+            'Parameter': scalar_to_parameter(value['bids']),
             'Description': value['metadata'].get('Description', ''),
         }
         for value in scalar_def.values()
@@ -29,6 +41,8 @@ scalars_to_csv(recon_scalars.brainsuite_3dshore_scalars, 'recon_scalars/csdsi_3d
 scalars_to_csv(recon_scalars.brainsuite_3dshore_scalars, 'recon_scalars/dipy_3dshore.csv')
 ## dipy_dki.yaml
 scalars_to_csv(recon_scalars.dipy_dki_scalars, 'recon_scalars/dipy_dki.csv')
+## dipy_force.yaml
+scalars_to_csv(recon_scalars.dipy_force_scalars, 'recon_scalars/dipy_force.csv')
 ## dipy_mapmri.yaml
 scalars_to_csv(recon_scalars.dipy_mapmri_scalars, 'recon_scalars/dipy_mapmri.csv')
 ## dsi_studio_gqi.yaml
@@ -78,6 +92,7 @@ def outputs_to_csv(output_def, output_csv):
 
 outputs_to_csv(load_yaml(load_data('nonscalars/amico_noddi.yaml')), 'nonscalars/amico_noddi.csv')
 outputs_to_csv(load_yaml(load_data('nonscalars/dipy_dki.yaml')), 'nonscalars/dipy_dki.csv')
+outputs_to_csv(load_yaml(load_data('nonscalars/dipy_force.yaml')), 'nonscalars/dipy_force.csv')
 outputs_to_csv(load_yaml(load_data('nonscalars/dipy_mapmri.yaml')), 'nonscalars/dipy_mapmri.csv')
 outputs_to_csv(
     load_yaml(load_data('nonscalars/dsistudio_gqi.yaml')), 'nonscalars/dsistudio_gqi.csv'
