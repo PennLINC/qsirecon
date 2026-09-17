@@ -96,6 +96,7 @@
     - acq: abcdPA
       run: 01
       space: ACPC
+      desc: preproc
       suffix: dwiref
       extension: .nii.gz
     - acq: abcdPA
