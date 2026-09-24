@@ -147,7 +147,7 @@ QSIRecon is a BIDS App for reconstructing and postprocessing diffusion MRI data 
 | Package name | `qsirecon` |
 | Default branch | `main` |
 | Entry point | `qsirecon.cli.run:main` |
-| Python requirement | `>=3.10` |
+| Python requirement | `>=3.11` |
 | Build backend | hatchling + hatch-vcs + cython + numpy |
 | Linter | **flake8 + black + isort** (migration to ruff pending) |
 | Pre-commit | **None** (to be added) |

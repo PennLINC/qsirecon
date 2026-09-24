@@ -353,6 +353,24 @@ class DIPYMAPMRIReconScalars(ReconScalars):
     scalar_metadata = dipy_mapmri_scalars
 
 
+# DIPY implementation of FORCE
+dipy_force_scalars = load_yaml(load_data('scalars/dipy_force.yaml'))
+
+
+class _DIPYFORCEReconScalarInputSpec(ReconScalarsInputSpec):
+    pass
+
+
+for input_name in dipy_force_scalars:
+    _DIPYFORCEReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    _DIPYFORCEReconScalarInputSpec.add_class_trait(f'{input_name}_metadata', traits.Dict())
+
+
+class DIPYFORCEReconScalars(ReconScalars):
+    input_spec = _DIPYFORCEReconScalarInputSpec
+    scalar_metadata = dipy_force_scalars
+
+
 # Same as DIPY implementation of 3dSHORE, but with brainsuite bases
 brainsuite_3dshore_scalars = load_yaml(load_data('scalars/brainsuite_3dshore.yaml'))
 

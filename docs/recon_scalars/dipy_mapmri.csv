@@ -1,6 +1,6 @@
 mapmri,lapnorm,Laplacian norm from regularized MAPMRI (MAPL)
 mapmri,mapcoeffs,MAPMRI coefficients
-mapmri,msd,mean square displacement from MAPMRI
+mapmri,msd,Mean square displacement from MAPMRI
 mapmri,ng,Non-Gaussianity from MAPMRI
 mapmri,ngpar,Non-Gaussianity parallel from MAPMRI
 mapmri,ngperp,Non-Gaussianity perpendicular from MAPMRI
