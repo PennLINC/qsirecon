@@ -11,6 +11,7 @@ from .. import __version__
 
 RELEASE_EXPIRY_DAYS = 14
 DATE_FMT = '%Y%m%d'
+FLAGGED_URL = 'https://raw.githubusercontent.com/PennLINC/qsirecon/main/.versions.json'
 
 
 def check_latest():
@@ -65,22 +66,30 @@ def check_latest():
 
 
 def is_flagged():
-    """Check whether current version is flagged."""
-    # https://raw.githubusercontent.com/pennlinc/qsirecon/main/.versions.json
-    flagged = ()
+    """Check whether current version is flagged.
+
+    Flagged versions are listed in the ``.versions.json`` file at the root of the
+    repository's ``main`` branch, as a mapping from version string to the reason
+    the version was flagged (or ``null`` if no reason is given).
+
+    Returns
+    -------
+    flagged : :obj:`bool`
+        Whether the current version has been flagged.
+    reason : :obj:`str` or None
+        The reason the version was flagged, if one was given.
+    """
+    flagged = {}
+    # Nothing about the remote file (or whatever is served in its place, e.g., by
+    # a captive portal) should be able to stop a run.
     try:
-        response = requests.get(
-            url="""\
-https://raw.githubusercontent.com/pennlinc/qsirecon/main/.versions.json""",
-            timeout=1.0,
-        )
+        response = requests.get(url=FLAGGED_URL, timeout=1.0)
+        if response.status_code == 200:
+            flagged = response.json().get('flagged', {}) or {}
     except Exception:
-        response = None
+        flagged = {}
 
-    if response and response.status_code == 200:
-        flagged = response.json().get('flagged', {}) or {}
-
-    if __version__ in flagged:
+    if isinstance(flagged, dict) and __version__ in flagged:
         return True, flagged[__version__]
 
     return False, None

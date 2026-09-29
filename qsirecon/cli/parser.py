@@ -25,6 +25,7 @@
 """Parser."""
 
 import os
+import sys
 from argparse import Action
 from pathlib import Path
 
@@ -65,6 +66,8 @@ def _build_parser(**kwargs):
     from pathlib import Path
 
     from packaging.version import Version
+
+    from .version import is_flagged
 
     def _path_exists(path, parser):
         """Ensure a given path exists."""
@@ -459,6 +462,21 @@ def _build_parser(**kwargs):
         choices=config.DEBUG_MODES + ('all',),
         help="Debug mode(s) to enable. 'all' is alias for all available modes.",
     )
+
+    _blist = is_flagged()
+    if _blist[0]:
+        _reason = _blist[1] or 'unknown'
+        print(
+            f"""\
+WARNING: Version {config.environment.version} of QSIRecon (current) has been FLAGGED
+(reason: {_reason}).
+That means some severe flaw was found in it and we strongly
+discourage its usage.
+Please check out our documentation about how and when to upgrade:
+https://qsirecon.readthedocs.io/en/latest/installation.html#upgrading""",
+            file=sys.stderr,
+        )
+
     return parser
 
 
