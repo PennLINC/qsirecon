@@ -12,13 +12,14 @@ classifiers = [
     "Intended Audience :: Science/Research",
     "Topic :: Scientific/Engineering :: Image Recognition",
     "License :: OSI Approved :: BSD License",
-    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
 ]
 license = {file = "LICENSE"}
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     'importlib_resources; python_version < "3.11"',
-    "dipy>=1.10.0,<1.11.0",
+    # FORCE arrives in 1.12.0; its per-parameter uncertainty maps in 1.12.1.
+    "dipy>=1.12.1,<1.13.0",
     "dmri-amico == 2.0.3",
     "filelock",
     "fury",
@@ -33,7 +34,7 @@ dependencies = [
     "niworkflows >= 1.13,< 1.14",
     "packaging",  # for version string parsing
     "psutil <= 5.9.8",
-    "pyAFQ == 2.0",
+    "pyAFQ >= 3.0,< 4",
     "pybids",
     "pyyaml",
     "scikit-image",
@@ -150,14 +151,14 @@ qsirecon = { path = ".", editable = false }
 numpy = ">=1.26,<1.27"
 
 [tool.pixi.dependencies]
-python = "3.10.*"
+python = "3.11.*"
 nodejs = "20.*"
 mkl = "*"
 mkl-service = "*"
 numpy = "1.26.*"
 scipy = "1.11.*"
 matplotlib = "3.8.*"
-pandas = "1.5.*"
+pandas = "2.2.*"
 h5py = "3.10.*"
 graphviz = "*"
 pandoc = "*"
@@ -284,6 +285,7 @@ markers = [
     "amico_noddi: test 5",
     "dipy_mapmri: test 7",
     "dipy_dki: test 8",
+    "dipy_force: test 30",
     "dsi_studio_gqi_recon: test 9",
     "scalar_mapper: test 17",
     "pyafq_recon_external_trk: test 18",
@@ -329,4 +331,5 @@ skip = '.git,*.pdf,*.svg,*.html,dataset_description.json,*.gii,pixi.lock'
 # pres - variable name
 # Gage, Joo, Sepulcre - author names
 # numer - abbreviation for numerator
-ignore-words-list = 'te,weill,reson,DNE,fo,fixel,fixels,pres,Gage,Joo,Sepulcre,numer'
+# nd - abbreviation for a scalar
+ignore-words-list = 'te,weill,reson,DNE,fo,fixel,fixels,pres,Gage,Joo,Sepulcre,numer,nd'

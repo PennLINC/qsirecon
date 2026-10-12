@@ -1,8 +1,9 @@
-noddi,direction,Peak directions from NODDI
-noddi,icvf,Intracellular volume fraction from NODDI
-noddi,isovf,Isotropic volume fraction from NODDI
-noddi,od,Orientation dispersion index from NODDI
-noddi,modulated icvf,Tissue fraction modulated intracellular volume fraction from NODDI
-noddi,modulated od,Tissue fraction modulated orientation dispersion from NODDI
-noddi,rmse,Root mean square error between predicted and observed signal from NODDI
-noddi,rmse,Normalized RMSE between predicted and observed signal from NODDI
+noddi,direction,Peak directions from AMICO NODDI
+noddi,icvf,Intracellular volume fraction (Neurite Density Index; NDI) from AMICO NODDI
+noddi,icvf (modulated),Intracellular volume fraction modulated by tissue fraction (ICVF * tissue fraction) from AMICO NODDI
+noddi,isovf,Isotropic volume fraction (Freewater Fraction; FWF) from AMICO NODDI
+noddi,nrmse,Normalized root mean square error between predicted and measured signal from AMICO NODDI
+noddi,od,Orientation dispersion index (ODI) from AMICO NODDI
+noddi,od (modulated),Orientation dispersion index modulated by tissue fraction (OD * tissue fraction) from AMICO NODDI
+noddi,rmse,Root mean square error between predicted and measured signal from AMICO NODDI
+noddi,tf,Tissue fraction (1 - isotropic volume fraction) computed by QSIRecon

@@ -384,6 +384,48 @@ Other Outputs
    :widths: 15, 30
 
 
+.. _dipy_force:
+
+``dipy_force``
+==============
+
+FORCE :footcite:p:`force` turns reconstruction around: instead of fitting an analytic
+model to the measured signal, it simulates a large library of voxels with known
+microstructure for this subject's exact gradient scheme, then matches each measured voxel
+against the library by normalized inner product. The microstructure of the closest
+simulation, or a posterior mean over the closest simulations, becomes the estimate.
+
+Because the library is tied to the gradient scheme, it is generated at run time and
+cached under ``$DIPY_HOME/force_simulations``. Generation is seeded non-deterministically,
+so a run is only exactly reproducible if you pre-generate a library and pass it with the
+``simulations_file`` parameter. Doing so is also much faster when processing many
+subjects that share a scheme.
+
+Two parameters are worth knowing about:
+
+* ``compute_dki`` adds the kurtosis maps (``ak``, ``rk``, ``mk``, ``kfa``). It needs at
+  least two non-zero shells; DIPY warns and disables it otherwise, in which case those
+  maps are simply not written.
+* ``uncertainty_maps`` adds a posterior uncertainty and ambiguity map for each of the 14
+  microstructure parameters, on top of the 17 maps written by default. These are computed
+  during the fit either way, so enabling this costs output size and report height rather
+  than fit time. It requires DIPY 1.12.1 or later.
+
+Scalar Maps
+-----------
+.. csv-table::
+   :header: "Model", "Parameter", "Description"
+   :file: recon_scalars/dipy_force.csv
+   :widths: 15, 10, 30
+
+Other Outputs
+-------------
+.. csv-table::
+   :header: "File Name", "Description"
+   :file: nonscalars/dipy_force.csv
+   :widths: 15, 30
+
+
 .. _dipy_3dshore:
 
 ``dipy_3dshore``
@@ -522,6 +564,8 @@ the model-fitting workflows and which sampling schemes work with them.
 +------------------------------------------------+-------------+------------+-----------------+
 |:ref:`dipy_dki`                                 |     Yes     |    No      |      No         |
 +------------------------------------------------+-------------+------------+-----------------+
+|:ref:`dipy_force`                               |     Yes     |    Yes     |      Yes\*\*    |
++------------------------------------------------+-------------+------------+-----------------+
 |:ref:`dipy_mapmri`                              |     Yes     |    Yes     |      No         |
 +------------------------------------------------+-------------+------------+-----------------+
 |:ref:`dsi_studio_autotrack`                     |     Yes     |    Yes     |      Yes        |
@@ -556,6 +600,10 @@ the model-fitting workflows and which sampling schemes work with them.
 +------------------------------------------------+-------------+------------+-----------------+
 
 \* Not recommended
+
+\*\* Works, but the packaged ``dipy_force`` spec sets ``compute_dki: true``, which needs
+at least two non-zero shells. On single-shell data DIPY disables it and the kurtosis maps
+are not written.
 
 .. _connectivity_matrices:
 
