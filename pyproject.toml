@@ -36,6 +36,7 @@ dependencies = [
     "pyAFQ == 2.0",
     "pybids",
     "pyyaml",
+    "requests",
     "scikit-image",
     "scikit-learn <= 1.4.0",
     "seaborn",
