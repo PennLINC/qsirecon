@@ -67,7 +67,7 @@ def _build_parser(**kwargs):
 
     from packaging.version import Version
 
-    from .version import is_flagged
+    from .version import check_latest, is_flagged
 
     def _path_exists(path, parser):
         """Ensure a given path exists."""
@@ -462,6 +462,16 @@ def _build_parser(**kwargs):
         choices=config.DEBUG_MODES + ('all',),
         help="Debug mode(s) to enable. 'all' is alias for all available modes.",
     )
+
+    latest = check_latest()
+    if latest is not None and currentv < latest:
+        print(
+            f"""\
+You are using QSIRecon-{currentv}, and a newer version of QSIRecon is available: {latest}.
+Please check out our documentation about how and when to upgrade:
+https://qsirecon.readthedocs.io/en/latest/installation.html#upgrading""",
+            file=sys.stderr,
+        )
 
     _blist = is_flagged()
     if _blist[0]:

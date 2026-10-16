@@ -103,10 +103,12 @@ in `this file of our repository
 <https://github.com/PennLINC/qsirecon/blob/main/.versions.json>`__.
 Whenever *QSIRecon* runs with internet access, it checks that list
 and prints a warning if the version you are running has been flagged.
+It also lets you know when a newer release is available.
 If your release is listed there, then please upgrade as soon as possible,
 and check the :doc:`changelog <changes>` to determine whether the derivatives you
 have already generated are affected.
 
 .. note::
-    The check was introduced in *QSIRecon* 26.0.1.
-    Earlier releases will not print a warning, even if they appear in the list.
+    These checks were introduced after *QSIRecon* 26.0.1.
+    Releases up to and including 26.0.1 will not print a warning,
+    even if they appear in the list.
