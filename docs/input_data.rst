@@ -32,20 +32,66 @@ when some specific options were selected for preprocessing.
     Minor and patch releases may be made independently.
 
 
+.. _anatomical_image:
+
+Which anatomical image is used
+==============================
+
+*QSIRecon* uses one preprocessed anatomical image per subject
+(or per session, when *QSIPrep* was run with session-wise anatomical processing)
+as the spatial reference for anatomical data.
+It looks in the ``anat`` folder for a ``desc-preproc`` ``T1w`` or ``T2w`` image in
+``ACPC`` space, along with the brain mask (``desc-brain_mask``),
+the tissue segmentations (``dseg``), and the transforms between ``ACPC`` and
+template space (``from-ACPC_to-<template>`` and ``from-<template>_to-ACPC``).
+The mask, segmentations, and transforms are not modality-specific,
+so they are used the same way regardless of which image was found.
+
+- **T1w only** (*QSIPrep* run with ``--anat-modality T1w``): the T1w is used.
+- **T2w only** (*QSIPrep* run with ``--anat-modality T2w``): the T2w is used.
+  Nothing else changes.
+- **T1w and T2w**: when *QSIPrep* is run with ``--anat-modality T1w`` on a dataset that
+  also contains a T2w, it writes the T2w coregistered to the T1w
+  (``space-ACPC_desc-preproc_T2w``) next to the T1w.
+  *QSIRecon* uses the T1w, because the mask, segmentations, and transforms were derived
+  from it.
+  To use the T2w instead, pass a ``--bids-filter-file`` containing::
+
+      {"acpc_preproc": {"suffix": "T2w"}}
+
+  The keys of the filter file are the query names in ``qsirecon/data/io_spec.yaml``.
+- **No anatomical image** (*QSIPrep* run with ``--anat-modality none``):
+  see the next section.
+
+The anatomical image is used as the registration target for FreeSurfer data
+(see :ref:`include_freesurfer`), as the underlay for the scalar-map figures in the
+reports, and to name some anatomical outputs.
+Reconstruction workflows that require anatomical data (see
+:ref:`anatomical_requirements`) accept either modality.
+
+
 If ``--anat-modality none`` was used
 ====================================
 
-If ``--anat-modality none`` was used, there will be no preprocessed T1w data in
+If ``--anat-modality none`` was used, there will be no preprocessed anatomical data in
 the *QSIRecon* results. Instead the DWI images have been aligned to AC-PC as
-closely as possible (likely imperfectly). In this case, the FreeSurfer
-skull-stripped ``brain.mgz`` is rigidly registered to ``dwiref`` of each
-preprocessed DWI. The FreeSurfer brain mask is resampled to the grid of the DWI.
+closely as possible (likely imperfectly).
 
-If structural connectivity is calculated during the reconstruction workflow
-(or any atlases are specified with the ``--atlases`` parameter),
-the coregistered-to-DWI ``brain.mgz`` image will be
-normalized to the MNI152NLin2009cAsym template using ``antsRegistration``.
-The reverse transform is used to get parcellations aligned to the DWI.
+If FreeSurfer data are provided (see :ref:`include_freesurfer`), the FreeSurfer
+skull-stripped ``brain.mgz`` is rigidly registered to the ``dwiref`` image of each
+preprocessed DWI, and the FreeSurfer ``aseg`` is used as the brain mask on the grid
+of that DWI. A hybrid surface/volume segmentation (``mrtrix_5tt_hsvs``) requested by the
+reconstruction workflow is aligned to each DWI in the same way and written as a
+derivative of that DWI.
+
+If no FreeSurfer data are provided, a brain mask is estimated from the b=0 images of
+each DWI instead.
+
+Without the anatomical-to-template transforms that *QSIPrep* derives from an
+anatomical image, nothing can be mapped between template space and the DWI.
+Atlases specified with ``--atlases``, structural connectivity, and ``template_map``
+nodes therefore cannot be used with ``--anat-modality none`` data, and *QSIRecon*
+stops with an error that names the missing transform.
 
 .. _other_pipeline_input:
 
@@ -80,16 +126,20 @@ and be mindful about how you mount the directory in Docker/Apptainer.
 .. _anat_reqs:
 
 ********************************************
+.. _anatomical_requirements:
+
 Anatomical Data for Reconstruction Workflows
 ********************************************
 
 Some reconstruction workflows require additional anatomical data to work properly.
 This table shows which reconstruction workflows depend on the availability of
-anatomical data:
+anatomical data.
+"Req. anatomical" means a preprocessed T1w or T2w image and brain mask
+(see :ref:`anatomical_image`).
 
 
 +-----------------------------------------+-------------------+-------------------+--------------+
-| Option                                  |    Req. T1w       |  Req. FreeSurfer  |   Req. SDC   |
+| Option                                  |  Req. anatomical  |  Req. FreeSurfer  |   Req. SDC   |
 +=========================================+===================+===================+==============+
 |:ref:`mrtrix_multishell_msmt_ACT-hsvs`   |       Yes         |       Yes         |    Yes       |
 +-----------------------------------------+-------------------+-------------------+--------------+
@@ -167,8 +217,11 @@ for subsequent reconstruction steps.
 How FreeSurfer Data is Included
 ===============================
 
-If a T1w image is available in the input data the ``brain.mgz`` image from
-freesurfer is registered to the appropriate T1w image.  The transform from
+If a preprocessed anatomical image (T1w or T2w, see :ref:`anatomical_image`) is
+available in the input data, the ``brain.mgz`` image from FreeSurfer is rigidly
+registered to it with a mutual-information metric, so either contrast works as the
+target. If no anatomical image is available, ``brain.mgz`` is registered to the
+``dwiref`` image of each DWI instead. The transform from
 freesurfer native space into alignment with the ``qsirecon`` outputs is achieved
 by converting ``brain.mgz`` into NIfTI format and adjusting the affine matrix
 such that the images are aligned in world coordinates. This prevents an extra

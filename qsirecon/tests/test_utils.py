@@ -1,12 +1,26 @@
 """Test utility functions."""
 
 import os
+from types import SimpleNamespace
 
+import pytest
 from bids.layout import BIDSLayout, Query
 from niworkflows.utils.testing import generate_bids_skeleton
 
 import qsirecon.utils.bids as xbids
 from qsirecon.data import load as load_data
+
+
+def _layout_from_skeleton(tmp_path_factory, skeleton_name, test_name):
+    """Generate a BIDS skeleton from a packaged YAML file and index it."""
+    skeleton = load_data(f'tests/skeletons/{skeleton_name}')
+    bids_dir = tmp_path_factory.mktemp(test_name) / 'bids'
+    generate_bids_skeleton(str(bids_dir), str(skeleton))
+    return BIDSLayout(
+        bids_dir,
+        validate=False,
+        config=['bids', 'derivatives'],
+    )
 
 
 def test_collect_anatomical_data(tmp_path_factory):
@@ -40,12 +54,12 @@ def test_collect_anatomical_data(tmp_path_factory):
         layout=layout,
         subject_id='01',
         session_id=_session_filter,
-        needs_t1w_transform=False,
+        needs_anat_transform=False,
         infant_mode=False,
         bids_filters={},
     )
-    assert highres_anat_status['has_qsiprep_t1w'] is True
-    assert highres_anat_status['has_qsiprep_t1w_transforms'] is True
+    assert highres_anat_status['has_qsiprep_anat'] is True
+    assert highres_anat_status['has_qsiprep_anat_transforms'] is True
     # These are collected
     assert anat_data['acpc_preproc'] is not None
     assert anat_data['acpc_brain_mask'] is not None
@@ -76,6 +90,176 @@ def test_get_iterable_dwis_and_anats(tmp_path_factory):
     assert len(dwis_and_anats) == 1
     assert dwis_and_anats[0][0] is not None
     assert dwis_and_anats[0][1] is not None
+
+
+def test_collect_anatomical_data_multimodal(tmp_path_factory):
+    """A T1w and a coregistered T2w are both present. The T1w is used unless overridden."""
+    layout = _layout_from_skeleton(
+        tmp_path_factory,
+        'multimodal_anat.yml',
+        'test_collect_anatomical_data_multimodal',
+    )
+
+    anat_data, status = xbids.collect_anatomical_data(
+        layout=layout,
+        subject_id='01',
+        session_id=Query.NONE,
+        needs_anat_transform=True,
+        infant_mode=False,
+        bids_filters={},
+    )
+    assert status['has_qsiprep_anat'] is True
+    assert status['has_qsiprep_anat_transforms'] is True
+    assert anat_data['acpc_preproc'].endswith('sub-01_space-ACPC_desc-preproc_T1w.nii.gz')
+    assert anat_data['acpc_brain_mask'].endswith('sub-01_space-ACPC_desc-brain_mask.nii.gz')
+
+    # A BIDS filter keyed on the query name selects the T2w instead.
+    anat_data, status = xbids.collect_anatomical_data(
+        layout=layout,
+        subject_id='01',
+        session_id=Query.NONE,
+        needs_anat_transform=True,
+        infant_mode=False,
+        bids_filters={'acpc_preproc': {'suffix': 'T2w'}},
+    )
+    assert status['has_qsiprep_anat'] is True
+    assert anat_data['acpc_preproc'].endswith('sub-01_space-ACPC_desc-preproc_T2w.nii.gz')
+
+
+def test_collect_anatomical_data_t2w_only(tmp_path_factory):
+    """Only a T2w is present, as with ``--anat-modality T2w``."""
+    layout = _layout_from_skeleton(
+        tmp_path_factory,
+        't2w_anat.yml',
+        'test_collect_anatomical_data_t2w_only',
+    )
+
+    anat_data, status = xbids.collect_anatomical_data(
+        layout=layout,
+        subject_id='01',
+        session_id=Query.NONE,
+        needs_anat_transform=True,
+        infant_mode=False,
+        bids_filters={},
+    )
+    assert status['has_qsiprep_anat'] is True
+    assert status['has_qsiprep_anat_transforms'] is True
+    assert anat_data['acpc_preproc'].endswith('sub-01_space-ACPC_desc-preproc_T2w.nii.gz')
+
+
+def test_collect_anatomical_data_duplicate_error(tmp_path_factory):
+    """Two files of the same modality raise an error that names the query and the files."""
+    layout = _layout_from_skeleton(
+        tmp_path_factory,
+        'multimodal_anat.yml',
+        'test_collect_anatomical_data_duplicate_error',
+    )
+
+    with pytest.raises(ValueError, match='More than one file matched the "acpc_preproc"') as exc:
+        xbids.collect_anatomical_data(
+            layout=layout,
+            subject_id='01',
+            session_id=Query.NONE,
+            needs_anat_transform=False,
+            infant_mode=False,
+            bids_filters={'acpc_preproc': {'suffix': 'T2w', 'desc': ['preproc', 'unfatsat']}},
+        )
+
+    message = str(exc.value)
+    assert "'suffix': 'T2w'" in message
+    assert 'sub-01_space-ACPC_desc-preproc_T2w.nii.gz' in message
+    assert 'sub-01_space-ACPC_desc-unfatsat_T2w.nii.gz' in message
+
+
+def test_collect_anatomical_data_missing_transform_error(tmp_path_factory):
+    """A required but missing transform raises an error that names the query."""
+    layout = _layout_from_skeleton(
+        tmp_path_factory,
+        't2w_anat.yml',
+        'test_collect_anatomical_data_missing_transform_error',
+    )
+
+    with pytest.raises(ValueError, match='no "acpc_to_template_xfm" file was found') as exc:
+        xbids.collect_anatomical_data(
+            layout=layout,
+            subject_id='01',
+            session_id=Query.NONE,
+            needs_anat_transform=True,
+            infant_mode=True,
+            bids_filters={},
+        )
+
+    message = str(exc.value)
+    assert "'to': 'MNIInfant'" in message
+    assert '(none)' in message
+
+    # Without the requirement, the missing transform only clears the status flag.
+    anat_data, status = xbids.collect_anatomical_data(
+        layout=layout,
+        subject_id='01',
+        session_id=Query.NONE,
+        needs_anat_transform=False,
+        infant_mode=True,
+        bids_filters={},
+    )
+    assert status['has_qsiprep_anat'] is True
+    assert status['has_qsiprep_anat_transforms'] is False
+    assert status['template_output_space'] is None
+    assert anat_data['acpc_to_template_xfm'] is None
+
+
+def test_collect_anatomical_data_no_session():
+    """A session filter of None means no anatomical image was paired with the DWI."""
+    anat_data, status = xbids.collect_anatomical_data(
+        layout=None,
+        subject_id='01',
+        session_id=None,
+        needs_anat_transform=False,
+    )
+    assert anat_data == {}
+    assert status == {
+        'template_output_space': None,
+        'has_qsiprep_anat': False,
+        'has_qsiprep_anat_transforms': False,
+    }
+
+
+def test_get_iterable_dwis_and_anats_modalities(tmp_path_factory):
+    """The DWI is paired with the T1w when both modalities exist, and the T2w otherwise."""
+    layout = _layout_from_skeleton(
+        tmp_path_factory,
+        'multimodal_anat.yml',
+        'test_get_iterable_dwis_and_anats_multimodal',
+    )
+    dwis_and_anats = xbids.get_iterable_dwis_and_anats(layout=layout)
+    assert len(dwis_and_anats) == 1
+    assert dwis_and_anats[0][1].entities['suffix'] == 'T1w'
+
+    layout = _layout_from_skeleton(
+        tmp_path_factory,
+        't2w_anat.yml',
+        'test_get_iterable_dwis_and_anats_t2w_only',
+    )
+    dwis_and_anats = xbids.get_iterable_dwis_and_anats(layout=layout)
+    assert len(dwis_and_anats) == 1
+    assert dwis_and_anats[0][1].entities['suffix'] == 'T2w'
+
+
+def test_select_preferred_anat():
+    """Test _select_preferred_anat."""
+    t1w = SimpleNamespace(entities={'suffix': 'T1w'})
+    t2w = SimpleNamespace(entities={'suffix': 'T2w'})
+    flair = SimpleNamespace(entities={'suffix': 'FLAIR'})
+
+    # T1w wins over T2w regardless of order
+    assert xbids._select_preferred_anat([t2w, t1w]) == [t1w]
+    # Only the preferred modality is dropped; duplicates within it are kept
+    assert xbids._select_preferred_anat([t1w, t2w, t1w]) == [t1w, t1w]
+    # T2w is used when there is no T1w
+    assert xbids._select_preferred_anat([t2w, flair]) == [t2w]
+    # Unknown modalities pass through untouched
+    assert xbids._select_preferred_anat([flair]) == [flair]
+    assert xbids._select_preferred_anat([]) == []
 
 
 def test_find_fs_path(tmp_path_factory):

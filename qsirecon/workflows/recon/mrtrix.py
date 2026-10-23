@@ -364,7 +364,7 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
         ])  # fmt:skip
 
         # Plot targeted regions
-        if inputs_dict['has_qsiprep_t1w_transforms']:
+        if inputs_dict['has_qsiprep_anat_transforms']:
             ds_report_odfs = pe.Node(
                 DerivativesDataSink(
                     desc='wmFOD',
