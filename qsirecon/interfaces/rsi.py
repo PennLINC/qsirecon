@@ -1,18 +1,16 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """
-Interfaces for the ABCD Study implementation of Restriction Spectrum Imaging
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Interfaces for Restriction Spectrum Imaging
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The model is fit by running the unmodified ``RSIproc`` script from
-https://github.com/ABCD-STUDY/RSI, which is vendored in ``qsirecon/data/rsi``.
+The model is fit with :mod:`qsirecon.utils.rsi`, a port of the ABCD Study's ``RSIproc``
+(https://github.com/ABCD-STUDY/RSI) that exposes its model settings.
+The defaults reproduce RSIproc.
 
 """
 
-import os.path as op
-import subprocess
-import sys
-
+import nibabel as nb
 import numpy as np
 from nipype import logging
 from nipype.interfaces.base import (
@@ -24,60 +22,36 @@ from nipype.interfaces.base import (
 )
 from nipype.utils.filemanip import fname_presuffix
 
-from qsirecon.data import load as load_data
-
 from ..utils.boilerplate import ConditionalDoc
+from ..utils.rsi import (
+    RSI_ADC_LONG,
+    RSI_ADC_TRANS,
+    RSI_COMPARTMENTS,
+    RSI_LAMBDA,
+    RSI_SH_ORDER,
+    RSI_URL,
+    RSI_VERSION,
+    fit_rsi,
+)
 
 LOGGER = logging.getLogger('nipype.interface')
 
-RSI_VERSION = '1.0.8'
-RSI_COMMIT = 'f775121a4ca9a0d8e9e355c60ce85b4fd7d879ac'
-RSI_URL = f'https://github.com/ABCD-STUDY/RSI/tree/{RSI_COMMIT}'
-RSI_SCRIPT = 'rsi/RSIproc_{}.py'.format(RSI_VERSION.replace('.', '_'))
-
-# These mirror the constants hard-coded in the vendored RSIproc script.
-# They are only used to describe the fit in the output metadata.
-RSI_LAMBDA = 0.1
-RSI_ADC_LONG = [1.0e-3, 1.0e-3, 3.0e-3]
-RSI_ADC_TRANS = [1.0e-10, 0.9e-3, 3.0e-3]
-RSI_SH_ORDER = [4, 4, 0]
-
-# Names of the three RSIproc compartments (s1, s2 and s3)
-RSI_COMPARTMENTS = ['restricted', 'hindered', 'free']
-
-# RSIproc treats volumes with b <= 10 as b=0 volumes
-RSI_B0_MAX = 10
-
-# Maps the output trait names to the file names written by RSIproc
+# Maps each output to the fit_rsi result and compartment index it comes from,
+# and to the name of the corresponding RSIproc output
 RSI_OUTPUTS = {
-    'restrictediso': 'n0s1.nii.gz',
-    'restricteddir': 'nds1.nii.gz',
-    'restrictedtotal': 'nts1.nii.gz',
-    'hinderediso': 'n0s2.nii.gz',
-    'hindereddir': 'nds2.nii.gz',
-    'hinderedtotal': 'nts2.nii.gz',
-    'freeiso': 'n0s3.nii.gz',
-    'freetotal': 'nts3.nii.gz',
-    'l2norm': 'L2norm.nii.gz',
+    'restrictediso': ('iso', 0, 'n0s1'),
+    'restricteddir': ('dir', 0, 'nds1'),
+    'restrictedtotal': ('total', 0, 'nts1'),
+    'hinderediso': ('iso', 1, 'n0s2'),
+    'hindereddir': ('dir', 1, 'nds2'),
+    'hinderedtotal': ('total', 1, 'nts2'),
+    'freeiso': ('iso', 2, 'n0s3'),
+    'freetotal': ('total', 2, 'nts3'),
+    'l2norm': ('l2norm', None, 'L2norm'),
 }
 
-
-def _compartment_metadata():
-    """Describe the RSIproc compartments with BEP016 model parameter names."""
-    compartments = {}
-    for name, d_long, d_trans, sh_degree in zip(
-        RSI_COMPARTMENTS, RSI_ADC_LONG, RSI_ADC_TRANS, RSI_SH_ORDER
-    ):
-        if sh_degree == 0 and d_long == d_trans:
-            compartments[name] = {'IsotropicDiffusivity': d_long}
-        else:
-            compartments[name] = {
-                'ParallelDiffusivity': d_long,
-                'PerpendicularDiffusivity': d_trans,
-                'SphericalHarmonicsDegree': sh_degree,
-            }
-
-    return compartments
+# Spherical harmonic degrees allowed for the anisotropic compartments
+SH_DEGREES = (2, 4, 6, 8, 10, 12)
 
 
 class _RSIInputSpec(BaseInterfaceInputSpec):
@@ -85,14 +59,52 @@ class _RSIInputSpec(BaseInterfaceInputSpec):
     bval_file = File(exists=True, mandatory=True, desc='FSL-style bval file.')
     bvec_file = File(exists=True, mandatory=True, desc='FSL-style bvec file.')
     mask_file = File(exists=True, mandatory=True, desc='Brain mask for the DWI series.')
+    restricted_parallel_diffusivity = traits.Float(
+        RSI_ADC_LONG[0],
+        usedefault=True,
+        desc='Diffusivity of the restricted compartment parallel to the fiber, in mm^2/s.',
+    )
+    restricted_perpendicular_diffusivity = traits.Float(
+        RSI_ADC_TRANS[0],
+        usedefault=True,
+        desc='Diffusivity of the restricted compartment perpendicular to the fiber, in mm^2/s.',
+    )
+    restricted_sh_degree = traits.Enum(
+        RSI_SH_ORDER[0],
+        *SH_DEGREES,
+        usedefault=True,
+        desc='Maximum spherical harmonic degree of the restricted compartment.',
+    )
+    hindered_parallel_diffusivity = traits.Float(
+        RSI_ADC_LONG[1],
+        usedefault=True,
+        desc='Diffusivity of the hindered compartment parallel to the fiber, in mm^2/s.',
+    )
+    hindered_perpendicular_diffusivity = traits.Float(
+        RSI_ADC_TRANS[1],
+        usedefault=True,
+        desc='Diffusivity of the hindered compartment perpendicular to the fiber, in mm^2/s.',
+    )
+    hindered_sh_degree = traits.Enum(
+        RSI_SH_ORDER[1],
+        *SH_DEGREES,
+        usedefault=True,
+        desc='Maximum spherical harmonic degree of the hindered compartment.',
+    )
+    free_diffusivity = traits.Float(
+        RSI_ADC_LONG[2],
+        usedefault=True,
+        desc='Diffusivity of the isotropic free water compartment, in mm^2/s.',
+    )
+    regularization_lambda = traits.Float(
+        RSI_LAMBDA,
+        usedefault=True,
+        desc='Weight of the Tikhonov regularization (lambda).',
+    )
     b0_threshold = traits.Float(
         50.0,
         usedefault=True,
-        desc=(
-            'Threshold below which a b-value is considered a b0. '
-            'These b-values are set to 0 before running RSIproc, '
-            'which only treats b-values of 10 or less as b0.'
-        ),
+        desc='Threshold below which a b-value is considered a b0.',
         doc=ConditionalDoc('All b-values below {value} s/mm^2 were treated as b=0.'),
     )
 
@@ -118,72 +130,119 @@ class _RSIOutputSpec(TraitedSpec):
     l2norm_metadata = traits.Dict()
 
 
+def rsi_model_settings(inputs):
+    """Return the parallel and perpendicular diffusivities and SH degrees of each compartment."""
+    parallel = [
+        inputs.restricted_parallel_diffusivity,
+        inputs.hindered_parallel_diffusivity,
+        inputs.free_diffusivity,
+    ]
+    perpendicular = [
+        inputs.restricted_perpendicular_diffusivity,
+        inputs.hindered_perpendicular_diffusivity,
+        inputs.free_diffusivity,
+    ]
+    sh_degrees = [inputs.restricted_sh_degree, inputs.hindered_sh_degree, 0]
+    return parallel, perpendicular, sh_degrees
+
+
+def describe_rsi_model(inputs):
+    """Describe the RSI model settings for the methods boilerplate."""
+    parallel, perpendicular, sh_degrees = rsi_model_settings(inputs)
+    if sh_degrees[0] == sh_degrees[1]:
+        sh_degree_str = f'up to degree {sh_degrees[0]}'
+    else:
+        sh_degree_str = f'up to degree {sh_degrees[0]} and {sh_degrees[1]}, respectively'
+
+    return (
+        'The diffusion-weighted signal, normalized to the mean b=0 signal, was modeled as '
+        f'the sum of a restricted compartment (parallel diffusivity {parallel[0]:g} mm^2/s, '
+        f'perpendicular diffusivity {perpendicular[0]:g} mm^2/s), a hindered compartment '
+        f'(parallel diffusivity {parallel[1]:g} mm^2/s, perpendicular diffusivity '
+        f'{perpendicular[1]:g} mm^2/s) and a free water compartment (isotropic diffusivity '
+        f'{parallel[2]:g} mm^2/s). '
+        'Fiber orientation distributions of the restricted and hindered compartments were '
+        f'represented with spherical harmonics {sh_degree_str}, and the model was fit with '
+        f'Tikhonov-regularized linear least squares (lambda = {inputs.regularization_lambda:g}). '
+    )
+
+
+def _compartment_metadata(inputs):
+    """Describe the RSI compartments with BEP016 model parameter names."""
+    parallel, perpendicular, sh_degrees = rsi_model_settings(inputs)
+    compartments = {}
+    for name, d_par, d_perp, sh_degree in zip(
+        RSI_COMPARTMENTS, parallel, perpendicular, sh_degrees
+    ):
+        if sh_degree == 0:
+            compartments[name] = {'IsotropicDiffusivity': d_par}
+        else:
+            compartments[name] = {
+                'ParallelDiffusivity': d_par,
+                'PerpendicularDiffusivity': d_perp,
+                'SphericalHarmonicsDegree': sh_degree,
+            }
+
+    return compartments
+
+
 class RSI(SimpleInterface):
-    """Fit the restriction spectrum imaging (RSI) model with the ABCD Study code."""
+    """Fit the restriction spectrum imaging (RSI) model."""
 
     input_spec = _RSIInputSpec
     output_spec = _RSIOutputSpec
 
     def _run_interface(self, runtime):
+        dwi_img = nb.load(self.inputs.dwi_file)
+        mask_img = nb.load(self.inputs.mask_file)
         bvals = np.loadtxt(self.inputs.bval_file, ndmin=1)
-        b0_mask = bvals < self.inputs.b0_threshold
-        if not b0_mask.any():
-            raise ValueError(
-                f'RSI requires at least one b=0 image, but no b-values in '
-                f'{self.inputs.bval_file} are below {self.inputs.b0_threshold}.'
-            )
+        bvecs = np.loadtxt(self.inputs.bvec_file, ndmin=2).T
+        parallel, perpendicular, sh_degrees = rsi_model_settings(self.inputs)
 
-        # RSIproc only considers b <= 10 to be a b=0, so zero out low b-values
-        bval_file = self.inputs.bval_file
-        if np.any(bvals[b0_mask] > RSI_B0_MAX):
-            bvals[b0_mask] = 0
-            bval_file = fname_presuffix(
-                self.inputs.bval_file,
-                suffix='_rsi',
-                newpath=runtime.cwd,
-            )
-            np.savetxt(bval_file, bvals[None, :], fmt='%g')
-
-        # RSIproc writes all its outputs to the current working directory
-        cmd = [
-            sys.executable,
-            str(load_data(RSI_SCRIPT)),
-            self.inputs.dwi_file,
-            self.inputs.mask_file,
-            bval_file,
-            self.inputs.bvec_file,
-        ]
-        LOGGER.info('Running RSI: %s', ' '.join(cmd))
-        proc = subprocess.run(cmd, cwd=runtime.cwd, capture_output=True, text=True, check=False)
-        runtime.stdout = proc.stdout
-        runtime.stderr = proc.stderr
-        if proc.returncode != 0:
-            raise RuntimeError(
-                f'RSIproc exited with code {proc.returncode}.\n'
-                f'Standard output:\n{proc.stdout}\n'
-                f'Standard error:\n{proc.stderr}'
-            )
+        LOGGER.info('Fitting RSI model.')
+        results = fit_rsi(
+            np.asanyarray(dwi_img.dataobj),
+            np.asanyarray(mask_img.dataobj),
+            bvals,
+            bvecs,
+            parallel_diffusivities=parallel,
+            perpendicular_diffusivities=perpendicular,
+            sh_degrees=sh_degrees,
+            regularization_lambda=self.inputs.regularization_lambda,
+            b0_threshold=self.inputs.b0_threshold,
+        )
 
         base_metadata = {
             'Model': {
                 'Parameters': {
-                    'Compartments': _compartment_metadata(),
-                    'Lambda': RSI_LAMBDA,
+                    'Compartments': _compartment_metadata(self.inputs),
+                    'Lambda': self.inputs.regularization_lambda,
                     'b0_threshold': self.inputs.b0_threshold,
                 },
             },
             'Software': {
-                'Name': 'RSIproc',
+                'Name': 'QSIRecon port of RSIproc',
                 'Version': RSI_VERSION,
                 'URL': RSI_URL,
             },
         }
-        for output_name, output_file in RSI_OUTPUTS.items():
-            output_path = op.join(runtime.cwd, output_file)
-            if not op.exists(output_path):
-                raise FileNotFoundError(f'RSIproc did not produce {output_path}')
+        header = mask_img.header.copy()
+        header.set_data_dtype(np.float32)
+        for output_name, (result_name, i_comp, _) in RSI_OUTPUTS.items():
+            data = results[result_name]
+            if i_comp is not None:
+                data = data[i_comp]
 
-            self._results[output_name] = output_path
+            output_file = fname_presuffix(
+                self.inputs.dwi_file,
+                suffix=f'_{output_name}.nii.gz',
+                newpath=runtime.cwd,
+                use_ext=False,
+            )
+            nb.Nifti1Image(data.astype(np.float32), mask_img.affine, header).to_filename(
+                output_file
+            )
+            self._results[output_name] = output_file
             self._results[f'{output_name}_metadata'] = base_metadata
 
         return runtime

@@ -13,9 +13,10 @@ from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import RSIReconScalars
 from ...interfaces.reports import ScalarReport
-from ...interfaces.rsi import RSI, RSI_OUTPUTS, RSI_URL, RSI_VERSION
+from ...interfaces.rsi import RSI, RSI_OUTPUTS, describe_rsi_model
 from ...utils.bids import clean_datasinks
 from ...utils.boilerplate import build_documentation
+from ...utils.rsi import RSI_URL, RSI_VERSION
 from .utils import init_scalar_output_wf
 
 
@@ -25,7 +26,7 @@ def init_rsi_fit_wf(
     qsirecon_suffix='',
     params={},
 ):
-    """Reconstruct RSI scalars using the ABCD Study implementation.
+    """Reconstruct RSI scalars with a port of the ABCD Study implementation.
 
     Notes
     -----
@@ -39,18 +40,8 @@ def init_rsi_fit_wf(
     suffix_str = f' (outputs written to qsirecon-{qsirecon_suffix})' if qsirecon_suffix else ''
     workflow.__desc__ = (
         f'\n\n#### Restriction Spectrum Imaging{suffix_str}\n\n'
-        'The restriction spectrum imaging (RSI) model (@white2013) was fit using the '
-        f'implementation from the ABCD Study (@hagler2019; RSIproc {RSI_VERSION}, {RSI_URL}). '
-        'The diffusion-weighted signal, normalized to the mean b=0 signal, was modeled as '
-        'the sum of a restricted compartment (longitudinal diffusivity 0.001 mm^2/s, '
-        'transverse diffusivity 0 mm^2/s), a hindered compartment (longitudinal diffusivity '
-        '0.001 mm^2/s, transverse diffusivity 0.0009 mm^2/s) and a free water '
-        'compartment (isotropic diffusivity 0.003 mm^2/s). '
-        'Fiber orientation distributions of the restricted and hindered compartments were '
-        'represented with spherical harmonics up to order 4, and the model was fit with '
-        'Tikhonov-regularized linear least squares (lambda = 0.1). '
-        'Isotropic (N0), directional (ND) and total (NT) signal components were computed for '
-        'each compartment from the norms of its spherical harmonic coefficients. '
+        'The restriction spectrum imaging (RSI) model (@white2013) was fit using a port of '
+        f'the ABCD Study implementation (@hagler2019; RSIproc {RSI_VERSION}, {RSI_URL}). '
     )
 
     inputnode = pe.Node(
@@ -76,7 +67,12 @@ def init_rsi_fit_wf(
         run_without_submitting=True,
     )
     rsi_fit = pe.Node(RSI(**params), name='recon_rsi')
-    workflow.__desc__ += build_documentation(rsi_fit) + ' '
+    workflow.__desc__ += (
+        describe_rsi_model(rsi_fit.inputs)
+        + 'Isotropic, directional and total signal components were computed for each '
+        'compartment from the norms of its degree 0, degree > 0 and all spherical harmonic '
+        'coefficients, respectively. ' + build_documentation(rsi_fit) + ' '
+    )
 
     workflow.connect([
         (inputnode, rsi_fit, [
