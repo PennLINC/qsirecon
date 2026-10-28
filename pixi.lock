@@ -5792,8 +5792,8 @@ packages:
   timestamp: 1770223379599
 - pypi: ./
   name: qsirecon
-  version: 26.1.0.dev5+g3200ee9a3
-  sha256: c4624231f0a9cd6df8441665e8d7408a82ccc60a664dc371668a20f060320b06
+  version: 26.1.0.dev2+g193b6921e
+  sha256: 7f147dfea06aef44b30f41d1b7de01faec1db0b8528d5aad3440d44f0f1f4b45
   requires_dist:
   - dipy>=1.10.0,<1.11.0
   - dmri-amico==2.0.3
@@ -5814,6 +5814,7 @@ packages:
   - pyafq==2.0
   - pybids
   - pyyaml
+  - requests
   - scikit-image
   - scikit-learn<=1.4.0
   - seaborn
@@ -5871,8 +5872,8 @@ packages:
   editable: true
 - pypi: ./
   name: qsirecon
-  version: 26.1.0.dev5+g3200ee9a3
-  sha256: c4624231f0a9cd6df8441665e8d7408a82ccc60a664dc371668a20f060320b06
+  version: 26.1.0.dev2+g193b6921e
+  sha256: 7f147dfea06aef44b30f41d1b7de01faec1db0b8528d5aad3440d44f0f1f4b45
   requires_dist:
   - dipy>=1.10.0,<1.11.0
   - dmri-amico==2.0.3
@@ -5893,6 +5894,7 @@ packages:
   - pyafq==2.0
   - pybids
   - pyyaml
+  - requests
   - scikit-image
   - scikit-learn<=1.4.0
   - seaborn

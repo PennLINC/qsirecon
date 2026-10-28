@@ -300,6 +300,24 @@ class AMICOReconScalars(ReconScalars):
     scalar_metadata = amico_scalars
 
 
+# Scalars produced in the ABCD RSI recon workflow
+rsi_scalars = load_yaml(load_data('scalars/rsi.yaml'))
+
+
+class _RSIReconScalarInputSpec(ReconScalarsInputSpec):
+    pass
+
+
+for input_name in rsi_scalars:
+    _RSIReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    _RSIReconScalarInputSpec.add_class_trait(f'{input_name}_metadata', traits.Dict())
+
+
+class RSIReconScalars(ReconScalars):
+    input_spec = _RSIReconScalarInputSpec
+    scalar_metadata = rsi_scalars
+
+
 # Scalars produced by DSI Studio
 dsistudio_scalars = load_yaml(load_data('scalars/dsistudio_gqi.yaml'))
 

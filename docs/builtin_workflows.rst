@@ -211,6 +211,79 @@ Other Outputs
    :widths: 15, 30
 
 
+.. _abcd_rsi:
+
+``abcd_rsi``
+============
+
+This workflow fits the Restriction Spectrum Imaging (RSI) :footcite:p:`white2013` model
+using a port of the ABCD Study implementation :footcite:p:`hagler2019`
+(`RSIproc 1.0.8 <https://github.com/ABCD-STUDY/RSI>`_).
+``abcd_rsi`` uses RSIproc's model settings, and QSIRecon's tests check that the port reproduces
+the unmodified RSIproc script, so the maps match those from the ABCD Study's code.
+The signal is normalized to the mean b=0 signal and modeled as the sum of three compartments:
+
+  * restricted (parallel diffusivity 0.001 mm²/s, perpendicular diffusivity 1e-10 mm²/s),
+  * hindered (parallel diffusivity 0.001 mm²/s, perpendicular diffusivity 0.0009 mm²/s),
+  * free water (isotropic diffusivity 0.003 mm²/s).
+
+The fiber orientation distributions of the restricted and hindered compartments are modeled with
+spherical harmonics up to degree 4, and the model is fit with Tikhonov-regularized least squares
+(lambda = 0.1).
+For each compartment, the isotropic (``*iso``), directional (``*dir``) and total (``*total``)
+signal components are the norms of the degree 0, degree > 0 and all spherical harmonic
+coefficients, respectively.
+These correspond to the N0, ND and NT measures written by RSIproc
+(for example, ``param-restrictediso`` is RSIproc's ``n0s1``).
+The free water compartment has no directional component.
+These measures are not normalized by the L2 norm of all coefficients, which is written separately.
+The model settings for each compartment are recorded under ``Model.Parameters.Compartments``
+in each sidecar.
+Volumes with b-values below 50 s/mm² are treated as b=0 images.
+
+The model settings can be changed in a custom recon spec (see :ref:`building_workflows`).
+For example, to fit RSI with different diffusivities and a higher spherical harmonic degree
+for the restricted compartment:
+
+.. code-block:: yaml
+
+  name: custom_rsi
+  space: T1w
+  nodes:
+  -   action: fit_rsi
+      input: qsirecon
+      name: fit_rsi
+      qsirecon_suffix: customRSI
+      software: RSI
+      parameters:
+          restricted_parallel_diffusivity: 0.0012
+          restricted_perpendicular_diffusivity: 0.0
+          restricted_sh_degree: 6
+          hindered_parallel_diffusivity: 0.0012
+          hindered_perpendicular_diffusivity: 0.0008
+          hindered_sh_degree: 4
+          free_diffusivity: 0.003
+          regularization_lambda: 0.1
+          b0_threshold: 50
+
+Diffusivities are in mm²/s.
+Spherical harmonic degrees must be even, from 2 to 12.
+Any parameter left out keeps the ``abcd_rsi`` default shown above.
+Maps fit with non-default settings are no longer comparable to ABCD Study RSI maps.
+
+Scalar Maps
+-----------
+.. csv-table::
+   :header: "Model", "Parameter", "Description"
+   :file: recon_scalars/abcd_rsi.csv
+   :widths: 15, 10, 30
+
+Other Outputs
+-------------
+
+No other outputs are produced.
+
+
 .. _dsi_studio_gqi:
 
 ``dsi_studio_gqi``
@@ -515,6 +588,8 @@ the model-fitting workflows and which sampling schemes work with them.
 | Name                                           | MultiShell  | Cartesian  |   SingleShell   |
 +================================================+=============+============+=================+
 |:ref:`amico_noddi`                              |     Yes     |    No      |      No         |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`abcd_rsi`                                 |     Yes     |    No      |      No         |
 +------------------------------------------------+-------------+------------+-----------------+
 |:ref:`csdsi_3dshore`                            |     Yes     |    Yes     |      No         |
 +------------------------------------------------+-------------+------------+-----------------+

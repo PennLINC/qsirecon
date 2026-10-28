@@ -1,0 +1,9 @@
+rsi,freeiso,Isotropic signal component of the free water compartment (RSIproc n0s3) from ABCD RSI
+rsi,freetotal,Total signal component of the free water compartment (RSIproc nts3) from ABCD RSI
+rsi,hindereddir,Directional signal component of the hindered compartment (RSIproc nds2) from ABCD RSI
+rsi,hinderediso,Isotropic signal component of the hindered compartment (RSIproc n0s2) from ABCD RSI
+rsi,hinderedtotal,Total signal component of the hindered compartment (RSIproc nts2) from ABCD RSI
+rsi,l2norm,L2 norm of all model coefficients (RSIproc L2norm) from ABCD RSI
+rsi,restricteddir,Directional signal component of the restricted compartment (RSIproc nds1) from ABCD RSI
+rsi,restrictediso,Isotropic signal component of the restricted compartment (RSIproc n0s1) from ABCD RSI
+rsi,restrictedtotal,Total signal component of the restricted compartment (RSIproc nts1) from ABCD RSI
