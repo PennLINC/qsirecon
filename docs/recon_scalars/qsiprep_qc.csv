@@ -1,0 +1,10 @@
+qsiprep,b0tsnr,Temporal signal-to-noise ratio of the b=0 volumes from QSIPrep
+qsiprep,cnr,Contrast-to-noise ratio from QSIPrep head motion correction
+qsiprep,jacobian,Jacobian or least-squares restoration weights QSIPrep applied when correcting susceptibility distortion
+qsiprep,noiserank,Number of principal components the QSIPrep denoiser kept as signal
+qsiprep,noiserankdensity,Signal rank per mm of kernel radius estimated by dwidenoise2 in QSIPrep
+qsiprep,noiserms,"Root mean square of the residual Patch2Self removed in QSIPrep, which mixes noise with fit error"
+qsiprep,noisesigma,"Noise standard deviation estimated by the QSIPrep denoiser, in the intensity units of the preprocessed DWI"
+qsiprep,sdcdisplacement,"Magnitude of the susceptibility distortion correction displacement from QSIPrep, for the first series of the output"
+qsiprep,sdcrefinement,Magnitude of the DRBUDDI refinement of the TOPUP displacement from QSIPrep
+qsiprep,snr,"Signal-to-noise ratio of the preprocessed b=0 reference, divided by the QSIPrep noise standard deviation"

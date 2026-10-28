@@ -401,6 +401,8 @@ class ScalarReport(SimpleInterface):
             ncols=3,
             figsize=(43, 6 * n_scalars),
             gridspec_kw={'width_ratios': [6, 36, 0.25], 'wspace': 0},
+            # Keep axes 2D, so a single scalar can be indexed as axes[0, :]
+            squeeze=False,
         )
 
         underlay = self.inputs.underlay

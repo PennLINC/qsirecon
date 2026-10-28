@@ -1,7 +1,7 @@
 import pandas as pd
 
 from qsirecon.data import load as load_data
-from qsirecon.interfaces import recon_scalars
+from qsirecon.interfaces import qc_maps, recon_scalars
 from qsirecon.utils.misc import load_yaml
 
 
@@ -35,12 +35,22 @@ scalars_to_csv(recon_scalars.dipy_dki_scalars, 'recon_scalars/dipy_dki.csv')
 scalars_to_csv(recon_scalars.dipy_mapmri_scalars, 'recon_scalars/dipy_mapmri.csv')
 ## dsi_studio_gqi.yaml
 scalars_to_csv(recon_scalars.dsistudio_scalars, 'recon_scalars/dsi_studio_gqi.csv')
+## qsiprep_qc_scalars action
+scalars_to_csv(qc_maps.qsiprep_qc_scalars, 'recon_scalars/qsiprep_qc.csv')
 ## hbcd_scalar_maps.yaml
 scalars_to_csv(
     recon_scalars.dipy_dki_scalars
     | recon_scalars.tortoise_scalars
     | recon_scalars.dsistudio_scalars,
     'recon_scalars/hbcd_scalar_maps.csv',
+)
+## hbcd_scalar_maps_qc.yaml
+scalars_to_csv(
+    recon_scalars.dipy_dki_scalars
+    | recon_scalars.tortoise_scalars
+    | recon_scalars.dsistudio_scalars
+    | qc_maps.qsiprep_qc_scalars,
+    'recon_scalars/hbcd_scalar_maps_qc.csv',
 )
 
 

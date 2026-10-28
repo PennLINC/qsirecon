@@ -1,0 +1,84 @@
+noisesigma:
+    bids:
+        model: qsiprep
+        param: noisesigma
+    metadata:
+        Description: Noise standard deviation estimated by the QSIPrep denoiser, in the intensity units of the preprocessed DWI
+        Units: arbitrary
+    figure:
+        vmin: 0
+noiserms:
+    bids:
+        model: qsiprep
+        param: noiserms
+    metadata:
+        Description: Root mean square of the residual Patch2Self removed in QSIPrep, which mixes noise with fit error
+        Units: arbitrary
+    figure:
+        vmin: 0
+snr:
+    bids:
+        model: qsiprep
+        param: snr
+    metadata:
+        Description: Signal-to-noise ratio of the preprocessed b=0 reference, divided by the QSIPrep noise standard deviation
+    figure:
+        vmin: 0
+b0tsnr:
+    bids:
+        model: qsiprep
+        param: b0tsnr
+    metadata:
+        Description: Temporal signal-to-noise ratio of the b=0 volumes from QSIPrep
+    figure:
+        vmin: 0
+cnr:
+    bids:
+        model: qsiprep
+        param: cnr
+    metadata:
+        Description: Contrast-to-noise ratio from QSIPrep head motion correction
+    figure:
+        vmin: 0
+jacobian:
+    bids:
+        model: qsiprep
+        param: jacobian
+    metadata:
+        Description: Jacobian or least-squares restoration weights QSIPrep applied when correcting susceptibility distortion
+sdcdisplacement:
+    bids:
+        model: qsiprep
+        param: sdcdisplacement
+    metadata:
+        Description: Magnitude of the susceptibility distortion correction displacement from QSIPrep, for the first series of the output
+        Units: mm
+    figure:
+        vmin: 0
+sdcrefinement:
+    bids:
+        model: qsiprep
+        param: sdcrefinement
+    metadata:
+        Description: Magnitude of the DRBUDDI refinement of the TOPUP displacement from QSIPrep
+        Units: mm
+    figure:
+        vmin: 0
+noiserank:
+    bids:
+        model: qsiprep
+        param: noiserank
+    metadata:
+        Description: Number of principal components the QSIPrep denoiser kept as signal
+        Units: count
+    figure:
+        vmin: 0
+noiserankdensity:
+    bids:
+        model: qsiprep
+        param: noiserankdensity
+    metadata:
+        Description: Signal rank per mm of kernel radius estimated by dwidenoise2 in QSIPrep
+        Units: 1/mm
+    figure:
+        vmin: 0

@@ -549,6 +549,84 @@ Other Outputs
    :widths: 15, 30
 
 
+.. _hbcd_scalar_maps_qc:
+
+``hbcd_scalar_maps_qc``
+=======================
+
+:ref:`hbcd_scalar_maps` with a :ref:`qsiprep_qc_scalars` node added. The QC maps QSIPrep
+wrote are mapped into template space and on to the bundles along with the model scalars,
+and are written to ``qsirecon-QSIPrepQC``. ``hbcd_scalar_maps`` itself is unchanged, so its
+outputs stay comparable with published results. ``abcd_recon_qc`` adds the same node to
+``abcd_recon``.
+
+Scalar Maps
+-----------
+.. csv-table::
+   :header: "Model", "Parameter", "Description"
+   :file: recon_scalars/hbcd_scalar_maps_qc.csv
+   :widths: 15, 10, 30
+
+Other Outputs
+-------------
+.. csv-table::
+   :header: "File Name", "Description"
+   :file: nonscalars/hbcd_scalar_maps.csv
+   :widths: 15, 30
+
+
+.. _qsiprep_qc_scalars:
+
+QSIPrep QC maps as scalars
+==========================
+
+This is not a workflow of its own: the ``qsiprep_qc_scalars`` action can be added to any
+workflow (see :ref:`qc_scalars_in_workflows`). It is part of :ref:`hbcd_scalar_maps_qc`
+and ``abcd_recon_qc``, which are ``hbcd_scalar_maps`` and ``abcd_recon`` with the QC maps
+added.
+
+QSIPrep writes several voxelwise quality-control images on the grid of the preprocessed
+DWI:
+
+* the noise level its denoiser estimated
+* b=0 tSNR
+* contrast-to-noise ratio
+* the Jacobian weights of distortion correction
+* the susceptibility distortion correction displacement
+
+``qsiprep_qc_scalars`` turns them into 3D scalar maps with ``model-qsiprep``. They can then
+be summarized within bundles and parcels and mapped to template space like any model's
+scalars, for example to check whether a group difference in FA follows a difference in
+noise or distortion within a bundle.
+
+Some maps are reduced to 3D first:
+
+* A noise map with one volume per input series is pooled across series as
+  :math:`\sqrt{\sum_i n_i \sigma_i^2 / \sum_i n_i}`, where :math:`n_i` is the number of
+  volumes in series :math:`i`.
+* The SNR is the b=0 reference divided by the noise standard deviation, inside the brain
+  mask. It is not made from a Patch2Self residual map, which is not a noise standard
+  deviation.
+* The CNR maps eddy writes for each shell become one scalar per shell, with
+  ``desc-b<bval>``.
+* A 4D Jacobian map, from ``--write-jacobian-4d``, is averaged over the DWI volumes.
+* The displacement field is summarized by its magnitude in mm. Like QSIPrep's map, it
+  describes only the first series of the output.
+
+Maps that QSIPrep did not write are skipped. If none of them exist, for example in
+outputs from QSIPrep versions that wrote no QC maps, the node is removed, along with the
+nodes that summarize its scalars.
+The sidecar of each scalar keeps QSIPrep's metadata under ``QSIPrepMetadata`` and lists
+the steps above that were applied under ``QSIReconProcessing``.
+
+Scalar Maps
+-----------
+.. csv-table::
+   :header: "Model", "Parameter", "Description"
+   :file: recon_scalars/qsiprep_qc.csv
+   :widths: 15, 10, 30
+
+
 .. _multishell_scalarfest:
 
 ``multishell_scalarfest``
@@ -604,6 +682,8 @@ the model-fitting workflows and which sampling schemes work with them.
 |:ref:`dsi_studio_gqi`                           |     Yes     |    Yes     |      Yes*       |
 +------------------------------------------------+-------------+------------+-----------------+
 |:ref:`hbcd_scalar_maps`                         |     Yes     |    No      |      No         |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`hbcd_scalar_maps_qc`                      |     Yes     |    No      |      No         |
 +------------------------------------------------+-------------+------------+-----------------+
 |:ref:`mrtrix_multishell_msmt_ACT-fast`\*        |     Yes     |    No      |      No         |
 +------------------------------------------------+-------------+------------+-----------------+

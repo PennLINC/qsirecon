@@ -125,3 +125,19 @@ DKI and TORTOISE::
 If parcellation is enabled,
 the output directory will also contain an "atlases" directory containing a BIDS-Atlas dataset.
 See :ref:`connectivity_atlases` for more information on this output directory.
+
+If a workflow includes a :ref:`qsiprep_qc_scalars` node,
+the QSIPrep quality-control maps it uses are written to ``qsirecon-QSIPrepQC``
+(or the node's ``qsirecon_suffix``) with ``model-qsiprep``::
+
+   qsirecon/
+      derivatives/
+         qsirecon-QSIPrepQC/
+            sub-<label>/[ses-<label>/]
+               dwi/
+                  <source_entities>_model-qsiprep_param-noisesigma_dwimap.nii.gz
+                  <source_entities>_model-qsiprep_param-snr_dwimap.nii.gz
+                  <source_entities>_model-qsiprep_param-cnr[_desc-b<bval>]_dwimap.nii.gz
+                  <source_entities>_space-<template>_model-qsiprep_param-noisesigma_dwimap.nii.gz
+                  <source_entities>_bundles-<bundle_source>_scalarstats.tsv
+                  ...
