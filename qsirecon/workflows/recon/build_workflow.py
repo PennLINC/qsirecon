@@ -30,6 +30,7 @@ from .mrtrix import (
     init_mrtrix_csd_recon_wf,
     init_mrtrix_tractography_wf,
 )
+from .rsi import init_rsi_fit_wf
 from .scalar_mapping import (
     init_scalar_to_atlas_wf,
     init_scalar_to_bundle_wf,
@@ -315,6 +316,11 @@ def workflow_from_spec(inputs_dict, node_spec):
     elif software == 'AMICO':
         if node_spec['action'] == 'fit_noddi':
             return init_amico_noddi_fit_wf(**kwargs)
+
+    # ABCD Study RSI operations
+    elif software == 'RSI':
+        if node_spec['action'] == 'fit_rsi':
+            return init_rsi_fit_wf(**kwargs)
 
     elif software == 'pyAFQ':
         from .pyafq import init_pyafq_wf

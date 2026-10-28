@@ -211,6 +211,41 @@ Other Outputs
    :widths: 15, 30
 
 
+.. _abcd_rsi:
+
+``abcd_rsi``
+============
+
+This workflow fits the Restriction Spectrum Imaging (RSI) :footcite:p:`white2013` model
+using the implementation from the ABCD Study :footcite:p:`hagler2019`
+(`RSIproc 1.0.8 <https://github.com/ABCD-STUDY/RSI>`_).
+The ABCD code is run without modification, so the model settings match those used by the ABCD Study.
+The signal is normalized to the mean b=0 signal and modeled as the sum of three compartments:
+
+  * s1: restricted (longitudinal diffusivity 0.001 mm²/s, transverse diffusivity 0 mm²/s),
+  * s2: hindered (longitudinal diffusivity 0.001 mm²/s, transverse diffusivity 0.0009 mm²/s),
+  * s3: free water (isotropic diffusivity 0.003 mm²/s).
+
+The fiber orientation distributions of the restricted and hindered compartments are modeled with
+spherical harmonics up to order 4.
+For each compartment, the isotropic (N0), directional (ND) and total (NT) signal components are
+the norms of the order 0, order > 0 and all spherical harmonic coefficients, respectively.
+These measures are not normalized by the L2 norm of all coefficients, which is written separately.
+Volumes with b-values below 50 s/mm² are treated as b=0 images.
+
+Scalar Maps
+-----------
+.. csv-table::
+   :header: "Model", "Parameter", "Description"
+   :file: recon_scalars/abcd_rsi.csv
+   :widths: 15, 10, 30
+
+Other Outputs
+-------------
+
+No other outputs are produced.
+
+
 .. _dsi_studio_gqi:
 
 ``dsi_studio_gqi``
@@ -515,6 +550,8 @@ the model-fitting workflows and which sampling schemes work with them.
 | Name                                           | MultiShell  | Cartesian  |   SingleShell   |
 +================================================+=============+============+=================+
 |:ref:`amico_noddi`                              |     Yes     |    No      |      No         |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`abcd_rsi`                                 |     Yes     |    No      |      No         |
 +------------------------------------------------+-------------+------------+-----------------+
 |:ref:`csdsi_3dshore`                            |     Yes     |    Yes     |      No         |
 +------------------------------------------------+-------------+------------+-----------------+

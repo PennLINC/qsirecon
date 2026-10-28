@@ -552,6 +552,7 @@ workflows:
                 - dipy_mapmri
                 - dipy_dki
                 - amico_noddi
+                - abcd_rsi
                 - pyafq_recon_full
                 - pyafq_recon_external_trk
                 - scalar_mapper
@@ -581,6 +582,7 @@ workflows:
             - dipy_mapmri
             - dipy_dki
             - amico_noddi
+            - abcd_rsi
             - pyafq_recon_full
             - pyafq_recon_external_trk
             - scalar_mapper

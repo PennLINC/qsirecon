@@ -23,6 +23,8 @@ def scalars_to_csv(scalar_def, output_csv):
 scalars_to_csv(recon_scalars.tortoise_scalars, 'recon_scalars/tortoise.csv')
 ## amico_noddi.yaml
 scalars_to_csv(recon_scalars.amico_scalars, 'recon_scalars/amico_noddi.csv')
+## abcd_rsi.yaml
+scalars_to_csv(recon_scalars.rsi_scalars, 'recon_scalars/abcd_rsi.csv')
 ## csdsi_3dshore.yaml
 scalars_to_csv(recon_scalars.brainsuite_3dshore_scalars, 'recon_scalars/csdsi_3dshore.csv')
 ## dipy_3dshore.yaml

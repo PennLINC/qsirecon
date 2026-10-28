@@ -1,0 +1,9 @@
+rsi,l2norm,L2 norm of all model coefficients from ABCD RSI
+rsi,n0s1,"Restricted isotropic signal component (N0, compartment 1) from ABCD RSI"
+rsi,n0s2,"Hindered isotropic signal component (N0, compartment 2) from ABCD RSI"
+rsi,n0s3,"Free water isotropic signal component (N0, compartment 3) from ABCD RSI"
+rsi,nds1,"Restricted directional signal component (ND, compartment 1) from ABCD RSI"
+rsi,nds2,"Hindered directional signal component (ND, compartment 2) from ABCD RSI"
+rsi,nts1,"Restricted total signal component (NT, compartment 1) from ABCD RSI"
+rsi,nts2,"Hindered total signal component (NT, compartment 2) from ABCD RSI"
+rsi,nts3,"Free water total signal component (NT, compartment 3) from ABCD RSI"

@@ -1,0 +1,102 @@
+n0s1:
+    bids:
+        model: rsi
+        param: n0s1
+    metadata:
+        Description: Restricted isotropic signal component (N0, compartment 1) from ABCD RSI
+        Model:
+            Description: Restriction Spectrum Imaging (RSI)
+            URL: https://doi.org/10.1002/hbm.21454
+    figure:
+        vmin: 0
+        vmax: 1
+n0s2:
+    bids:
+        model: rsi
+        param: n0s2
+    metadata:
+        Description: Hindered isotropic signal component (N0, compartment 2) from ABCD RSI
+        Model:
+            Description: Restriction Spectrum Imaging (RSI)
+            URL: https://doi.org/10.1002/hbm.21454
+    figure:
+        vmin: 0
+        vmax: 1
+n0s3:
+    bids:
+        model: rsi
+        param: n0s3
+    metadata:
+        Description: Free water isotropic signal component (N0, compartment 3) from ABCD RSI
+        Model:
+            Description: Restriction Spectrum Imaging (RSI)
+            URL: https://doi.org/10.1002/hbm.21454
+    figure:
+        vmin: 0
+        vmax: 1
+nds1:
+    bids:
+        model: rsi
+        param: nds1
+    metadata:
+        Description: Restricted directional signal component (ND, compartment 1) from ABCD RSI
+        Model:
+            Description: Restriction Spectrum Imaging (RSI)
+            URL: https://doi.org/10.1002/hbm.21454
+    figure:
+        vmin: 0
+nds2:
+    bids:
+        model: rsi
+        param: nds2
+    metadata:
+        Description: Hindered directional signal component (ND, compartment 2) from ABCD RSI
+        Model:
+            Description: Restriction Spectrum Imaging (RSI)
+            URL: https://doi.org/10.1002/hbm.21454
+    figure:
+        vmin: 0
+nts1:
+    bids:
+        model: rsi
+        param: nts1
+    metadata:
+        Description: Restricted total signal component (NT, compartment 1) from ABCD RSI
+        Model:
+            Description: Restriction Spectrum Imaging (RSI)
+            URL: https://doi.org/10.1002/hbm.21454
+    figure:
+        vmin: 0
+nts2:
+    bids:
+        model: rsi
+        param: nts2
+    metadata:
+        Description: Hindered total signal component (NT, compartment 2) from ABCD RSI
+        Model:
+            Description: Restriction Spectrum Imaging (RSI)
+            URL: https://doi.org/10.1002/hbm.21454
+    figure:
+        vmin: 0
+nts3:
+    bids:
+        model: rsi
+        param: nts3
+    metadata:
+        Description: Free water total signal component (NT, compartment 3) from ABCD RSI
+        Model:
+            Description: Restriction Spectrum Imaging (RSI)
+            URL: https://doi.org/10.1002/hbm.21454
+    figure:
+        vmin: 0
+l2norm:
+    bids:
+        model: rsi
+        param: l2norm
+    metadata:
+        Description: L2 norm of all model coefficients from ABCD RSI
+        Model:
+            Description: Restriction Spectrum Imaging (RSI)
+            URL: https://doi.org/10.1002/hbm.21454
+    figure:
+        vmin: 0

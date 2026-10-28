@@ -189,6 +189,8 @@ exclude = ".*"
 
 [tool.ruff]
 line-length = 99
+# Third-party code vendored without modification
+extend-exclude = ["qsirecon/data/rsi"]
 
 [tool.ruff.lint]
 extend-select = [
@@ -298,6 +300,7 @@ markers = [
     "multises_pre1_qsiprep: test 26",
     "mrtrix3_recon_with_response_functions: test 28",
     "chen_autotrack: test 29",
+    "abcd_rsi: test 30",
 ]
 env = [
     "RUNNING_PYTEST = 1",
@@ -320,7 +323,7 @@ exclude_lines = [
 ]
 
 [tool.codespell]
-skip = '.git,*.pdf,*.svg,*.html,dataset_description.json,*.gii,pixi.lock'
+skip = '.git,*.pdf,*.svg,*.html,dataset_description.json,*.gii,pixi.lock,./qsirecon/data/rsi'
 # te - TE (echo time)
 # Weill - name
 # reson - Reson. abbreviation in citation
@@ -330,4 +333,5 @@ skip = '.git,*.pdf,*.svg,*.html,dataset_description.json,*.gii,pixi.lock'
 # pres - variable name
 # Gage, Joo, Sepulcre - author names
 # numer - abbreviation for numerator
-ignore-words-list = 'te,weill,reson,DNE,fo,fixel,fixels,pres,Gage,Joo,Sepulcre,numer'
+# ND - RSI directional signal component
+ignore-words-list = 'te,weill,reson,DNE,fo,fixel,fixels,pres,Gage,Joo,Sepulcre,numer,ND'
