@@ -240,7 +240,7 @@ def init_dipy_brainsuite_shore_recon_wf(
         ])  # fmt:skip
 
     # Plot targeted regions
-    if inputs_dict['has_qsiprep_t1w_transforms'] and plot_reports:
+    if inputs_dict['has_qsiprep_anat_transforms'] and plot_reports:
         ds_report_odfs = pe.Node(
             DerivativesDataSink(
                 desc='3dSHOREODF',
@@ -564,7 +564,7 @@ def init_dipy_mapmri_recon_wf(
         ])  # fmt:skip
 
     # Plot targeted regions
-    if inputs_dict['has_qsiprep_t1w_transforms'] and plot_reports:
+    if inputs_dict['has_qsiprep_anat_transforms'] and plot_reports:
         ds_report_odfs = pe.Node(
             DerivativesDataSink(
                 desc='MAPLMRIODF',
