@@ -81,15 +81,28 @@ def test_rsi(tmp_path, b0_value):
         metadata = getattr(results.outputs, f'{output_name}_metadata')
         assert metadata['Software']['Version'] == rsi.RSI_VERSION
         assert metadata['Model']['Parameters']['b0_threshold'] == 50.0
+        assert metadata['Model']['Parameters']['Compartments'] == {
+            'restricted': {
+                'ParallelDiffusivity': 1.0e-3,
+                'PerpendicularDiffusivity': 1.0e-10,
+                'SphericalHarmonicsDegree': 4,
+            },
+            'hindered': {
+                'ParallelDiffusivity': 1.0e-3,
+                'PerpendicularDiffusivity': 0.9e-3,
+                'SphericalHarmonicsDegree': 4,
+            },
+            'free': {'IsotropicDiffusivity': 3.0e-3},
+        }
 
-    n0s1 = nb.load(results.outputs.n0s1).get_fdata()
-    nds1 = nb.load(results.outputs.nds1).get_fdata()
-    n0s3 = nb.load(results.outputs.n0s3).get_fdata()
+    restricted_iso = nb.load(results.outputs.restrictediso).get_fdata()
+    restricted_dir = nb.load(results.outputs.restricteddir).get_fdata()
+    free_iso = nb.load(results.outputs.freeiso).get_fdata()
     # Stick voxels are mostly restricted and free water voxels are mostly free water
-    assert np.all(nds1[0] > nds1[1])
-    assert np.all(n0s1[0] > n0s3[0])
-    assert np.all(n0s3[1] > n0s1[1])
-    assert np.all(n0s3[1] > 0.5)
+    assert np.all(restricted_dir[0] > restricted_dir[1])
+    assert np.all(restricted_iso[0] > free_iso[0])
+    assert np.all(free_iso[1] > restricted_iso[1])
+    assert np.all(free_iso[1] > 0.5)
 
     # Low b-values are zeroed in a copy of the bval file rather than the original
     shimmed_bval = work_dir / 'sub-01_dwi_rsi.bval'

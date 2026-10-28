@@ -42,21 +42,42 @@ RSI_ADC_LONG = [1.0e-3, 1.0e-3, 3.0e-3]
 RSI_ADC_TRANS = [1.0e-10, 0.9e-3, 3.0e-3]
 RSI_SH_ORDER = [4, 4, 0]
 
+# Names of the three RSIproc compartments (s1, s2 and s3)
+RSI_COMPARTMENTS = ['restricted', 'hindered', 'free']
+
 # RSIproc treats volumes with b <= 10 as b=0 volumes
 RSI_B0_MAX = 10
 
 # Maps the output trait names to the file names written by RSIproc
 RSI_OUTPUTS = {
-    'n0s1': 'n0s1.nii.gz',
-    'n0s2': 'n0s2.nii.gz',
-    'n0s3': 'n0s3.nii.gz',
-    'nds1': 'nds1.nii.gz',
-    'nds2': 'nds2.nii.gz',
-    'nts1': 'nts1.nii.gz',
-    'nts2': 'nts2.nii.gz',
-    'nts3': 'nts3.nii.gz',
+    'restrictediso': 'n0s1.nii.gz',
+    'restricteddir': 'nds1.nii.gz',
+    'restrictedtotal': 'nts1.nii.gz',
+    'hinderediso': 'n0s2.nii.gz',
+    'hindereddir': 'nds2.nii.gz',
+    'hinderedtotal': 'nts2.nii.gz',
+    'freeiso': 'n0s3.nii.gz',
+    'freetotal': 'nts3.nii.gz',
     'l2norm': 'L2norm.nii.gz',
 }
+
+
+def _compartment_metadata():
+    """Describe the RSIproc compartments with BEP016 model parameter names."""
+    compartments = {}
+    for name, d_long, d_trans, sh_degree in zip(
+        RSI_COMPARTMENTS, RSI_ADC_LONG, RSI_ADC_TRANS, RSI_SH_ORDER
+    ):
+        if sh_degree == 0 and d_long == d_trans:
+            compartments[name] = {'IsotropicDiffusivity': d_long}
+        else:
+            compartments[name] = {
+                'ParallelDiffusivity': d_long,
+                'PerpendicularDiffusivity': d_trans,
+                'SphericalHarmonicsDegree': sh_degree,
+            }
+
+    return compartments
 
 
 class _RSIInputSpec(BaseInterfaceInputSpec):
@@ -77,22 +98,22 @@ class _RSIInputSpec(BaseInterfaceInputSpec):
 
 
 class _RSIOutputSpec(TraitedSpec):
-    n0s1 = File(desc='Restricted isotropic signal component.')
-    n0s1_metadata = traits.Dict()
-    n0s2 = File(desc='Hindered isotropic signal component.')
-    n0s2_metadata = traits.Dict()
-    n0s3 = File(desc='Free water isotropic signal component.')
-    n0s3_metadata = traits.Dict()
-    nds1 = File(desc='Restricted directional signal component.')
-    nds1_metadata = traits.Dict()
-    nds2 = File(desc='Hindered directional signal component.')
-    nds2_metadata = traits.Dict()
-    nts1 = File(desc='Restricted total signal component.')
-    nts1_metadata = traits.Dict()
-    nts2 = File(desc='Hindered total signal component.')
-    nts2_metadata = traits.Dict()
-    nts3 = File(desc='Free water total signal component.')
-    nts3_metadata = traits.Dict()
+    restrictediso = File(desc='Restricted isotropic signal component (RSIproc n0s1).')
+    restrictediso_metadata = traits.Dict()
+    restricteddir = File(desc='Restricted directional signal component (RSIproc nds1).')
+    restricteddir_metadata = traits.Dict()
+    restrictedtotal = File(desc='Restricted total signal component (RSIproc nts1).')
+    restrictedtotal_metadata = traits.Dict()
+    hinderediso = File(desc='Hindered isotropic signal component (RSIproc n0s2).')
+    hinderediso_metadata = traits.Dict()
+    hindereddir = File(desc='Hindered directional signal component (RSIproc nds2).')
+    hindereddir_metadata = traits.Dict()
+    hinderedtotal = File(desc='Hindered total signal component (RSIproc nts2).')
+    hinderedtotal_metadata = traits.Dict()
+    freeiso = File(desc='Free water isotropic signal component (RSIproc n0s3).')
+    freeiso_metadata = traits.Dict()
+    freetotal = File(desc='Free water total signal component (RSIproc nts3).')
+    freetotal_metadata = traits.Dict()
     l2norm = File(desc='L2 norm of all model coefficients.')
     l2norm_metadata = traits.Dict()
 
@@ -146,10 +167,8 @@ class RSI(SimpleInterface):
         base_metadata = {
             'Model': {
                 'Parameters': {
+                    'Compartments': _compartment_metadata(),
                     'Lambda': RSI_LAMBDA,
-                    'LongitudinalDiffusivities': RSI_ADC_LONG,
-                    'TransverseDiffusivities': RSI_ADC_TRANS,
-                    'SphericalHarmonicOrders': RSI_SH_ORDER,
                     'b0_threshold': self.inputs.b0_threshold,
                 },
             },

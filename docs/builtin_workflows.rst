@@ -228,9 +228,15 @@ The signal is normalized to the mean b=0 signal and modeled as the sum of three 
 
 The fiber orientation distributions of the restricted and hindered compartments are modeled with
 spherical harmonics up to order 4.
-For each compartment, the isotropic (N0), directional (ND) and total (NT) signal components are
-the norms of the order 0, order > 0 and all spherical harmonic coefficients, respectively.
+For each compartment, the isotropic (``*iso``), directional (``*dir``) and total (``*total``)
+signal components are the norms of the order 0, order > 0 and all spherical harmonic coefficients,
+respectively.
+These correspond to the N0, ND and NT measures written by RSIproc
+(for example, ``param-restrictediso`` is RSIproc's ``n0s1``).
+The free water compartment has no directional component.
 These measures are not normalized by the L2 norm of all coefficients, which is written separately.
+The model settings for each compartment are recorded under ``Model.Parameters.Compartments``
+in each sidecar.
 Volumes with b-values below 50 s/mm² are treated as b=0 images.
 
 Scalar Maps

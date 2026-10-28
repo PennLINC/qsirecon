@@ -13,7 +13,7 @@ from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import RSIReconScalars
 from ...interfaces.reports import ScalarReport
-from ...interfaces.rsi import RSI, RSI_URL, RSI_VERSION
+from ...interfaces.rsi import RSI, RSI_OUTPUTS, RSI_URL, RSI_VERSION
 from ...utils.bids import clean_datasinks
 from ...utils.boilerplate import build_documentation
 from .utils import init_scalar_output_wf
@@ -30,10 +30,9 @@ def init_rsi_fit_wf(
     Notes
     -----
     Expects prior qsirecon outputs as inputs. The workflow outputnode exposes
-    the isotropic (``n0s1``, ``n0s2``, ``n0s3``), directional (``nds1``, ``nds2``)
-    and total (``nts1``, ``nts2``, ``nts3``) signal components of the restricted (s1),
-    hindered (s2) and free water (s3) compartments, along with ``l2norm`` and
-    ``recon_scalars``.
+    the isotropic (``*iso``), directional (``*dir``) and total (``*total``) signal
+    components of the restricted, hindered and free water compartments
+    (for example ``restrictediso``), along with ``l2norm`` and ``recon_scalars``.
 
     """
     workflow = Workflow(name=name)
@@ -58,7 +57,7 @@ def init_rsi_fit_wf(
         niu.IdentityInterface(fields=recon_workflow_input_fields + ['odf_rois']),
         name='inputnode',
     )
-    rsi_outputs = ['n0s1', 'n0s2', 'n0s3', 'nds1', 'nds2', 'nts1', 'nts2', 'nts3', 'l2norm']
+    rsi_outputs = list(RSI_OUTPUTS)
     outputnode = pe.Node(
         niu.IdentityInterface(fields=rsi_outputs + ['recon_scalars']),
         name='outputnode',
