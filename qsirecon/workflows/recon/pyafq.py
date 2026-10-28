@@ -34,12 +34,12 @@ def _parse_qsirecon_params_dict(params_dict):
                 kwargs[special_args[arg]] = {}
                 for actual_arg in arg_info.keys():
                     if actual_arg in params_dict:
-                        kwargs[special_args[arg]][actual_arg] = afb.toml_to_val(
+                        kwargs[special_args[arg]][actual_arg] = afb.pyafq_str_to_val(
                             params_dict[actual_arg]
                         )
             else:
                 if arg in params_dict:
-                    kwargs[arg] = afb.toml_to_val(params_dict[arg])
+                    kwargs[arg] = afb.pyafq_str_to_val(params_dict[arg])
 
     for ignore_param in afb.qsi_prep_ignore_params:
         kwargs.pop(ignore_param, None)

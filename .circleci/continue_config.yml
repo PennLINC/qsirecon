@@ -131,9 +131,18 @@ commands:
             mkdir -p /tmp/out /tmp/work /tmp/coverage
             # Run from the checked-out repo so pytest loads qsirecon/tests/conftest.py,
             # which registers custom CLI options like --data_dir/--output_dir/--working_dir.
+            #
+            # PYTHONPATH makes the mount authoritative for *subprocesses* too, not
+            # just pytest. Nipype CommandLine nodes (recon_plot, mif2fib, ...) run
+            # with cwd set to the node directory, so they would otherwise import
+            # qsirecon via the image's editable .pth, which points at the /app copy
+            # baked in at build time. The image is reused whenever Dockerfile and
+            # pixi.lock are unchanged, so that copy is stale for any source-only
+            # commit and those nodes would silently run pre-fix code.
             docker run --rm=false \
               -e CIRCLE_CPUS=<< parameters.cpus >> \
               -e COVERAGE_FILE=/coverage/.coverage.<< parameters.marker >> \
+              -e PYTHONPATH=/tmp/src/qsirecon \
               -v /tmp/src/qsirecon:/tmp/src/qsirecon:ro \
               -v /tmp/data:/data:ro \
               -v /tmp/out:/out \
@@ -462,6 +471,7 @@ jobs:
             docker run --rm=false \
               -e CIRCLE_CPUS=2 \
               -e COVERAGE_FILE=/coverage/.coverage.unit_tests \
+              -e PYTHONPATH=/tmp/src/qsirecon \
               -v /tmp/src/qsirecon:/tmp/src/qsirecon:ro \
               -v /tmp/data:/data:ro \
               -v /tmp/out:/out \
@@ -551,6 +561,7 @@ workflows:
                 - dsi_studio_gqi_recon
                 - dipy_mapmri
                 - dipy_dki
+                - dipy_force
                 - amico_noddi
                 - pyafq_recon_full
                 - pyafq_recon_external_trk
@@ -580,6 +591,7 @@ workflows:
             - dsi_studio_gqi_recon
             - dipy_mapmri
             - dipy_dki
+            - dipy_force
             - amico_noddi
             - pyafq_recon_full
             - pyafq_recon_external_trk

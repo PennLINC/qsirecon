@@ -75,7 +75,7 @@ As with Docker, you will need to bind the Freesurfer license.txt when running Si
 External Dependencies
 ---------------------
 
-*QSIRecon* is written using Python 3.10, and is based on nipype_.
+*QSIRecon* is written using Python 3.11, and is based on nipype_.
 The external dependencies are built in the
 `qsirecon_build <https://github.com/PennLINC/qsirecon_build>`_ repository.
 There you can find the URLs used to download the dependency source code

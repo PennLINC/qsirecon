@@ -14,6 +14,7 @@ from .converters import init_fod_fib_wf, init_mif_to_fibgz_wf, init_qsirecon_to_
 from .dipy import (
     init_dipy_brainsuite_shore_recon_wf,
     init_dipy_dki_recon_wf,
+    init_dipy_force_recon_wf,
     init_dipy_mapmri_recon_wf,
 )
 from .dsi_studio import (
@@ -310,6 +311,8 @@ def workflow_from_spec(inputs_dict, node_spec):
             return init_dipy_mapmri_recon_wf(**kwargs)
         if node_spec['action'] == 'DKI_reconstruction':
             return init_dipy_dki_recon_wf(**kwargs)
+        if node_spec['action'] == 'FORCE_reconstruction':
+            return init_dipy_force_recon_wf(**kwargs)
 
     # AMICO operations
     elif software == 'AMICO':

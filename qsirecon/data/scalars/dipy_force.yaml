@@ -1,0 +1,650 @@
+# Scalar maps produced by the DIPY FORCE model.
+#
+# Every key here becomes an input trait on DIPYFORCEReconScalars *and* the name of an
+# output on qsirecon.interfaces.dipy.FORCEReconstruction, so the two must agree.
+# The uncertainty-<param> and ambiguity-<param> maps are only produced by DIPY 1.12.1
+# and later; with DIPY 1.12.0 FORCEReconstruction leaves them undefined and they are
+# skipped.
+fa:
+    bids:
+        model: force
+        param: fa
+    metadata:
+        Description: FORCE fractional anisotropy
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+md:
+    bids:
+        model: force
+        param: md
+    metadata:
+        Description: FORCE mean diffusivity
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+        Units: mm^2/s
+rd:
+    bids:
+        model: force
+        param: rd
+    metadata:
+        Description: FORCE radial diffusivity
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+        Units: mm^2/s
+wm_fraction:
+    bids:
+        model: force
+        param: wmfrac
+    metadata:
+        Description: FORCE white matter signal fraction
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+gm_fraction:
+    bids:
+        model: force
+        param: gmfrac
+    metadata:
+        Description: FORCE gray matter signal fraction
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+csf_fraction:
+    bids:
+        model: force
+        param: csffrac
+    metadata:
+        Description: FORCE cerebrospinal fluid signal fraction
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+num_fibers:
+    bids:
+        model: force
+        param: numfibers
+    metadata:
+        Description: >-
+            FORCE number of fiber populations. An integer from 1 to 3 when using the single best
+            match, or a weighted average over the retrieved neighbors in posterior mode
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 3
+dispersion:
+    bids:
+        model: force
+        param: odi
+    metadata:
+        Description: FORCE orientation dispersion index, averaged over the tissue compartments
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+nd:
+    bids:
+        model: force
+        param: ndi
+    metadata:
+        Description: FORCE neurite density index, summed over the white and gray matter compartments
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ufa_wm:
+    bids:
+        model: force
+        param: ufawm
+    metadata:
+        Description: FORCE microscopic fractional anisotropy within the white matter compartment
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ufa_voxel:
+    bids:
+        model: force
+        param: ufa
+    metadata:
+        Description: FORCE voxel-averaged microscopic fractional anisotropy
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ak:
+    bids:
+        model: force
+        param: ak
+    metadata:
+        Description: FORCE axial kurtosis
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+rk:
+    bids:
+        model: force
+        param: rk
+    metadata:
+        Description: FORCE radial kurtosis
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+mk:
+    bids:
+        model: force
+        param: mk
+    metadata:
+        Description: FORCE mean kurtosis
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+kfa:
+    bids:
+        model: force
+        param: kfa
+    metadata:
+        Description: FORCE kurtosis fractional anisotropy
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+uncertainty:
+    bids:
+        model: force
+        param: uncertainty
+    metadata:
+        Description: >-
+            FORCE match uncertainty: the interquartile range of the penalized match scores
+            across the retrieved neighbors
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+ambiguity:
+    bids:
+        model: force
+        param: ambiguity
+    metadata:
+        Description: >-
+            FORCE match ambiguity: the fraction of retrieved neighbor scores above half of the
+            maximum score
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+uncertainty_fa:
+    bids:
+        model: force
+        param: fa
+        desc: uncertainty
+    metadata:
+        Description: >-
+            Posterior uncertainty of the FORCE fractional anisotropy estimate: the weighted
+            interquartile range of the posterior over the retrieved neighbors, normalized by the
+            range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ambiguity_fa:
+    bids:
+        model: force
+        param: fa
+        desc: ambiguity
+    metadata:
+        Description: >-
+            Posterior ambiguity of the FORCE fractional anisotropy estimate: the full width at
+            half maximum of the weighted kernel density estimate of the posterior, normalized by
+            the range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+uncertainty_md:
+    bids:
+        model: force
+        param: md
+        desc: uncertainty
+    metadata:
+        Description: >-
+            Posterior uncertainty of the FORCE mean diffusivity estimate: the weighted
+            interquartile range of the posterior over the retrieved neighbors, normalized by the
+            range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ambiguity_md:
+    bids:
+        model: force
+        param: md
+        desc: ambiguity
+    metadata:
+        Description: >-
+            Posterior ambiguity of the FORCE mean diffusivity estimate: the full width at half
+            maximum of the weighted kernel density estimate of the posterior, normalized by the
+            range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+uncertainty_rd:
+    bids:
+        model: force
+        param: rd
+        desc: uncertainty
+    metadata:
+        Description: >-
+            Posterior uncertainty of the FORCE radial diffusivity estimate: the weighted
+            interquartile range of the posterior over the retrieved neighbors, normalized by the
+            range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ambiguity_rd:
+    bids:
+        model: force
+        param: rd
+        desc: ambiguity
+    metadata:
+        Description: >-
+            Posterior ambiguity of the FORCE radial diffusivity estimate: the full width at half
+            maximum of the weighted kernel density estimate of the posterior, normalized by the
+            range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+uncertainty_wm_fraction:
+    bids:
+        model: force
+        param: wmfrac
+        desc: uncertainty
+    metadata:
+        Description: >-
+            Posterior uncertainty of the FORCE white matter signal fraction estimate: the
+            weighted interquartile range of the posterior over the retrieved neighbors,
+            normalized by the range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ambiguity_wm_fraction:
+    bids:
+        model: force
+        param: wmfrac
+        desc: ambiguity
+    metadata:
+        Description: >-
+            Posterior ambiguity of the FORCE white matter signal fraction estimate: the full
+            width at half maximum of the weighted kernel density estimate of the posterior,
+            normalized by the range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+uncertainty_gm_fraction:
+    bids:
+        model: force
+        param: gmfrac
+        desc: uncertainty
+    metadata:
+        Description: >-
+            Posterior uncertainty of the FORCE gray matter signal fraction estimate: the
+            weighted interquartile range of the posterior over the retrieved neighbors,
+            normalized by the range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ambiguity_gm_fraction:
+    bids:
+        model: force
+        param: gmfrac
+        desc: ambiguity
+    metadata:
+        Description: >-
+            Posterior ambiguity of the FORCE gray matter signal fraction estimate: the full
+            width at half maximum of the weighted kernel density estimate of the posterior,
+            normalized by the range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+uncertainty_csf_fraction:
+    bids:
+        model: force
+        param: csffrac
+        desc: uncertainty
+    metadata:
+        Description: >-
+            Posterior uncertainty of the FORCE cerebrospinal fluid signal fraction estimate: the
+            weighted interquartile range of the posterior over the retrieved neighbors,
+            normalized by the range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ambiguity_csf_fraction:
+    bids:
+        model: force
+        param: csffrac
+        desc: ambiguity
+    metadata:
+        Description: >-
+            Posterior ambiguity of the FORCE cerebrospinal fluid signal fraction estimate: the
+            full width at half maximum of the weighted kernel density estimate of the posterior,
+            normalized by the range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+uncertainty_num_fibers:
+    bids:
+        model: force
+        param: numfibers
+        desc: uncertainty
+    metadata:
+        Description: >-
+            Posterior uncertainty of the FORCE fiber population count estimate: the weighted
+            interquartile range of the posterior over the retrieved neighbors, normalized by the
+            range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ambiguity_num_fibers:
+    bids:
+        model: force
+        param: numfibers
+        desc: ambiguity
+    metadata:
+        Description: >-
+            Posterior ambiguity of the FORCE fiber population count estimate: the full width at
+            half maximum of the weighted kernel density estimate of the posterior, normalized by
+            the range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+uncertainty_dispersion:
+    bids:
+        model: force
+        param: odi
+        desc: uncertainty
+    metadata:
+        Description: >-
+            Posterior uncertainty of the FORCE orientation dispersion index estimate: the
+            weighted interquartile range of the posterior over the retrieved neighbors,
+            normalized by the range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ambiguity_dispersion:
+    bids:
+        model: force
+        param: odi
+        desc: ambiguity
+    metadata:
+        Description: >-
+            Posterior ambiguity of the FORCE orientation dispersion index estimate: the full
+            width at half maximum of the weighted kernel density estimate of the posterior,
+            normalized by the range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+uncertainty_nd:
+    bids:
+        model: force
+        param: ndi
+        desc: uncertainty
+    metadata:
+        Description: >-
+            Posterior uncertainty of the FORCE neurite density index estimate: the weighted
+            interquartile range of the posterior over the retrieved neighbors, normalized by the
+            range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ambiguity_nd:
+    bids:
+        model: force
+        param: ndi
+        desc: ambiguity
+    metadata:
+        Description: >-
+            Posterior ambiguity of the FORCE neurite density index estimate: the full width at
+            half maximum of the weighted kernel density estimate of the posterior, normalized by
+            the range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+uncertainty_ufa_voxel:
+    bids:
+        model: force
+        param: ufa
+        desc: uncertainty
+    metadata:
+        Description: >-
+            Posterior uncertainty of the FORCE voxel-averaged microscopic fractional anisotropy
+            estimate: the weighted interquartile range of the posterior over the retrieved
+            neighbors, normalized by the range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ambiguity_ufa_voxel:
+    bids:
+        model: force
+        param: ufa
+        desc: ambiguity
+    metadata:
+        Description: >-
+            Posterior ambiguity of the FORCE voxel-averaged microscopic fractional anisotropy
+            estimate: the full width at half maximum of the weighted kernel density estimate of
+            the posterior, normalized by the range of that parameter across the simulation
+            library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+uncertainty_ak:
+    bids:
+        model: force
+        param: ak
+        desc: uncertainty
+    metadata:
+        Description: >-
+            Posterior uncertainty of the FORCE axial kurtosis estimate: the weighted
+            interquartile range of the posterior over the retrieved neighbors, normalized by the
+            range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ambiguity_ak:
+    bids:
+        model: force
+        param: ak
+        desc: ambiguity
+    metadata:
+        Description: >-
+            Posterior ambiguity of the FORCE axial kurtosis estimate: the full width at half
+            maximum of the weighted kernel density estimate of the posterior, normalized by the
+            range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+uncertainty_rk:
+    bids:
+        model: force
+        param: rk
+        desc: uncertainty
+    metadata:
+        Description: >-
+            Posterior uncertainty of the FORCE radial kurtosis estimate: the weighted
+            interquartile range of the posterior over the retrieved neighbors, normalized by the
+            range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ambiguity_rk:
+    bids:
+        model: force
+        param: rk
+        desc: ambiguity
+    metadata:
+        Description: >-
+            Posterior ambiguity of the FORCE radial kurtosis estimate: the full width at half
+            maximum of the weighted kernel density estimate of the posterior, normalized by the
+            range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+uncertainty_mk:
+    bids:
+        model: force
+        param: mk
+        desc: uncertainty
+    metadata:
+        Description: >-
+            Posterior uncertainty of the FORCE mean kurtosis estimate: the weighted
+            interquartile range of the posterior over the retrieved neighbors, normalized by the
+            range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ambiguity_mk:
+    bids:
+        model: force
+        param: mk
+        desc: ambiguity
+    metadata:
+        Description: >-
+            Posterior ambiguity of the FORCE mean kurtosis estimate: the full width at half
+            maximum of the weighted kernel density estimate of the posterior, normalized by the
+            range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+uncertainty_kfa:
+    bids:
+        model: force
+        param: kfa
+        desc: uncertainty
+    metadata:
+        Description: >-
+            Posterior uncertainty of the FORCE kurtosis fractional anisotropy estimate: the
+            weighted interquartile range of the posterior over the retrieved neighbors,
+            normalized by the range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1
+ambiguity_kfa:
+    bids:
+        model: force
+        param: kfa
+        desc: ambiguity
+    metadata:
+        Description: >-
+            Posterior ambiguity of the FORCE kurtosis fractional anisotropy estimate: the full
+            width at half maximum of the weighted kernel density estimate of the posterior,
+            normalized by the range of that parameter across the simulation library
+        Model:
+            Description: FORCE (FORward modeling for Complex microstructure Estimation)
+            URL: https://doi.org/10.21203/rs.3.rs-8151109/v1
+    figure:
+        vmin: 0
+        vmax: 1

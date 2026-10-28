@@ -14,7 +14,9 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 from ... import config
 from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.dipy import (
+    FORCE_ALL_MAPS,
     BrainSuiteShoreReconstruction,
+    FORCEReconstruction,
     KurtosisReconstruction,
     KurtosisReconstructionMicrostructure,
     KurtosisReconstructionMSDKI,
@@ -24,6 +26,7 @@ from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import (
     BrainSuite3dSHOREReconScalars,
     DIPYDKIReconScalars,
+    DIPYFORCEReconScalars,
     DIPYMAPMRIReconScalars,
 )
 from ...interfaces.reports import CLIReconPeaksReport, ScalarReport
@@ -962,3 +965,215 @@ def infer_deltas(metadata, params):
             'reconstruction.'
         )
     return deltas, deltas_string
+
+
+def init_dipy_force_recon_wf(inputs_dict, name='dipy_force_recon', qsirecon_suffix='', params={}):
+    """Fit the FORCE model.
+
+    This workflow corresponds to the "FORCE_reconstruction" pipeline action.
+
+    FORCE simulates a library of voxels with known microstructure for this subject's
+    gradient scheme and matches each measured voxel against it, so the microstructure of
+    the closest simulation becomes the estimate. Every map it produces is registered as a
+    mappable scalar, so downstream ``bundle_map``, ``template_map`` and
+    ``parcellate_scalars`` nodes can pick them up with ``scalars_from``.
+
+    Parameters
+    ----------
+    inputs_dict : dict
+        Dictionary containing the input node fields.
+    name : str
+        Name of the workflow.
+    qsirecon_suffix : str
+        Suffix for the qsirecon outputs.
+    params : dict
+        Dictionary containing the parameters for the workflow. These are passed straight
+        to :class:`qsirecon.interfaces.dipy.FORCEReconstruction`, so see that interface
+        for the full list. The most consequential are:
+
+        - simulations_file : str
+            Path to a pre-generated simulation library (.npz) for this gradient scheme.
+            When omitted, a library is generated at run time and cached under
+            ``$DIPY_HOME/force_simulations``. Supplying a library is what makes the fit
+            reproducible, since generation is seeded non-deterministically.
+        - num_simulations : int
+            Number of simulated voxels in the library.
+        - n_neighbors : int
+            Number of library entries retrieved per voxel.
+        - use_posterior : bool
+            Estimate parameters as a posterior mean over the retrieved neighbors instead
+            of taking the single best match.
+        - compute_dki : bool
+            Derive kurtosis metrics for each simulation. Requires at least two non-zero
+            shells.
+        - uncertainty_maps : bool
+            Also write the 28 per-parameter uncertainty and ambiguity maps.
+
+    Outputs
+    -------
+    'fa : str',
+    'md : str',
+    'rd : str',
+    'wm_fraction : str',
+    'gm_fraction : str',
+    'csf_fraction : str',
+    'num_fibers : str',
+    'dispersion : str',
+    'nd : str',
+    'ufa_wm : str',
+    'ufa_voxel : str',
+    'ak : str',
+    'rk : str',
+    'mk : str',
+    'kfa : str',
+    'uncertainty : str',
+    'ambiguity : str',
+        Path to the corresponding scalar map.
+    recon_scalars : list of dict
+        Scalar configs for the maps produced here, for downstream scalar mapping.
+
+    See also
+    --------
+    :class:`qsirecon.interfaces.dipy.FORCEReconstruction`
+    :class:`qsirecon.interfaces.recon_scalars.DIPYFORCEReconScalars`
+    """
+    workflow = Workflow(name=name)
+    suffix_str = f' (outputs written to qsirecon-{qsirecon_suffix})' if qsirecon_suffix else ''
+    workflow.__desc__ = (
+        f'\n\n#### DIPY Reconstruction{suffix_str}\n\n'
+        'FORCE (FORward modeling for Complex microstructure Estimation) reconstruction '
+        f'was performed with DIPY {dipy_version} [@dipy; @force].'
+    )
+
+    inputnode = pe.Node(
+        niu.IdentityInterface(fields=recon_workflow_input_fields), name='inputnode'
+    )
+    outputnode = pe.Node(
+        niu.IdentityInterface(
+            fields=[
+                'fa',
+                'md',
+                'rd',
+                'wm_fraction',
+                'gm_fraction',
+                'csf_fraction',
+                'num_fibers',
+                'dispersion',
+                'nd',
+                'ufa_wm',
+                'ufa_voxel',
+                'ak',
+                'rk',
+                'mk',
+                'kfa',
+                'uncertainty',
+                'ambiguity',
+                # Only if uncertainty_maps is True, and only with DIPY >= 1.12.1
+                'uncertainty_fa',
+                'ambiguity_fa',
+                'uncertainty_md',
+                'ambiguity_md',
+                'uncertainty_rd',
+                'ambiguity_rd',
+                'uncertainty_wm_fraction',
+                'ambiguity_wm_fraction',
+                'uncertainty_gm_fraction',
+                'ambiguity_gm_fraction',
+                'uncertainty_csf_fraction',
+                'ambiguity_csf_fraction',
+                'uncertainty_num_fibers',
+                'ambiguity_num_fibers',
+                'uncertainty_dispersion',
+                'ambiguity_dispersion',
+                'uncertainty_nd',
+                'ambiguity_nd',
+                'uncertainty_ufa_voxel',
+                'ambiguity_ufa_voxel',
+                'uncertainty_ak',
+                'ambiguity_ak',
+                'uncertainty_rk',
+                'ambiguity_rk',
+                'uncertainty_mk',
+                'ambiguity_mk',
+                'uncertainty_kfa',
+                'ambiguity_kfa',
+                # Aggregated scalars
+                'recon_scalars',
+            ]
+        ),
+        name='outputnode',
+    )
+    # ``dismiss_entities=['desc']`` is required because the FORCE scalar metadata uses
+    # the ``desc`` entity to distinguish a parameter from its uncertainty and ambiguity
+    # maps, and ReconScalars raises if that collides with the source file's own entities.
+    recon_scalars = pe.Node(
+        DIPYFORCEReconScalars(dismiss_entities=['desc'], qsirecon_suffix=qsirecon_suffix),
+        run_without_submitting=True,
+        name='recon_scalars',
+    )
+
+    omp_nthreads = config.nipype.omp_nthreads
+    # Library generation is the expensive part and parallelizes internally. Default it to
+    # the node's own allocation so it cooperates with Nipype's scheduler rather than
+    # grabbing every core.
+    params.setdefault('num_cpus', omp_nthreads)
+    recon_force = pe.Node(FORCEReconstruction(**params), name='recon_force', n_procs=omp_nthreads)
+    workflow.__desc__ += ' ' + build_documentation(recon_force)
+
+    workflow.connect([
+        (inputnode, recon_force, [
+            ('dwi_file', 'dwi_file'),
+            ('bval_file', 'bval_file'),
+            ('bvec_file', 'bvec_file'),
+            ('dwi_mask', 'mask_file'),
+        ]),
+    ])  # fmt:skip
+
+    # Every map name is identical across the interface, the outputnode and the
+    # ReconScalars input traits, so the connections are one-to-one. Maps the installed
+    # DIPY does not produce simply stay undefined and are skipped downstream.
+    map_connections = [(map_name, map_name) for map_name in FORCE_ALL_MAPS]
+    workflow.connect([
+        (recon_force, outputnode, map_connections),
+        (recon_force, recon_scalars, map_connections),
+    ])  # fmt:skip
+
+    if qsirecon_suffix:
+        scalar_output_wf = init_scalar_output_wf()
+        workflow.connect([
+            (inputnode, scalar_output_wf, [('dwi_file', 'inputnode.source_file')]),
+            (recon_scalars, scalar_output_wf, [('scalar_info', 'inputnode.scalar_configs')]),
+        ])  # fmt:skip
+
+        plot_scalars = pe.Node(
+            ScalarReport(),
+            name='plot_scalars',
+            n_procs=1,
+        )
+        workflow.connect([
+            (inputnode, plot_scalars, [
+                ('acpc_preproc', 'underlay'),
+                ('acpc_seg', 'dseg'),
+                ('dwi_mask', 'mask_file'),
+            ]),
+            (recon_scalars, plot_scalars, [('scalar_info', 'scalar_metadata')]),
+            (scalar_output_wf, plot_scalars, [('outputnode.scalar_files', 'scalar_maps')]),
+            (scalar_output_wf, outputnode, [('outputnode.scalar_configs', 'recon_scalars')]),
+        ])  # fmt:skip
+
+        ds_report_scalars = pe.Node(
+            DerivativesDataSink(
+                datatype='figures',
+                desc='scalars',
+                suffix='dwimap',
+                dismiss_entities=['dsistudiotemplate'],
+            ),
+            name='ds_report_scalars',
+            run_without_submitting=True,
+        )
+        workflow.connect([(plot_scalars, ds_report_scalars, [('out_report', 'in_file')])])
+    else:
+        # If not writing out scalar files, pass the working directory scalar configs
+        workflow.connect([(recon_scalars, outputnode, [('scalar_info', 'recon_scalars')])])
+
+    return clean_datasinks(workflow, qsirecon_suffix)
