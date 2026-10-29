@@ -1,84 +1,81 @@
-noisesigma:
+pooledstd_noise:
     bids:
-        model: qsiprep
-        param: noisesigma
+        stat: pooledstd
+        desc: noise
     metadata:
-        Description: Noise standard deviation estimated by the QSIPrep denoiser, in the intensity units of the preprocessed DWI
+        Description: Noise standard deviation estimated by the QSIPrep denoiser, pooled across the input series, in the intensity units of the preprocessed DWI
         Units: arbitrary
     figure:
         vmin: 0
-noiserms:
+pooledrms_noise:
     bids:
-        model: qsiprep
-        param: noiserms
+        stat: pooledrms
+        desc: noise
     metadata:
-        Description: Root mean square of the residual Patch2Self removed in QSIPrep, which mixes noise with fit error
+        Description: Root mean square of the residual Patch2Self removed in QSIPrep, pooled across the input series, which mixes noise with fit error
         Units: arbitrary
     figure:
         vmin: 0
 snr:
     bids:
-        model: qsiprep
-        param: snr
+        stat: snr
     metadata:
-        Description: Signal-to-noise ratio of the preprocessed b=0 reference, divided by the QSIPrep noise standard deviation
+        Description: Signal-to-noise ratio of the preprocessed b=0 reference, divided by the pooled QSIPrep noise standard deviation
     figure:
         vmin: 0
-b0tsnr:
+tsnr:
     bids:
-        model: qsiprep
-        param: b0tsnr
+        stat: tsnr
     metadata:
         Description: Temporal signal-to-noise ratio of the b=0 volumes from QSIPrep
     figure:
         vmin: 0
 cnr:
     bids:
-        model: qsiprep
-        param: cnr
+        stat: cnr
     metadata:
         Description: Contrast-to-noise ratio from QSIPrep head motion correction
     figure:
         vmin: 0
-jacobian:
+mean_jacobian:
     bids:
-        model: qsiprep
-        param: jacobian
+        stat: mean
+        desc: jacobian
     metadata:
-        Description: Jacobian or least-squares restoration weights QSIPrep applied when correcting susceptibility distortion
-sdcdisplacement:
+        Description: Jacobian or least-squares restoration weights QSIPrep applied when correcting susceptibility distortion, averaged over the DWI volumes
+mean_rank:
     bids:
-        model: qsiprep
-        param: sdcdisplacement
+        stat: mean
+        desc: rank
+    metadata:
+        Description: Number of principal components the QSIPrep denoiser kept as signal, averaged over the DWI volumes
+        Units: count
+    figure:
+        vmin: 0
+mean_rankdensity:
+    bids:
+        stat: mean
+        desc: rankdensity
+    metadata:
+        Description: Signal rank per mm of kernel radius estimated by dwidenoise2 in QSIPrep, averaged over the DWI volumes
+        Units: 1/mm
+    figure:
+        vmin: 0
+magnitude_sdc:
+    bids:
+        stat: magnitude
+        desc: sdc
     metadata:
         Description: Magnitude of the susceptibility distortion correction displacement from QSIPrep, for the first series of the output
         Units: mm
     figure:
         vmin: 0
-sdcrefinement:
+magnitude_sdcrefinement:
     bids:
-        model: qsiprep
-        param: sdcrefinement
+        stat: magnitude
+        desc: sdcrefinement
     metadata:
         Description: Magnitude of the DRBUDDI refinement of the TOPUP displacement from QSIPrep
         Units: mm
-    figure:
-        vmin: 0
-noiserank:
-    bids:
-        model: qsiprep
-        param: noiserank
-    metadata:
-        Description: Number of principal components the QSIPrep denoiser kept as signal
-        Units: count
-    figure:
-        vmin: 0
-noiserankdensity:
-    bids:
-        model: qsiprep
-        param: noiserankdensity
-    metadata:
-        Description: Signal rank per mm of kernel radius estimated by dwidenoise2 in QSIPrep
-        Units: 1/mm
     figure:
         vmin: 0

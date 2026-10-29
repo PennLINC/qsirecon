@@ -69,9 +69,9 @@ qsiprep_qc_scalars = load_yaml(load_data('scalars/qsiprep_qc.yaml'))
 PREPROC_SUFFIX = 'desc-preproc_dwi'
 # Sidecar keys that give, for each DWI volume, the volume of a 4D map that describes it
 INDEX_KEYS = {
-    'jacobian': 'JacobianWeightIndex',
-    'noiserank': 'RankMapIndex',
-    'noiserankdensity': 'RankDensityMapIndex',
+    'mean_jacobian': 'JacobianWeightIndex',
+    'mean_rank': 'RankMapIndex',
+    'mean_rankdensity': 'RankDensityMapIndex',
 }
 # Volumes at or below this b-value are b=0 volumes when splitting CNR by shell
 B0_THRESHOLD = 50
@@ -183,21 +183,21 @@ class QSIPrepQCReconScalars(SimpleInterface):
         if 'noise_map_file' in qc_files:
             scalars.extend(self._noise_scalars(qc_files['noise_map_file']))
         if 'tsnr_file' in qc_files:
-            scalars.append(self._passthrough('b0tsnr', qc_files['tsnr_file']))
+            scalars.append(self._passthrough('tsnr', qc_files['tsnr_file']))
         if 'cnr_file' in qc_files:
             scalars.extend(self._cnr_scalars(qc_files['cnr_file']))
         if 'jacobian_file' in qc_files:
-            scalars.append(self._passthrough('jacobian', qc_files['jacobian_file']))
+            scalars.append(self._passthrough('mean_jacobian', qc_files['jacobian_file']))
         for variable_name, name in (
-            ('sdcdisplacement', 'sdc_displacement_file'),
-            ('sdcrefinement', 'sdc_refinement_file'),
+            ('magnitude_sdc', 'sdc_displacement_file'),
+            ('magnitude_sdcrefinement', 'sdc_refinement_file'),
         ):
             if name in qc_files:
                 scalars.append(self._displacement_scalar(variable_name, qc_files[name]))
         if 'rank_file' in qc_files:
-            scalars.append(self._passthrough('noiserank', qc_files['rank_file']))
+            scalars.append(self._passthrough('mean_rank', qc_files['rank_file']))
         if 'rankdensity_file' in qc_files:
-            scalars.append(self._passthrough('noiserankdensity', qc_files['rankdensity_file']))
+            scalars.append(self._passthrough('mean_rankdensity', qc_files['rankdensity_file']))
 
         if not scalars:
             raise RuntimeError(
@@ -226,7 +226,7 @@ class QSIPrepQCReconScalars(SimpleInterface):
         quantity = sidecar.get('Quantity')
         if quantity is None:
             quantity = 'residual_rms' if '_stat-rms_' in op.basename(noise_file) else 'sigma'
-        variable_name = 'noisesigma' if quantity == 'sigma' else 'noiserms'
+        variable_name = 'pooledstd_noise' if quantity == 'sigma' else 'pooledrms_noise'
 
         data = img.get_fdata(dtype=np.float32)
         steps = []
@@ -289,10 +289,17 @@ class QSIPrepQCReconScalars(SimpleInterface):
         sidecar = _load_sidecar(cnr_file)
         match = re.search(r'_model-([a-zA-Z0-9]+)_', op.basename(cnr_file))
         description = self.scalar_metadata['cnr']['metadata']['Description']
+        entities = {}
         if match:
             description += f' ({match.group(1)} model)'
+            # Keep the model QSIPrep named the map after, as in model-eddy_stat-cnr
+            entities['model'] = match.group(1)
         if img.ndim == 3 or img.shape[3] == 1:
-            return [self._passthrough('cnr', cnr_file, extra={'Description': description})]
+            return [
+                self._passthrough(
+                    'cnr', cnr_file, entities=entities, extra={'Description': description}
+                )
+            ]
 
         # eddy's --cnr_maps: the b=0 tSNR, then the CNR of each shell in ascending order
         shells = _shells(self.inputs.bval_file) if isdefined(self.inputs.bval_file) else []
@@ -316,7 +323,7 @@ class QSIPrepQCReconScalars(SimpleInterface):
                     [f'Volume {i_shell} of the eddy CNR maps, for the b={bval} shell', *resampled],
                     write=True,
                     definition='cnr',
-                    desc=f'b{bval}',
+                    entities={**entities, 'desc': f'b{bval}'},
                     extra={'Description': f'{description}, b={bval} shell'},
                 )
             )
@@ -340,7 +347,7 @@ class QSIPrepQCReconScalars(SimpleInterface):
             write=True,
         )
 
-    def _passthrough(self, variable_name, qc_file, extra=None):
+    def _passthrough(self, variable_name, qc_file, entities=None, extra=None):
         """Use a QC map as it is, if it is 3D and on the DWI grid."""
         img = nb.load(qc_file)
         sidecar = _load_sidecar(qc_file)
@@ -363,9 +370,18 @@ class QSIPrepQCReconScalars(SimpleInterface):
         scalar_img, resampled = self._on_grid(scalar_img)
         steps += resampled
         if not steps and data is None:
-            return self._scalar(variable_name, qc_file, qc_file, sidecar, steps, extra=extra)
+            return self._scalar(
+                variable_name, qc_file, qc_file, sidecar, steps, entities=entities, extra=extra
+            )
         return self._scalar(
-            variable_name, scalar_img, qc_file, sidecar, steps, write=True, extra=extra
+            variable_name,
+            scalar_img,
+            qc_file,
+            sidecar,
+            steps,
+            write=True,
+            entities=entities,
+            extra=extra,
         )
 
     def _scalar(
@@ -377,7 +393,7 @@ class QSIPrepQCReconScalars(SimpleInterface):
         steps,
         write=False,
         definition=None,
-        desc=None,
+        entities=None,
         extra=None,
     ):
         """Assemble (variable name, definition, path, run-specific metadata).
@@ -401,8 +417,7 @@ class QSIPrepQCReconScalars(SimpleInterface):
             metadata['QSIReconProcessing'] = steps
         metadata.update(extra or {})
         definition = deepcopy(self.scalar_metadata[definition or variable_name])
-        if desc:
-            definition['bids']['desc'] = desc
+        definition['bids'].update(entities or {})
         return variable_name, definition, path, metadata
 
     def _on_grid(self, img, order=1):

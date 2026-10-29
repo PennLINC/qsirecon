@@ -1,10 +1,10 @@
-qsiprep,b0tsnr,Temporal signal-to-noise ratio of the b=0 volumes from QSIPrep
-qsiprep,cnr,Contrast-to-noise ratio from QSIPrep head motion correction
-qsiprep,jacobian,Jacobian or least-squares restoration weights QSIPrep applied when correcting susceptibility distortion
-qsiprep,noiserank,Number of principal components the QSIPrep denoiser kept as signal
-qsiprep,noiserankdensity,Signal rank per mm of kernel radius estimated by dwidenoise2 in QSIPrep
-qsiprep,noiserms,"Root mean square of the residual Patch2Self removed in QSIPrep, which mixes noise with fit error"
-qsiprep,noisesigma,"Noise standard deviation estimated by the QSIPrep denoiser, in the intensity units of the preprocessed DWI"
-qsiprep,sdcdisplacement,"Magnitude of the susceptibility distortion correction displacement from QSIPrep, for the first series of the output"
-qsiprep,sdcrefinement,Magnitude of the DRBUDDI refinement of the TOPUP displacement from QSIPrep
-qsiprep,snr,"Signal-to-noise ratio of the preprocessed b=0 reference, divided by the QSIPrep noise standard deviation"
+\*stat-cnr_dwimap.nii.gz,cnr,Contrast-to-noise ratio from QSIPrep head motion correction
+\*stat-magnitude_desc-sdc_dwimap.nii.gz,magnitude_sdc,"Magnitude of the susceptibility distortion correction displacement from QSIPrep, for the first series of the output"
+\*stat-magnitude_desc-sdcrefinement_dwimap.nii.gz,magnitude_sdcrefinement,Magnitude of the DRBUDDI refinement of the TOPUP displacement from QSIPrep
+\*stat-mean_desc-jacobian_dwimap.nii.gz,mean_jacobian,"Jacobian or least-squares restoration weights QSIPrep applied when correcting susceptibility distortion, averaged over the DWI volumes"
+\*stat-mean_desc-rank_dwimap.nii.gz,mean_rank,"Number of principal components the QSIPrep denoiser kept as signal, averaged over the DWI volumes"
+\*stat-mean_desc-rankdensity_dwimap.nii.gz,mean_rankdensity,"Signal rank per mm of kernel radius estimated by dwidenoise2 in QSIPrep, averaged over the DWI volumes"
+\*stat-pooledrms_desc-noise_dwimap.nii.gz,pooledrms_noise,"Root mean square of the residual Patch2Self removed in QSIPrep, pooled across the input series, which mixes noise with fit error"
+\*stat-pooledstd_desc-noise_dwimap.nii.gz,pooledstd_noise,"Noise standard deviation estimated by the QSIPrep denoiser, pooled across the input series, in the intensity units of the preprocessed DWI"
+\*stat-snr_dwimap.nii.gz,snr,"Signal-to-noise ratio of the preprocessed b=0 reference, divided by the pooled QSIPrep noise standard deviation"
+\*stat-tsnr_dwimap.nii.gz,tsnr,Temporal signal-to-noise ratio of the b=0 volumes from QSIPrep

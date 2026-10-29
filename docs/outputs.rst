@@ -128,16 +128,19 @@ See :ref:`connectivity_atlases` for more information on this output directory.
 
 If a workflow includes a :ref:`qsiprep_qc_scalars` node,
 the QSIPrep quality-control maps it uses are written to ``qsirecon-QSIPrepQC``
-(or the node's ``qsirecon_suffix``) with ``model-qsiprep``::
+(or the node's ``qsirecon_suffix``). Like QSIPrep's maps, they are named with ``stat-``
+and ``desc-``::
 
    qsirecon/
       derivatives/
          qsirecon-QSIPrepQC/
             sub-<label>/[ses-<label>/]
                dwi/
-                  <source_entities>_model-qsiprep_param-noisesigma_dwimap.nii.gz
-                  <source_entities>_model-qsiprep_param-snr_dwimap.nii.gz
-                  <source_entities>_model-qsiprep_param-cnr[_desc-b<bval>]_dwimap.nii.gz
-                  <source_entities>_space-<template>_model-qsiprep_param-noisesigma_dwimap.nii.gz
+                  <source_entities>_stat-pooledstd_desc-noise_dwimap.nii.gz
+                  <source_entities>_stat-snr_dwimap.nii.gz
+                  <source_entities>_model-<model>_stat-cnr[_desc-b<bval>]_dwimap.nii.gz
+                  <source_entities>_stat-mean_desc-jacobian_dwimap.nii.gz
+                  <source_entities>_stat-magnitude_desc-sdc_dwimap.nii.gz
+                  <source_entities>_space-<template>_stat-pooledstd_desc-noise_dwimap.nii.gz
                   <source_entities>_bundles-<bundle_source>_scalarstats.tsv
                   ...

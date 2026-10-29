@@ -446,13 +446,22 @@ class _OrganizeScalarDataInputSpec(BaseInterfaceInputSpec):
 class _OrganizeScalarDataOutputSpec(TraitedSpec):
     scalar_file = File(exists=True)
     metadata = traits.Dict()
+    # None rather than Undefined for a missing entity: a MapNode output that is
+    # Undefined for every scalar counts as unset and can't feed an iterfield.
     model = traits.Either(
         traits.Str(),
         Undefined,
+        None,
     )
     param = traits.Either(
         traits.Str(),
         Undefined,
+        None,
+    )
+    stat = traits.Either(
+        traits.Str(),
+        Undefined,
+        None,
     )
     desc = traits.Either(
         traits.Str(),
@@ -469,8 +478,9 @@ class OrganizeScalarData(SimpleInterface):
         scalar_config = self.inputs.scalar_config
         self._results['scalar_file'] = scalar_config['path']
         self._results['metadata'] = scalar_config.get('metadata', {})
-        self._results['model'] = scalar_config.get('bids', {}).get('model', Undefined)
-        self._results['param'] = scalar_config.get('bids', {}).get('param', Undefined)
+        self._results['model'] = scalar_config.get('bids', {}).get('model', None)
+        self._results['param'] = scalar_config.get('bids', {}).get('param', None)
+        self._results['stat'] = scalar_config.get('bids', {}).get('stat', None)
         self._results['desc'] = scalar_config.get('bids', {}).get('desc', None)
 
         return runtime
@@ -713,13 +723,15 @@ class ParcellateScalars(SimpleInterface):
 def _parcellation_label(scalar_config):
     """Label a scalar's rows in a parcellation table.
 
-    Scalars from one source can share a ``param`` and differ in ``desc``,
+    Model scalars are labeled by ``param``, and QC scalars, which have no ``param``,
+    by ``stat``. Scalars from one source can share these and differ in ``desc``,
     e.g. per-shell CNR maps, so ``desc`` is appended when present.
     """
     bids = scalar_config.get('bids', {})
-    if bids.get('desc'):
-        return f'{bids["param"]}_{bids["desc"]}'
-    return bids.get('param', None)
+    label = bids.get('param', bids.get('stat'))
+    if label and bids.get('desc'):
+        return f'{label}_{bids["desc"]}'
+    return label
 
 
 def _sanitize_nifti_atlas(atlas, df):
