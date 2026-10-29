@@ -32,6 +32,7 @@ from nipype.interfaces.base import (
 from nipype.utils.filemanip import split_filename
 
 from .bids import get_bids_params
+from .qc_maps import QSIPREP_QC_MAP_PATTERNS, find_qsiprep_qc_maps
 
 LOGGER = logging.getLogger('nipype.interface')
 
@@ -66,6 +67,11 @@ class QSIPrepDWIIngressOutputSpec(TraitedSpec):
     slice_qc_file = File(exists=True)
 
 
+# Voxelwise QC images QSIPrep writes on the grid of the preprocessed series
+for _qc_map_name in QSIPREP_QC_MAP_PATTERNS:
+    QSIPrepDWIIngressOutputSpec.add_class_trait(_qc_map_name, File(exists=True))
+
+
 class QSIPrepDWIIngress(SimpleInterface):
     input_spec = QSIPrepDWIIngressInputSpec
     output_spec = QSIPrepDWIIngressOutputSpec
@@ -94,6 +100,7 @@ class QSIPrepDWIIngress(SimpleInterface):
         if 'dwi_ref' not in self._results:
             self._get_if_exists('dwi_ref', op.join(out_root, fname[:-16] + 'dwiref.nii*'))
         self._results['dwi_file'] = self.inputs.dwi_file
+        self._results.update(find_qsiprep_qc_maps(self.inputs.dwi_file))
 
         # Image QC doesn't include space
         self._get_if_exists('qc_file', self._get_qc_filename(out_root, params, 'ImageQC', 'csv'))

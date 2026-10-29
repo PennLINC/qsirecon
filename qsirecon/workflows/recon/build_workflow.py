@@ -9,6 +9,7 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ... import config
 from ...interfaces.interchange import default_input_set, recon_workflow_input_fields
+from ...interfaces.qc_maps import DEFAULT_QC_MAPS, find_qsiprep_qc_maps, usable_qc_maps
 from .amico import init_amico_noddi_fit_wf
 from .converters import init_fod_fib_wf, init_mif_to_fibgz_wf, init_qsirecon_to_fsl_wf
 from .dipy import (
@@ -30,6 +31,7 @@ from .mrtrix import (
     init_mrtrix_csd_recon_wf,
     init_mrtrix_tractography_wf,
 )
+from .qc_scalars import init_qsiprep_qc_scalars_wf
 from .rsi import init_rsi_fit_wf
 from .scalar_mapping import (
     init_scalar_to_atlas_wf,
@@ -78,6 +80,8 @@ def init_dwi_recon_workflow(
     )
     # We don't want to modify the original workflow spec
     workflow_spec = deepcopy(workflow_spec)
+    if 'dwi_file' in inputs_dict:
+        workflow_spec = _drop_unavailable_qc_nodes(workflow_spec, inputs_dict['dwi_file'])
     # Read nodes from workflow spec, make sure we can implement them
     nodes_to_add = []
     workflow_metadata_nodes = {}
@@ -356,8 +360,58 @@ def workflow_from_spec(inputs_dict, node_spec):
             return init_fod_fib_wf(**kwargs)
         if node_spec['action'] == 'parcellate_scalars':
             return init_scalar_to_atlas_wf(**kwargs)
+        if node_spec['action'] == 'qsiprep_qc_scalars':
+            return init_qsiprep_qc_scalars_wf(**kwargs)
 
     raise Exception(f'Unknown node {pformat(node_spec)}')
+
+
+def _drop_unavailable_qc_nodes(workflow_spec, dwi_file):
+    """Remove ``qsiprep_qc_scalars`` nodes that have no QC maps to use.
+
+    Older QSIPrep versions wrote none of these maps.
+    Rather than failing, the node is dropped for this DWI,
+    along with every node that takes scalars or inputs from it.
+    """
+    qc_maps = find_qsiprep_qc_maps(dwi_file)
+    dropped = set()
+    for node_spec in workflow_spec['nodes']:
+        if node_spec.get('action') != 'qsiprep_qc_scalars':
+            continue
+        include = node_spec.get('parameters', {}).get('include', DEFAULT_QC_MAPS)
+        if not usable_qc_maps(qc_maps, include):
+            config.loggers.workflow.warning(
+                f'Skipping {node_spec["name"]}: QSIPrep wrote none of the QC maps it uses '
+                f'({", ".join(include)}) for {dwi_file}'
+            )
+            dropped.add(node_spec['name'])
+
+    if not dropped:
+        return workflow_spec
+
+    kept = []
+    for node_spec in workflow_spec['nodes']:
+        if node_spec['name'] in dropped:
+            continue
+
+        scalars_from = node_spec.get('scalars_from')
+        if isinstance(scalars_from, list):
+            remaining = [src for src in scalars_from if src not in dropped]
+            lost_all_sources = bool(scalars_from) and not remaining
+            node_spec['scalars_from'] = remaining
+        else:
+            lost_all_sources = scalars_from in dropped
+
+        if lost_all_sources or node_spec.get('input') in dropped:
+            config.loggers.workflow.warning(
+                f'Skipping {node_spec["name"]}: it depends on a skipped QSIPrep QC node'
+            )
+            dropped.add(node_spec['name'])
+            continue
+        kept.append(node_spec)
+
+    workflow_spec['nodes'] = kept
+    return workflow_spec
 
 
 def _as_connections(attr_list, src_prefix='', dest_prefix=''):

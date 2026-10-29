@@ -1,7 +1,7 @@
 import pandas as pd
 
 from qsirecon.data import load as load_data
-from qsirecon.interfaces import recon_scalars
+from qsirecon.interfaces import qc_maps, recon_scalars
 from qsirecon.utils.misc import load_yaml
 
 
@@ -35,6 +35,29 @@ scalars_to_csv(recon_scalars.dipy_dki_scalars, 'recon_scalars/dipy_dki.csv')
 scalars_to_csv(recon_scalars.dipy_mapmri_scalars, 'recon_scalars/dipy_mapmri.csv')
 ## dsi_studio_gqi.yaml
 scalars_to_csv(recon_scalars.dsistudio_scalars, 'recon_scalars/dsi_studio_gqi.csv')
+
+
+def qc_scalars_to_csv(scalar_def, output_csv):
+    """QC scalars have no model or param, so list their entities and table labels."""
+    print('creating', output_csv)
+    as_data = [
+        {
+            'File': '\\*'
+            + '_'.join(
+                f'{key}-{value["bids"][key]}' for key in ('stat', 'desc') if key in value['bids']
+            )
+            + '_dwimap.nii.gz',
+            'Label': name,
+            'Description': value['metadata'].get('Description', ''),
+        }
+        for name, value in scalar_def.items()
+    ]
+    df = pd.DataFrame(as_data).sort_values('File')
+    df.to_csv(output_csv, header=False, index=None)
+
+
+## qsiprep_qc_scalars action
+qc_scalars_to_csv(qc_maps.qsiprep_qc_scalars, 'recon_scalars/qsiprep_qc.csv')
 ## hbcd_scalar_maps.yaml
 scalars_to_csv(
     recon_scalars.dipy_dki_scalars

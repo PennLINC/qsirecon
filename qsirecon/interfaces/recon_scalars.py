@@ -10,6 +10,7 @@ Classes that collect scalar images and metadata from Recon Workflows
 import itertools
 import json
 import os
+from copy import deepcopy
 
 import nibabel as nb
 import numpy as np
@@ -84,11 +85,9 @@ class ReconScalars(SimpleInterface):
     def _run_interface(self, runtime):
         results = []
         inputs = self.inputs.get()
-
-        # Get the BIDS info from the source file
-        source_file_bids = parse_file_entities(self.inputs.source_file)
-        dismiss_entities = self.inputs.dismiss_entities + ['extension', 'suffix']
-        source_file_bids = {k: v for k, v in source_file_bids.items() if k not in dismiss_entities}
+        source_file_bids = source_file_entities(
+            self.inputs.source_file, self.inputs.dismiss_entities
+        )
 
         file_traits = [
             name for name in self.inputs.editable_traits() if name not in self._ignore_traits
@@ -106,26 +105,74 @@ class ReconScalars(SimpleInterface):
             if not isdefined(metadata) or metadata is None:
                 metadata = {}
 
-            result = self.scalar_metadata[input_name].copy()
-            result['path'] = os.path.abspath(inputs[input_name])
-            result['qsirecon_suffix'] = self.inputs.qsirecon_suffix
-            result['variable_name'] = input_name
-            result['source_file'] = self.inputs.source_file
-            # Update the BIDS with the source file
-            bids_overlap = set(source_file_bids.keys()).intersection(result['bids'].keys())
-            if bids_overlap:
-                raise Exception(
-                    f'BIDS fields for {input_name} conflict with source file BIDS {bids_overlap}'
+            results.append(
+                build_scalar_info(
+                    self.scalar_metadata[input_name],
+                    inputs[input_name],
+                    variable_name=input_name,
+                    qsirecon_suffix=self.inputs.qsirecon_suffix,
+                    source_file=self.inputs.source_file,
+                    source_file_bids=source_file_bids,
+                    metadata=metadata,
                 )
-
-            # Update the metadata with the run-specific metadata.
-            # This is done recursively across all levels of the metadata dictionary.
-            deep_update_dict(result['metadata'], metadata)
-
-            results.append(result)
+            )
 
         self._results['scalar_info'] = results
         return runtime
+
+
+def source_file_entities(source_file, dismiss_entities=()):
+    """Get the BIDS entities of a source file that scalar entities must not repeat."""
+    dismiss_entities = list(dismiss_entities) + ['extension', 'suffix']
+    entities = parse_file_entities(source_file)
+    return {k: v for k, v in entities.items() if k not in dismiss_entities}
+
+
+def build_scalar_info(
+    scalar_definition,
+    scalar_file,
+    variable_name,
+    qsirecon_suffix,
+    source_file,
+    source_file_bids,
+    metadata=None,
+):
+    """Describe one scalar map for the workflows that consume ``recon_scalars``.
+
+    Parameters
+    ----------
+    scalar_definition : dict
+        The scalar's entry from a ``qsirecon/data/scalars`` YAML file.
+        It is copied, never modified.
+    scalar_file : str
+        Path to the 3D scalar map.
+    variable_name : str
+        Unique name of the scalar within its source.
+    qsirecon_suffix : str
+        The ``qsirecon-<suffix>`` derivatives dataset the scalar belongs to.
+    source_file : str
+        The preprocessed DWI the scalar describes.
+    source_file_bids : dict
+        Entities of ``source_file`` from :func:`source_file_entities`.
+    metadata : dict, optional
+        Run-specific metadata, merged recursively into the definition's metadata.
+    """
+    result = deepcopy(scalar_definition)
+    result['path'] = os.path.abspath(scalar_file)
+    result['qsirecon_suffix'] = qsirecon_suffix
+    result['variable_name'] = variable_name
+    result['source_file'] = source_file
+    # Update the BIDS with the source file
+    bids_overlap = set(source_file_bids.keys()).intersection(result['bids'].keys())
+    if bids_overlap:
+        raise Exception(
+            f'BIDS fields for {variable_name} conflict with source file BIDS {bids_overlap}'
+        )
+
+    # Update the metadata with the run-specific metadata.
+    # This is done recursively across all levels of the metadata dictionary.
+    deep_update_dict(result.setdefault('metadata', {}), metadata or {})
+    return result
 
 
 class _ReconScalarsTableSplitterDataSinkInputSpec(BaseInterfaceInputSpec):
@@ -399,13 +446,22 @@ class _OrganizeScalarDataInputSpec(BaseInterfaceInputSpec):
 class _OrganizeScalarDataOutputSpec(TraitedSpec):
     scalar_file = File(exists=True)
     metadata = traits.Dict()
+    # None rather than Undefined for a missing entity: a MapNode output that is
+    # Undefined for every scalar counts as unset and can't feed an iterfield.
     model = traits.Either(
         traits.Str(),
         Undefined,
+        None,
     )
     param = traits.Either(
         traits.Str(),
         Undefined,
+        None,
+    )
+    stat = traits.Either(
+        traits.Str(),
+        Undefined,
+        None,
     )
     desc = traits.Either(
         traits.Str(),
@@ -422,8 +478,9 @@ class OrganizeScalarData(SimpleInterface):
         scalar_config = self.inputs.scalar_config
         self._results['scalar_file'] = scalar_config['path']
         self._results['metadata'] = scalar_config.get('metadata', {})
-        self._results['model'] = scalar_config.get('bids', {}).get('model', Undefined)
-        self._results['param'] = scalar_config.get('bids', {}).get('param', Undefined)
+        self._results['model'] = scalar_config.get('bids', {}).get('model', None)
+        self._results['param'] = scalar_config.get('bids', {}).get('param', None)
+        self._results['stat'] = scalar_config.get('bids', {}).get('stat', None)
         self._results['desc'] = scalar_config.get('bids', {}).get('desc', None)
 
         return runtime
@@ -497,7 +554,7 @@ class ParcellateScalars(SimpleInterface):
         # Build empty DataFrame
         columns = ['node', 'scalar', 'qsirecon_suffix', 'mean', 'stdev', 'median']
         scalar_labels = [
-            scalar_config['bids']['param'] for scalar_config in self.inputs.scalars_config
+            _parcellation_label(scalar_config) for scalar_config in self.inputs.scalars_config
         ]
         scalar_labels.append('coverage')
         parcellated_data = pd.DataFrame(
@@ -610,7 +667,7 @@ class ParcellateScalars(SimpleInterface):
                 continue
 
             scalar_desc = scalar_config.get('metadata', {}).get('Description', '')
-            scalar_param = scalar_config.get('bids', {}).get('param', None)
+            scalar_param = _parcellation_label(scalar_config)
             self._results['metadata']['scalar']['Levels'][scalar_param] = scalar_desc
 
             # Parcellate the scalar file with the atlas
@@ -661,6 +718,20 @@ class ParcellateScalars(SimpleInterface):
         )
 
         return runtime
+
+
+def _parcellation_label(scalar_config):
+    """Label a scalar's rows in a parcellation table.
+
+    Model scalars are labeled by ``param``, and QC scalars, which have no ``param``,
+    by ``stat``. Scalars from one source can share these and differ in ``desc``,
+    e.g. per-shell CNR maps, so ``desc`` is appended when present.
+    """
+    bids = scalar_config.get('bids', {})
+    label = bids.get('param', bids.get('stat'))
+    if label and bids.get('desc'):
+        return f'{label}_{bids["desc"]}'
+    return label
 
 
 def _sanitize_nifti_atlas(atlas, df):

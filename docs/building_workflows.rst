@@ -138,7 +138,7 @@ the template space used in QSIPrep. My ``"nodes"`` might look like:
           interpolation: NearestNeighbor
       scalars_from:
       - dipy_dki
-      - gqi_scalars
+      - fit_noddi
       software: qsirecon
 
 By listing the names of the scalar-producing nodes in the ``"scalars_from"`` field
@@ -187,6 +187,61 @@ Here is a small example where we use autotrack bundles:
 
 This will produce a tsv with the NODDI and DKI scalars summarized for
 each bundle produced by autotrack.
+
+.. _scalars_to_parcels:
+
+Mapping scalar data to atlases
+------------------------------
+
+Scalars can also be summarized within the parcels of each atlas given to ``--atlases``.
+A ``parcellate_scalars`` node writes the mean, standard deviation and median of each
+scalar in each parcel, along with each parcel's coverage by the brain mask:
+
+.. code-block:: yaml
+
+  -   action: parcellate_scalars
+      input: qsirecon
+      name: parcellate_scalars
+      scalars_from:
+      - dipy_dki
+      software: qsirecon
+
+.. _qc_scalars_in_workflows:
+
+Summarizing QSIPrep QC maps
+---------------------------
+
+The voxelwise QC maps that QSIPrep writes, such as its noise and distortion maps, can be
+used as scalars (see :ref:`qsiprep_qc_scalars`). Add a ``qsiprep_qc_scalars`` node and
+list it in ``scalars_from``:
+
+.. code-block:: yaml
+
+  -   action: qsiprep_qc_scalars
+      input: qsirecon
+      name: qc_scalars
+      qsirecon_suffix: QSIPrepQC
+      software: qsirecon
+  -   action: bundle_map
+      input: autotrackgqi
+      name: bundle_means
+      scalars_from:
+      - dipy_dki
+      - qc_scalars
+      software: qsirecon
+  -   action: template_map
+      input: qsirecon
+      name: template_map_linear
+      parameters:
+          interpolation: Linear
+      scalars_from:
+      - qc_scalars
+      software: qsirecon
+
+``parameters: {include: [...]}`` selects the maps to use, from ``noise``, ``snr``,
+``tsnr``, ``cnr``, ``jacobian``, ``sdc``, ``rank`` and ``rankdensity``. The default is all
+of them except ``rank`` and ``rankdensity``. The QC maps vary smoothly, so map them to
+template space with ``Linear`` interpolation rather than ``NearestNeighbor``.
 
 
 **********
