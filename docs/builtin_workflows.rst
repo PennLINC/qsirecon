@@ -148,7 +148,17 @@ This workflow produces :ref:`mrtrix_dwi_outputs`.
 
 This workflow uses the AFQ :footcite:p:`pyafq2` implemented in Python :footcite:p:`pyafq` to recognize
 major white matter pathways within the tractography, and then extract tissue properties along
-those pathways. See the `pyAFQ documentation <https://yeatmanlab.github.io/pyAFQ/>`_ .
+those pathways. See the `pyAFQ documentation <https://tractometry.org/pyAFQ/>`_ .
+
+pyAFQ (version 3 and later) requires anatomical images that are aligned with the DWI data:
+the preprocessed T1w image, its brain mask, and the CSF, GM and WM tissue probability maps
+that QSIPrep writes alongside it.
+The brain mask is used as the brain mask of the DWI data,
+and the tissue probability maps constrain tractography anatomically
+and define the white matter/gray matter interface in which tractography is seeded.
+Because these come from QSIPrep, pyAFQ's neural-network segmentation models are not needed.
+Any pyAFQ parameter in the recon spec that the installed version of pyAFQ does not recognize
+is dropped with a warning in the log.
 
 PyAFQ Outputs
 -------------
