@@ -24,6 +24,7 @@ def test_parse_qsirecon_params_dict(workflow_warnings):
             'csd_sh_order_max': '',
             'n_seeds': 1,
             'clip_edges': False,
+            'dist_to_waypoint': '',
             'distance_threshold': 3,
             'export': 'all',
             'use_external_tracking': False,
@@ -36,6 +37,7 @@ def test_parse_qsirecon_params_dict(workflow_warnings):
     # Empty strings mean None
     assert kwargs['csd_sh_order_max'] is None
     assert kwargs['tracking_params'] == {'n_seeds': 1}
+    # Empty nested parameters are left out, so that pyAFQ's own defaults apply
     assert kwargs['segmentation_params'] == {
         'clip_edges': False,
         'cleaning_params': {'distance_threshold': 3},
