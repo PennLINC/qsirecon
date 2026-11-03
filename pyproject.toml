@@ -34,7 +34,7 @@ dependencies = [
     "niworkflows >= 1.13,< 1.14",
     "packaging",  # for version string parsing
     "psutil <= 5.9.8",
-    "pyAFQ >= 3.0,< 4",
+    "pyAFQ >= 3.4, < 4",
     "pybids",
     "pyyaml",
     "requests",
