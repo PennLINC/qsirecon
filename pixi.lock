@@ -6322,85 +6322,6 @@ packages:
   timestamp: 1770223702917
 - pypi: ./
   name: qsirecon
-  version: 26.1.0.dev22+g4dda0bcfb
-  sha256: 58712548fb5be344defad1bb3a57e6db6442ac66d94de02897b7032bd73ec722
-  requires_dist:
-  - dipy>=1.12.1,<1.13.0
-  - dmri-amico==2.0.3
-  - filelock
-  - fury
-  - importlib-resources ; python_full_version < '3.11'
-  - indexed-gzip<=1.8.7
-  - ingress2qsirecon~=0.3
-  - jinja2<3.1
-  - networkx~=2.8.8
-  - nibabel<=6.0.0
-  - nilearn==0.10.1
-  - nipype==1.9.1
-  - nireports>=24.0.3
-  - niworkflows>=1.13,<1.14
-  - packaging
-  - psutil<=5.9.8
-  - pyafq>=3.0,<4
-  - pybids
-  - pyyaml
-  - requests
-  - scikit-image
-  - scikit-learn<=1.4.0
-  - seaborn
-  - sentry-sdk
-  - simpleitk
-  - svgutils<=0.3.4
-  - transforms3d
-  - vtk
-  - xvfbwrapper
-  - coverage ; extra == 'all'
-  - doctest-ignore-unicode ; extra == 'all'
-  - fuzzywuzzy ; extra == 'all'
-  - lxml-html-clean ; extra == 'all'
-  - nbsphinx ; extra == 'all'
-  - pre-commit ; extra == 'all'
-  - pydot>=1.2.3 ; extra == 'all'
-  - pydotplus ; extra == 'all'
-  - pytest ; extra == 'all'
-  - pytest-cov ; extra == 'all'
-  - pytest-env ; extra == 'all'
-  - python-levenshtein ; extra == 'all'
-  - recommonmark ; extra == 'all'
-  - ruff~=0.15.0 ; extra == 'all'
-  - sphinx-argparse ; extra == 'all'
-  - sphinx-design ; extra == 'all'
-  - sphinx-markdown-tables ; extra == 'all'
-  - sphinx-rtd-theme ; extra == 'all'
-  - sphinx>=4.2.0 ; extra == 'all'
-  - sphinxcontrib-apidoc ; extra == 'all'
-  - sphinxcontrib-bibtex ; extra == 'all'
-  - tox ; extra == 'all'
-  - pre-commit ; extra == 'dev'
-  - ruff~=0.15.0 ; extra == 'dev'
-  - tox ; extra == 'dev'
-  - doctest-ignore-unicode ; extra == 'doc'
-  - lxml-html-clean ; extra == 'doc'
-  - nbsphinx ; extra == 'doc'
-  - pydot>=1.2.3 ; extra == 'doc'
-  - pydotplus ; extra == 'doc'
-  - recommonmark ; extra == 'doc'
-  - sphinx-argparse ; extra == 'doc'
-  - sphinx-design ; extra == 'doc'
-  - sphinx-markdown-tables ; extra == 'doc'
-  - sphinx-rtd-theme ; extra == 'doc'
-  - sphinx>=4.2.0 ; extra == 'doc'
-  - sphinxcontrib-apidoc ; extra == 'doc'
-  - sphinxcontrib-bibtex ; extra == 'doc'
-  - fuzzywuzzy ; extra == 'maint'
-  - python-levenshtein ; extra == 'maint'
-  - coverage ; extra == 'tests'
-  - pytest ; extra == 'tests'
-  - pytest-cov ; extra == 'tests'
-  - pytest-env ; extra == 'tests'
-  requires_python: '>=3.11'
-- pypi: ./
-  name: qsirecon
   version: 26.1.0.dev23+g161635771
   sha256: 58712548fb5be344defad1bb3a57e6db6442ac66d94de02897b7032bd73ec722
   requires_dist:
@@ -6479,6 +6400,85 @@ packages:
   - pytest-env ; extra == 'tests'
   requires_python: '>=3.11'
   editable: true
+- pypi: ./
+  name: qsirecon
+  version: 26.1.0.dev24+g0a136186f
+  sha256: 58712548fb5be344defad1bb3a57e6db6442ac66d94de02897b7032bd73ec722
+  requires_dist:
+  - dipy>=1.12.1,<1.13.0
+  - dmri-amico==2.0.3
+  - filelock
+  - fury
+  - importlib-resources ; python_full_version < '3.11'
+  - indexed-gzip<=1.8.7
+  - ingress2qsirecon~=0.3
+  - jinja2<3.1
+  - networkx~=2.8.8
+  - nibabel<=6.0.0
+  - nilearn==0.10.1
+  - nipype==1.9.1
+  - nireports>=24.0.3
+  - niworkflows>=1.13,<1.14
+  - packaging
+  - psutil<=5.9.8
+  - pyafq>=3.0,<4
+  - pybids
+  - pyyaml
+  - requests
+  - scikit-image
+  - scikit-learn<=1.4.0
+  - seaborn
+  - sentry-sdk
+  - simpleitk
+  - svgutils<=0.3.4
+  - transforms3d
+  - vtk
+  - xvfbwrapper
+  - coverage ; extra == 'all'
+  - doctest-ignore-unicode ; extra == 'all'
+  - fuzzywuzzy ; extra == 'all'
+  - lxml-html-clean ; extra == 'all'
+  - nbsphinx ; extra == 'all'
+  - pre-commit ; extra == 'all'
+  - pydot>=1.2.3 ; extra == 'all'
+  - pydotplus ; extra == 'all'
+  - pytest ; extra == 'all'
+  - pytest-cov ; extra == 'all'
+  - pytest-env ; extra == 'all'
+  - python-levenshtein ; extra == 'all'
+  - recommonmark ; extra == 'all'
+  - ruff~=0.15.0 ; extra == 'all'
+  - sphinx-argparse ; extra == 'all'
+  - sphinx-design ; extra == 'all'
+  - sphinx-markdown-tables ; extra == 'all'
+  - sphinx-rtd-theme ; extra == 'all'
+  - sphinx>=4.2.0 ; extra == 'all'
+  - sphinxcontrib-apidoc ; extra == 'all'
+  - sphinxcontrib-bibtex ; extra == 'all'
+  - tox ; extra == 'all'
+  - pre-commit ; extra == 'dev'
+  - ruff~=0.15.0 ; extra == 'dev'
+  - tox ; extra == 'dev'
+  - doctest-ignore-unicode ; extra == 'doc'
+  - lxml-html-clean ; extra == 'doc'
+  - nbsphinx ; extra == 'doc'
+  - pydot>=1.2.3 ; extra == 'doc'
+  - pydotplus ; extra == 'doc'
+  - recommonmark ; extra == 'doc'
+  - sphinx-argparse ; extra == 'doc'
+  - sphinx-design ; extra == 'doc'
+  - sphinx-markdown-tables ; extra == 'doc'
+  - sphinx-rtd-theme ; extra == 'doc'
+  - sphinx>=4.2.0 ; extra == 'doc'
+  - sphinxcontrib-apidoc ; extra == 'doc'
+  - sphinxcontrib-bibtex ; extra == 'doc'
+  - fuzzywuzzy ; extra == 'maint'
+  - python-levenshtein ; extra == 'maint'
+  - coverage ; extra == 'tests'
+  - pytest ; extra == 'tests'
+  - pytest-cov ; extra == 'tests'
+  - pytest-env ; extra == 'tests'
+  requires_python: '>=3.11'
 - conda: https://conda.anaconda.org/conda-forge/linux-64/qt-main-5.15.15-hc240232_7.conda
   sha256: 401cc7f9ff78ee12097fcda8c09dcf269847a8a55b17b7c0a973f322c7bd5fbc
   md5: fa3bbe293d907990f3ca5b8b9d4b10f0
