@@ -73,7 +73,7 @@ class DipyReconInputSpec(BaseInterfaceInputSpec):
             "Documented as 'B0Threshold' in the BIDS metadata."
         ),
         doc=ConditionalDoc(
-            'B-values less than {value} were treated as b0s for the sake of modeling.',
+            'B-values less than {value} were treated as b=0s for the sake of modeling.',
         ),
         recon_spec_accessible=True,
     )
@@ -1075,7 +1075,7 @@ class _FORCEReconstructionInputSpec(BaseInterfaceInputSpec):
             "Documented as 'B0Threshold' in the BIDS metadata."
         ),
         doc=ConditionalDoc(
-            'B-values less than {value} were treated as b0s for the sake of modeling.',
+            'B-values less than {value} were treated as b=0s for the sake of modeling.',
         ),
         recon_spec_accessible=True,
     )
