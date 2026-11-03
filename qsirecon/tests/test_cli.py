@@ -1,6 +1,7 @@
 """Command-line interface tests."""
 
 import os
+import shutil
 import sys
 from unittest.mock import patch
 
@@ -23,7 +24,6 @@ from qsirecon.utils.bids import (
     write_bidsignore,
     write_derivative_description,
 )
-from qsirecon.utils.misc import bids_response_function_to_mrtrix
 
 nipype_config.enable_debug_mode()
 
@@ -361,6 +361,35 @@ def test_amico_noddi(data_dir, output_dir, working_dir):
         '--sloppy',
         '--recon-spec=amico_noddi',
         '--report-output-level=session',
+    ]
+
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
+
+
+@pytest.mark.integration
+@pytest.mark.abcd_rsi
+def test_abcd_rsi(data_dir, output_dir, working_dir):
+    """Run the ABCD Study RSI reconstruction workflow.
+
+    Inputs
+    ------
+    - qsiprep multi shell results (data/multishell_output)
+    """
+    TEST_NAME = 'abcd_rsi'
+
+    dataset_dir = download_test_data('multishell_output', data_dir)
+    # XXX: Having to modify dataset_dirs is suboptimal.
+    dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
+    out_dir = os.path.join(output_dir, TEST_NAME)
+    work_dir = os.path.join(working_dir, TEST_NAME)
+
+    parameters = [
+        dataset_dir,
+        out_dir,
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=abcd_rsi',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -789,8 +818,6 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
     - qsirecon multi shell results (data/DSDTI_fmap)
     """
 
-    import numpy as np
-
     TEST_NAME = 'mrtrix3_recon_with_response_functions'
 
     dataset_dir = download_test_data('multishell_output', data_dir)
@@ -814,19 +841,16 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
     # Now convert the response functions from JSON to MRtrix format
     for tissue in ['wm', 'gm', 'csf']:
         label = tissue.upper()
-        json_file = os.path.join(
+        in_txt_file = os.path.join(
             estimate_dir,
             'derivatives',
             'qsirecon-MRtrix3_act-None_response-subject',
             'sub-ABCD',
             'dwi',
-            f'sub-ABCD_acq-10per000_space-T1w_model-msmtcsd_param-fod_label-{label}_dwimap.json',
+            f'sub-ABCD_acq-10per000_space-T1w_model-dhollander_label-{label}_response.txt',
         )
-        assert os.path.exists(json_file)
-        arr = bids_response_function_to_mrtrix(json_file)
-        txt_file = os.path.join(test_dir, f'{tissue}.txt')
-        with open(txt_file, 'w') as f:
-            np.savetxt(f, arr)
+        out_txt_file = os.path.join(test_dir, f'{tissue}.txt')
+        shutil.copyfile(in_txt_file, out_txt_file)
 
     # Now apply the response functions
     apply_work_dir = os.path.join(working_dir, f'{TEST_NAME}_apply')

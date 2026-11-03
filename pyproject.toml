@@ -37,6 +37,7 @@ dependencies = [
     "pyAFQ >= 3.0,< 4",
     "pybids",
     "pyyaml",
+    "requests",
     "scikit-image",
     "scikit-learn <= 1.4.0",
     "seaborn",
@@ -189,6 +190,8 @@ exclude = ".*"
 
 [tool.ruff]
 line-length = 99
+# Third-party code vendored without modification
+extend-exclude = ["qsirecon/data/rsi"]
 
 [tool.ruff.lint]
 extend-select = [
@@ -285,7 +288,7 @@ markers = [
     "amico_noddi: test 5",
     "dipy_mapmri: test 7",
     "dipy_dki: test 8",
-    "dipy_force: test 30",
+    "dipy_force: test 31",
     "dsi_studio_gqi_recon: test 9",
     "scalar_mapper: test 17",
     "pyafq_recon_external_trk: test 18",
@@ -299,6 +302,7 @@ markers = [
     "multises_pre1_qsiprep: test 26",
     "mrtrix3_recon_with_response_functions: test 28",
     "chen_autotrack: test 29",
+    "abcd_rsi: test 30",
 ]
 env = [
     "RUNNING_PYTEST = 1",
@@ -321,7 +325,7 @@ exclude_lines = [
 ]
 
 [tool.codespell]
-skip = '.git,*.pdf,*.svg,*.html,dataset_description.json,*.gii,pixi.lock'
+skip = '.git,*.pdf,*.svg,*.html,dataset_description.json,*.gii,pixi.lock,./qsirecon/data/rsi'
 # te - TE (echo time)
 # Weill - name
 # reson - Reson. abbreviation in citation
@@ -331,5 +335,6 @@ skip = '.git,*.pdf,*.svg,*.html,dataset_description.json,*.gii,pixi.lock'
 # pres - variable name
 # Gage, Joo, Sepulcre - author names
 # numer - abbreviation for numerator
+# ND - RSI directional signal component
 # nd - abbreviation for a scalar
-ignore-words-list = 'te,weill,reson,DNE,fo,fixel,fixels,pres,Gage,Joo,Sepulcre,numer,nd'
+ignore-words-list = 'te,weill,reson,DNE,fo,fixel,fixels,pres,Gage,Joo,Sepulcre,numer,ND,nd'

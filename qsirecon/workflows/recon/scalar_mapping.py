@@ -94,7 +94,8 @@ def init_scalar_to_atlas_wf(
 ):
     """Parcellate scalar images using atlases.
 
-    The atlases will be in the T1w space of the DWI data, produced by WarpConnectivityAtlases.
+    The atlases will be in the T1w space of the DWI data, produced by the atlas nodes in
+    :func:`~qsirecon.workflows.recon.anatomical.init_dwi_recon_anatomical_workflow`.
 
     Inputs
         recon_scalars

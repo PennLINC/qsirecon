@@ -6344,6 +6344,7 @@ packages:
   - pyafq>=3.0,<4
   - pybids
   - pyyaml
+  - requests
   - scikit-image
   - scikit-learn<=1.4.0
   - seaborn
@@ -6423,6 +6424,7 @@ packages:
   - pyafq>=3.0,<4
   - pybids
   - pyyaml
+  - requests
   - scikit-image
   - scikit-learn<=1.4.0
   - seaborn

@@ -200,13 +200,12 @@ to workflows in *QSIRecon*'s documentation]\
                 atlases=config.execution.atlases,
                 bids_filters=bids_filters,
             )
-            # Patch the transform into the atlas configs.
+            # Patch the transform into the atlas configs. Unused.
             # This is a placeholder until we can support atlases in various spaces.
             for atlas_name in atlas_configs.keys():
                 atlas_configs[atlas_name]['xfm_to_anat'] = xfm_to_anat
 
-            # Prepare the atlases.
-            # Reorient to LPS+ and zero out the sform.
+            # Write template-space atlases to sourcedata
             for atlas_name, atlas_config in atlas_configs.items():
                 # Node is named datasink_ instead of ds_ so no clean_datasinks step will affect it.
                 # XXX: We should pass the outputs from these datasinks to any steps that use the

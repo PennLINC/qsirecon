@@ -1,0 +1,6 @@
+{
+  "flagged": {
+    "1.2.0": "Connectivity .mif parcellations are in template space, not DWI space - see https://github.com/PennLINC/qsirecon/issues/399",
+    "26.0.0": "Connectivity .mif parcellations are in template space, not DWI space - see https://github.com/PennLINC/qsirecon/issues/399"
+  }
+}

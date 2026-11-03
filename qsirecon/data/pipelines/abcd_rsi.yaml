@@ -1,0 +1,9 @@
+description: Runs the ABCD Study implementation of Restriction Spectrum Imaging (RSI)
+name: abcd_rsi
+nodes:
+-   action: fit_rsi
+    input: qsirecon
+    name: fit_rsi
+    qsirecon_suffix: RSI
+    software: RSI
+space: T1w

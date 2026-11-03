@@ -85,7 +85,14 @@ class QSIPrepDWIIngress(SimpleInterface):
         self._get_if_exists('local_bvec_file', op.join(out_root, fname[:-3] + 'bvec.nii*'))
         self._get_if_exists('b_file', op.join(out_root, fname + '.b'))
         self._get_if_exists('mask_file', op.join(out_root, fname[:-11] + 'brain_mask.nii*'))
-        self._get_if_exists('dwi_ref', op.join(out_root, fname[:-16] + 'dwiref.nii*'))
+        # QSIPrep >= 27 names the reference after the series it accompanies
+        # (..._desc-preproc_dwiref.nii.gz), so it cannot collide with the
+        # subject-level dwiref template. Older derivatives dropped the desc.
+        # _get_if_exists mutates _results rather than returning, so the
+        # precedence has to be spelled out.
+        self._get_if_exists('dwi_ref', op.join(out_root, fname + 'ref.nii*'))
+        if 'dwi_ref' not in self._results:
+            self._get_if_exists('dwi_ref', op.join(out_root, fname[:-16] + 'dwiref.nii*'))
         self._results['dwi_file'] = self.inputs.dwi_file
 
         # Image QC doesn't include space

@@ -1,7 +1,29 @@
 # What's New
 
+## 26.0.1 (September 29, 2026)
+
+### 🐛 Bug Fixes
+
+* Fix HTML Scalar Plots by @smeisler in https://github.com/PennLINC/qsirecon/pull/379
+* Add DIPY_HOME environment variable to Dockerfile by @tsalo in https://github.com/PennLINC/qsirecon/pull/382
+* Use ACPC-space atlases to create MIF files by @tsalo in https://github.com/PennLINC/qsirecon/pull/400
+
+### Other Changes
+
+* Fix DSI Studio Chen build for hbcd_scalar_maps by @mattcieslak in https://github.com/PennLINC/qsirecon/pull/394
+* Sync CI setup across LINC BIDS Apps by @tsalo in https://github.com/PennLINC/qsirecon/pull/395
+* Skip FOD estimation by dropping fod section by @tsalo in https://github.com/PennLINC/qsirecon/pull/398
+* Accept QSIPrep's desc-preproc dwiref name by @tsalo in https://github.com/PennLINC/qsirecon/pull/404
+
+**Full Changelog**: https://github.com/PennLINC/qsirecon/compare/26.0.0...26.0.1
+
 
 ## 26.0.0 (April 20, 2026)
+
+### Major bugs affecting this version
+
+* Connectivity .mif parcellations are in template space, not DWI space https://github.com/PennLINC/qsirecon/issues/399
+    * Fixed in 26.0.1
 
 ### 🛠 Breaking Changes
 
@@ -27,6 +49,11 @@
 
 
 ## 1.2.0 (February 18, 2026)
+
+### Major bugs affecting this version
+
+* Connectivity .mif parcellations are in template space, not DWI space https://github.com/PennLINC/qsirecon/issues/399
+    * Fixed in 26.0.1
 
 ### 🛠 Breaking Changes
 

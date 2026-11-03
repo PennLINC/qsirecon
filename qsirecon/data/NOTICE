@@ -13,3 +13,8 @@ under the MIT License.
 
 This software may be distributed through an add-on package called
 "Docker Wrapper" that is under the BSD 3-clause License.
+
+This product includes the Restriction Spectrum Imaging code from the
+ABCD Study (https://github.com/ABCD-STUDY/RSI), Copyright (c) 2024
+ABCD Data Analytics and Informatics Resource Center, distributed under
+the MIT License (see qsirecon/data/rsi/LICENSE).
