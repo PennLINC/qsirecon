@@ -8,6 +8,10 @@ def make_sloppy(spec):
             'msdki': False,
             'wmti': False,
         },
+        ('Dipy', 'FORCE_reconstruction'): {
+            'num_simulations': 5000,
+            'compute_dki': False,
+        },
         ('Dipy', 'MAPMRI_reconstruction'): {
             'extrapolate_scheme': 'ABCD',
             'anisotropic_scaling': False,
@@ -33,11 +37,8 @@ def make_sloppy(spec):
         ('MRTrix3', 'connectivity'): {'tck2connectome': {'search_radius': 'DELETE'}},
         ('MRTrix3', 'global_tractography'): {'niters': 10000},
         ('pyAFQ', 'pyafq_tractometry'): {
-            'mapping_definition': 'AffMap(affine_kwargs={"pipeline": ["center_of_mass"]})',
-            'bundle_info': 'default18_bd()["Left Superior Longitudinal", "Right Corticospinal"]',
-            'n_seeds': 1000,
-            'random_seeds': True,
-            'export': 'all_bundles_figure',
+            'mapping_definition': 'AffMap()',
+            'bundle_info': 'default_bd()["Left Arcuate", "Right Corticospinal"]',
         },
     }
     sloppy_spec = deepcopy(spec)

@@ -11,9 +11,7 @@ import os
 import os.path as op
 
 from AFQ.api.participant import ParticipantAFQ
-from AFQ.definitions.image import ImageFile
-
-# from AFQ.definitions.mapping import ItkMap
+from AFQ.definitions.image import ImageFile, PVEImages
 from nipype import logging
 from nipype.interfaces.base import (
     BaseInterfaceInputSpec,
@@ -27,16 +25,44 @@ from nipype.utils.filemanip import fname_presuffix
 
 LOGGER = logging.getLogger('nipype.interface')
 
+# Recon spec parameters that QSIRecon always sets from its own inputs.
+_INPUT_DERIVED_PARAMS = ('brain_mask_definition', 'import_tract', 'pve')
+
 
 class PyAFQInputSpec(BaseInterfaceInputSpec):
     bval_file = File(exists=True, mandatory=True)
     bvec_file = File(exists=True, mandatory=True)
     dwi_file = File(exists=True, mandatory=True)
-    mask_file = File(exists=True, mandatory=True)
+    t1_file = File(
+        exists=True,
+        mandatory=True,
+        desc='T1w image registered to, but not resampled onto, the DWI',
+    )
+    mask_file = File(exists=True, mandatory=True, desc='brain mask on the T1w grid')
+    csf_probseg = traits.Either(
+        None,
+        File(exists=True),
+        desc='CSF probability map on the T1w grid',
+    )
+    gm_probseg = traits.Either(
+        None,
+        File(exists=True),
+        desc='GM probability map on the T1w grid',
+    )
+    wm_probseg = traits.Either(
+        None,
+        File(exists=True),
+        desc='WM probability map on the T1w grid',
+    )
     itk_file = File(exists=True, mandatory=True)
     kwargs = traits.Dict(exists=True, mandatory=True)
     tck_file = traits.Either(None, File(exists=True))
     n_procs = traits.Int(1, usedefault=True)
+    export = traits.Str(
+        'all',
+        usedefault=True,
+        desc='name of a single pyAFQ output to export, or "all" to export everything',
+    )
 
 
 class PyAFQOutputSpec(TraitedSpec):
@@ -51,67 +77,70 @@ class PyAFQRecon(SimpleInterface):
         # shim the expected inputs
         shim_dir = op.join(runtime.cwd, 'study/subject')
         os.makedirs(shim_dir)
-        bval_file = fname_presuffix(self.inputs.bval_file, newpath=shim_dir)
-        bvec_file = fname_presuffix(self.inputs.bvec_file, newpath=shim_dir)
-        dwi_file = fname_presuffix(self.inputs.dwi_file, newpath=shim_dir)
-        mask_file = fname_presuffix(self.inputs.mask_file, newpath=shim_dir)
-        itk_file = fname_presuffix(self.inputs.itk_file, newpath=shim_dir)
-        os.symlink(self.inputs.bval_file, bval_file)
-        os.symlink(self.inputs.bvec_file, bvec_file)
-        os.symlink(self.inputs.dwi_file, dwi_file)
-        os.symlink(self.inputs.mask_file, mask_file)
-        os.symlink(self.inputs.itk_file, itk_file)
+        files = {}
+        for name in (
+            'bval_file',
+            'bvec_file',
+            'dwi_file',
+            't1_file',
+            'mask_file',
+            'csf_probseg',
+            'gm_probseg',
+            'wm_probseg',
+            'itk_file',
+            'tck_file',
+        ):
+            source = getattr(self.inputs, name)
+            if not isdefined(source) or source is None:
+                files[name] = None
+                continue
 
-        kwargs = self.inputs.kwargs
+            files[name] = fname_presuffix(source, newpath=shim_dir)
+            os.symlink(source, files[name])
 
-        if self.inputs.tck_file and isdefined(self.inputs.tck_file):
-            tck_file = fname_presuffix(self.inputs.tck_file, newpath=shim_dir)
-            os.symlink(self.inputs.tck_file, tck_file)
-        else:
-            tck_file = None
-        brain_mask_definition = ImageFile(path=mask_file)
-        # itk_map = ItkMap(warp_path=itk_file)
+        kwargs = dict(self.inputs.kwargs)
+        for key in _INPUT_DERIVED_PARAMS:
+            if kwargs.pop(key, None) is not None:
+                LOGGER.warning(
+                    f'Ignoring "{key}" from the recon spec. QSIRecon sets it from its own inputs.'
+                )
 
-        if tck_file is None:
-            tck_file = kwargs['import_tract']
-        kwargs.pop('import_tract', None)
-        if brain_mask_definition is None:
-            brain_mask_definition = kwargs['brain_mask_definition']
-        kwargs.pop('brain_mask_definition', None)
+        # Tractography in pyAFQ is anatomically constrained, which requires CSF, GM and WM
+        # probability maps. Use the ones that come with the preprocessed data instead of
+        # letting pyAFQ segment the T1w with a neural network.
+        probsegs = {name: files[f'{name.lower()}_probseg'] for name in ('CSF', 'GM', 'WM')}
+        if all(probsegs.values()):
+            kwargs['pve'] = PVEImages(
+                **{f'{name}_probseg': ImageFile(path=path) for name, path in probsegs.items()}
+            )
+        elif files['tck_file'] is None:
+            raise ValueError(
+                'pyAFQ tractography requires CSF, GM and WM probability maps aligned with the '
+                'T1w image (the QSIPrep label-{CSF,GM,WM}_probseg outputs), but at least one '
+                'is missing. Provide them with the preprocessed data, or use a recon spec that '
+                'imports tractography from another node (use_external_tracking: true).'
+            )
 
-        # if "parallel_segmentation" in kwargs:
-        #     if (
-        #         "n_jobs" not in kwargs["parallel_segmentation"]
-        #         or kwargs["parallel_segmentation"]["n_jobs"] == -1
-        #     ):
-        #         kwargs["parallel_segmentation"]["n_jobs"] = self.inputs.kwargs["omp_nthreads"]
-        # else:
-        #     kwargs["parallel_segmentation"] = {}
-        #     kwargs["parallel_segmentation"]["n_jobs"] = self.inputs.kwargs["omp_nthreads"]
-
-        if self.inputs.n_procs > 1:
-            kwargs['parallel_segmentation']['n_jobs'] = self.inputs.n_procs
-        else:
-            kwargs['parallel_segmentation'] = {}
-            kwargs['parallel_segmentation']['n_jobs'] = self.inputs.n_procs
+        kwargs['brain_mask_definition'] = ImageFile(path=files['mask_file'])
+        # pyAFQ runs tractography in numba threads
+        kwargs['numba_n_threads'] = self.inputs.n_procs
 
         output_dir = shim_dir + '/PYAFQ/'
         os.makedirs(output_dir, exist_ok=True)
         myafq = ParticipantAFQ(
-            dwi_file,
-            bval_file,
-            bvec_file,
+            files['dwi_file'],
+            files['bval_file'],
+            files['bvec_file'],
+            files['t1_file'],
             output_dir,
-            import_tract=tck_file,
-            brain_mask_definition=brain_mask_definition,
-            # mapping_definition=itk_map,
+            import_tract=files['tck_file'],
             **kwargs,
         )
 
-        if 'export' not in kwargs or kwargs['export'] == 'all':
+        if self.inputs.export == 'all':
             myafq.export_all()
         else:
-            myafq.export(kwargs['export'])
+            myafq.export(self.inputs.export)
 
         self._results['afq_dir'] = output_dir
 
