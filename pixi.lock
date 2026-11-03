@@ -6399,10 +6399,9 @@ packages:
   - pytest-cov ; extra == 'tests'
   - pytest-env ; extra == 'tests'
   requires_python: '>=3.11'
-  editable: true
 - pypi: ./
   name: qsirecon
-  version: 26.1.0.dev22+g4dda0bcfb
+  version: 26.1.0.dev23+g161635771
   sha256: 58712548fb5be344defad1bb3a57e6db6442ac66d94de02897b7032bd73ec722
   requires_dist:
   - dipy>=1.12.1,<1.13.0
@@ -6479,6 +6478,7 @@ packages:
   - pytest-cov ; extra == 'tests'
   - pytest-env ; extra == 'tests'
   requires_python: '>=3.11'
+  editable: true
 - conda: https://conda.anaconda.org/conda-forge/linux-64/qt-main-5.15.15-hc240232_7.conda
   sha256: 401cc7f9ff78ee12097fcda8c09dcf269847a8a55b17b7c0a973f322c7bd5fbc
   md5: fa3bbe293d907990f3ca5b8b9d4b10f0
