@@ -102,9 +102,9 @@ jobs:
       # pixi lock resolves the workspace package with its hatch-vcs version, which
       # changes with every commit, so datalad may commit a lockfile that differs
       # from the head commit only in the version, sha256 and editable lines of the
-      # two "pypi: ./" qsirecon entries. Pushing that commit would trigger another
-      # run that rewrites the version again, and so on. Push only when something
-      # else changed.
+      # "pypi: ./" workspace package entries. Pushing that commit would trigger
+      # another run that rewrites the version again, and so on. Push only when
+      # something else changed.
       - name: Check whether the lockfile changed beyond the workspace package version
         if: ${{ steps.latest-commit.outputs.run_lockfile_update == 'true' }}
         id: lockfile-diff
