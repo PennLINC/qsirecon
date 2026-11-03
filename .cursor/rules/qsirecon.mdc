@@ -36,7 +36,7 @@ QSIRecon has NOT yet migrated to ruff. Current tools:
 
 ## External Tool Dependencies
 
-- pyAFQ (== 2.0): automated fiber quantification
+- pyAFQ (== 3.4): automated fiber quantification
 - dmri-amico (== 2.0.3): NODDI via AMICO
 - Ingress2QSIRecon (== 0.2.3): data ingression
 - DSI Studio, MRtrix3, TORTOISE: called via subprocess interfaces

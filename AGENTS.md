@@ -189,7 +189,7 @@ When adding new reconstruction workflows, create a new `.yaml` file following ex
 ### External Tool Dependencies
 
 QSIRecon wraps several external neuroimaging tools:
-- **pyAFQ** (`== 2.0`): Automated fiber quantification
+- **pyAFQ** (`== 3.4`): Automated fiber quantification
 - **dmri-amico** (`== 2.0.3`): AMICO implementation of NODDI
 - **Ingress2QSIRecon** (`== 0.2.3`): Data ingression from other pipelines
 - **DSI Studio**, **MRtrix3**, **TORTOISE**: Called via subprocess interfaces

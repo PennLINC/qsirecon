@@ -16,7 +16,7 @@
 .. _`tckgen`: https://mrtrix.readthedocs.io/en/latest/reference/commands/tckgen.html
 .. _SIFT2: https://mrtrix.readthedocs.io/en/latest/reference/commands/tcksift2.html
 .. _tckglobal: https://mrtrix.readthedocs.io/en/latest/reference/commands/tckglobal.html
-.. _PyAFQ: https://yeatmanlab.github.io/pyAFQ/
+.. _PyAFQ: https://tractometry.org/pyAFQ
 .. _QSIPrep: https://qsiprep.readthedocs.io/en/latest/
 .. _UKBioBank: https://www.ukbiobank.ac.uk/
 .. _Singularity: https://sylabs.io/singularity/

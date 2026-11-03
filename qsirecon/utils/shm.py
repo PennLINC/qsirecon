@@ -25,7 +25,6 @@ where data is Y.T and sh_coef is x.T.
 """
 
 import warnings
-from distutils.version import LooseVersion
 
 import numpy as np
 import scipy
@@ -35,9 +34,10 @@ from dipy.reconst.odf import OdfFit, OdfModel
 from numpy import concatenate, diag, diff, dot, empty, eye, sqrt, unique
 from numpy.linalg import pinv, svd
 from numpy.random import randint
+from packaging.version import Version
 from scipy.special import factorial, gammaln, lpmv
 
-if LooseVersion(scipy.version.short_version) >= LooseVersion('0.15.0'):
+if Version(scipy.version.short_version) >= Version('0.15.0'):
     SCIPY_15_PLUS = True
     import scipy.special as sps
 else:

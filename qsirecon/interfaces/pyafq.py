@@ -11,9 +11,7 @@ import os
 import os.path as op
 
 from AFQ.api.participant import ParticipantAFQ
-from AFQ.definitions.image import ImageFile
-
-# from AFQ.definitions.mapping import ItkMap
+from AFQ.definitions.image import ImageFile, PVEImages
 from nipype import logging
 from nipype.interfaces.base import (
     BaseInterfaceInputSpec,
@@ -32,7 +30,11 @@ class PyAFQInputSpec(BaseInterfaceInputSpec):
     bval_file = File(exists=True, mandatory=True)
     bvec_file = File(exists=True, mandatory=True)
     dwi_file = File(exists=True, mandatory=True)
+    t1_file = File(exists=True, mandatory=True)
     mask_file = File(exists=True, mandatory=True)
+    csf_probseg = traits.Either(None, File(exists=True))
+    gm_probseg = traits.Either(None, File(exists=True))
+    wm_probseg = traits.Either(None, File(exists=True))
     itk_file = File(exists=True, mandatory=True)
     kwargs = traits.Dict(exists=True, mandatory=True)
     tck_file = traits.Either(None, File(exists=True))
@@ -54,46 +56,29 @@ class PyAFQRecon(SimpleInterface):
         bval_file = fname_presuffix(self.inputs.bval_file, newpath=shim_dir)
         bvec_file = fname_presuffix(self.inputs.bvec_file, newpath=shim_dir)
         dwi_file = fname_presuffix(self.inputs.dwi_file, newpath=shim_dir)
+        t1_file = fname_presuffix(self.inputs.t1_file, newpath=shim_dir)
         mask_file = fname_presuffix(self.inputs.mask_file, newpath=shim_dir)
         itk_file = fname_presuffix(self.inputs.itk_file, newpath=shim_dir)
         os.symlink(self.inputs.bval_file, bval_file)
         os.symlink(self.inputs.bvec_file, bvec_file)
         os.symlink(self.inputs.dwi_file, dwi_file)
+        os.symlink(self.inputs.t1_file, t1_file)
         os.symlink(self.inputs.mask_file, mask_file)
         os.symlink(self.inputs.itk_file, itk_file)
 
-        kwargs = self.inputs.kwargs
+        kwargs = dict(self.inputs.kwargs)
+        export = kwargs.pop('export', 'all')
+        tck_file = kwargs.pop('import_tract', None)
+        kwargs.pop('brain_mask_definition', None)
 
         if self.inputs.tck_file and isdefined(self.inputs.tck_file):
             tck_file = fname_presuffix(self.inputs.tck_file, newpath=shim_dir)
             os.symlink(self.inputs.tck_file, tck_file)
-        else:
-            tck_file = None
-        brain_mask_definition = ImageFile(path=mask_file)
-        # itk_map = ItkMap(warp_path=itk_file)
 
-        if tck_file is None:
-            tck_file = kwargs['import_tract']
-        kwargs.pop('import_tract', None)
-        if brain_mask_definition is None:
-            brain_mask_definition = kwargs['brain_mask_definition']
-        kwargs.pop('brain_mask_definition', None)
-
-        # if "parallel_segmentation" in kwargs:
-        #     if (
-        #         "n_jobs" not in kwargs["parallel_segmentation"]
-        #         or kwargs["parallel_segmentation"]["n_jobs"] == -1
-        #     ):
-        #         kwargs["parallel_segmentation"]["n_jobs"] = self.inputs.kwargs["omp_nthreads"]
-        # else:
-        #     kwargs["parallel_segmentation"] = {}
-        #     kwargs["parallel_segmentation"]["n_jobs"] = self.inputs.kwargs["omp_nthreads"]
-
-        if self.inputs.n_procs > 1:
-            kwargs['parallel_segmentation']['n_jobs'] = self.inputs.n_procs
-        else:
-            kwargs['parallel_segmentation'] = {}
-            kwargs['parallel_segmentation']['n_jobs'] = self.inputs.n_procs
+        # QSIPrep's probsegs replace SynthSeg. FreeSurfer-only inputs have none.
+        probsegs = (self.inputs.csf_probseg, self.inputs.gm_probseg, self.inputs.wm_probseg)
+        if all(isdefined(path) and path for path in probsegs):
+            kwargs.setdefault('pve', PVEImages(*[ImageFile(path=path) for path in probsegs]))
 
         output_dir = shim_dir + '/PYAFQ/'
         os.makedirs(output_dir, exist_ok=True)
@@ -101,17 +86,18 @@ class PyAFQRecon(SimpleInterface):
             dwi_file,
             bval_file,
             bvec_file,
+            t1_file,
             output_dir,
             import_tract=tck_file,
-            brain_mask_definition=brain_mask_definition,
-            # mapping_definition=itk_map,
+            brain_mask_definition=ImageFile(path=mask_file),
+            numba_n_threads=self.inputs.n_procs,
             **kwargs,
         )
 
-        if 'export' not in kwargs or kwargs['export'] == 'all':
+        if export == 'all':
             myafq.export_all()
         else:
-            myafq.export(kwargs['export'])
+            myafq.export(export)
 
         self._results['afq_dir'] = output_dir
 

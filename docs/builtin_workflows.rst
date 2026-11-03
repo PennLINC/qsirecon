@@ -146,9 +146,14 @@ This workflow produces :ref:`mrtrix_dwi_outputs`.
 ``pyafq_tractometry``
 =====================
 
-This workflow uses the AFQ :footcite:p:`pyafq2` implemented in Python :footcite:p:`pyafq` to recognize
-major white matter pathways within the tractography, and then extract tissue properties along
-those pathways. See the `pyAFQ documentation <https://yeatmanlab.github.io/pyAFQ/>`_ .
+This workflow uses the AFQ :footcite:p:`pyafq2` implemented in Python
+:footcite:p:`pyafq,pyafq3` to recognize major white matter pathways within the tractography,
+and then extract tissue properties along those pathways.
+See the `pyAFQ documentation <https://tractometry.org/pyAFQ>`_ .
+
+pyAFQ requires a preprocessed T1w image.
+When they are available, QSIPrep's T1w brain mask and CSF, GM and WM probabilistic segmentations
+are passed to pyAFQ. Otherwise pyAFQ estimates tissue types with SynthSeg.
 
 PyAFQ Outputs
 -------------

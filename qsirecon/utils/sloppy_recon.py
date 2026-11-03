@@ -34,10 +34,9 @@ def make_sloppy(spec):
         ('MRTrix3', 'global_tractography'): {'niters': 10000},
         ('pyAFQ', 'pyafq_tractometry'): {
             'mapping_definition': 'AffMap(affine_kwargs={"pipeline": ["center_of_mass"]})',
-            'bundle_info': 'default18_bd()["Left Superior Longitudinal", "Right Corticospinal"]',
-            'n_seeds': 1000,
+            'bundle_info': 'default_bd()["Left Arcuate", "Right Corticospinal"]',
+            'n_seeds': 250000,
             'random_seeds': True,
-            'export': 'all_bundles_figure',
         },
     }
     sloppy_spec = deepcopy(spec)

@@ -57,6 +57,11 @@ COPY --link --from=build /app/.pixi/envs/qsirecon /app/.pixi/envs/qsirecon
 COPY scripts/set_up_amico.py set_up_amico.py
 RUN mkdir -p ${HOME}/.dipy && /app/.pixi/envs/qsirecon/bin/python set_up_amico.py
 
+FROM base AS afq_cache
+ENV AFQ_HOME="/home/qsirecon/AFQ_data"
+COPY --link --from=build /app/.pixi/envs/qsirecon /app/.pixi/envs/qsirecon
+RUN /app/.pixi/envs/qsirecon/bin/pyAFQ download
+
 FROM base AS test
 ARG VCS_REF
 LABEL org.opencontainers.image.revision=$VCS_REF \
@@ -64,6 +69,9 @@ LABEL org.opencontainers.image.revision=$VCS_REF \
 COPY --link --from=build /app/.pixi/envs/test /app/.pixi/envs/test
 COPY --link --from=build /test-shell-hook.sh /shell-hook.sh
 COPY --link --from=amico_cache /home/qsirecon/.dipy /home/qsirecon/.dipy
+ENV AFQ_HOME="/home/qsirecon/AFQ_data"
+COPY --link --from=afq_cache /home/qsirecon/AFQ_data /home/qsirecon/AFQ_data
+COPY --link --from=afq_cache /home/qsirecon/.cache/templateflow /home/qsirecon/.cache/templateflow
 RUN cat /shell-hook.sh >> $HOME/.bashrc
 ENV PATH="/app/.pixi/envs/test/bin:$PATH"
 ENV FSLDIR="/app/.pixi/envs/test"
@@ -72,6 +80,9 @@ FROM base AS qsirecon
 COPY --link --from=build /app/.pixi/envs/qsirecon /app/.pixi/envs/qsirecon
 COPY --link --from=build /shell-hook.sh /shell-hook.sh
 COPY --link --from=amico_cache /home/qsirecon/.dipy /home/qsirecon/.dipy
+ENV AFQ_HOME="/home/qsirecon/AFQ_data"
+COPY --link --from=afq_cache /home/qsirecon/AFQ_data /home/qsirecon/AFQ_data
+COPY --link --from=afq_cache /home/qsirecon/.cache/templateflow /home/qsirecon/.cache/templateflow
 RUN cat /shell-hook.sh >> $HOME/.bashrc
 ENV PATH="/app/.pixi/envs/qsirecon/bin:$PATH"
 ENV FSLDIR="/app/.pixi/envs/qsirecon"
