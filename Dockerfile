@@ -46,6 +46,8 @@ FROM ${BASE_IMAGE} AS base
 WORKDIR /home/qsirecon
 ENV HOME="/home/qsirecon"
 ENV DIPY_HOME="/home/qsirecon/.dipy"
+# Pinned so pyAFQ finds its cached templates when the container runs with another HOME.
+ENV AFQ_HOME="/home/qsirecon/AFQ_data"
 
 COPY --link --from=templates /templateflow /home/qsirecon/.cache/templateflow
 RUN chmod -R go=u $HOME
@@ -57,6 +59,12 @@ COPY --link --from=build /app/.pixi/envs/qsirecon /app/.pixi/envs/qsirecon
 COPY scripts/set_up_amico.py set_up_amico.py
 RUN mkdir -p ${HOME}/.dipy && /app/.pixi/envs/qsirecon/bin/python set_up_amico.py
 
+# pyAFQ bundle templates, so neither CI nor users download them from figshare at run time.
+FROM base AS afq_cache
+COPY --link --from=build /app/.pixi/envs/qsirecon /app/.pixi/envs/qsirecon
+COPY scripts/fetch_afq_templates.py fetch_afq_templates.py
+RUN /app/.pixi/envs/qsirecon/bin/python fetch_afq_templates.py && chmod -R go=u ${AFQ_HOME}
+
 FROM base AS test
 ARG VCS_REF
 LABEL org.opencontainers.image.revision=$VCS_REF \
@@ -64,6 +72,7 @@ LABEL org.opencontainers.image.revision=$VCS_REF \
 COPY --link --from=build /app/.pixi/envs/test /app/.pixi/envs/test
 COPY --link --from=build /test-shell-hook.sh /shell-hook.sh
 COPY --link --from=amico_cache /home/qsirecon/.dipy /home/qsirecon/.dipy
+COPY --link --from=afq_cache /home/qsirecon/AFQ_data /home/qsirecon/AFQ_data
 RUN cat /shell-hook.sh >> $HOME/.bashrc
 ENV PATH="/app/.pixi/envs/test/bin:$PATH"
 ENV FSLDIR="/app/.pixi/envs/test"
@@ -72,6 +81,7 @@ FROM base AS qsirecon
 COPY --link --from=build /app/.pixi/envs/qsirecon /app/.pixi/envs/qsirecon
 COPY --link --from=build /shell-hook.sh /shell-hook.sh
 COPY --link --from=amico_cache /home/qsirecon/.dipy /home/qsirecon/.dipy
+COPY --link --from=afq_cache /home/qsirecon/AFQ_data /home/qsirecon/AFQ_data
 RUN cat /shell-hook.sh >> $HOME/.bashrc
 ENV PATH="/app/.pixi/envs/qsirecon/bin:$PATH"
 ENV FSLDIR="/app/.pixi/envs/qsirecon"

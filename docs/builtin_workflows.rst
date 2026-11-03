@@ -160,6 +160,15 @@ Because these come from QSIPrep, pyAFQ's neural-network segmentation models are 
 Any pyAFQ parameter in the recon spec that the installed version of pyAFQ does not recognize
 is dropped with a warning in the log.
 
+pyAFQ loads its bundle templates from ``$AFQ_HOME`` (``~/AFQ_data`` by default) and downloads
+them from figshare when they are missing.
+The QSIRecon container image ships these templates, so containerized runs do not need network
+access for them.
+Outside the container, pyAFQ's own download can be answered by figshare with a bot-check page
+instead of the file, which later fails with an ``is not a gzip file`` error.
+In that case, delete the offending file and run ``scripts/fetch_afq_templates.py`` from the
+QSIRecon repository to populate ``$AFQ_HOME``.
+
 PyAFQ Outputs
 -------------
 
