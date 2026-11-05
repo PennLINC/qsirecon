@@ -131,54 +131,70 @@ to workflows in *QSIRecon*'s documentation]\
 
     highres_anat_wfs = {}
     highres_anat_statuses = {}
-    for anat_num, anat_input_file in enumerate(anat_input_files):
+    for anat_num, (dwi_input, anat_input_file) in enumerate(dwis_and_anats):
+        anat_key = _get_anat_key(dwi_input, anat_input_file)
+        if anat_key in highres_anat_wfs:
+            # Skip if we've already processed this anatomical file
+            continue
+
         # session_id should be None if no anatomical file is found,
         # Query.NONE if there is a file but no session is specified,
         # and [session_id, Query.NONE] if there is a file and a session is specified.
         if anat_input_file is None:
+            # collect_anatomical_data collects nothing for a session filter of None, but
+            # FreeSurfer data may still be session-specific, so the DWI's own session is
+            # used to look up the FreeSurfer directory.
             _session_filter = None
+            dwi_session = dwi_input.entities.get('session')
+            _fs_session_filter = [dwi_session, Query.NONE] if dwi_session else Query.NONE
+            anat_label = 'DWIs without an anatomical image'
+            if dwi_session:
+                anat_label += f' (session {dwi_session})'
         elif 'session' not in anat_input_file.entities:
-            _session_filter = Query.NONE
+            _session_filter = _fs_session_filter = Query.NONE
+            anat_label = anat_key
         else:
-            _session_filter = [anat_input_file.entities['session'], Query.NONE]
+            _session_filter = _fs_session_filter = [
+                anat_input_file.entities['session'],
+                Query.NONE,
+            ]
+            anat_label = anat_key
 
-        if anat_input_file.path in highres_anat_wfs:
-            # Skip if we've already processed this anatomical file
-            continue
-
-        anat_data, highres_anat_statuses[anat_input_file.path] = collect_anatomical_data(
+        anat_data, highres_anat_statuses[anat_key] = collect_anatomical_data(
             layout=config.execution.layout,
             subject_id=subject_id,
             session_id=_session_filter,
-            needs_t1w_transform=bool(config.execution.atlases),
+            needs_anat_transform=bool(config.execution.atlases),
             infant_mode=config.workflow.infant,
             bids_filters=config.execution.bids_filters or {},
         )
 
         config.loggers.workflow.info(
-            f'Anatomical data available for {anat_input_file.path}:\n'
+            f'Anatomical data available for {anat_label}:\n'
             f'{yaml.dump(anat_data, default_flow_style=False, indent=4)}'
         )
-        anat_ingress_nodes[anat_input_file.path] = pe.Node(
-            niu.IdentityInterface(fields=list(anat_data.keys())),
-            name=f'anat_ingress_node_{anat_num}',
-        )
-        highres_anat_wfs[anat_input_file.path], highres_anat_statuses[anat_input_file.path] = (
+        highres_anat_wfs[anat_key], highres_anat_statuses[anat_key] = (
             init_highres_recon_anatomical_wf(
                 subject_id=subject_id,
-                session_id=_session_filter,
+                session_id=_fs_session_filter,
                 extras_to_make=spec.get('anatomical', []),
-                status=highres_anat_statuses[anat_input_file.path],
+                status=highres_anat_statuses[anat_key],
                 name=f'recon_anatomical_wf_{anat_num}',
             )
         )
+        if anat_data:
+            # An IdentityInterface needs at least one field, so only create the ingress node
+            # when some anatomical data were collected.
+            anat_ingress_nodes[anat_key] = pe.Node(
+                niu.IdentityInterface(fields=list(anat_data.keys())),
+                name=f'anat_ingress_node_{anat_num}',
+            )
         for key, value in anat_data.items():
             config.loggers.workflow.info(f'{key} ({type(key)}): {value} ({type(value)})')
-            anat_ingress_nodes[anat_input_file.path].set_input(key, value)
+            anat_ingress_nodes[anat_key].set_input(key, value)
             workflow.connect([
-                (anat_ingress_nodes[anat_input_file.path],
-                 highres_anat_wfs[anat_input_file.path], [
-                     (key, f'inputnode.{key}')]),
+                (anat_ingress_nodes[anat_key], highres_anat_wfs[anat_key], [
+                    (key, f'inputnode.{key}')]),
             ])  # fmt:skip
 
         # Configure atlases _per_ anatomical workflow
@@ -188,7 +204,13 @@ to workflows in *QSIRecon*'s documentation]\
             os.makedirs(atlas_output_dir, exist_ok=True)
 
             # Limit atlases to ones in the specified space.
-            xfm_to_anat = anat_data['template_to_acpc_xfm']
+            xfm_to_anat = anat_data.get('template_to_acpc_xfm')
+            if xfm_to_anat is None:
+                raise ValueError(
+                    'Atlases were requested, but no template-to-ACPC transform is available '
+                    f'for {anat_label}.'
+                )
+
             template_space = get_entity(xfm_to_anat, 'from')
             bids_filters = (config.execution.bids_filters or {}).copy()
             bids_filters['atlas'] = bids_filters.get('atlas', {})
@@ -243,6 +265,7 @@ to workflows in *QSIRecon*'s documentation]\
     dwi_files = [pair[0].path for pair in dwis_and_anats]
     for dwi_input, anat_input in dwis_and_anats:
         dwi_file = dwi_input.path
+        anat_key = _get_anat_key(dwi_input, anat_input)
         wf_name = _get_wf_name(dwi_file)
 
         # Get the preprocessed DWI and all the related preprocessed images
@@ -255,10 +278,10 @@ to workflows in *QSIRecon*'s documentation]\
         dwi_anat_wfs[dwi_file], dwi_available_anatomical_data = init_dwi_recon_anatomical_workflow(
             atlas_configs=atlas_configs,
             prefer_dwi_mask=False,
-            needs_t1w_transform=bool(config.execution.atlases),
+            needs_anat_transform=bool(config.execution.atlases),
             extras_to_make=spec.get('anatomical', []),
             name=f'{wf_name}_dwi_specific_anat_wf',
-            **highres_anat_statuses[anat_input.path],
+            **highres_anat_statuses[anat_key],
         )
         inputs_dict = {
             'dwi_file': dwi_file,
@@ -307,7 +330,7 @@ to workflows in *QSIRecon*'s documentation]\
                 (trait, f'inputnode.{trait}') for trait in recon_workflow_input_fields
             ]),
 
-            (highres_anat_wfs[anat_input.path], dwi_anat_wfs[dwi_file], [
+            (highres_anat_wfs[anat_key], dwi_anat_wfs[dwi_file], [
                 (f'outputnode.{trait}', f'inputnode.{trait}')
                 for trait in anatomical_workflow_outputs
             ]),
@@ -324,6 +347,9 @@ to workflows in *QSIRecon*'s documentation]\
         name='about',
         run_without_submitting=True,
     )
+    anat_files = [f for f in anat_input_files if f is not None]
+    t1w_files = sorted({f.path for f in anat_files if f.entities.get('suffix') == 'T1w'})
+    t2w_files = sorted({f.path for f in anat_files if f.entities.get('suffix') == 'T2w'})
     summary = pe.Node(
         SubjectSummary(
             subject_id=subject_id,
@@ -331,7 +357,8 @@ to workflows in *QSIRecon*'s documentation]\
             std_spaces=['MNIInfant' if config.workflow.infant else 'MNI152NLin2009cAsym'],
             nstd_spaces=[],
             dwi=dwi_files,
-            t1w=sorted(highres_anat_statuses.keys()),
+            t1w=t1w_files,
+            t2w=t2w_files,
         ),
         name='summary',
         run_without_submitting=True,
@@ -384,6 +411,31 @@ def _get_wf_name(dwi_file):
     _, fname, _ = split_filename(dwi_file)
     tokens = fname.split('_')
     return '_'.join(tokens[:-1]).replace('-', '_')
+
+
+def _get_anat_key(dwi_input, anat_input):
+    """Key identifying the subject-level anatomical workflow a DWI uses.
+
+    DWIs paired with the same anatomical image share one workflow.
+    DWIs without an anatomical image share one workflow per session, because FreeSurfer
+    data may still be session-specific.
+
+    Parameters
+    ----------
+    dwi_input : :obj:`bids.layout.BIDSFile`
+        The preprocessed DWI.
+    anat_input : :obj:`bids.layout.BIDSFile` or None
+        The anatomical image paired with the DWI by
+        :func:`~qsirecon.utils.bids.get_iterable_dwis_and_anats`.
+
+    Returns
+    -------
+    :obj:`str` or :obj:`tuple`
+        The anatomical image's path, or ``('no-anat', session)`` when there is none.
+    """
+    if anat_input is not None:
+        return anat_input.path
+    return ('no-anat', dwi_input.entities.get('session'))
 
 
 def _load_recon_spec(spec_name):
