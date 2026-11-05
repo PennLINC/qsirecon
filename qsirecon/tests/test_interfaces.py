@@ -1,10 +1,10 @@
 """Command-line interface tests."""
 
+import logging
 import shutil
 from pathlib import Path
 from types import SimpleNamespace
 
-import amico
 import nibabel as nb
 import numpy as np
 import pytest
@@ -284,7 +284,24 @@ def test_force_simulations_concurrent_miss(tmp_path, monkeypatch):
         np.testing.assert_array_equal(model.simulations[name], values)
 
 
-def test_amico_reads_matrices_from_image(tmp_path, monkeypatch):
+@pytest.fixture
+def amico_lut():
+    """Import ``amico.lut`` without leaving AMICO's logger class installed.
+
+    Importing AMICO makes dicelib install its own logger class, whose ``warning`` takes
+    ``stacklevel`` as its second positional argument. Any logger created after that breaks
+    on ``logger.warning('%s', value)``, which is what matplotlib does while it is imported.
+    So AMICO is imported here rather than at the top of the module, and the logger class
+    is put back afterwards.
+    """
+    logger_class = logging.getLoggerClass()
+    import amico
+
+    logging.setLoggerClass(logger_class)
+    return amico.lut
+
+
+def test_amico_reads_matrices_from_image(tmp_path, monkeypatch, amico_lut):
     """AMICO loads its rotation matrices from QSIRECON_AMICO_HOME, whatever DIPY_HOME is.
 
     This guards the assumption that AMICO honors ``amico.lut.dipy_home``. In the Docker
@@ -293,27 +310,27 @@ def test_amico_reads_matrices_from_image(tmp_path, monkeypatch):
     """
     # Stand in for the image: generate real matrices in a directory of their own.
     amico_home = tmp_path / 'amico_home'
-    monkeypatch.setattr(amico.lut, 'dipy_home', str(amico_home))
-    amico.lut.precompute_rotation_matrices(12, 500)
+    monkeypatch.setattr(amico_lut, 'dipy_home', str(amico_home))
+    amico_lut.precompute_rotation_matrices(12, 500)
     assert [path.name for path in amico_home.iterdir()] == [
         'AMICO_aux_matrices_lmax=12_ndirs=500.pickle'
     ]
 
     # AMICO starts out looking in a DIPY_HOME that does not have them.
     dipy_home = tmp_path / 'dipy_home'
-    monkeypatch.setattr(amico.lut, 'dipy_home', str(dipy_home))
+    monkeypatch.setattr(amico_lut, 'dipy_home', str(dipy_home))
     monkeypatch.setenv('QSIRECON_AMICO_HOME', str(amico_home))
 
     _use_image_amico_matrices()
-    assert amico.lut.load_precomputed_rotation_matrices(12, 500)['ndirs'] == 500
+    assert amico_lut.load_precomputed_rotation_matrices(12, 500)['ndirs'] == 500
     assert not dipy_home.exists()
 
 
-def test_amico_left_alone_outside_image(tmp_path, monkeypatch):
+def test_amico_left_alone_outside_image(tmp_path, monkeypatch, amico_lut):
     """Without QSIRECON_AMICO_HOME, AMICO keeps looking in DIPY's home directory."""
     dipy_home = tmp_path / 'dipy_home'
-    monkeypatch.setattr(amico.lut, 'dipy_home', str(dipy_home))
+    monkeypatch.setattr(amico_lut, 'dipy_home', str(dipy_home))
     monkeypatch.delenv('QSIRECON_AMICO_HOME', raising=False)
 
     _use_image_amico_matrices()
-    assert amico.lut.dipy_home == str(dipy_home)
+    assert amico_lut.dipy_home == str(dipy_home)
