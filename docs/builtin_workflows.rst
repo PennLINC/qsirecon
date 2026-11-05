@@ -487,11 +487,32 @@ microstructure for this subject's exact gradient scheme, then matches each measu
 against the library by normalized inner product. The microstructure of the closest
 simulation, or a posterior mean over the closest simulations, becomes the estimate.
 
-Because the library is tied to the gradient scheme, it is generated at run time and
-cached under ``$DIPY_HOME/force_simulations``. Generation is seeded non-deterministically,
-so a run is only exactly reproducible if you pre-generate a library and pass it with the
-``simulations_file`` parameter. Doing so is also much faster when processing many
-subjects that share a scheme.
+Because the library is tied to the gradient scheme, it is generated at run time. By
+default this happens once for each DWI series, and the library is written to that series'
+node in the working directory as ``*_force_simulations.npz``.
+
+To keep libraries between runs, set the ``DIPY_HOME`` environment variable, which the
+container image leaves unset, to a directory outside the image. Libraries are then stored in
+``$DIPY_HOME/force_simulations`` and reused by any later run with exactly the same
+gradient table and simulation parameters. With Apptainer, for example:
+
+.. code-block:: bash
+
+   apptainer run --containall --writable-tmpfs \
+       -B /path/to/dipy_home:/dipy_home \
+       --env DIPY_HOME=/dipy_home \
+       ...
+
+With Docker, use ``-v /path/to/dipy_home:/dipy_home -e DIPY_HOME=/dipy_home`` instead.
+
+.. note::
+   Setting ``DIPY_HOME`` does not affect the NODDI workflows in the container. AMICO
+   normally reads its precomputed rotation matrices from ``DIPY_HOME``, but QSIRecon
+   points it at the copy that ships in the container image instead.
+
+Generation is seeded non-deterministically, so a run is only exactly reproducible if it
+reuses a library, either from ``$DIPY_HOME`` or by passing a pre-generated one with the
+``simulations_file`` parameter.
 
 Two parameters are worth knowing about:
 

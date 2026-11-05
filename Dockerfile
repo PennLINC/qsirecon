@@ -45,7 +45,9 @@ RUN python fetch_templates.py
 FROM ${BASE_IMAGE} AS base
 WORKDIR /home/qsirecon
 ENV HOME="/home/qsirecon"
-ENV DIPY_HOME="/home/qsirecon/.dipy"
+# Where AMICO's precomputed rotation matrices live. QSIRecon points AMICO here itself, so
+# DIPY_HOME stays free for users to set to a directory outside the image.
+ENV QSIRECON_AMICO_HOME="/home/qsirecon/.dipy"
 # Pinned so pyAFQ finds its cached templates when the container runs with another HOME.
 ENV AFQ_HOME="/home/qsirecon/AFQ_data"
 
@@ -57,7 +59,8 @@ WORKDIR /tmp
 FROM base AS amico_cache
 COPY --link --from=build /app/.pixi/envs/qsirecon /app/.pixi/envs/qsirecon
 COPY scripts/set_up_amico.py set_up_amico.py
-RUN mkdir -p ${HOME}/.dipy && /app/.pixi/envs/qsirecon/bin/python set_up_amico.py
+RUN mkdir -p ${QSIRECON_AMICO_HOME} && \
+    DIPY_HOME=${QSIRECON_AMICO_HOME} /app/.pixi/envs/qsirecon/bin/python set_up_amico.py
 
 # pyAFQ bundle templates, so neither CI nor users download them from figshare at run time.
 FROM base AS afq_cache

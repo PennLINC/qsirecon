@@ -7,7 +7,12 @@ Image tools interfaces
 
 """
 
+import hashlib
+import json
+import os
 import shutil
+import uuid
+from pathlib import Path
 
 import nibabel as nb
 import numpy as np
@@ -1180,15 +1185,6 @@ class _FORCEReconstructionInputSpec(BaseInterfaceInputSpec):
         doc=ConditionalDoc('DKI metrics (AK, RK, MK and KFA) were derived for each simulation.'),
         recon_spec_accessible=True,
     )
-    use_cache = traits.Bool(
-        True,
-        usedefault=True,
-        desc=(
-            'Reuse a cached simulation library from $DIPY_HOME/force_simulations when one '
-            'matches this gradient scheme. Ignored when ``simulations_file`` is provided.'
-        ),
-        recon_spec_accessible=True,
-    )
 
     # Model
     penalty = traits.Float(
@@ -1315,9 +1311,22 @@ class FORCEReconstruction(DipyReconInterface):
 
     input_spec = _FORCEReconstructionInputSpec
     output_spec = _FORCEReconstructionOutputSpec
+    # The library in $DIPY_HOME/force_simulations that this run fit against, if any.
+    _cached_simulations_file = None
 
-    def _get_simulations(self, model):
-        """Load a pre-generated simulation library or generate one."""
+    def _get_simulations(self, model, runtime):
+        """Load a pre-generated simulation library or generate one.
+
+        A generated library is written to the node's working directory, unless the
+        ``DIPY_HOME`` environment variable is set. In that case it is stored in
+        ``$DIPY_HOME/force_simulations`` and reused by later runs with the same gradient
+        table and simulation parameters.
+
+        DIPY's own cache is never used. Without ``DIPY_HOME`` it writes to ``~/.dipy``,
+        which is read-only when that is inside an Apptainer image, and its registry
+        ignores most of the simulation parameters when looking for a match.
+        """
+        self._cached_simulations_file = None
         if isdefined(self.inputs.simulations_file):
             LOGGER.info('Loading FORCE simulations from %s', self.inputs.simulations_file)
             model.load(self.inputs.simulations_file)
@@ -1331,16 +1340,59 @@ class FORCEReconstruction(DipyReconInterface):
             'odi_range': tuple(self.inputs.odi_range),
             'compute_dti': self.inputs.compute_dti,
             'compute_dki': self.inputs.compute_dki,
-            'use_cache': self.inputs.use_cache,
             'verbose': False,
         }
         if isdefined(self.inputs.diffusivity_config):
             generate_kwargs['diffusivity_config'] = self.inputs.diffusivity_config
 
-        # Leaving output_path as None is what enables DIPY's own cache, which lives in
-        # $DIPY_HOME/force_simulations and is keyed on the gradient scheme.
-        LOGGER.info('Generating %d FORCE simulations.', self.inputs.num_simulations)
-        model.generate(output_path=None, **generate_kwargs)
+        # An explicit output_path is what keeps DIPY away from its own cache: with
+        # output_path=None it creates its cache directory even when use_cache is False.
+        dipy_home = os.getenv('DIPY_HOME')
+        if not dipy_home:
+            simulations_file = fname_presuffix(
+                self.inputs.dwi_file,
+                suffix='_force_simulations.npz',
+                newpath=runtime.cwd,
+                use_ext=False,
+            )
+            LOGGER.info(
+                'Generating %d FORCE simulations in %s',
+                self.inputs.num_simulations,
+                simulations_file,
+            )
+            model.generate(output_path=simulations_file, **generate_kwargs)
+            return
+
+        cache_dir = Path(dipy_home) / 'force_simulations'
+        key = _force_simulations_key(model.gtab, generate_kwargs)
+        cached_file = cache_dir / f'qsirecon_{key}.npz'
+        self._cached_simulations_file = str(cached_file)
+        if cached_file.exists():
+            LOGGER.info('Loading cached FORCE simulations from %s', cached_file)
+            model.load(str(cached_file))
+            return
+
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        # Generate under a temporary name, so an interrupted or concurrent run never
+        # leaves a partial library under the name that later runs load.
+        tmp_file = cache_dir / f'qsirecon_{key}.{uuid.uuid4().hex}.tmp.npz'
+        LOGGER.info(
+            'Generating %d FORCE simulations in %s',
+            self.inputs.num_simulations,
+            cached_file,
+        )
+        try:
+            model.generate(output_path=str(tmp_file), **generate_kwargs)
+            if cached_file.exists():
+                # Another run stored a library for this key in the meantime. Fit against
+                # that one, so every result for this key comes from the library that
+                # stays in the cache.
+                LOGGER.info('Loading FORCE simulations cached by another run.')
+                model.load(str(cached_file))
+            else:
+                os.replace(tmp_file, cached_file)
+        finally:
+            tmp_file.unlink(missing_ok=True)
 
     def _run_interface(self, runtime):
         gtab = self._get_gtab()
@@ -1356,7 +1408,7 @@ class FORCEReconstruction(DipyReconInterface):
             posterior_beta=self.inputs.posterior_beta,
             verbose=False,
         )
-        self._get_simulations(model)
+        self._get_simulations(model, runtime)
 
         LOGGER.info('Fitting FORCE model.')
         force_fit = model.fit(
@@ -1404,6 +1456,9 @@ class FORCEReconstruction(DipyReconInterface):
         # different library gives different numbers.
         simulation_params = {'SimulationsFile': inputs['simulations_file']}
         if not isdefined(self.inputs.simulations_file):
+            if self._cached_simulations_file:
+                simulation_params['SimulationsFile'] = self._cached_simulations_file
+
             simulation_params.update(
                 {
                     'NumSimulations': inputs['num_simulations'],
@@ -1443,6 +1498,32 @@ class FORCEReconstruction(DipyReconInterface):
                 outputs[metadata_output] = base_metadata
 
         return outputs
+
+
+def _force_simulations_key(gtab, generate_kwargs):
+    """Hash every setting that shapes a FORCE simulation library.
+
+    Generation is random, so two libraries with the same key are different draws from
+    the same settings. ``num_cpus`` only changes how that work is split up, so it is left
+    out.
+
+    The gradient table has to match exactly. DIPY's own cache registry is looser: it
+    compares only the gradient table, the diffusivity ranges and the number of
+    simulations, so it would return a library generated with, for example, another
+    ``odi_range`` or without the DKI metrics.
+    """
+    content = {
+        key: value for key, value in generate_kwargs.items() if key not in ('num_cpus', 'verbose')
+    }
+    content.update(
+        {
+            'dipy_version': dipy_version,
+            'bvals': np.asarray(gtab.bvals, dtype='float64').tolist(),
+            'bvecs': np.asarray(gtab.bvecs, dtype='float64').tolist(),
+            'b0_threshold': float(gtab.b0_threshold),
+        }
+    )
+    return hashlib.sha256(json.dumps(content, sort_keys=True).encode()).hexdigest()[:16]
 
 
 def _force_map_data(force_fit, attr):

@@ -37,6 +37,30 @@ LOGGER = logging.getLogger('nipype.interface')
 TAU_DEFAULT = 1.0 / (4 * np.pi**2)
 
 
+def _use_image_amico_matrices():
+    """Point AMICO at the rotation matrices that ship in the container image.
+
+    AMICO looks for its precomputed rotation matrices in DIPY's home directory, which
+    ``amico.lut`` reads once, when it is imported. The container image keeps its copy in
+    ``$QSIRECON_AMICO_HOME`` instead, so that ``DIPY_HOME`` is free for users to set, and
+    AMICO is redirected there. Outside the container the variable is unset and AMICO is
+    left alone.
+    """
+    import amico
+
+    amico_home = os.getenv('QSIRECON_AMICO_HOME')
+    if not amico_home:
+        return
+
+    if not hasattr(amico.lut, 'dipy_home'):
+        raise RuntimeError(
+            'The installed AMICO has no amico.lut.dipy_home, so it cannot be pointed at '
+            f'the rotation matrices in {amico_home}.'
+        )
+
+    amico.lut.dipy_home = amico_home
+
+
 class AmicoInputSpec(BaseInterfaceInputSpec):
     bval_file = File(exists=True, mandatory=True)
     bvec_file = File(exists=True, mandatory=True)
@@ -329,6 +353,7 @@ class NODDI(AmicoReconInterface):
         aeval.model.isExvivo = self.inputs.isExvivo
 
         # Generate kernels and fit
+        _use_image_amico_matrices()
         aeval.generate_kernels()
         aeval.load_kernels()
         aeval.fit()
