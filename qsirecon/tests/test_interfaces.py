@@ -1,5 +1,6 @@
 """Command-line interface tests."""
 
+import shutil
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -185,7 +186,11 @@ def test_classify_shell_scheme(tmp_path_factory):
 
 
 def _get_force_simulations(tmp_path, **inputs):
-    """Run FORCEReconstruction._get_simulations and return the model and working directory."""
+    """Run FORCEReconstruction._get_simulations.
+
+    Returns the model, the working directory, and the SimulationsFile the interface would
+    record in its metadata.
+    """
     rng = np.random.default_rng(0)
     bvecs = rng.normal(size=(61, 3))
     bvecs /= np.linalg.norm(bvecs, axis=1, keepdims=True)
@@ -201,7 +206,8 @@ def _get_force_simulations(tmp_path, **inputs):
     interface = FORCEReconstruction(dwi_file=str(dwi_file), num_simulations=200, **inputs)
     model = FORCEModel(gtab, verbose=False)
     interface._get_simulations(model, SimpleNamespace(cwd=str(work_dir)))
-    return model, work_dir
+    metadata = interface._list_outputs()['fa_metadata']
+    return model, work_dir, metadata['Model']['Parameters']['SimulationsFile']
 
 
 def test_force_simulations_default_to_working_directory(tmp_path, monkeypatch):
@@ -216,10 +222,11 @@ def test_force_simulations_default_to_working_directory(tmp_path, monkeypatch):
     monkeypatch.setenv('HOME', str(blocker / 'home'))
     monkeypatch.delenv('DIPY_HOME', raising=False)
 
-    model, work_dir = _get_force_simulations(tmp_path)
+    model, work_dir, recorded_file = _get_force_simulations(tmp_path)
 
     assert [path.name for path in work_dir.iterdir()] == ['sub-01_dwi_force_simulations.npz']
     assert model.simulations is not None
+    assert recorded_file == 'n/a'
 
 
 def test_force_simulations_cached_in_dipy_home(tmp_path, monkeypatch):
@@ -228,22 +235,53 @@ def test_force_simulations_cached_in_dipy_home(tmp_path, monkeypatch):
     monkeypatch.setenv('DIPY_HOME', str(dipy_home))
     cache_dir = dipy_home / 'force_simulations'
 
-    first_model, work_dir = _get_force_simulations(tmp_path)
+    first_model, work_dir, recorded_file = _get_force_simulations(tmp_path)
     cached_files = list(cache_dir.iterdir())
     assert len(cached_files) == 1
     assert cached_files[0].name.startswith('qsirecon_')
     assert not list(work_dir.iterdir())
+    assert recorded_file == str(cached_files[0])
 
     # The same gradient table and parameters load the stored library instead of
     # generating a new one.
-    second_model, _ = _get_force_simulations(tmp_path)
+    second_model, _, recorded_file = _get_force_simulations(tmp_path)
     assert list(cache_dir.iterdir()) == cached_files
+    assert recorded_file == str(cached_files[0])
     for name, values in first_model.simulations.items():
         np.testing.assert_array_equal(second_model.simulations[name], values)
 
     # A parameter that DIPY's own cache registry ignores still gets its own library.
     _get_force_simulations(tmp_path, compute_dki=True)
     assert len(list(cache_dir.iterdir())) == 2
+
+
+def test_force_simulations_concurrent_miss(tmp_path, monkeypatch):
+    """A run that loses the race to store a library fits against the stored one."""
+    dipy_home = tmp_path / 'dipy_home'
+    monkeypatch.setenv('DIPY_HOME', str(dipy_home))
+    cache_dir = dipy_home / 'force_simulations'
+
+    # Take the library that another run generates out of the cache for now.
+    other_model, _, _ = _get_force_simulations(tmp_path)
+    cached_file = next(cache_dir.iterdir())
+    other_file = tmp_path / 'other_run.npz'
+    shutil.move(cached_file, other_file)
+
+    # The other run stores its library while this one is still generating.
+    generate = FORCEModel.generate
+
+    def generate_then_lose_race(self, *args, **kwargs):
+        result = generate(self, *args, **kwargs)
+        shutil.copyfile(other_file, cached_file)
+        return result
+
+    monkeypatch.setattr(FORCEModel, 'generate', generate_then_lose_race)
+    model, _, recorded_file = _get_force_simulations(tmp_path)
+
+    assert list(cache_dir.iterdir()) == [cached_file]
+    assert recorded_file == str(cached_file)
+    for name, values in other_model.simulations.items():
+        np.testing.assert_array_equal(model.simulations[name], values)
 
 
 def test_amico_reads_matrices_from_image(tmp_path, monkeypatch):

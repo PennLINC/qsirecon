@@ -1311,6 +1311,8 @@ class FORCEReconstruction(DipyReconInterface):
 
     input_spec = _FORCEReconstructionInputSpec
     output_spec = _FORCEReconstructionOutputSpec
+    # The library in $DIPY_HOME/force_simulations that this run fit against, if any.
+    _cached_simulations_file = None
 
     def _get_simulations(self, model, runtime):
         """Load a pre-generated simulation library or generate one.
@@ -1324,6 +1326,7 @@ class FORCEReconstruction(DipyReconInterface):
         which is read-only when that is inside an Apptainer image, and its registry
         ignores most of the simulation parameters when looking for a match.
         """
+        self._cached_simulations_file = None
         if isdefined(self.inputs.simulations_file):
             LOGGER.info('Loading FORCE simulations from %s', self.inputs.simulations_file)
             model.load(self.inputs.simulations_file)
@@ -1363,6 +1366,7 @@ class FORCEReconstruction(DipyReconInterface):
         cache_dir = Path(dipy_home) / 'force_simulations'
         key = _force_simulations_key(model.gtab, generate_kwargs)
         cached_file = cache_dir / f'qsirecon_{key}.npz'
+        self._cached_simulations_file = str(cached_file)
         if cached_file.exists():
             LOGGER.info('Loading cached FORCE simulations from %s', cached_file)
             model.load(str(cached_file))
@@ -1379,7 +1383,14 @@ class FORCEReconstruction(DipyReconInterface):
         )
         try:
             model.generate(output_path=str(tmp_file), **generate_kwargs)
-            os.replace(tmp_file, cached_file)
+            if cached_file.exists():
+                # Another run stored a library for this key in the meantime. Fit against
+                # that one, so every result for this key comes from the library that
+                # stays in the cache.
+                LOGGER.info('Loading FORCE simulations cached by another run.')
+                model.load(str(cached_file))
+            else:
+                os.replace(tmp_file, cached_file)
         finally:
             tmp_file.unlink(missing_ok=True)
 
@@ -1445,6 +1456,9 @@ class FORCEReconstruction(DipyReconInterface):
         # different library gives different numbers.
         simulation_params = {'SimulationsFile': inputs['simulations_file']}
         if not isdefined(self.inputs.simulations_file):
+            if self._cached_simulations_file:
+                simulation_params['SimulationsFile'] = self._cached_simulations_file
+
             simulation_params.update(
                 {
                     'NumSimulations': inputs['num_simulations'],
@@ -1487,7 +1501,11 @@ class FORCEReconstruction(DipyReconInterface):
 
 
 def _force_simulations_key(gtab, generate_kwargs):
-    """Hash everything that determines the content of a FORCE simulation library.
+    """Hash every setting that shapes a FORCE simulation library.
+
+    Generation is random, so two libraries with the same key are different draws from
+    the same settings. ``num_cpus`` only changes how that work is split up, so it is left
+    out.
 
     The gradient table has to match exactly. DIPY's own cache registry is looser: it
     compares only the gradient table, the diffusivity ranges and the number of
