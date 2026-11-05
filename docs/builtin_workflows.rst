@@ -146,9 +146,9 @@ This workflow produces :ref:`mrtrix_dwi_outputs`.
 ``pyafq_tractometry``
 =====================
 
-This workflow uses the AFQ :footcite:p:`pyafq2` implemented in Python :footcite:p:`pyafq` to recognize
-major white matter pathways within the tractography, and then extract tissue properties along
-those pathways. See the `pyAFQ documentation <https://tractometry.org/pyAFQ/>`_ .
+This workflow uses the AFQ :footcite:p:`pyafq2` implemented in Python
+:footcite:p:`pyafq,pyafq3` to recognize major white matter pathways within the tractography,
+and then extract tissue properties along those pathways. See the `pyAFQ documentation <https://tractometry.org/pyAFQ/>`_ .
 
 pyAFQ (version 3 and later) requires anatomical images that are aligned with the DWI data:
 the preprocessed T1w image, its brain mask, and the CSF, GM and WM tissue probability maps
