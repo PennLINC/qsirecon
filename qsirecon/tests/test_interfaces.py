@@ -2,6 +2,7 @@
 
 import logging
 import shutil
+import tempfile
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -253,6 +254,39 @@ def test_force_simulations_cached_in_dipy_home(tmp_path, monkeypatch):
     # A parameter that DIPY's own cache registry ignores still gets its own library.
     _get_force_simulations(tmp_path, compute_dki=True)
     assert len(list(cache_dir.iterdir())) == 2
+
+
+@pytest.mark.parametrize('use_dipy_home', [False, True])
+def test_force_scratch_files_in_working_directory(tmp_path, monkeypatch, use_dipy_home):
+    """DIPY's scratch arrays go to the working directory, not to /tmp.
+
+    Under ``apptainer --containall``, /tmp is a small tmpfs, and filling it from a
+    memory-mapped file kills the process with SIGBUS.
+    """
+    import dipy.sims.force
+
+    if use_dipy_home:
+        monkeypatch.setenv('DIPY_HOME', str(tmp_path / 'dipy_home'))
+    else:
+        monkeypatch.delenv('DIPY_HOME', raising=False)
+
+    scratch_dirs = set()
+    create_memmap = dipy.sims.force._create_memmap
+
+    def record_memmap_dir(output_dir, *args, **kwargs):
+        scratch_dirs.add(Path(output_dir))
+        return create_memmap(output_dir, *args, **kwargs)
+
+    monkeypatch.setattr(dipy.sims.force, '_create_memmap', record_memmap_dir)
+    tempdir = tempfile.tempdir
+    _, work_dir, _ = _get_force_simulations(tmp_path)
+
+    assert len(scratch_dirs) == 1
+    assert next(iter(scratch_dirs)).parent == work_dir
+    assert tempfile.tempdir == tempdir
+    # DIPY removes its scratch directory once the library is built.
+    expected = [] if use_dipy_home else ['sub-01_dwi_force_simulations.npz']
+    assert [path.name for path in work_dir.iterdir()] == expected
 
 
 def test_force_simulations_concurrent_miss(tmp_path, monkeypatch):

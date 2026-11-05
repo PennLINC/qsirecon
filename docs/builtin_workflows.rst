@@ -490,6 +490,9 @@ simulation, or a posterior mean over the closest simulations, becomes the estima
 Because the library is tied to the gradient scheme, it is generated at run time. By
 default this happens once for each DWI series, and the library is written to that series'
 node in the working directory as ``*_force_simulations.npz``.
+While a library is being generated, its intermediate arrays are also kept in that node's
+working directory, not in ``/tmp``. They take several hundred megabytes at the default
+500,000 simulations and are removed once the library is built.
 
 To keep libraries between runs, set the ``DIPY_HOME`` environment variable, which the
 container image leaves unset, to a directory outside the image. Libraries are then stored in

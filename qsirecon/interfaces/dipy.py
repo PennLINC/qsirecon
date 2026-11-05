@@ -11,7 +11,9 @@ import hashlib
 import json
 import os
 import shutil
+import tempfile
 import uuid
+from contextlib import contextmanager
 from pathlib import Path
 
 import nibabel as nb
@@ -1360,7 +1362,9 @@ class FORCEReconstruction(DipyReconInterface):
                 self.inputs.num_simulations,
                 simulations_file,
             )
-            model.generate(output_path=simulations_file, **generate_kwargs)
+            with _scratch_files_in(runtime.cwd):
+                model.generate(output_path=simulations_file, **generate_kwargs)
+
             return
 
         cache_dir = Path(dipy_home) / 'force_simulations'
@@ -1382,7 +1386,9 @@ class FORCEReconstruction(DipyReconInterface):
             cached_file,
         )
         try:
-            model.generate(output_path=str(tmp_file), **generate_kwargs)
+            with _scratch_files_in(runtime.cwd):
+                model.generate(output_path=str(tmp_file), **generate_kwargs)
+
             if cached_file.exists():
                 # Another run stored a library for this key in the meantime. Fit against
                 # that one, so every result for this key comes from the library that
@@ -1498,6 +1504,30 @@ class FORCEReconstruction(DipyReconInterface):
                 outputs[metadata_output] = base_metadata
 
         return outputs
+
+
+@contextmanager
+def _scratch_files_in(directory):
+    """Make Python's temporary files go to ``directory`` for the duration of the block.
+
+    While it generates a FORCE library, DIPY keeps the simulation arrays in
+    memory-mapped files in a temporary directory, and ``FORCEModel.generate`` offers no
+    way to choose that directory. At the default 500,000 simulations those files take
+    several hundred megabytes. Under ``apptainer --containall``, ``/tmp`` is a small
+    tmpfs, and a write to a memory-mapped file on a full tmpfs kills the process with
+    SIGBUS rather than raising an error, so they are kept in the node's working
+    directory instead.
+
+    Only the process that runs ``generate`` creates these files; its workers receive the
+    paths. A Nipype process runs one node at a time, so changing the process-wide
+    default for the length of this block does not affect other nodes.
+    """
+    previous = tempfile.tempdir
+    tempfile.tempdir = str(directory)
+    try:
+        yield
+    finally:
+        tempfile.tempdir = previous
 
 
 def _force_simulations_key(gtab, generate_kwargs):
