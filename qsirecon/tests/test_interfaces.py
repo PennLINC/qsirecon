@@ -1,12 +1,18 @@
 """Command-line interface tests."""
 
 from pathlib import Path
+from types import SimpleNamespace
 
+import amico
 import nibabel as nb
 import numpy as np
 import pytest
+from dipy.core.gradients import gradient_table
+from dipy.reconst.force import FORCEModel
 
 from qsirecon.data import load as load_data
+from qsirecon.interfaces.amico import _use_image_amico_matrices
+from qsirecon.interfaces.dipy import FORCEReconstruction
 from qsirecon.interfaces.gradients import GradientSelect, _classify_shell_scheme, _find_shells
 from qsirecon.interfaces.utils import AtlasLUTs
 from qsirecon.tests.utils import download_test_data, get_test_data_path
@@ -176,3 +182,100 @@ def test_classify_shell_scheme(tmp_path_factory):
     np.savetxt(oasis_bval_file, np.array(oasis))
     scheme = _classify_shell_scheme(oasis_bval_file, 5)
     assert scheme == 'unknown'
+
+
+def _get_force_simulations(tmp_path, **inputs):
+    """Run FORCEReconstruction._get_simulations and return the model and working directory."""
+    rng = np.random.default_rng(0)
+    bvecs = rng.normal(size=(61, 3))
+    bvecs /= np.linalg.norm(bvecs, axis=1, keepdims=True)
+    bvecs[0] = 0
+    bvals = np.r_[0, [1000] * 30, [2000] * 30]
+    gtab = gradient_table(bvals=bvals, bvecs=bvecs)
+
+    dwi_file = tmp_path / 'sub-01_dwi.nii.gz'
+    dwi_file.touch()
+    work_dir = tmp_path / 'work'
+    work_dir.mkdir(exist_ok=True)
+
+    interface = FORCEReconstruction(dwi_file=str(dwi_file), num_simulations=200, **inputs)
+    model = FORCEModel(gtab, verbose=False)
+    interface._get_simulations(model, SimpleNamespace(cwd=str(work_dir)))
+    return model, work_dir
+
+
+def test_force_simulations_default_to_working_directory(tmp_path, monkeypatch):
+    """Without DIPY_HOME, the library goes to the working directory.
+
+    DIPY's own cache would then be ``~/.dipy/force_simulations``, which is read-only when
+    the home directory is inside an Apptainer image. The home directory is placed
+    underneath a regular file here, so any attempt to write to it raises an error.
+    """
+    blocker = tmp_path / 'blocker'
+    blocker.write_text('')
+    monkeypatch.setenv('HOME', str(blocker / 'home'))
+    monkeypatch.delenv('DIPY_HOME', raising=False)
+
+    model, work_dir = _get_force_simulations(tmp_path)
+
+    assert [path.name for path in work_dir.iterdir()] == ['sub-01_dwi_force_simulations.npz']
+    assert model.simulations is not None
+
+
+def test_force_simulations_cached_in_dipy_home(tmp_path, monkeypatch):
+    """DIPY_HOME stores the library and reuses it for matching runs."""
+    dipy_home = tmp_path / 'dipy_home'
+    monkeypatch.setenv('DIPY_HOME', str(dipy_home))
+    cache_dir = dipy_home / 'force_simulations'
+
+    first_model, work_dir = _get_force_simulations(tmp_path)
+    cached_files = list(cache_dir.iterdir())
+    assert len(cached_files) == 1
+    assert cached_files[0].name.startswith('qsirecon_')
+    assert not list(work_dir.iterdir())
+
+    # The same gradient table and parameters load the stored library instead of
+    # generating a new one.
+    second_model, _ = _get_force_simulations(tmp_path)
+    assert list(cache_dir.iterdir()) == cached_files
+    for name, values in first_model.simulations.items():
+        np.testing.assert_array_equal(second_model.simulations[name], values)
+
+    # A parameter that DIPY's own cache registry ignores still gets its own library.
+    _get_force_simulations(tmp_path, compute_dki=True)
+    assert len(list(cache_dir.iterdir())) == 2
+
+
+def test_amico_reads_matrices_from_image(tmp_path, monkeypatch):
+    """AMICO loads its rotation matrices from QSIRECON_AMICO_HOME, whatever DIPY_HOME is.
+
+    This guards the assumption that AMICO honors ``amico.lut.dipy_home``. In the Docker
+    image, ``~/.dipy`` is the same directory as ``QSIRECON_AMICO_HOME``, so NODDI would
+    keep working there even if the redirection silently stopped taking effect.
+    """
+    # Stand in for the image: generate real matrices in a directory of their own.
+    amico_home = tmp_path / 'amico_home'
+    monkeypatch.setattr(amico.lut, 'dipy_home', str(amico_home))
+    amico.lut.precompute_rotation_matrices(12, 500)
+    assert [path.name for path in amico_home.iterdir()] == [
+        'AMICO_aux_matrices_lmax=12_ndirs=500.pickle'
+    ]
+
+    # AMICO starts out looking in a DIPY_HOME that does not have them.
+    dipy_home = tmp_path / 'dipy_home'
+    monkeypatch.setattr(amico.lut, 'dipy_home', str(dipy_home))
+    monkeypatch.setenv('QSIRECON_AMICO_HOME', str(amico_home))
+
+    _use_image_amico_matrices()
+    assert amico.lut.load_precomputed_rotation_matrices(12, 500)['ndirs'] == 500
+    assert not dipy_home.exists()
+
+
+def test_amico_left_alone_outside_image(tmp_path, monkeypatch):
+    """Without QSIRECON_AMICO_HOME, AMICO keeps looking in DIPY's home directory."""
+    dipy_home = tmp_path / 'dipy_home'
+    monkeypatch.setattr(amico.lut, 'dipy_home', str(dipy_home))
+    monkeypatch.delenv('QSIRECON_AMICO_HOME', raising=False)
+
+    _use_image_amico_matrices()
+    assert amico.lut.dipy_home == str(dipy_home)

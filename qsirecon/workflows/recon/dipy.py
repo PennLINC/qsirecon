@@ -993,9 +993,10 @@ def init_dipy_force_recon_wf(inputs_dict, name='dipy_force_recon', qsirecon_suff
 
         - simulations_file : str
             Path to a pre-generated simulation library (.npz) for this gradient scheme.
-            When omitted, a library is generated at run time and cached under
-            ``$DIPY_HOME/force_simulations``. Supplying a library is what makes the fit
-            reproducible, since generation is seeded non-deterministically.
+            When omitted, a library is generated at run time and written to the node's
+            working directory, or to ``$DIPY_HOME/force_simulations`` if the user has
+            set ``DIPY_HOME``. Supplying a library is what makes the fit reproducible,
+            since generation is seeded non-deterministically.
         - num_simulations : int
             Number of simulated voxels in the library.
         - n_neighbors : int
