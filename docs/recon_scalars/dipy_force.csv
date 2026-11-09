@@ -1,0 +1,45 @@
+force,ak,FORCE axial kurtosis
+force,ak (ambiguity),"Posterior ambiguity of the FORCE axial kurtosis estimate: the full width at half maximum of the weighted kernel density estimate of the posterior, normalized by the range of that parameter across the simulation library"
+force,ak (uncertainty),"Posterior uncertainty of the FORCE axial kurtosis estimate: the weighted interquartile range of the posterior over the retrieved neighbors, normalized by the range of that parameter across the simulation library"
+force,ambiguity,FORCE match ambiguity: the fraction of retrieved neighbor scores above half of the maximum score
+force,csffrac,FORCE cerebrospinal fluid signal fraction
+force,csffrac (ambiguity),"Posterior ambiguity of the FORCE cerebrospinal fluid signal fraction estimate: the full width at half maximum of the weighted kernel density estimate of the posterior, normalized by the range of that parameter across the simulation library"
+force,csffrac (uncertainty),"Posterior uncertainty of the FORCE cerebrospinal fluid signal fraction estimate: the weighted interquartile range of the posterior over the retrieved neighbors, normalized by the range of that parameter across the simulation library"
+force,fa,FORCE fractional anisotropy
+force,fa (ambiguity),"Posterior ambiguity of the FORCE fractional anisotropy estimate: the full width at half maximum of the weighted kernel density estimate of the posterior, normalized by the range of that parameter across the simulation library"
+force,fa (uncertainty),"Posterior uncertainty of the FORCE fractional anisotropy estimate: the weighted interquartile range of the posterior over the retrieved neighbors, normalized by the range of that parameter across the simulation library"
+force,gmfrac,FORCE gray matter signal fraction
+force,gmfrac (ambiguity),"Posterior ambiguity of the FORCE gray matter signal fraction estimate: the full width at half maximum of the weighted kernel density estimate of the posterior, normalized by the range of that parameter across the simulation library"
+force,gmfrac (uncertainty),"Posterior uncertainty of the FORCE gray matter signal fraction estimate: the weighted interquartile range of the posterior over the retrieved neighbors, normalized by the range of that parameter across the simulation library"
+force,kfa,FORCE kurtosis fractional anisotropy
+force,kfa (ambiguity),"Posterior ambiguity of the FORCE kurtosis fractional anisotropy estimate: the full width at half maximum of the weighted kernel density estimate of the posterior, normalized by the range of that parameter across the simulation library"
+force,kfa (uncertainty),"Posterior uncertainty of the FORCE kurtosis fractional anisotropy estimate: the weighted interquartile range of the posterior over the retrieved neighbors, normalized by the range of that parameter across the simulation library"
+force,md,FORCE mean diffusivity
+force,md (ambiguity),"Posterior ambiguity of the FORCE mean diffusivity estimate: the full width at half maximum of the weighted kernel density estimate of the posterior, normalized by the range of that parameter across the simulation library"
+force,md (uncertainty),"Posterior uncertainty of the FORCE mean diffusivity estimate: the weighted interquartile range of the posterior over the retrieved neighbors, normalized by the range of that parameter across the simulation library"
+force,mk,FORCE mean kurtosis
+force,mk (ambiguity),"Posterior ambiguity of the FORCE mean kurtosis estimate: the full width at half maximum of the weighted kernel density estimate of the posterior, normalized by the range of that parameter across the simulation library"
+force,mk (uncertainty),"Posterior uncertainty of the FORCE mean kurtosis estimate: the weighted interquartile range of the posterior over the retrieved neighbors, normalized by the range of that parameter across the simulation library"
+force,ndi,"FORCE neurite density index, summed over the white and gray matter compartments"
+force,ndi (ambiguity),"Posterior ambiguity of the FORCE neurite density index estimate: the full width at half maximum of the weighted kernel density estimate of the posterior, normalized by the range of that parameter across the simulation library"
+force,ndi (uncertainty),"Posterior uncertainty of the FORCE neurite density index estimate: the weighted interquartile range of the posterior over the retrieved neighbors, normalized by the range of that parameter across the simulation library"
+force,numfibers,"FORCE number of fiber populations. An integer from 1 to 3 when using the single best match, or a weighted average over the retrieved neighbors in posterior mode"
+force,numfibers (ambiguity),"Posterior ambiguity of the FORCE fiber population count estimate: the full width at half maximum of the weighted kernel density estimate of the posterior, normalized by the range of that parameter across the simulation library"
+force,numfibers (uncertainty),"Posterior uncertainty of the FORCE fiber population count estimate: the weighted interquartile range of the posterior over the retrieved neighbors, normalized by the range of that parameter across the simulation library"
+force,odi,"FORCE orientation dispersion index, averaged over the tissue compartments"
+force,odi (ambiguity),"Posterior ambiguity of the FORCE orientation dispersion index estimate: the full width at half maximum of the weighted kernel density estimate of the posterior, normalized by the range of that parameter across the simulation library"
+force,odi (uncertainty),"Posterior uncertainty of the FORCE orientation dispersion index estimate: the weighted interquartile range of the posterior over the retrieved neighbors, normalized by the range of that parameter across the simulation library"
+force,rd,FORCE radial diffusivity
+force,rd (ambiguity),"Posterior ambiguity of the FORCE radial diffusivity estimate: the full width at half maximum of the weighted kernel density estimate of the posterior, normalized by the range of that parameter across the simulation library"
+force,rd (uncertainty),"Posterior uncertainty of the FORCE radial diffusivity estimate: the weighted interquartile range of the posterior over the retrieved neighbors, normalized by the range of that parameter across the simulation library"
+force,rk,FORCE radial kurtosis
+force,rk (ambiguity),"Posterior ambiguity of the FORCE radial kurtosis estimate: the full width at half maximum of the weighted kernel density estimate of the posterior, normalized by the range of that parameter across the simulation library"
+force,rk (uncertainty),"Posterior uncertainty of the FORCE radial kurtosis estimate: the weighted interquartile range of the posterior over the retrieved neighbors, normalized by the range of that parameter across the simulation library"
+force,ufa,FORCE voxel-averaged microscopic fractional anisotropy
+force,ufa (ambiguity),"Posterior ambiguity of the FORCE voxel-averaged microscopic fractional anisotropy estimate: the full width at half maximum of the weighted kernel density estimate of the posterior, normalized by the range of that parameter across the simulation library"
+force,ufa (uncertainty),"Posterior uncertainty of the FORCE voxel-averaged microscopic fractional anisotropy estimate: the weighted interquartile range of the posterior over the retrieved neighbors, normalized by the range of that parameter across the simulation library"
+force,ufawm,FORCE microscopic fractional anisotropy within the white matter compartment
+force,uncertainty,FORCE match uncertainty: the interquartile range of the penalized match scores across the retrieved neighbors
+force,wmfrac,FORCE white matter signal fraction
+force,wmfrac (ambiguity),"Posterior ambiguity of the FORCE white matter signal fraction estimate: the full width at half maximum of the weighted kernel density estimate of the posterior, normalized by the range of that parameter across the simulation library"
+force,wmfrac (uncertainty),"Posterior uncertainty of the FORCE white matter signal fraction estimate: the weighted interquartile range of the posterior over the retrieved neighbors, normalized by the range of that parameter across the simulation library"

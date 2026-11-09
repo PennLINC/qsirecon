@@ -14,6 +14,7 @@ from .converters import init_fod_fib_wf, init_mif_to_fibgz_wf, init_qsirecon_to_
 from .dipy import (
     init_dipy_brainsuite_shore_recon_wf,
     init_dipy_dki_recon_wf,
+    init_dipy_force_recon_wf,
     init_dipy_mapmri_recon_wf,
 )
 from .dsi_studio import (
@@ -30,6 +31,7 @@ from .mrtrix import (
     init_mrtrix_csd_recon_wf,
     init_mrtrix_tractography_wf,
 )
+from .rsi import init_rsi_fit_wf
 from .scalar_mapping import (
     init_scalar_to_atlas_wf,
     init_scalar_to_bundle_wf,
@@ -310,11 +312,18 @@ def workflow_from_spec(inputs_dict, node_spec):
             return init_dipy_mapmri_recon_wf(**kwargs)
         if node_spec['action'] == 'DKI_reconstruction':
             return init_dipy_dki_recon_wf(**kwargs)
+        if node_spec['action'] == 'FORCE_reconstruction':
+            return init_dipy_force_recon_wf(**kwargs)
 
     # AMICO operations
     elif software == 'AMICO':
         if node_spec['action'] == 'fit_noddi':
             return init_amico_noddi_fit_wf(**kwargs)
+
+    # ABCD Study RSI operations
+    elif software == 'RSI':
+        if node_spec['action'] == 'fit_rsi':
+            return init_rsi_fit_wf(**kwargs)
 
     elif software == 'pyAFQ':
         from .pyafq import init_pyafq_wf

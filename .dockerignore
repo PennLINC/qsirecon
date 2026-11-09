@@ -14,3 +14,6 @@ qsirecon.egg-info
 .eggs
 
 .tox
+
+# local pixi environment
+.pixi

@@ -300,6 +300,24 @@ class AMICOReconScalars(ReconScalars):
     scalar_metadata = amico_scalars
 
 
+# Scalars produced in the ABCD RSI recon workflow
+rsi_scalars = load_yaml(load_data('scalars/rsi.yaml'))
+
+
+class _RSIReconScalarInputSpec(ReconScalarsInputSpec):
+    pass
+
+
+for input_name in rsi_scalars:
+    _RSIReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    _RSIReconScalarInputSpec.add_class_trait(f'{input_name}_metadata', traits.Dict())
+
+
+class RSIReconScalars(ReconScalars):
+    input_spec = _RSIReconScalarInputSpec
+    scalar_metadata = rsi_scalars
+
+
 # Scalars produced by DSI Studio
 dsistudio_scalars = load_yaml(load_data('scalars/dsistudio_gqi.yaml'))
 
@@ -351,6 +369,24 @@ for input_name in dipy_mapmri_scalars:
 class DIPYMAPMRIReconScalars(ReconScalars):
     input_spec = _DIPYMAPMRIReconScalarInputSpec
     scalar_metadata = dipy_mapmri_scalars
+
+
+# DIPY implementation of FORCE
+dipy_force_scalars = load_yaml(load_data('scalars/dipy_force.yaml'))
+
+
+class _DIPYFORCEReconScalarInputSpec(ReconScalarsInputSpec):
+    pass
+
+
+for input_name in dipy_force_scalars:
+    _DIPYFORCEReconScalarInputSpec.add_class_trait(input_name, File(exists=True))
+    _DIPYFORCEReconScalarInputSpec.add_class_trait(f'{input_name}_metadata', traits.Dict())
+
+
+class DIPYFORCEReconScalars(ReconScalars):
+    input_spec = _DIPYFORCEReconScalarInputSpec
+    scalar_metadata = dipy_force_scalars
 
 
 # Same as DIPY implementation of 3dSHORE, but with brainsuite bases

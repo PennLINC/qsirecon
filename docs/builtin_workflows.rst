@@ -148,7 +148,26 @@ This workflow produces :ref:`mrtrix_dwi_outputs`.
 
 This workflow uses the AFQ :footcite:p:`pyafq2` implemented in Python :footcite:p:`pyafq` to recognize
 major white matter pathways within the tractography, and then extract tissue properties along
-those pathways. See the `pyAFQ documentation <https://yeatmanlab.github.io/pyAFQ/>`_ .
+those pathways. See the `pyAFQ documentation <https://tractometry.org/pyAFQ/>`_ .
+
+pyAFQ (version 3 and later) requires anatomical images that are aligned with the DWI data:
+the preprocessed T1w image, its brain mask, and the CSF, GM and WM tissue probability maps
+that QSIPrep writes alongside it.
+The brain mask is used as the brain mask of the DWI data,
+and the tissue probability maps constrain tractography anatomically
+and define the white matter/gray matter interface in which tractography is seeded.
+Because these come from QSIPrep, pyAFQ's neural-network segmentation models are not needed.
+Any pyAFQ parameter in the recon spec that the installed version of pyAFQ does not recognize
+is dropped with a warning in the log.
+
+pyAFQ loads its bundle templates from ``$AFQ_HOME`` (``~/AFQ_data`` by default) and downloads
+them from figshare when they are missing.
+The QSIRecon container image ships these templates, so containerized runs do not need network
+access for them.
+Outside the container, pyAFQ's own download can be answered by figshare with a bot-check page
+instead of the file, which later fails with an ``is not a gzip file`` error.
+In that case, delete the offending file and run ``scripts/fetch_afq_templates.py`` from the
+QSIRecon repository to populate ``$AFQ_HOME``.
 
 PyAFQ Outputs
 -------------
@@ -209,6 +228,79 @@ Other Outputs
    :header: "File Name", "Description"
    :file: nonscalars/amico_noddi.csv
    :widths: 15, 30
+
+
+.. _abcd_rsi:
+
+``abcd_rsi``
+============
+
+This workflow fits the Restriction Spectrum Imaging (RSI) :footcite:p:`white2013` model
+using a port of the ABCD Study implementation :footcite:p:`hagler2019`
+(`RSIproc 1.0.8 <https://github.com/ABCD-STUDY/RSI>`_).
+``abcd_rsi`` uses RSIproc's model settings, and QSIRecon's tests check that the port reproduces
+the unmodified RSIproc script, so the maps match those from the ABCD Study's code.
+The signal is normalized to the mean b=0 signal and modeled as the sum of three compartments:
+
+  * restricted (parallel diffusivity 0.001 mm²/s, perpendicular diffusivity 1e-10 mm²/s),
+  * hindered (parallel diffusivity 0.001 mm²/s, perpendicular diffusivity 0.0009 mm²/s),
+  * free water (isotropic diffusivity 0.003 mm²/s).
+
+The fiber orientation distributions of the restricted and hindered compartments are modeled with
+spherical harmonics up to degree 4, and the model is fit with Tikhonov-regularized least squares
+(lambda = 0.1).
+For each compartment, the isotropic (``*iso``), directional (``*dir``) and total (``*total``)
+signal components are the norms of the degree 0, degree > 0 and all spherical harmonic
+coefficients, respectively.
+These correspond to the N0, ND and NT measures written by RSIproc
+(for example, ``param-restrictediso`` is RSIproc's ``n0s1``).
+The free water compartment has no directional component.
+These measures are not normalized by the L2 norm of all coefficients, which is written separately.
+The model settings for each compartment are recorded under ``Model.Parameters.Compartments``
+in each sidecar.
+Volumes with b-values below 50 s/mm² are treated as b=0 images.
+
+The model settings can be changed in a custom recon spec (see :ref:`building_workflows`).
+For example, to fit RSI with different diffusivities and a higher spherical harmonic degree
+for the restricted compartment:
+
+.. code-block:: yaml
+
+  name: custom_rsi
+  space: T1w
+  nodes:
+  -   action: fit_rsi
+      input: qsirecon
+      name: fit_rsi
+      qsirecon_suffix: customRSI
+      software: RSI
+      parameters:
+          restricted_parallel_diffusivity: 0.0012
+          restricted_perpendicular_diffusivity: 0.0
+          restricted_sh_degree: 6
+          hindered_parallel_diffusivity: 0.0012
+          hindered_perpendicular_diffusivity: 0.0008
+          hindered_sh_degree: 4
+          free_diffusivity: 0.003
+          regularization_lambda: 0.1
+          b0_threshold: 50
+
+Diffusivities are in mm²/s.
+Spherical harmonic degrees must be even, from 2 to 12.
+Any parameter left out keeps the ``abcd_rsi`` default shown above.
+Maps fit with non-default settings are no longer comparable to ABCD Study RSI maps.
+
+Scalar Maps
+-----------
+.. csv-table::
+   :header: "Model", "Parameter", "Description"
+   :file: recon_scalars/abcd_rsi.csv
+   :widths: 15, 10, 30
+
+Other Outputs
+-------------
+
+No other outputs are produced.
 
 
 .. _dsi_studio_gqi:
@@ -384,6 +476,72 @@ Other Outputs
    :widths: 15, 30
 
 
+.. _dipy_force:
+
+``dipy_force``
+==============
+
+FORCE :footcite:p:`force` turns reconstruction around: instead of fitting an analytic
+model to the measured signal, it simulates a large library of voxels with known
+microstructure for this subject's exact gradient scheme, then matches each measured voxel
+against the library by normalized inner product. The microstructure of the closest
+simulation, or a posterior mean over the closest simulations, becomes the estimate.
+
+Because the library is tied to the gradient scheme, it is generated at run time. By
+default this happens once for each DWI series, and the library is written to that series'
+node in the working directory as ``*_force_simulations.npz``.
+While a library is being generated, its intermediate arrays are also kept in that node's
+working directory, not in ``/tmp``. They take several hundred megabytes at the default
+500,000 simulations and are removed once the library is built.
+
+To keep libraries between runs, set the ``DIPY_HOME`` environment variable, which the
+container image leaves unset, to a directory outside the image. Libraries are then stored in
+``$DIPY_HOME/force_simulations`` and reused by any later run with exactly the same
+gradient table and simulation parameters. With Apptainer, for example:
+
+.. code-block:: bash
+
+   apptainer run --containall --writable-tmpfs \
+       -B /path/to/dipy_home:/dipy_home \
+       --env DIPY_HOME=/dipy_home \
+       ...
+
+With Docker, use ``-v /path/to/dipy_home:/dipy_home -e DIPY_HOME=/dipy_home`` instead.
+
+.. note::
+   Setting ``DIPY_HOME`` does not affect the NODDI workflows in the container. AMICO
+   normally reads its precomputed rotation matrices from ``DIPY_HOME``, but QSIRecon
+   points it at the copy that ships in the container image instead.
+
+Generation is seeded non-deterministically, so a run is only exactly reproducible if it
+reuses a library, either from ``$DIPY_HOME`` or by passing a pre-generated one with the
+``simulations_file`` parameter.
+
+Two parameters are worth knowing about:
+
+* ``compute_dki`` adds the kurtosis maps (``ak``, ``rk``, ``mk``, ``kfa``). It needs at
+  least two non-zero shells; DIPY warns and disables it otherwise, in which case those
+  maps are simply not written.
+* ``uncertainty_maps`` adds a posterior uncertainty and ambiguity map for each of the 14
+  microstructure parameters, on top of the 17 maps written by default. These are computed
+  during the fit either way, so enabling this costs output size and report height rather
+  than fit time. It requires DIPY 1.12.1 or later.
+
+Scalar Maps
+-----------
+.. csv-table::
+   :header: "Model", "Parameter", "Description"
+   :file: recon_scalars/dipy_force.csv
+   :widths: 15, 10, 30
+
+Other Outputs
+-------------
+.. csv-table::
+   :header: "File Name", "Description"
+   :file: nonscalars/dipy_force.csv
+   :widths: 15, 30
+
+
 .. _dipy_3dshore:
 
 ``dipy_3dshore``
@@ -516,11 +674,15 @@ the model-fitting workflows and which sampling schemes work with them.
 +================================================+=============+============+=================+
 |:ref:`amico_noddi`                              |     Yes     |    No      |      No         |
 +------------------------------------------------+-------------+------------+-----------------+
+|:ref:`abcd_rsi`                                 |     Yes     |    No      |      No         |
++------------------------------------------------+-------------+------------+-----------------+
 |:ref:`csdsi_3dshore`                            |     Yes     |    Yes     |      No         |
 +------------------------------------------------+-------------+------------+-----------------+
 |:ref:`dipy_3dshore`                             |     Yes     |    Yes     |      No         |
 +------------------------------------------------+-------------+------------+-----------------+
 |:ref:`dipy_dki`                                 |     Yes     |    No      |      No         |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`dipy_force`                               |     Yes     |    Yes     |      Yes\*\*    |
 +------------------------------------------------+-------------+------------+-----------------+
 |:ref:`dipy_mapmri`                              |     Yes     |    Yes     |      No         |
 +------------------------------------------------+-------------+------------+-----------------+
@@ -556,6 +718,10 @@ the model-fitting workflows and which sampling schemes work with them.
 +------------------------------------------------+-------------+------------+-----------------+
 
 \* Not recommended
+
+\*\* Works, but the packaged ``dipy_force`` spec sets ``compute_dki: true``, which needs
+at least two non-zero shells. On single-shell data DIPY disables it and the kurtosis maps
+are not written.
 
 .. _connectivity_matrices:
 

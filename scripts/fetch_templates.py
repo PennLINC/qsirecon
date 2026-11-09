@@ -18,6 +18,8 @@ def fetch_MNI2009():
     template = 'MNI152NLin2009cAsym'
     tf.get(template, resolution=1, desc=None, suffix='T1w')
     tf.get(template, resolution=1, desc='brain', suffix='mask')
+    # pyAFQ registers to the T2w template by default.
+    tf.get(template, resolution=1, desc=None, suffix='T2w')
 
 
 def fetch_MNIInfant():

@@ -367,6 +367,35 @@ def test_amico_noddi(data_dir, output_dir, working_dir):
 
 
 @pytest.mark.integration
+@pytest.mark.abcd_rsi
+def test_abcd_rsi(data_dir, output_dir, working_dir):
+    """Run the ABCD Study RSI reconstruction workflow.
+
+    Inputs
+    ------
+    - qsiprep multi shell results (data/multishell_output)
+    """
+    TEST_NAME = 'abcd_rsi'
+
+    dataset_dir = download_test_data('multishell_output', data_dir)
+    # XXX: Having to modify dataset_dirs is suboptimal.
+    dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
+    out_dir = os.path.join(output_dir, TEST_NAME)
+    work_dir = os.path.join(working_dir, TEST_NAME)
+
+    parameters = [
+        dataset_dir,
+        out_dir,
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=abcd_rsi',
+    ]
+
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
+
+
+@pytest.mark.integration
 @pytest.mark.autotrack
 def test_autotrack(data_dir, output_dir, working_dir):
     """Run reconstruction workflow test.
@@ -564,6 +593,41 @@ def test_dipy_dki(data_dir, output_dir, working_dir):
         f'-w={work_dir}',
         '--sloppy',
         '--recon-spec=dipy_dki',
+    ]
+
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
+
+
+@pytest.mark.integration
+@pytest.mark.dipy_force
+def test_dipy_force(data_dir, output_dir, working_dir):
+    """Run the DIPY FORCE reconstruction workflow.
+
+    Uses the multishell dataset because FORCE's kurtosis metrics need at least two
+    non-zero shells. ``--sloppy`` shrinks the simulation library from 500000 entries to
+    5000 and turns off the DKI metrics, so the kurtosis maps are expected to be absent
+    from the outputs.
+
+    Inputs:
+    -------
+
+    - qsirecon multi shell results (data/DSDTI_fmap)
+    """
+    TEST_NAME = 'dipy_force'
+
+    dataset_dir = download_test_data('multishell_output', data_dir)
+    # XXX: Having to modify dataset_dirs is suboptimal.
+    dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
+    out_dir = os.path.join(output_dir, TEST_NAME)
+    work_dir = os.path.join(working_dir, TEST_NAME)
+
+    parameters = [
+        dataset_dir,
+        out_dir,
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=dipy_force',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
