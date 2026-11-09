@@ -124,10 +124,9 @@ then you should ``datalad get`` relevant subject data before running *QSIRecon*,
 and be mindful about how you mount the directory in Docker/Apptainer.
 
 .. _anat_reqs:
-
-********************************************
 .. _anatomical_requirements:
 
+********************************************
 Anatomical Data for Reconstruction Workflows
 ********************************************
 
