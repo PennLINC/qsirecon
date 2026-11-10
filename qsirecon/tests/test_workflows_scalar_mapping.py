@@ -291,6 +291,50 @@ def test_scalar_filenames_for_two_resolutions(tmp_path):
     )
 
 
+@pytest.mark.parametrize(
+    ('res', 'expected'),
+    [
+        ('2mm', 'sub-01_ses-1_space-MNI152NLin6Asym_res-2mm_model-dki_param-{}_dwimap.nii.gz'),
+        (None, 'sub-01_ses-1_space-MNI152NLin6Asym_model-dki_param-{}_dwimap.nii.gz'),
+    ],
+)
+def test_scalar_output_wf_writes_res(tmp_path, res, expected):
+    """The scalar output workflow, run as a whole, names every map with the res it was given."""
+    from qsirecon.workflows.recon.utils import init_scalar_output_wf
+
+    source_file = (
+        tmp_path
+        / 'in'
+        / 'sub-01'
+        / 'ses-1'
+        / 'dwi'
+        / DWI_NAME.replace(
+            '_desc-preproc',
+            '_res-1p7mm_desc-preproc',
+        )
+    )
+    source_file.parent.mkdir(parents=True)
+    source_file.touch()
+
+    wf = init_scalar_output_wf(name='scalar_output_wf', res=res)
+    wf.base_dir = str(tmp_path / 'work')
+    wf.inputs.inputnode.source_file = str(source_file)
+    wf.inputs.inputnode.space = 'MNI152NLin6Asym'
+    wf.inputs.inputnode.scalar_configs = [
+        {
+            'path': _write_scalar(tmp_path / f'{param}.nii.gz'),
+            'bids': {'model': 'dki', 'param': param},
+            'metadata': {},
+        }
+        for param in ('fa', 'md')
+    ]
+    wf.get_node('ds_scalar').inputs.base_directory = str(tmp_path / 'out')
+    wf.run(plugin='Linear')
+
+    written = sorted(path.name for path in (tmp_path / 'out').rglob('*.nii.gz'))
+    assert written == [expected.format('fa'), expected.format('md')]
+
+
 def test_scalar_filenames_never_inherit_res(tmp_path, monkeypatch):
     """A res- in the name of the input DWI is not passed on to any output."""
     source_name = 'sub-01_ses-1_space-ACPC_res-1p7mm_desc-preproc_dwi.nii.gz'
