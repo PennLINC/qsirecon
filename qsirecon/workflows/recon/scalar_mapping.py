@@ -183,6 +183,15 @@ def init_scalar_to_template_wf(
             List of transformed files
 
     """
+    if not inputs_dict.get('has_qsiprep_anat_transforms'):
+        raise ValueError(
+            f'The "{name}" node (action: template_map) requires ACPC-to-template transforms '
+            'from the preprocessed anatomical data, but none were found for '
+            f'{inputs_dict.get("dwi_file", "this DWI")}. '
+            'This happens when the input dataset was preprocessed with --anat-modality none, '
+            'or when its anatomical-to-template transform files are missing.'
+        )
+
     workflow = Workflow(name=name)
     workflow.__desc__ = (
         f'Scalar NIfTI files were warped to {inputs_dict["template_output_space"]} template space.'

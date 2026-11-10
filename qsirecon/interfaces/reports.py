@@ -38,7 +38,7 @@ from .qc import createB0_ColorFA_Mask_Sprites, createSprite4D
 SUBJECT_TEMPLATE = """\
 \t<ul class="elem-desc">
 \t\t<li>Subject ID: {subject_id}</li>
-\t\t<li>Structural images: {n_t1w:d} T1-weighted {t2w}</li>
+\t\t<li>Structural images: {anat_summary}</li>
 \t\t<li>Diffusion-weighted series: {n_dwi:d}</li>
 \t\t<li>Standard output spaces: {std_spaces}</li>
 \t\t<li>Non-standard output spaces: {nstd_spaces}</li>
@@ -143,9 +143,12 @@ class SubjectSummary(SummaryInterface):
         else:
             freesurfer_status = 'Pre-existing directory'
 
-        t2w_seg = ''
+        anat_parts = []
+        if self.inputs.t1w:
+            anat_parts.append(f'{len(self.inputs.t1w):d} T1-weighted')
         if self.inputs.t2w:
-            t2w_seg = f'(+ {len(self.inputs.t2w):d} T2-weighted)'
+            anat_parts.append(f'{len(self.inputs.t2w):d} T2-weighted')
+        anat_summary = ', '.join(anat_parts) or 'None'
 
         # Add list of tasks with number of runs
         dwi_series = self.inputs.dwi if isdefined(self.inputs.dwi) else []
@@ -153,8 +156,7 @@ class SubjectSummary(SummaryInterface):
 
         return SUBJECT_TEMPLATE.format(
             subject_id=self.inputs.subject_id,
-            n_t1w=len(self.inputs.t1w),
-            t2w=t2w_seg,
+            anat_summary=anat_summary,
             n_dwi=len(dwi_series),
             std_spaces=', '.join(self.inputs.std_spaces),
             nstd_spaces=', '.join(self.inputs.nstd_spaces),
