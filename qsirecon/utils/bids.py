@@ -52,6 +52,8 @@ LOGGER = config.loggers.utils
 
 #: Names the input dataset may give the anatomical space in from-/to- labels
 ANAT_ALIASES = ('ACPC', 'T1w', 'T2w')
+#: The template that the ROIs for the ODF reports (data/crossing_rois.nii.gz) are drawn in
+ODF_ROI_SPACE = 'MNI152NLin2009cAsym'
 
 
 class BIDSError(ValueError):
@@ -200,6 +202,9 @@ def collect_anatomical_data(
         Dictionary of status flags.
         ``template_transform_path`` is the list of spaces a chain goes through,
         from the anatomical space to the output space, or None when there is no chain.
+        ``odf_rois_to_acpc_xfm`` is the list of transforms, in the order ANTs takes them,
+        that bring the ODF report ROIs from the template they are drawn in to the
+        anatomical space, or None when they could not be found.
 
     Notes
     -----
@@ -211,7 +216,11 @@ def collect_anatomical_data(
     from qsirecon.data import load as load_data
 
     anat_data = {}
-    status = {'template_output_space': None, 'template_transform_path': None}
+    status = {
+        'template_output_space': None,
+        'template_transform_path': None,
+        'odf_rois_to_acpc_xfm': None,
+    }
 
     if session_id is None:
         LOGGER.warning('Assuming no anatomical data.')
@@ -342,7 +351,53 @@ def collect_anatomical_data(
     else:
         # Determine the output space from the transform file
         status['template_output_space'] = _determine_output_space(anat_data)
+
+    if status['has_qsiprep_t1w_transforms'] and not config.execution.skip_odf_reports:
+        status['odf_rois_to_acpc_xfm'] = _odf_roi_transforms(dataset_edges)
+
     return anat_data, status
+
+
+def _odf_roi_transforms(dataset_edges):
+    """Find the transforms that bring the ODF report ROIs into the anatomical space.
+
+    The ROIs are drawn in MNI152NLin2009cAsym, whatever the output space is. The input
+    dataset's own transform from that template is used when there is one. Otherwise
+    the ROIs are chained through TemplateFlow's template-to-template transforms to a
+    template the dataset does have.
+
+    Parameters
+    ----------
+    dataset_edges : :obj:`list` of :class:`~qsirecon.utils.transforms.Xfm`
+        The template transforms in the input dataset.
+
+    Returns
+    -------
+    files : :obj:`list` of :obj:`str` or None
+        The transforms in the order ANTs takes them.
+        None if no chain was found or a transform could not be downloaded,
+        in which case the caller falls back to the transform of the output space.
+    """
+    try:
+        try:
+            edges = dataset_edges
+            path = find_transform_chain(edges, ODF_ROI_SPACE, ANAT_SPACE, bidirectional=False)
+        except NoTransformChainError:
+            edges = [*dataset_edges, *templateflow_edges()]
+            path = find_transform_chain(edges, ODF_ROI_SPACE, ANAT_SPACE, bidirectional=False)
+
+        return [
+            fetch_templateflow_xfm(xfm) if xfm.source == 'templateflow' else xfm.path
+            for xfm in chain_files(edges, path)
+        ]
+    except Exception as exc:
+        # The ROIs only feed a report figure, so nothing here should stop the build
+        LOGGER.warning(
+            f'Could not find transforms from {ODF_ROI_SPACE}, the space of the ROIs used in '
+            f'the ODF reports, to the anatomical space ({exc}). The transform of the output '
+            'space will be used instead, so the ROIs may be misplaced in the reports.'
+        )
+        return None
 
 
 def _chain_template_transforms(dataset_edges, output_space):

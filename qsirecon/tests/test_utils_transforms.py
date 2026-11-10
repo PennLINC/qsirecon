@@ -322,14 +322,125 @@ def test_template_mapper_takes_a_chain(tmp_path):
     assert TemplateMapper(to_template_transform=files).inputs.to_template_transform == files
 
 
-def test_pyafq_rejects_a_chain():
-    """pyAFQ takes one transform file, so a chained output space is an error."""
-    from qsirecon.workflows.recon.pyafq import init_pyafq_wf
+def test_find_transform_chain_one_way():
+    """A one-way search only needs the files for the direction asked for."""
+    edges = _edges(('A', 'B'), ('B', 'ACPC'), ('ACPC', 'B'))
 
-    inputs_dict = {
-        'has_qsiprep_t1w': True,
-        'template_output_space': 'MNI152NLin6Asym',
-        'template_transform_path': ['ACPC', 'MNI152NLin2009cAsym', 'MNI152NLin6Asym'],
-    }
-    with pytest.raises(ValueError, match='pyAFQ takes a single template-to-anatomical'):
-        init_pyafq_wf(inputs_dict=inputs_dict)
+    with pytest.raises(NoTransformChainError):
+        transforms.find_transform_chain(edges, 'A', 'ACPC')
+
+    assert transforms.find_transform_chain(edges, 'A', 'ACPC', bidirectional=False) == [
+        'A',
+        'B',
+        'ACPC',
+    ]
+    with pytest.raises(NoTransformChainError):
+        transforms.find_transform_chain(edges, 'ACPC', 'A', bidirectional=False)
+
+
+def _infant_only(bids_dir):
+    """Rename the dataset's template transforms so it is normalized to MNIInfant+2 only."""
+    anat_dir = bids_dir / 'sub-01' / 'anat'
+    for xfm in list(anat_dir.glob('*MNI152NLin2009cAsym*_xfm.h5')):
+        xfm.rename(anat_dir / xfm.name.replace('MNI152NLin2009cAsym', 'MNIInfant+2'))
+
+
+@pytest.mark.parametrize('token', ['MNI152NLin2009cAsym', 'MNI152NLin6Asym'])
+def test_odf_rois_use_dataset_transform(bids_dir, fake_templateflow, token):
+    """The ODF ROIs come from MNI152NLin2009cAsym, whatever the output space is."""
+    _, status = _collect(bids_dir, token)
+    assert _names(status['odf_rois_to_acpc_xfm']) == [
+        'sub-01_from-MNI152NLin2009cAsym_to-ACPC_mode-image_xfm.h5',
+    ]
+    assert not any('MNIInfant' in name for name in fake_templateflow)
+
+
+def test_odf_rois_chained_for_infant_dataset(bids_dir, fake_templateflow):
+    """A dataset normalized to an infant template reaches the ROIs through TemplateFlow."""
+    _infant_only(bids_dir)
+
+    anat_data, status = _collect(bids_dir, 'MNIInfant:cohort-auto')
+    assert status['template_output_space'] == 'MNIInfant+2'
+    # The output space itself is direct
+    assert status['template_transform_path'] is None
+    assert isinstance(anat_data['template_to_acpc_xfm'], str)
+    # MNI152NLin2009cAsym -> MNI152NLin6Asym -> MNIInfant+2 -> ACPC, last hop first
+    assert _names(status['odf_rois_to_acpc_xfm']) == [
+        'sub-01_from-MNIInfant+2_to-ACPC_mode-image_xfm.h5',
+        'tpl-MNIInfant_cohort-2_from-MNI152NLin6Asym_mode-image_xfm.h5',
+        'tpl-MNI152NLin6Asym_from-MNI152NLin2009cAsym_mode-image_xfm.h5',
+    ]
+    assert sorted(fake_templateflow) == [
+        'tpl-MNI152NLin6Asym_from-MNI152NLin2009cAsym_mode-image_xfm.h5',
+        'tpl-MNIInfant_cohort-2_from-MNI152NLin6Asym_mode-image_xfm.h5',
+    ]
+
+
+def test_odf_rois_fall_back_when_download_fails(bids_dir, monkeypatch):
+    """A failed download does not stop the build; the output space's transform is used."""
+    _infant_only(bids_dir)
+
+    def _offline(template, **query):
+        raise OSError('no network')
+
+    monkeypatch.setattr(transforms, '_tf_get', _offline)
+
+    anat_data, status = _collect(bids_dir, 'MNIInfant:cohort-2')
+    assert status['has_qsiprep_t1w_transforms'] is True
+    assert anat_data['template_to_acpc_xfm'] is not None
+    assert status['odf_rois_to_acpc_xfm'] is None
+
+
+def test_odf_rois_skipped_without_reports(bids_dir, monkeypatch):
+    """With --skip-odf-reports, TemplateFlow is not consulted for the ROIs."""
+    from qsirecon import config
+
+    _infant_only(bids_dir)
+    _forbid_templateflow(monkeypatch)
+    monkeypatch.setattr(config.execution, 'skip_odf_reports', True)
+
+    _, status = _collect(bids_dir, 'MNIInfant:cohort-2')
+    assert status['odf_rois_to_acpc_xfm'] is None
+
+
+@pytest.mark.parametrize('chained', [False, True])
+def test_dwi_anatomical_wf_odf_rois(tmp_path, monkeypatch, chained):
+    """The ODF ROI node takes its own transforms when they were found."""
+    from nipype.interfaces.base import isdefined
+
+    from qsirecon import config
+    from qsirecon.workflows.recon.anatomical import init_dwi_recon_anatomical_workflow
+
+    monkeypatch.setattr(config.execution, 'output_dir', tmp_path)
+    monkeypatch.setattr(config.workflow, 'b0_threshold', 100)
+    monkeypatch.setattr(config.workflow, 'output_spaces', ['MNI152NLin6Asym'])
+
+    odf_xfm = None
+    if chained:
+        odf_xfm = [
+            str(tmp_path / 'from-A_to-ACPC_xfm.h5'),
+            str(tmp_path / 'tpl-A_from-MNI152NLin2009cAsym_xfm.h5'),
+        ]
+        for xfm in odf_xfm:
+            open(xfm, 'w').close()
+
+    wf, _ = init_dwi_recon_anatomical_workflow(
+        atlas_configs={},
+        has_qsiprep_5tt_hsvs=False,
+        needs_t1w_transform=False,
+        has_freesurfer_5tt_hsvs=False,
+        has_qsiprep_t1w=True,
+        has_qsiprep_t1w_transforms=True,
+        has_freesurfer=False,
+        extras_to_make=[],
+        name='dwi_specific_anat_wf',
+        template_output_space='MNI152NLin6Asym',
+        odf_rois_to_acpc_xfm=odf_xfm,
+    )
+
+    transforms_input = wf.get_node('odf_rois').inputs.transforms
+    if odf_xfm:
+        assert transforms_input == odf_xfm
+    else:
+        # Left to be connected from the output space's transform
+        assert not isdefined(transforms_input)

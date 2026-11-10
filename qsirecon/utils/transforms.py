@@ -124,11 +124,8 @@ def fetch_templateflow_xfm(xfm: Xfm) -> str:
     return str(found)
 
 
-def find_transform_chain(edges, src: str, dst: str) -> list[str]:
+def find_transform_chain(edges, src: str, dst: str, bidirectional: bool = True) -> list[str]:
     """Return the shortest path of spaces from ``src`` to ``dst``.
-
-    Only hops with a transform file in each direction are used, so the returned path
-    can be walked both ways.
 
     Parameters
     ----------
@@ -136,6 +133,11 @@ def find_transform_chain(edges, src: str, dst: str) -> list[str]:
         The available transforms.
     src, dst : :obj:`str`
         The spaces to link.
+    bidirectional : :obj:`bool`, optional
+        If True (the default), only hops with a transform file in each direction are
+        used, so the returned path can be walked both ways.
+        If False, the path only needs the files for resampling an image from ``src``
+        to ``dst``.
 
     Returns
     -------
@@ -150,9 +152,13 @@ def find_transform_chain(edges, src: str, dst: str) -> list[str]:
     import networkx as nx
 
     directed = {(xfm.frm, xfm.to) for xfm in edges}
-    graph = nx.Graph()
     # Sorted, so that ties between equally short chains are broken the same way each run
-    graph.add_edges_from(sorted((u, v) for u, v in directed if (v, u) in directed))
+    if bidirectional:
+        graph = nx.Graph()
+        graph.add_edges_from(sorted((u, v) for u, v in directed if (v, u) in directed))
+    else:
+        graph = nx.DiGraph()
+        graph.add_edges_from(sorted(directed))
 
     try:
         return nx.shortest_path(graph, src, dst)

@@ -99,11 +99,15 @@ A few things to keep in mind:
 - A transform is needed in both directions for every step of the chain.
 - ``cohort-auto`` cannot be used for a space that is reached through a chain;
   name the cohort.
-- pyAFQ workflows take a single transform, so they stop with an error when the
-  output space is only reached through a chain.
 
 If no chain reaches the requested template, *QSIRecon* stops with an error that lists
 the templates the input dataset has transforms for.
+
+The regions shown in the ODF figures of the reports are drawn in ``MNI152NLin2009cAsym``,
+so they are always brought into the space of the DWI from that template, in the same way:
+with the input dataset's own transform when it has one, and through a chain otherwise.
+If no chain is found or a transform cannot be downloaded, the transform of the output
+space is used instead and a warning is logged.
 
 Resolutions
 ===========
