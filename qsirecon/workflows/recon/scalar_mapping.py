@@ -184,13 +184,16 @@ def init_scalar_to_template_wf(
             List of transformed files
 
     """
-    workflow = Workflow(name=name)
-    if not inputs_dict.get('template_output_space'):
+    if not inputs_dict.get('has_qsiprep_anat_transforms'):
         raise ValueError(
-            'Scalar maps cannot be warped to a template, because the input dataset has no '
-            'transforms between its anatomical space and a template.'
+            f'The "{name}" node (action: template_map) requires ACPC-to-template transforms '
+            'from the preprocessed anatomical data, but none were found for '
+            f'{inputs_dict.get("dwi_file", "this DWI")}. '
+            'This happens when the input dataset was preprocessed with --anat-modality none, '
+            'or when its anatomical-to-template transform files are missing.'
         )
 
+    workflow = Workflow(name=name)
     resolution = config.workflow.output_space().resolution
     if resolution is None:
         grid_desc = 'at the smallest voxel dimension of the preprocessed DWI'

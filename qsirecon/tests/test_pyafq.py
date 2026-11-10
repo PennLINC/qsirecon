@@ -68,11 +68,11 @@ def test_builtin_specs_match_installed_pyafq(spec_name, workflow_warnings):
 
 
 def test_init_pyafq_wf_requires_anatomical_data():
-    """Workflow construction fails early when the preprocessed data have no T1w."""
+    """Workflow construction fails early when the preprocessed data have no anatomical image."""
     from qsirecon.workflows.recon.pyafq import init_pyafq_wf
 
-    with pytest.raises(ValueError, match='requires a T1w image'):
-        init_pyafq_wf({'has_qsiprep_t1w': False}, name='afq', params={})
+    with pytest.raises(ValueError, match='requires an anatomical image'):
+        init_pyafq_wf({'has_qsiprep_anat': False}, name='afq', params={})
 
 
 def test_pyafq_interface_requires_pve_for_tractography(tmp_path):

@@ -167,14 +167,14 @@ def bids_dir(tmp_path):
     return bids_dir
 
 
-def _collect(bids_dir, token, needs_t1w_transform=False):
+def _collect(bids_dir, token, needs_anat_transform=False):
     layout = BIDSLayout(bids_dir, validate=False, config=['bids', 'derivatives'])
     (output_space,) = spaces.parse_output_spaces([token])
     return xbids.collect_anatomical_data(
         layout=layout,
         subject_id='01',
         session_id=Query.NONE,
-        needs_t1w_transform=needs_t1w_transform,
+        needs_anat_transform=needs_anat_transform,
         output_space=output_space,
         bids_filters={},
     )
@@ -206,9 +206,9 @@ def test_collect_direct_transforms(bids_dir, fake_templateflow, monkeypatch):
 
 def test_collect_chained_transforms(bids_dir, fake_templateflow):
     """QSIPrep with MNI152NLin2009cAsym, then QSIRecon with MNI152NLin6Asym."""
-    anat_data, status = _collect(bids_dir, 'MNI152NLin6Asym:res-2mm', needs_t1w_transform=True)
+    anat_data, status = _collect(bids_dir, 'MNI152NLin6Asym:res-2mm', needs_anat_transform=True)
 
-    assert status['has_qsiprep_t1w_transforms'] is True
+    assert status['has_qsiprep_anat_transforms'] is True
     assert status['template_output_space'] == 'MNI152NLin6Asym'
     assert status['template_transform_path'] == ['ACPC', 'MNI152NLin2009cAsym', 'MNI152NLin6Asym']
 
@@ -303,7 +303,7 @@ def test_collect_no_transforms_does_not_chain(bids_dir, fake_templateflow):
         xfm.unlink()
 
     anat_data, status = _collect(bids_dir, 'MNI152NLin6Asym')
-    assert status['has_qsiprep_t1w_transforms'] is False
+    assert status['has_qsiprep_anat_transforms'] is False
     assert status['template_output_space'] is None
     assert anat_data['acpc_to_template_xfm'] is None
     assert fake_templateflow == []
@@ -386,7 +386,7 @@ def test_odf_rois_dropped_when_download_fails(bids_dir, monkeypatch):
     monkeypatch.setattr(transforms, '_tf_get', _offline)
 
     anat_data, status = _collect(bids_dir, 'MNIInfant:cohort-2')
-    assert status['has_qsiprep_t1w_transforms'] is True
+    assert status['has_qsiprep_anat_transforms'] is True
     assert anat_data['template_to_acpc_xfm'] is not None
     assert status['odf_rois_to_acpc_xfm'] is None
 
@@ -425,10 +425,10 @@ def test_dwi_anatomical_wf_odf_rois(tmp_path, monkeypatch, chained):
     wf, status = init_dwi_recon_anatomical_workflow(
         atlas_configs={},
         has_qsiprep_5tt_hsvs=False,
-        needs_t1w_transform=False,
+        needs_anat_transform=False,
         has_freesurfer_5tt_hsvs=False,
-        has_qsiprep_t1w=True,
-        has_qsiprep_t1w_transforms=True,
+        has_qsiprep_anat=True,
+        has_qsiprep_anat_transforms=True,
         has_freesurfer=False,
         extras_to_make=[],
         name='dwi_specific_anat_wf',

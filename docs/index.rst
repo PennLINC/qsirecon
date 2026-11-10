@@ -10,6 +10,7 @@ Contents
 
    installation
    quickstart
+   input_data
    models
    builtin_workflows
    building_workflows

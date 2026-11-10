@@ -268,14 +268,14 @@ def infant_layout(tmp_path):
     return bids_dir
 
 
-def _collect(bids_dir, token, needs_t1w_transform=False):
+def _collect(bids_dir, token, needs_anat_transform=False):
     layout = BIDSLayout(bids_dir, validate=False, config=['bids', 'derivatives'])
     (output_space,) = spaces.parse_output_spaces([token])
     return xbids.collect_anatomical_data(
         layout=layout,
         subject_id='01',
         session_id=Query.NONE,
-        needs_t1w_transform=needs_t1w_transform,
+        needs_anat_transform=needs_anat_transform,
         output_space=output_space,
         bids_filters={},
     )
@@ -293,18 +293,18 @@ def _collect(bids_dir, token, needs_t1w_transform=False):
 def test_collect_anatomical_data_output_space(infant_layout, token, template):
     """The transforms of the requested template (and cohort) are the ones collected."""
     anat_data, status = _collect(infant_layout, token)
-    assert status['has_qsiprep_t1w_transforms'] is True
+    assert status['has_qsiprep_anat_transforms'] is True
     assert status['template_output_space'] == template
     assert f'from-ACPC_to-{template}_' in anat_data['acpc_to_template_xfm']
     assert f'from-{template}_to-ACPC_' in anat_data['template_to_acpc_xfm']
 
 
-@pytest.mark.parametrize('needs_t1w_transform', [False, True])
+@pytest.mark.parametrize('needs_anat_transform', [False, True])
 @pytest.mark.parametrize('token', ['MNIInfant:cohort-1', 'MNI152NLin6Asym'])
-def test_collect_anatomical_data_missing_space(infant_layout, token, needs_t1w_transform):
+def test_collect_anatomical_data_missing_space(infant_layout, token, needs_anat_transform):
     """Requesting a space the dataset was not normalized to names the ones it has."""
     with pytest.raises(ValueError, match='was requested') as excinfo:
-        _collect(infant_layout, token, needs_t1w_transform=needs_t1w_transform)
+        _collect(infant_layout, token, needs_anat_transform=needs_anat_transform)
 
     message = str(excinfo.value)
     assert f'The output space {token} was requested' in message
@@ -327,13 +327,13 @@ def test_collect_anatomical_data_no_transforms(infant_layout):
         xfm.unlink()
 
     anat_data, status = _collect(infant_layout, 'MNI152NLin2009cAsym')
-    assert status['has_qsiprep_t1w_transforms'] is False
+    assert status['has_qsiprep_anat_transforms'] is False
     assert status['template_output_space'] is None
     assert anat_data['acpc_to_template_xfm'] is None
     assert anat_data['template_to_acpc_xfm'] is None
 
     with pytest.raises(ValueError, match='requested output space'):
-        _collect(infant_layout, 'MNI152NLin2009cAsym', needs_t1w_transform=True)
+        _collect(infant_layout, 'MNI152NLin2009cAsym', needs_anat_transform=True)
 
 
 def test_collect_anatomical_data_ambiguous_cohort(infant_layout):
@@ -396,10 +396,10 @@ def test_dwi_anatomical_wf_template_grid(tmp_path, monkeypatch, template):
     wf, status = init_dwi_recon_anatomical_workflow(
         atlas_configs={},
         has_qsiprep_5tt_hsvs=False,
-        needs_t1w_transform=False,
+        needs_anat_transform=False,
         has_freesurfer_5tt_hsvs=False,
-        has_qsiprep_t1w=True,
-        has_qsiprep_t1w_transforms=template is not None,
+        has_qsiprep_anat=True,
+        has_qsiprep_anat_transforms=template is not None,
         has_freesurfer=False,
         extras_to_make=[],
         name='dwi_specific_anat_wf',
@@ -419,5 +419,7 @@ def test_scalar_to_template_wf_needs_template():
     """Mapping scalars to a template fails clearly when there is no template space."""
     from qsirecon.workflows.recon.scalar_mapping import init_scalar_to_template_wf
 
-    with pytest.raises(ValueError, match='cannot be warped to a template'):
-        init_scalar_to_template_wf(inputs_dict={'template_output_space': None})
+    with pytest.raises(ValueError, match='requires ACPC-to-template transforms'):
+        init_scalar_to_template_wf(
+            inputs_dict={'has_qsiprep_anat_transforms': False, 'template_output_space': None},
+        )
