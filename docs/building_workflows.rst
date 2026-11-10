@@ -145,6 +145,10 @@ By listing the names of the scalar-producing nodes in the ``"scalars_from"`` fie
 you will end up with the scalars in both subject native and template space in the
 output directory for each node that produces the scalars.
 
+The template spaces, and the voxel sizes of the maps written in them, are the ones
+requested with ``--output-spaces`` (see :ref:`output_spaces`).
+The scalars are written once for each requested space and resolution.
+
 .. _scalars_to_bundles:
 
 Mapping scalar data to bundles
