@@ -211,7 +211,14 @@ def calculate_mask_stats(
 
 class _TemplateMapperInputSpec(ScalarMapperInputSpec):
     template_reference_image = File(exists=True, mandatory=True)
-    to_template_transform = File(exists=True, mandatory=True)
+    to_template_transform = InputMultiObject(
+        File(exists=True),
+        mandatory=True,
+        desc=(
+            'Transform(s) from the space of the scalar maps to the template, '
+            'in the order ANTs takes them.'
+        ),
+    )
     interpolation = traits.Str('NearestNeighbor', usedefault=True)
     template_space = traits.Str(mandatory=True)
 
@@ -244,7 +251,7 @@ class TemplateMapper(ScalarMapper):
             transform = ants.ApplyTransforms(
                 input_image=recon_scalar['path'],
                 dimension=3,
-                transforms=[self.inputs.to_template_transform],
+                transforms=self.inputs.to_template_transform,
                 reference_image=self.inputs.template_reference_image,
                 output_image=output_fname,
                 interpolation=self.inputs.interpolation,

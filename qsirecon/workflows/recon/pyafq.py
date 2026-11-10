@@ -100,6 +100,15 @@ def init_pyafq_wf(inputs_dict, name='afq', qsirecon_suffix='', params={}):
             'preprocessed inputs.'
         )
 
+    if inputs_dict.get('template_transform_path'):
+        chain = ' -> '.join(inputs_dict['template_transform_path'])
+        raise ValueError(
+            'pyAFQ takes a single template-to-anatomical transform, but the output space '
+            f'{inputs_dict["template_output_space"]} is only reached through a chain of '
+            f'transforms ({chain}). Request a template the input dataset was normalized to '
+            'with --output-spaces.'
+        )
+
     workflow = pe.Workflow(name=name)
     suffix_str = f' (outputs written to qsirecon-{qsirecon_suffix})' if qsirecon_suffix else ''
     workflow.__desc__ = (

@@ -203,6 +203,12 @@ def init_scalar_to_template_wf(
         f'Scalar NIfTI files were warped to {inputs_dict["template_output_space"]} template '
         f'space, {grid_desc}.'
     )
+    if inputs_dict.get('template_transform_path'):
+        via = ', '.join(inputs_dict['template_transform_path'][1:-1])
+        workflow.__desc__ += (
+            f' The transform from preprocessing to {via} was combined with '
+            'template-to-template transforms from TemplateFlow.'
+        )
 
     inputnode = pe.Node(
         niu.IdentityInterface(

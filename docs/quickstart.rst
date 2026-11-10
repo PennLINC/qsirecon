@@ -65,14 +65,45 @@ a TemplateFlow template name, optionally followed by a cohort and a resolution::
 
 When the option is not given, ``MNI152NLin2009cAsym`` is used.
 
-The input dataset must contain the transforms between its anatomical space and the
-requested template (``from-ACPC_to-<template>_mode-image_xfm.h5`` and its inverse),
-so the template must be one that was requested when the data were preprocessed.
-If the input dataset has transforms for other templates but not the requested one,
-*QSIRecon* stops with an error that lists the templates it can use.
+*QSIRecon* does not estimate a normalization.
+It uses the transforms between the anatomical space and the requested template that
+are in the input dataset (``from-ACPC_to-<template>_mode-image_xfm.h5`` and its inverse),
+which *QSIPrep* writes for each template it was asked for.
 Only one output space may be requested, and the DWI spaces that *QSIPrep* accepts
 (``acpc``, ``anat`` and ``dwiref``) are not valid here.
 To choose which preprocessed DWI files are reconstructed, use ``--bids-filter-file``.
+
+Spaces the data were not normalized to
+======================================
+
+If the input dataset has no transforms for the requested template,
+*QSIRecon* looks for a chain of transforms that reaches it:
+the transforms in the input dataset, followed by the template-to-template transforms
+that `TemplateFlow <https://www.templateflow.org>`_ distributes.
+For example, if *QSIPrep* was run with ``--output-spaces acpc MNI152NLin2009cAsym``,
+then ``--output-spaces MNI152NLin6Asym`` uses
+
+- ``from-ACPC_to-MNI152NLin2009cAsym`` (and its inverse) from the input dataset, and
+- ``tpl-MNI152NLin6Asym_from-MNI152NLin2009cAsym`` (and its inverse) from TemplateFlow.
+
+The transforms are passed to ANTs together, so the data are still interpolated once.
+A few things to keep in mind:
+
+- The shortest chain is used, and it may pass through more than one template.
+  A warning in the log, and the methods boilerplate, name the templates it goes through.
+- Each transform on the chain has its own registration error, so a chain is less
+  accurate than normalizing to the template directly in *QSIPrep*.
+- The template-to-template transforms are downloaded from TemplateFlow when the
+  workflow is built, so this needs network access unless they are already in
+  ``$TEMPLATEFLOW_HOME``.
+- A transform is needed in both directions for every step of the chain.
+- ``cohort-auto`` cannot be used for a space that is reached through a chain;
+  name the cohort.
+- pyAFQ workflows take a single transform, so they stop with an error when the
+  output space is only reached through a chain.
+
+If no chain reaches the requested template, *QSIRecon* stops with an error that lists
+the templates the input dataset has transforms for.
 
 Resolutions
 ===========

@@ -85,7 +85,7 @@ def init_single_subject_recon_wf(subject_id):
     )
     from ..interfaces.reports import AboutSummary, SubjectSummary
     from ..utils.atlases import collect_atlases
-    from ..utils.bids import collect_anatomical_data, get_entity
+    from ..utils.bids import collect_anatomical_data
     from .recon.anatomical import (
         init_dwi_recon_anatomical_workflow,
         init_highres_recon_anatomical_wf,
@@ -188,7 +188,7 @@ to workflows in *QSIRecon*'s documentation]\
 
             # Limit atlases to ones in the specified space.
             xfm_to_anat = anat_data['template_to_acpc_xfm']
-            template_space = get_entity(xfm_to_anat, 'from')
+            template_space = highres_anat_statuses[anat_input_file.path]['template_output_space']
             bids_filters = (config.execution.bids_filters or {}).copy()
             bids_filters['atlas'] = bids_filters.get('atlas', {})
             bids_filters['atlas']['template'] = template_space

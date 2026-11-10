@@ -11,7 +11,7 @@ from qsirecon import config
 from qsirecon.cli import parser as cli_parser
 from qsirecon.cli import version as _version
 from qsirecon.data import load as load_data
-from qsirecon.utils import spaces
+from qsirecon.utils import spaces, transforms
 from qsirecon.utils.spaces import OutputSpacesError, Resolution, SpaceSpec
 
 TEMPLATES = {
@@ -31,6 +31,12 @@ def fake_templateflow(monkeypatch):
         '_resolutions',
         lambda template: TEMPLATES[template]['resolutions'],
     )
+
+
+@pytest.fixture(autouse=True)
+def no_templateflow_transforms(monkeypatch):
+    """Leave TemplateFlow without template-to-template transforms unless a test adds them."""
+    monkeypatch.setattr(transforms, '_tf_templates', list)
 
 
 @pytest.fixture
@@ -303,6 +309,7 @@ def test_collect_anatomical_data_missing_space(infant_layout, token, needs_t1w_t
     message = str(excinfo.value)
     assert f'The output space {token} was requested' in message
     assert 'It has transforms for: MNI152NLin2009cAsym, MNIInfant:cohort-2.' in message
+    assert 'TemplateFlow has no transforms that link them' in message
 
 
 def test_collect_anatomical_data_incomplete_space(infant_layout):

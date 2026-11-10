@@ -320,6 +320,7 @@ def init_dwi_recon_anatomical_workflow(
     extras_to_make,
     name,
     template_output_space,
+    template_transform_path=None,
     prefer_dwi_mask=False,
 ):
     """Ensure that anatomical data is available for the reconstruction workflows.
@@ -399,6 +400,7 @@ def init_dwi_recon_anatomical_workflow(
             'has_qsiprep_t1w': has_qsiprep_t1w,
             'has_qsiprep_t1w_transforms': has_qsiprep_t1w_transforms,
             'template_output_space': template_output_space,
+            'template_transform_path': template_transform_path,
         }
 
     # Without transforms to a template there is no template space to make a grid in,
@@ -581,6 +583,13 @@ def init_dwi_recon_anatomical_workflow(
                 'preprocessing was used to map atlases from template space into '
                 'alignment with DWIs. '
             )
+            if template_transform_path:
+                via = ', '.join(template_transform_path[1:-1])
+                workflow.__desc__ += (
+                    f'The data were not normalized to {template_output_space} during '
+                    f'preprocessing, so the transforms to {via} were combined with '
+                    'template-to-template transforms from TemplateFlow. '
+                )
         else:
             raise Exception(
                 'Reconstruction workflow requires a T1wACPC-to-template transform. '
