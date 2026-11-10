@@ -127,8 +127,18 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='
 
     response['algorithm'] = response_algorithm
     response['nthreads'] = omp_nthreads
+
+    # The FOD algorithm determines whether GM and CSF responses are needed.
+    # Response estimation-only workflows (no "fod" section) keep all three tissues.
+    fod = params.get('fod', {})
+    fod_algorithm = fod.get('algorithm', 'msmt_csd')
+    using_multitissue = (not fod) or fod_algorithm in ('ss3t', 'msmt_csd')
+
+    # Precomputed single-tissue CSD only has a WM response.
+    wm_only = response_algorithm == 'precomputed' and not using_multitissue
+
     tissue_str = 'Multi-tissue '
-    if response_algorithm == 'csd':
+    if response_algorithm == 'csd' or wm_only:
         tissue_str = 'Single-tissue '
 
     LOGGER.info('Response configuration: %s', response)
@@ -162,9 +172,17 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='
         )
         method_5tt = None
 
-        # Fail at build time, rather than mid-run, if the spec uses relative paths.
-        for key in ('wm_txt', 'gm_txt', 'csf_txt'):
-            if response.get(key) and not os.path.isabs(response[key]):
+        # Fail at build time, rather than mid-run, if the spec is missing files
+        # or uses relative paths.
+        required_keys = ('wm_txt', 'gm_txt', 'csf_txt') if using_multitissue else ('wm_txt',)
+        for key in required_keys:
+            if not response.get(key):
+                raise ValueError(
+                    f'Precomputed responses in node "{name}" require "{key}" '
+                    f'for the {fod_algorithm} FOD algorithm.'
+                )
+
+            if not os.path.isabs(response[key]):
                 raise ValueError(
                     f'Precomputed response function "{key}: {response[key]}" in node '
                     f'"{name}" must be an absolute path.'
@@ -173,17 +191,16 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='
         load_response_functions = pe.Node(
             LoadResponseFunctions(
                 wm_file=response['wm_txt'],
-                gm_file=response.get('gm_txt', None),
-                csf_file=response.get('csf_txt', None),
-                using_multitissue=True,
+                gm_file=response.get('gm_txt', None) if using_multitissue else None,
+                csf_file=response.get('csf_txt', None) if using_multitissue else None,
+                using_multitissue=using_multitissue,
             ),
             name='load_response_functions',
         )
+        response_fields = ['wm_txt', 'gm_txt', 'csf_txt'] if using_multitissue else ['wm_txt']
         workflow.connect([
             (load_response_functions, response_buffer, [
-                ('wm_txt', 'wm_txt'),
-                ('gm_txt', 'gm_txt'),
-                ('csf_txt', 'csf_txt'),
+                (field, field) for field in response_fields
             ]),
         ])  # fmt:skip
     else:
@@ -237,7 +254,8 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='
         )
         workflow.connect([(outputnode, ds_wm_txt, [('wm_txt', 'in_file')])])
 
-        # Unused for FOD estimation if using_multitissue is False
+    # Unused for FOD estimation if using_multitissue is False
+    if qsirecon_suffix and not wm_only:
         ds_gm_txt = pe.Node(
             DerivativesDataSink(
                 dismiss_entities=('desc',),
@@ -271,16 +289,13 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='
         workflow.connect([(outputnode, ds_csf_txt, [('csf_txt', 'in_file')])])
 
     # FOD estimation
-    fod = params.get('fod', {})
     if not fod:
         # For response estimation-only workflows, do not estimate FOD
         return clean_datasinks(workflow, qsirecon_suffix)
 
-    fod_algorithm = fod.get('algorithm', 'msmt_csd')
     fod['algorithm'] = fod_algorithm
     fod['nthreads'] = omp_nthreads
     LOGGER.info('Using %d threads in MRtrix3', omp_nthreads)
-    using_multitissue = fod_algorithm in ('ss3t', 'msmt_csd')
 
     # Intensity normalize?
     run_mtnormalize = params.get('mtnormalize', True) and using_multitissue
