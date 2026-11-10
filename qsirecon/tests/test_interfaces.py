@@ -16,7 +16,7 @@ from qsirecon.data import load as load_data
 from qsirecon.interfaces.amico import _use_image_amico_matrices
 from qsirecon.interfaces.dipy import FORCEReconstruction
 from qsirecon.interfaces.gradients import GradientSelect, _classify_shell_scheme, _find_shells
-from qsirecon.interfaces.utils import AtlasLUTs
+from qsirecon.interfaces.utils import AtlasLUTs, LoadResponseFunctions
 from qsirecon.tests.utils import download_test_data, get_test_data_path
 
 
@@ -368,3 +368,57 @@ def test_amico_left_alone_outside_image(tmp_path, monkeypatch, amico_lut):
 
     _use_image_amico_matrices()
     assert amico_lut.dipy_home == str(dipy_home)
+
+
+def _write_response_files(tmp_path):
+    """Write placeholder WM, GM, and CSF response function files."""
+    response_files = {}
+    for tissue in ('wm', 'gm', 'csf'):
+        response_file = tmp_path / f'{tissue}.txt'
+        response_file.write_text('1 0 0\n')
+        response_files[tissue] = str(response_file)
+
+    return response_files
+
+
+def test_load_response_functions_absolute_paths(tmp_path):
+    """Absolute response function paths from the recon spec are passed through unchanged."""
+    response_files = _write_response_files(tmp_path)
+    interface = LoadResponseFunctions(
+        wm_file=response_files['wm'],
+        gm_file=response_files['gm'],
+        csf_file=response_files['csf'],
+        using_multitissue=True,
+    )
+    results = interface.run(cwd=str(tmp_path))
+
+    assert results.outputs.wm_txt == response_files['wm']
+    assert results.outputs.gm_txt == response_files['gm']
+    assert results.outputs.csf_txt == response_files['csf']
+
+
+def test_load_response_functions_relative_path(tmp_path, monkeypatch):
+    """Relative response function paths are rejected, even if they exist in the cwd."""
+    response_files = _write_response_files(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    interface = LoadResponseFunctions(
+        wm_file='wm.txt',
+        gm_file=response_files['gm'],
+        csf_file=response_files['csf'],
+        using_multitissue=True,
+    )
+    with pytest.raises(ValueError, match='must be an absolute path'):
+        interface.run(cwd=str(tmp_path))
+
+
+def test_load_response_functions_missing_file(tmp_path):
+    """A missing response function file raises an informative error."""
+    response_files = _write_response_files(tmp_path)
+    interface = LoadResponseFunctions(
+        wm_file=response_files['wm'],
+        gm_file=str(tmp_path / 'missing_gm.txt'),
+        csf_file=response_files['csf'],
+        using_multitissue=True,
+    )
+    with pytest.raises(FileNotFoundError, match='GM response file'):
+        interface.run(cwd=str(tmp_path))

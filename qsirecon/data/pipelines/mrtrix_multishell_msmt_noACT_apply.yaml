@@ -17,11 +17,14 @@ nodes:
             - 8
             - 8
         mtnormalize: true
+        # Precomputed response functions are read from these absolute paths.
+        # Mount (or copy) your response functions here, or copy this spec
+        # and point these fields at the files' locations.
         response:
             algorithm: precomputed
-            wm_txt: wm.txt
-            gm_txt: gm.txt
-            csf_txt: csf.txt
+            wm_txt: /responses/wm.txt
+            gm_txt: /responses/gm.txt
+            csf_txt: /responses/csf.txt
     qsirecon_suffix: MRtrix3_act-None_response-common
     software: MRTrix3
 -   action: tractography

@@ -71,6 +71,49 @@ All nodes must have a ``name`` element, this serves
 as an id for this node and is used for :ref:`passing_downstream`.
 
 
+.. _precomputed_response_functions:
+
+Using precomputed response functions
+====================================
+
+Instead of estimating fiber response functions for each scan,
+an MRtrix3 ``csd`` node can load precomputed (e.g., group-average) response functions.
+Set the response ``algorithm`` to ``precomputed`` and give the path to each
+MRtrix-format response function file:
+
+.. code-block:: yaml
+
+  nodes:
+  -   action: csd
+      name: msmt_csd
+      parameters:
+          fod:
+              algorithm: msmt_csd
+          mtnormalize: true
+          response:
+              algorithm: precomputed
+              wm_txt: /responses/wm.txt
+              gm_txt: /responses/gm.txt
+              csf_txt: /responses/csf.txt
+      qsirecon_suffix: MRtrix3_act-None_response-common
+      software: MRTrix3
+
+These paths must be absolute, and they are used exactly as written.
+When running *QSIRecon* in a container, the paths refer to locations *inside* the container,
+so mount the directory holding the response functions at the matching location
+(e.g., ``-v /path/to/my/responses:/responses:ro`` for Docker,
+or ``-B /path/to/my/responses:/responses`` for Apptainer/Singularity).
+
+The built-in ``mrtrix_multishell_msmt_noACT_apply`` workflow reads its response functions from
+``/responses/wm.txt``, ``/responses/gm.txt``, and ``/responses/csf.txt``.
+To use files at other locations, copy that recon spec and edit the paths.
+
+.. note::
+    Earlier versions of *QSIRecon* located these files with the ``--recon-spec-aux-files``
+    command-line option.
+    That option has been removed; write the full paths in the recon spec instead.
+
+
 .. _connecting_nodes:
 
 Connecting Nodes

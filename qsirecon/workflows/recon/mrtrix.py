@@ -11,6 +11,7 @@ To keep threading consistent between nipype and mrtrix, the
 """
 
 import logging
+import os
 
 import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
@@ -161,13 +162,20 @@ def init_mrtrix_csd_recon_wf(inputs_dict, name='mrtrix_recon', qsirecon_suffix='
         )
         method_5tt = None
 
+        # Fail at build time, rather than mid-run, if the spec uses relative paths.
+        for key in ('wm_txt', 'gm_txt', 'csf_txt'):
+            if response.get(key) and not os.path.isabs(response[key]):
+                raise ValueError(
+                    f'Precomputed response function "{key}: {response[key]}" in node '
+                    f'"{name}" must be an absolute path.'
+                )
+
         load_response_functions = pe.Node(
             LoadResponseFunctions(
                 wm_file=response['wm_txt'],
                 gm_file=response.get('gm_txt', None),
                 csf_file=response.get('csf_txt', None),
                 using_multitissue=True,
-                input_dir=config.execution.recon_spec_aux_files,
             ),
             name='load_response_functions',
         )
