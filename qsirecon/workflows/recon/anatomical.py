@@ -352,6 +352,7 @@ def init_dwi_recon_anatomical_workflow(
         - ``has_freesurfer_5tt_hsvs``
         - ``has_qsiprep_t1w``
         - ``has_qsiprep_t1w_transforms``
+        - ``has_odf_rois``
 
         Each value is a boolean indicating whether the data is available.
     """
@@ -402,6 +403,8 @@ def init_dwi_recon_anatomical_workflow(
             'has_qsiprep_t1w_transforms': has_qsiprep_t1w_transforms,
             'template_output_space': template_output_space,
             'template_transform_path': template_transform_path,
+            # The ROIs that the ODF figures are centered on could be brought into DWI space
+            'has_odf_rois': bool(has_qsiprep_t1w_transforms and odf_rois_to_acpc_xfm),
         }
 
     # Without transforms to a template there is no template space to make a grid in,
@@ -637,29 +640,26 @@ def init_dwi_recon_anatomical_workflow(
             (ds_resampled_mask, buffernode, [('out_file', 'dwi_mask')]),
         ])  # fmt:skip
 
-    if has_qsiprep_t1w_transforms:
+    # The ROIs are drawn in MNI152NLin2009cAsym, which may not be the output space, so they
+    # have their own transforms. Without them, odf_rois stays undefined and the ODF
+    # figures are not made.
+    if has_qsiprep_t1w_transforms and odf_rois_to_acpc_xfm:
         config.loggers.workflow.info('Transforming ODF ROIs into DWI space for visual report.')
         # Resample ROI targets to DWI resolution for ODF plotting
-        crossing_rois_file = load_data('crossing_rois.nii.gz')
+        crossing_rois_file = load_data(
+            'tpl-MNI152NLin2009cAsym_atlas-crossingfibers_res-01_dseg.nii.gz',
+        )
         odf_rois = pe.Node(
             ants.ApplyTransforms(interpolation='MultiLabel', dimension=3), name='odf_rois'
         )
         odf_rois.inputs.input_image = crossing_rois_file
-        if odf_rois_to_acpc_xfm:
-            # The ROIs are drawn in MNI152NLin2009cAsym, which may not be the output space
-            odf_rois.inputs.transforms = odf_rois_to_acpc_xfm
-        else:
-            workflow.connect([
-                (_get_source_node('template_to_acpc_xfm'), odf_rois, [
-                    ('template_to_acpc_xfm', 'transforms'),
-                ]),
-            ])  # fmt:skip
-
+        odf_rois.inputs.transforms = odf_rois_to_acpc_xfm
         workflow.connect([
             (inputnode, odf_rois, [('dwi_file', 'reference_image')]),
             (odf_rois, buffernode, [('output_image', 'odf_rois')]),
         ])  # fmt:skip
 
+    if has_qsiprep_t1w_transforms:
         # Similarly, if we need atlases, transform them into DWI space
         if atlas_configs:
             warp_atlases_wf = init_warp_atlases_wf(atlas_configs=atlas_configs)

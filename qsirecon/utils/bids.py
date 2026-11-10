@@ -52,7 +52,8 @@ LOGGER = config.loggers.utils
 
 #: Names the input dataset may give the anatomical space in from-/to- labels
 ANAT_ALIASES = ('ACPC', 'T1w', 'T2w')
-#: The template that the ROIs for the ODF reports (data/crossing_rois.nii.gz) are drawn in
+#: The template that the ROIs for the ODF reports are drawn in
+#: (data/tpl-MNI152NLin2009cAsym_atlas-crossingfibers_res-01_dseg.nii.gz)
 ODF_ROI_SPACE = 'MNI152NLin2009cAsym'
 
 
@@ -204,7 +205,8 @@ def collect_anatomical_data(
         from the anatomical space to the output space, or None when there is no chain.
         ``odf_rois_to_acpc_xfm`` is the list of transforms, in the order ANTs takes them,
         that bring the ODF report ROIs from the template they are drawn in to the
-        anatomical space, or None when they could not be found.
+        anatomical space, or None when they could not be found, in which case the
+        ODF figures are not made.
 
     Notes
     -----
@@ -256,17 +258,18 @@ def collect_anatomical_data(
             **query,
         )
         entity = template_entities.get(name)
+        templates = {f: get_entity(f, entity) or '' for f in files} if entity else {}
+        for f, template in templates.items():
+            if not template or template in ANAT_ALIASES:
+                continue
+
+            if entity == 'to':
+                dataset_edges.append(Xfm(path=f, frm=ANAT_SPACE, to=template))
+            else:
+                dataset_edges.append(Xfm(path=f, frm=template, to=ANAT_SPACE))
+
+        # A filter on from/to already chose the transform
         if entity and entity not in query:
-            templates = {f: get_entity(f, entity) or '' for f in files}
-            for f, template in templates.items():
-                if not template or template in ANAT_ALIASES:
-                    continue
-
-                if entity == 'to':
-                    dataset_edges.append(Xfm(path=f, frm=ANAT_SPACE, to=template))
-                else:
-                    dataset_edges.append(Xfm(path=f, frm=template, to=ANAT_SPACE))
-
             files = [f for f in files if output_space.matches(templates[f])]
             other_templates.update(
                 template
@@ -376,7 +379,7 @@ def _odf_roi_transforms(dataset_edges):
     files : :obj:`list` of :obj:`str` or None
         The transforms in the order ANTs takes them.
         None if no chain was found or a transform could not be downloaded,
-        in which case the caller falls back to the transform of the output space.
+        in which case the ODF figures are not made.
     """
     try:
         try:
@@ -394,8 +397,8 @@ def _odf_roi_transforms(dataset_edges):
         # The ROIs only feed a report figure, so nothing here should stop the build
         LOGGER.warning(
             f'Could not find transforms from {ODF_ROI_SPACE}, the space of the ROIs used in '
-            f'the ODF reports, to the anatomical space ({exc}). The transform of the output '
-            'space will be used instead, so the ROIs may be misplaced in the reports.'
+            f'the ODF reports, to the anatomical space ({exc}). The ODF figures will not be '
+            'included in the reports.'
         )
         return None
 

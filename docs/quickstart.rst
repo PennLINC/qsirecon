@@ -106,8 +106,8 @@ the templates the input dataset has transforms for.
 The regions shown in the ODF figures of the reports are drawn in ``MNI152NLin2009cAsym``,
 so they are always brought into the space of the DWI from that template, in the same way:
 with the input dataset's own transform when it has one, and through a chain otherwise.
-If no chain is found or a transform cannot be downloaded, the transform of the output
-space is used instead and a warning is logged.
+If no chain is found or a transform cannot be downloaded, a warning is logged and the
+ODF figures are left out of the reports.
 
 Resolutions
 ===========

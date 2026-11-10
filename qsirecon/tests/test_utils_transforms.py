@@ -376,8 +376,8 @@ def test_odf_rois_chained_for_infant_dataset(bids_dir, fake_templateflow):
     ]
 
 
-def test_odf_rois_fall_back_when_download_fails(bids_dir, monkeypatch):
-    """A failed download does not stop the build; the output space's transform is used."""
+def test_odf_rois_dropped_when_download_fails(bids_dir, monkeypatch):
+    """A failed download does not stop the build; the ODF figures are just not made."""
     _infant_only(bids_dir)
 
     def _offline(template, **query):
@@ -406,8 +406,6 @@ def test_odf_rois_skipped_without_reports(bids_dir, monkeypatch):
 @pytest.mark.parametrize('chained', [False, True])
 def test_dwi_anatomical_wf_odf_rois(tmp_path, monkeypatch, chained):
     """The ODF ROI node takes its own transforms when they were found."""
-    from nipype.interfaces.base import isdefined
-
     from qsirecon import config
     from qsirecon.workflows.recon.anatomical import init_dwi_recon_anatomical_workflow
 
@@ -424,7 +422,7 @@ def test_dwi_anatomical_wf_odf_rois(tmp_path, monkeypatch, chained):
         for xfm in odf_xfm:
             open(xfm, 'w').close()
 
-    wf, _ = init_dwi_recon_anatomical_workflow(
+    wf, status = init_dwi_recon_anatomical_workflow(
         atlas_configs={},
         has_qsiprep_5tt_hsvs=False,
         needs_t1w_transform=False,
@@ -438,9 +436,30 @@ def test_dwi_anatomical_wf_odf_rois(tmp_path, monkeypatch, chained):
         odf_rois_to_acpc_xfm=odf_xfm,
     )
 
-    transforms_input = wf.get_node('odf_rois').inputs.transforms
-    if odf_xfm:
-        assert transforms_input == odf_xfm
+    assert status['has_odf_rois'] is chained
+    odf_rois = wf.get_node('odf_rois')
+    if chained:
+        assert odf_rois.inputs.transforms == odf_xfm
+        assert odf_rois.inputs.input_image.endswith(
+            'tpl-MNI152NLin2009cAsym_atlas-crossingfibers_res-01_dseg.nii.gz'
+        )
     else:
-        # Left to be connected from the output space's transform
-        assert not isdefined(transforms_input)
+        # Without transforms for the ROIs they are not warped, and no ODF figure is made
+        assert odf_rois is None
+
+
+def test_odf_roi_file():
+    """The ROI image and its labels table agree, and sit on the template's 1 mm grid."""
+    import nibabel as nb
+    import numpy as np
+    import pandas as pd
+
+    stem = 'tpl-MNI152NLin2009cAsym_atlas-crossingfibers_res-01_dseg'
+    img = nb.load(load_data(f'{stem}.nii.gz'))
+    labels = pd.read_table(load_data(f'{stem}.tsv'))
+
+    assert img.shape == (193, 229, 193)
+    assert img.header.get_zooms() == (1.0, 1.0, 1.0)
+    found = sorted(int(value) for value in np.unique(np.asanyarray(img.dataobj)) if value)
+    assert found == labels['index'].tolist() == [1, 2, 3]
+    assert labels['name'].notna().all()
