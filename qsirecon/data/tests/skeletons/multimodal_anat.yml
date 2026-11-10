@@ -1,0 +1,80 @@
+# Skeleton based on QSIPrep derivatives from a run with --anat-modality T1w on a
+# dataset that also has a T2w. QSIPrep coregisters the T2w to the AC-PC T1w and writes
+# it next to the T1w, so there are two desc-preproc anatomical images. The brain mask,
+# segmentations, and transforms are shared and were derived from the T1w.
+"01":
+  - anat:
+    - from: ACPC
+      to: anat
+      mode: image
+      suffix: xfm
+      extension: .mat
+    - from: ACPC
+      to: MNI152NLin2009cAsym
+      mode: image
+      suffix: xfm
+      extension: .h5
+    - from: anat
+      to: ACPC
+      mode: image
+      suffix: xfm
+      extension: .mat
+    - from: MNI152NLin2009cAsym
+      to: ACPC
+      mode: image
+      suffix: xfm
+      extension: .h5
+    - space: ACPC
+      desc: aseg
+      suffix: dseg
+      extension: .nii.gz
+    - space: ACPC
+      desc: brain
+      suffix: mask
+      extension: .nii.gz
+    - space: ACPC
+      desc: preproc
+      suffix: T1w
+      extension: .nii.gz
+    - space: ACPC
+      desc: preproc
+      suffix: T2w
+      extension: .nii.gz
+    - space: ACPC
+      desc: unfatsat
+      suffix: T2w
+      extension: .nii.gz
+    - space: ACPC
+      suffix: dseg
+      extension: .nii.gz
+    dwi:
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: brain
+      suffix: mask
+      extension: .nii.gz
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: preproc
+      suffix: dwi
+      extension: .bval
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: preproc
+      suffix: dwi
+      extension: .bvec
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: preproc
+      suffix: dwi
+      extension: .nii.gz
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: preproc
+      suffix: dwiref
+      extension: .nii.gz

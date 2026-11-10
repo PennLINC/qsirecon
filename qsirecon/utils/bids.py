@@ -147,40 +147,135 @@ def collect_participants(bids_dir, participant_label=None, strict=False, bids_va
     return found_label
 
 
+# Order of preference when a preprocessed dataset contains more than one anatomical
+# modality. QSIPrep derives the brain mask, tissue segmentations, and template transforms
+# from its primary anatomical image (the T1w unless ``--anat-modality T2w`` was used) and
+# only coregisters the other modality to it, so the T1w is the safer spatial reference.
+ANAT_MODALITY_PREFERENCE = ('T1w', 'T2w')
+
+
+def _select_preferred_anat(files):
+    """Keep only the files of the most-preferred anatomical modality that is present.
+
+    Parameters
+    ----------
+    files : :obj:`list` of :obj:`bids.layout.BIDSFile`
+        Candidate anatomical images, possibly mixing T1w and T2w suffixes.
+
+    Returns
+    -------
+    :obj:`list` of :obj:`bids.layout.BIDSFile`
+        The subset of ``files`` whose suffix is the first entry of
+        :data:`ANAT_MODALITY_PREFERENCE` found among them.
+        If no file has a preferred suffix, ``files`` is returned unchanged.
+    """
+    for modality in ANAT_MODALITY_PREFERENCE:
+        matching = [f for f in files if f.entities.get('suffix') == modality]
+        if matching:
+            return matching
+    return files
+
+
+def _describe_query(name, query, files, subject_id, session_id):
+    """Format a BIDS query and its results for a log message or error.
+
+    Parameters
+    ----------
+    name : :obj:`str`
+        Key of the query in ``io_spec.yaml`` (e.g., ``'acpc_preproc'``).
+    query : :obj:`dict`
+        Entity filters that were passed to :meth:`bids.layout.BIDSLayout.get`.
+    files : :obj:`list` of :obj:`str`
+        Paths that the query matched. May be empty.
+    subject_id : :obj:`str`
+        Subject label used in the query.
+    session_id
+        Session filter used in the query (see :func:`collect_anatomical_data`).
+
+    Returns
+    -------
+    :obj:`str`
+        A multi-line description of the query and the matched files.
+    """
+    full_query = {'subject': subject_id, 'session': session_id, **query}
+    if files:
+        files_str = '\n\t'.join(files)
+    else:
+        files_str = '(none)'
+
+    return f'Query "{name}": {full_query}\nFiles found:\n\t{files_str}'
+
+
 def collect_anatomical_data(
     *,
     layout,
     subject_id,
     session_id,
-    needs_t1w_transform,
+    needs_anat_transform,
     infant_mode=False,
     bids_filters=None,
 ):
-    """Gather any high-res anatomical data (images, transforms, segmentations) to use
-    in recon workflows.
+    """Collect the preprocessed anatomical files that reconstruction workflows can use.
 
-    This function searches through input data to see what anatomical data is available.
-    The anatomical data may be in a freesurfer directory.
+    Each entry of the ``anat`` section of ``io_spec.yaml`` is a BIDS query for one kind
+    of anatomical derivative written by QSIPrep (or an ingressed pipeline): the
+    AC-PC-aligned anatomical image, its brain mask, tissue segmentations, and the
+    transforms between AC-PC and template space.
+    Every query is run for the requested subject and session, and must match at most
+    one file.
+
+    The ``acpc_preproc`` query accepts either a T1w or a T2w image.
+    When QSIPrep was run with a T1w and a T2w it writes both to the ``anat`` folder,
+    so a query may match one of each.
+    In that case the modality listed first in :data:`ANAT_MODALITY_PREFERENCE` is kept.
+    Use ``bids_filters`` (keyed by query name) to override this, for example
+    ``{'acpc_preproc': {'suffix': 'T2w'}}``.
 
     Parameters
     ----------
     layout : :obj:`bids.layout.BIDSLayout`
-        BIDSLayout object
+        Layout of the preprocessed input dataset.
     subject_id : :obj:`str`
-        Single subject label
-    needs_t1w_transform : :obj:`bool`
-        Whether a T1w transform is needed
-    bids_filters : :obj:`dict`, optional
-        BIDS query filters
+        Subject label, without the ``sub-`` prefix.
+    session_id : None or :obj:`bids.layout.Query` or :obj:`list`
+        Session filter passed to :meth:`bids.layout.BIDSLayout.get`.
+        ``None`` means no anatomical image was paired with the DWI, so nothing is
+        collected and every status flag is ``False``.
+        ``Query.NONE`` selects subject-level files (no ``ses-`` entity).
+        A list such as ``['01', Query.NONE]`` selects files from session ``01`` or
+        from the subject level.
+    needs_anat_transform : :obj:`bool`
+        Whether the reconstruction workflow requires transforms between AC-PC and
+        template space (for example because atlases were requested).
+        If ``True`` and no transforms are found, a :class:`ValueError` is raised.
     infant_mode : :obj:`bool`, optional
-        Whether the subject is an infant
+        Whether to look for ``MNIInfant`` instead of ``MNI152NLin2009cAsym`` transforms.
+    bids_filters : :obj:`dict`, optional
+        Overrides for the ``io_spec.yaml`` queries, keyed by query name.
+        Each value is a dictionary of entity filters that is merged into that query.
 
     Returns
     -------
     anat_data : :obj:`dict`
-        Dictionary of anatomical data
+        One entry per query name, holding the matched path or ``None``.
+        Keys are ``acpc_preproc``, ``acpc_brain_mask``, ``acpc_seg``, ``acpc_aseg``,
+        ``acpc_aparc``, ``acpc_csf_probseg``, ``acpc_gm_probseg``, ``acpc_wm_probseg``,
+        ``orig_to_acpc_xfm``, ``acpc_to_template_xfm``, and ``template_to_acpc_xfm``.
     status : :obj:`dict`
-        Dictionary of status flags
+        Flags describing what was found:
+
+        - ``has_qsiprep_anat``: both ``acpc_preproc`` and ``acpc_brain_mask`` were found.
+        - ``has_qsiprep_anat_transforms``: both ``acpc_to_template_xfm`` and
+          ``template_to_acpc_xfm`` were found.
+        - ``template_output_space``: the template named in the transforms,
+          or ``None`` if no transforms were found.
+
+    Raises
+    ------
+    ValueError
+        If a query matches more than one file of the same modality,
+        or if ``needs_anat_transform`` is ``True`` and the transforms are missing.
+        The message includes the query and the files it matched.
 
     Notes
     -----
@@ -196,7 +291,9 @@ def collect_anatomical_data(
 
     if session_id is None:
         LOGGER.warning('Assuming no anatomical data.')
-        return anat_data, {'has_qsiprep_t1w': False, 'has_qsiprep_t1w_transforms': False}
+        status['has_qsiprep_anat'] = False
+        status['has_qsiprep_anat_transforms'] = False
+        return anat_data, status
 
     _spec = yaml.safe_load(load_data.readable('io_spec.yaml').read_text())
     queries = _spec['queries']['anat']
@@ -211,19 +308,42 @@ def collect_anatomical_data(
         if acq in bids_filters:
             queries[acq].update(bids_filters[acq])
 
+    descriptions = {}
     for name, query in queries.items():
-        files = layout.get(
-            return_type='file',
+        found = layout.get(
             subject=subject_id,
             session=session_id,
             **query,
         )
+        # Describe the raw result so that errors and warnings list everything that matched,
+        # including candidates dropped by the modality preference below.
+        descriptions[name] = _describe_query(
+            name,
+            query,
+            [f.path for f in found],
+            subject_id,
+            session_id,
+        )
+
+        if name == 'acpc_preproc' and len(found) > 1:
+            preferred = _select_preferred_anat(found)
+            ignored = [f.path for f in found if f not in preferred]
+            if ignored:
+                modality = preferred[0].entities.get('suffix')
+                LOGGER.info(
+                    f'More than one anatomical modality matched the "{name}" query. '
+                    f'Using the {modality} image(s) and ignoring:\n\t' + '\n\t'.join(ignored)
+                )
+            found = preferred
+
+        files = [f.path for f in found]
         if len(files) == 1:
             anat_data[name] = files[0]
         elif len(files) > 1:
-            files_str = '\n\t'.join(files)
             raise ValueError(
-                f'More than one {name} found.\nFiles found:\n\t{files_str}\nQuery: {query}'
+                f'More than one file matched the "{name}" query. '
+                'Use --bids-filter-file to narrow the query down to a single file.\n'
+                f'{descriptions[name]}'
             )
         else:
             anat_data[name] = None
@@ -236,24 +356,37 @@ def collect_anatomical_data(
         ),
     )
 
-    status['has_qsiprep_t1w'] = True
-    if not anat_data['acpc_preproc'] or not anat_data['acpc_brain_mask']:
-        LOGGER.warning('No preprocessed anatomical image or brain mask found.')
-        status['has_qsiprep_t1w'] = False
-
-    status['has_qsiprep_t1w_transforms'] = True
-    if not anat_data['acpc_to_template_xfm'] or not anat_data['template_to_acpc_xfm']:
-        if needs_t1w_transform:
-            raise ValueError(
-                'Reconstruction workflow requires a T1w/ACPC-to-template transform. '
-                'None were found.'
+    status['has_qsiprep_anat'] = True
+    for name in ('acpc_preproc', 'acpc_brain_mask'):
+        if not anat_data[name]:
+            LOGGER.warning(
+                f'No preprocessed anatomical "{name}" file found. '
+                'Anatomical data from the preprocessed dataset will not be used.\n'
+                f'{descriptions[name]}'
             )
+            status['has_qsiprep_anat'] = False
 
-        LOGGER.warning('No anat-to-template or template-to-anat transforms found.')
-        status['has_qsiprep_t1w_transforms'] = False
-    else:
+    status['has_qsiprep_anat_transforms'] = True
+    for name in ('acpc_to_template_xfm', 'template_to_acpc_xfm'):
+        if not anat_data[name]:
+            if needs_anat_transform:
+                raise ValueError(
+                    'The reconstruction workflow requires transforms between AC-PC and '
+                    f'template space, but no "{name}" file was found.\n'
+                    f'{descriptions[name]}'
+                )
+
+            LOGGER.warning(
+                f'No "{name}" transform found. '
+                'Template-space atlases and ROIs will not be available.\n'
+                f'{descriptions[name]}'
+            )
+            status['has_qsiprep_anat_transforms'] = False
+
+    if status['has_qsiprep_anat_transforms']:
         # Determine the output space from the transform file
         status['template_output_space'] = _determine_output_space(anat_data)
+
     return anat_data, status
 
 
@@ -559,13 +692,33 @@ def get_entity(filename, entity):
 
 
 def get_iterable_dwis_and_anats(layout):
-    """Look through the BIDS Layout for DWIs and their corresponding anats.
+    """Pair each preprocessed DWI with the anatomical image it should use.
+
+    DWIs are found by querying for ``dwi`` images in ``T1w`` or ``ACPC`` space in any
+    session.
+    For each DWI, the anatomical candidates are the ``T1w`` and ``T2w`` images in AC-PC
+    space (or without a ``space`` entity) from the DWI's own session or, if that session
+    has none, from the subject level.
+    When both a T1w and a T2w are available, the modality listed first in
+    :data:`ANAT_MODALITY_PREFERENCE` is chosen.
+
+    The anatomical image returned here determines which session's anatomical derivatives
+    are collected (see :func:`collect_anatomical_data`) and which DWIs share one
+    anatomical workflow.
+    The image itself is collected again by :func:`collect_anatomical_data`.
+
+    Parameters
+    ----------
+    layout : :obj:`bids.layout.BIDSLayout`
+        Layout of the preprocessed input dataset.
 
     Returns
     -------
-    dwis_and_anats : list of tuple
-        List of two-element tuples where the first element is a DWI scan and the second is
-        the corresponding anatomical scan.
+    dwis_and_anats : :obj:`list` of :obj:`tuple`
+        One two-element tuple per DWI.
+        The first element is the DWI :obj:`bids.layout.BIDSFile` and the second is the
+        anatomical :obj:`bids.layout.BIDSFile`, or ``None`` if no anatomical image was
+        found for that DWI.
     """
     from bids.layout import Query
 
@@ -598,7 +751,7 @@ def get_iterable_dwis_and_anats(layout):
             anat_scan = None
         else:
             best_anat_source = session_level_anats or subject_level_anats
-            anat_scan = best_anat_source[0]
+            anat_scan = _select_preferred_anat(best_anat_source)[0]
 
         dwis_and_anats.append((dwi_scan, anat_scan))
     return dwis_and_anats
