@@ -217,6 +217,8 @@ def collect_anatomical_data(
         if acq in bids_filters:
             queries[acq].update(bids_filters[acq])
 
+    # Templates the input dataset has transforms for, other than the requested one
+    other_templates = set()
     for name, query in queries.items():
         files = layout.get(
             return_type='file',
@@ -226,7 +228,13 @@ def collect_anatomical_data(
         )
         entity = template_entities.get(name)
         if entity and entity not in query:
-            files = [f for f in files if output_space.matches(get_entity(f, entity) or '')]
+            templates = {f: get_entity(f, entity) or '' for f in files}
+            files = [f for f in files if output_space.matches(templates[f])]
+            other_templates.update(
+                template
+                for template in templates.values()
+                if template and not output_space.matches(template)
+            )
 
         if len(files) == 1:
             anat_data[name] = files[0]
@@ -260,6 +268,18 @@ def collect_anatomical_data(
 
     status['has_qsiprep_t1w_transforms'] = True
     if not anat_data['acpc_to_template_xfm'] or not anat_data['template_to_acpc_xfm']:
+        if other_templates:
+            # The dataset was normalized, but not to the requested space. Continuing
+            # would silently drop every template-space step, so stop here.
+            available = ', '.join(sorted(_space_token(name) for name in other_templates))
+            raise ValueError(
+                f'The output space {output_space} was requested, but the input dataset has '
+                f'no transforms to and from it for sub-{subject_id}. '
+                f'It has transforms for: {available}. '
+                'Request one of those with --output-spaces, or rerun QSIPrep with '
+                f'{output_space.space} among its --output-spaces.'
+            )
+
         if needs_t1w_transform:
             raise ValueError(
                 'Reconstruction workflow requires a T1w/ACPC-to-template transform. '
@@ -272,6 +292,12 @@ def collect_anatomical_data(
         # Determine the output space from the transform file
         status['template_output_space'] = _determine_output_space(anat_data)
     return anat_data, status
+
+
+def _space_token(name):
+    """Spell a ``from-``/``to-`` label such as ``MNIInfant+2`` as an --output-spaces token."""
+    template, _, cohort = name.partition('+')
+    return f'{template}:cohort-{cohort}' if cohort else template
 
 
 def _determine_output_space(status):

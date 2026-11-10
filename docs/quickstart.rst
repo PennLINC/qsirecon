@@ -68,6 +68,8 @@ When the option is not given, ``MNI152NLin2009cAsym`` is used.
 The input dataset must contain the transforms between its anatomical space and the
 requested template (``from-ACPC_to-<template>_mode-image_xfm.h5`` and its inverse),
 so the template must be one that was requested when the data were preprocessed.
+If the input dataset has transforms for other templates but not the requested one,
+*QSIRecon* stops with an error that lists the templates it can use.
 Only one output space may be requested, and the DWI spaces that *QSIPrep* accepts
 (``acpc``, ``anat`` and ``dwiref``) are not valid here.
 To choose which preprocessed DWI files are reconstructed, use ``--bids-filter-file``.

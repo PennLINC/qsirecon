@@ -185,6 +185,12 @@ def init_scalar_to_template_wf(
 
     """
     workflow = Workflow(name=name)
+    if not inputs_dict.get('template_output_space'):
+        raise ValueError(
+            'Scalar maps cannot be warped to a template, because the input dataset has no '
+            'transforms between its anatomical space and a template.'
+        )
+
     resolution = config.workflow.output_space().resolution
     if resolution is None:
         grid_desc = 'at the smallest voxel dimension of the preprocessed DWI'

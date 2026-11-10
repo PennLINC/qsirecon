@@ -401,34 +401,39 @@ def init_dwi_recon_anatomical_workflow(
             'template_output_space': template_output_space,
         }
 
-    output_space = config.workflow.output_space()
-    get_template = pe.Node(
-        GetTemplate(
-            template_name=template_output_space,
-            resolution=output_space.templateflow_resolution,
-        ),
-        name='get_template',
-    )
-    mask_template = pe.Node(
-        afni.Calc(expr='a*b', outputtype='NIFTI_GZ'),
-        name='mask_template',
-    )
-    reorient_to_lps = pe.Node(
-        afni.Resample(orientation='RAI', outputtype='NIFTI_GZ'),
-        name='reorient_to_lps',
-    )
+    # Without transforms to a template there is no template space to make a grid in,
+    # and resampling_template stays undefined.
+    if template_output_space:
+        output_space = config.workflow.output_space()
+        get_template = pe.Node(
+            GetTemplate(
+                template_name=template_output_space,
+                resolution=output_space.templateflow_resolution,
+            ),
+            name='get_template',
+        )
+        mask_template = pe.Node(
+            afni.Calc(expr='a*b', outputtype='NIFTI_GZ'),
+            name='mask_template',
+        )
+        reorient_to_lps = pe.Node(
+            afni.Resample(orientation='RAI', outputtype='NIFTI_GZ'),
+            name='reorient_to_lps',
+        )
 
-    reference_grid_wf = init_output_grid_wf(output_space=output_space)
-    workflow.connect([
-        (get_template, mask_template, [
-            ('template_file', 'in_file_a'),
-            ('mask_file', 'in_file_b'),
-        ]),
-        (mask_template, reorient_to_lps, [('out_file', 'in_file')]),
-        (inputnode, reference_grid_wf, [('dwi_ref', 'inputnode.input_image')]),
-        (reorient_to_lps, reference_grid_wf, [('out_file', 'inputnode.template_image')]),
-        (reference_grid_wf, buffernode, [('outputnode.grid_image', 'resampling_template')]),
-    ])  # fmt:skip
+        reference_grid_wf = init_output_grid_wf(output_space=output_space)
+        workflow.connect([
+            (get_template, mask_template, [
+                ('template_file', 'in_file_a'),
+                ('mask_file', 'in_file_b'),
+            ]),
+            (mask_template, reorient_to_lps, [('out_file', 'in_file')]),
+            (inputnode, reference_grid_wf, [('dwi_ref', 'inputnode.input_image')]),
+            (reorient_to_lps, reference_grid_wf, [('out_file', 'inputnode.template_image')]),
+            (reference_grid_wf, buffernode, [
+                ('outputnode.grid_image', 'resampling_template'),
+            ]),
+        ])  # fmt:skip
 
     # Missing Freesurfer AND QSIPrep T1ws, or the user wants a DWI-based mask
     if not (has_qsiprep_t1w or has_freesurfer) or prefer_dwi_mask:

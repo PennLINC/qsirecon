@@ -293,16 +293,40 @@ def test_collect_anatomical_data_output_space(infant_layout, token, template):
     assert f'from-{template}_to-ACPC_' in anat_data['template_to_acpc_xfm']
 
 
+@pytest.mark.parametrize('needs_t1w_transform', [False, True])
 @pytest.mark.parametrize('token', ['MNIInfant:cohort-1', 'MNI152NLin6Asym'])
-def test_collect_anatomical_data_missing_space(infant_layout, token):
-    """A space the input dataset has no transforms for is reported, or fails if needed."""
-    anat_data, status = _collect(infant_layout, token)
+def test_collect_anatomical_data_missing_space(infant_layout, token, needs_t1w_transform):
+    """Requesting a space the dataset was not normalized to names the ones it has."""
+    with pytest.raises(ValueError, match='was requested') as excinfo:
+        _collect(infant_layout, token, needs_t1w_transform=needs_t1w_transform)
+
+    message = str(excinfo.value)
+    assert f'The output space {token} was requested' in message
+    assert 'It has transforms for: MNI152NLin2009cAsym, MNIInfant:cohort-2.' in message
+
+
+def test_collect_anatomical_data_incomplete_space(infant_layout):
+    """One direction of the requested space's transforms is not enough."""
+    anat_dir = infant_layout / 'sub-01' / 'anat'
+    (anat_dir / 'sub-01_from-MNIInfant+2_to-ACPC_mode-image_xfm.h5').unlink()
+
+    with pytest.raises(ValueError, match=r'It has transforms for: MNI152NLin2009cAsym\. '):
+        _collect(infant_layout, 'MNIInfant:cohort-2')
+
+
+def test_collect_anatomical_data_no_transforms(infant_layout):
+    """A dataset with no template transforms is reported, and fails only if they are needed."""
+    for xfm in (infant_layout / 'sub-01' / 'anat').glob('*_xfm.h5'):
+        xfm.unlink()
+
+    anat_data, status = _collect(infant_layout, 'MNI152NLin2009cAsym')
     assert status['has_qsiprep_t1w_transforms'] is False
+    assert status['template_output_space'] is None
     assert anat_data['acpc_to_template_xfm'] is None
     assert anat_data['template_to_acpc_xfm'] is None
 
     with pytest.raises(ValueError, match='requested output space'):
-        _collect(infant_layout, token, needs_t1w_transform=True)
+        _collect(infant_layout, 'MNI152NLin2009cAsym', needs_t1w_transform=True)
 
 
 def test_collect_anatomical_data_ambiguous_cohort(infant_layout):
@@ -352,3 +376,41 @@ def test_init_output_grid_wf(token, nodes, voxel_size, padding):
             assert not isdefined(fixed)
         else:
             assert fixed == voxel_size
+
+
+@pytest.mark.parametrize('template', [None, 'MNI152NLin2009cAsym', 'MNIInfant+2'])
+def test_dwi_anatomical_wf_template_grid(tmp_path, monkeypatch, template):
+    """The template grid is only built when there are transforms to a template."""
+    from qsirecon.workflows.recon.anatomical import init_dwi_recon_anatomical_workflow
+
+    monkeypatch.setattr(config.execution, 'output_dir', tmp_path)
+    monkeypatch.setattr(config.workflow, 'b0_threshold', 100)
+
+    wf, status = init_dwi_recon_anatomical_workflow(
+        atlas_configs={},
+        has_qsiprep_5tt_hsvs=False,
+        needs_t1w_transform=False,
+        has_freesurfer_5tt_hsvs=False,
+        has_qsiprep_t1w=True,
+        has_qsiprep_t1w_transforms=template is not None,
+        has_freesurfer=False,
+        extras_to_make=[],
+        name='dwi_specific_anat_wf',
+        template_output_space=template,
+    )
+
+    assert status['template_output_space'] == template
+    nodes = wf.list_node_names()
+    has_grid = any(name.startswith('output_grid_wf.') for name in nodes)
+    assert has_grid is (template is not None)
+    assert ('get_template' in nodes) is (template is not None)
+    if template:
+        assert wf.get_node('get_template').inputs.template_name == template
+
+
+def test_scalar_to_template_wf_needs_template():
+    """Mapping scalars to a template fails clearly when there is no template space."""
+    from qsirecon.workflows.recon.scalar_mapping import init_scalar_to_template_wf
+
+    with pytest.raises(ValueError, match='cannot be warped to a template'):
+        init_scalar_to_template_wf(inputs_dict={'template_output_space': None})
