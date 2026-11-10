@@ -58,6 +58,9 @@ The ``--output-spaces`` option names the template space that scalar maps are war
 (in workflows that map scalars to a template).
 It does not affect atlases, which are only written in the space of the DWI
 (see :ref:`atlas_templates`).
+The template and resolution an atlas is taken from can be chosen per atlas in ``--atlases``,
+with a similar syntax: ``--atlases 4S156Parcels:tpl-MNI152NLin2009cAsym:res-01``
+(see :ref:`atlas_selectors`).
 It follows the same syntax as *QSIPrep*'s ``--output-spaces``:
 a TemplateFlow template name, optionally followed by a cohort and a resolution::
 

@@ -811,6 +811,8 @@ Using custom atlases
 
 It's possible to use your own atlases provided you organize the atlases into BIDS-Atlas datasets.
 Users can control which atlases are used with the ``--atlases`` and ``--datasets`` parameters.
+When an atlas is available in more than one template or resolution,
+``--atlases`` can also name the copy to use (see :ref:`atlas_selectors`).
 
 The nifti images should be registered to a TemplateFlow template, named by the ``tpl-``
 entity of the atlas file (and ``cohort-``, for templates that have cohorts).
@@ -855,8 +857,68 @@ Atlases requested together may come from different templates.
    so a chained atlas needs network access unless they are already in
    ``$TEMPLATEFLOW_HOME``.
 
-To restrict where atlases may be taken from, add a ``template`` entry to the ``atlas``
+.. _atlas_selectors:
+
+Choosing a copy of an atlas
+---------------------------
+
+To use one particular copy of an atlas, follow its name in ``--atlases`` with selectors,
+in the way a template is followed by a cohort and a resolution in ``--output-spaces``
+(see :ref:`output_spaces`)::
+
+    --atlases 4S156Parcels
+    --atlases 4S156Parcels:tpl-MNI152NLin2009cAsym:res-01
+    --atlases 4S156Parcels:tpl-MNIInfant:cohort-2 AAL116
+
+An atlas name alone keeps the automatic choice described above.
+An atlas with selectors is only taken from the copies they describe:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Selector
+     - Matches
+   * - ``tpl-<label>``
+     - The template the atlas is in.
+   * - ``cohort-<label>``
+     - The cohort of that template. It needs a ``tpl-``.
+       A template that has cohorts, such as ``MNIInfant``, needs a cohort;
+       ``cohort-auto`` is not accepted here.
+   * - ``res-<label>``
+     - The ``res`` entity of the atlas file.
+   * - ``desc-<label>``
+     - The ``desc`` entity of the atlas file.
+   * - ``seg-<label>``
+     - The ``seg`` entity of the atlas file.
+
+A few things to keep in mind:
+
+- Selectors are per atlas, so one command can pin some atlases and leave others automatic.
+- Labels are matched literally: ``res-01`` and ``res-1`` are different.
+- ``res-`` only selects a file.
+  Atlases are always resampled onto the grid of the preprocessed DWI, so a voxel size
+  (``res-2mm``) is not accepted.
+- Selectors that leave more than one template to choose from (``4S156Parcels:res-01``,
+  for example) restrict the copies, and the one with the shortest chain of transforms is
+  used.
+- *QSIRecon* stops with an error if no copy of the atlas matches the selectors (the error
+  lists the copies that were found), or if no chain of transforms brings the selected
+  copy into the anatomical space.
+  A pinned copy is never replaced by another one.
+- Each atlas may be requested once.
+  Outputs are named after the atlas alone (``seg-<atlas>``),
+  so two copies of one atlas would be written to the same files.
+- The atlas name alone is still what appears in the outputs.
+
+When an atlas has several resolutions in the template that is used and no ``res-``
+selector chooses between them, the one with the smallest voxels is used,
+and a warning in the log lists the images that were available.
+
+To restrict where every atlas may be taken from, add a ``template`` entry to the ``atlas``
 section of a ``--bids-filter-file``.
+The selectors of an atlas must agree with that section:
+*QSIRecon* stops with an error if, for example, the filter file names one template and
+a ``tpl-`` selector names another.
 
 
 Connectivity Measures

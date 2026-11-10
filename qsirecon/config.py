@@ -405,7 +405,8 @@ class execution(_Config):
     datasets = {}
     """Path(s) to search for other datasets (either derivatives or atlases)."""
     atlases = []
-    """Selection of atlases to apply to the data."""
+    """Selection of atlases to apply to the data, as ``--atlases`` tokens:
+    an atlas name, optionally followed by selectors (``<atlas>:tpl-<label>:res-<label>``)."""
     bids_database_dir = None
     """Path to the directory containing SQLite database indices for the input BIDS dataset."""
     bids_description_hash = None

@@ -218,6 +218,8 @@ to workflows in *QSIRecon*'s documentation]\
             # Each atlas is taken from the template with the shortest chain of transforms
             # to the anatomical space, and carries that chain. The output space plays no
             # part: atlases are only ever written in the space of the DWI.
+            # config.execution.atlases holds --atlases tokens, whose selectors restrict
+            # the copies an atlas may be taken from; the configs are keyed by atlas name.
             atlas_configs = collect_atlases(
                 datasets=config.execution.datasets,
                 atlases=config.execution.atlases,

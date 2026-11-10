@@ -872,6 +872,68 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
     _run_and_generate(f'{TEST_NAME}_apply', parameters, test_main=False)
 
 
+@pytest.fixture
+def atlas_cli(tmp_path, monkeypatch):
+    """Parse a minimal command line plus extra arguments, without TemplateFlow or the network."""
+    from qsirecon.cli import parser as cli_parser
+    from qsirecon.cli import version as _version
+    from qsirecon.utils import spaces
+
+    cohorts = {'MNI152NLin2009cAsym': [], 'MNIInfant': ['1', '2']}
+    monkeypatch.setattr(_version, 'check_latest', lambda *args, **kwargs: None)
+    monkeypatch.setattr(_version, 'is_flagged', lambda *args, **kwargs: (False, None))
+    monkeypatch.setattr(spaces, '_templates', lambda: list(cohorts))
+    monkeypatch.setattr(spaces, '_cohorts', lambda template: cohorts[template])
+    input_dir = tmp_path / 'qsiprep'
+    input_dir.mkdir()
+    base = [str(input_dir), str(tmp_path / 'out'), 'participant', '--recon-spec', 'dipy_dki']
+
+    def _parse(*extra):
+        return cli_parser._build_parser().parse_args([*base, *extra])
+
+    return _parse
+
+
+def test_cli_atlases(atlas_cli):
+    """--atlases is stored as canonical tokens, with or without selectors."""
+    assert atlas_cli().atlases is None
+    assert atlas_cli('--atlases', 'AAL116', '4S156Parcels').atlases == ['AAL116', '4S156Parcels']
+
+    opts = atlas_cli(
+        '--atlases',
+        '4S156Parcels:res-01:tpl-MNI152NLin2009cAsym',
+        'Mine:tpl-MNIInfant:cohort-2',
+        'AAL116',
+        'AAL116',
+    )
+    assert opts.atlases == [
+        '4S156Parcels:tpl-MNI152NLin2009cAsym:res-01',
+        'Mine:tpl-MNIInfant:cohort-2',
+        'AAL116',
+    ]
+    # The built-in dataset lookup still sees the atlas name at the start of the token
+    assert opts.atlases[0].startswith('4S')
+
+
+@pytest.mark.parametrize(
+    ('atlases', 'message'),
+    [
+        (['AAL116:MNI152NLin2009cAsym'], 'is not a key-value specification'),
+        (['AAL116:space-MNI152NLin2009cAsym'], 'QSIRecon accepts: tpl, cohort, res, desc, seg'),
+        (['AAL116:res-2mm'], 'res- only selects the atlas file'),
+        (['AAL116:tpl-MNIInfant'], 'it needs a cohort'),
+        (['AAL116:cohort-2'], 'names a cohort without a template'),
+        (['AAL116', 'AAL116:res-01'], 'The atlas AAL116 was requested more than once'),
+    ],
+)
+def test_cli_atlases_errors(atlas_cli, capsys, atlases, message):
+    """Malformed selectors and repeated atlases stop the parser with a helpful message."""
+    with pytest.raises(SystemExit):
+        atlas_cli('--atlases', *atlases)
+
+    assert message in capsys.readouterr().err
+
+
 def _run_and_generate(test_name, parameters, test_main=False):
     from qsirecon import config
 
