@@ -914,6 +914,13 @@ def test_cli_atlases(atlas_cli):
     # The built-in dataset lookup still sees the atlas name at the start of the token
     assert opts.atlases[0].startswith('4S')
 
+    # The option adds up when it is given more than once
+    opts = atlas_cli('--atlases', 'AAL116', '--atlases', '4S156Parcels:res-01', 'AAL116')
+    assert opts.atlases == ['AAL116', '4S156Parcels:res-01']
+
+    with pytest.raises(SystemExit):
+        atlas_cli('--atlases', 'AAL116', '--atlases', 'AAL116:res-01')
+
 
 @pytest.mark.parametrize(
     ('atlases', 'message'),

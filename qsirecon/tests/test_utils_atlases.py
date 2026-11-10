@@ -572,6 +572,23 @@ def test_collect_atlases_selector_and_bids_filter(tmp_path):
     assert configs['Both']['space'] == 'MNI152NLin6Asym'
 
 
+@pytest.mark.parametrize('seg', ['A', 'B'])
+def test_collect_atlases_selector_pins_seg(tmp_path, seg):
+    """A seg- selector chooses the image, and the labels that go with that image."""
+    datasets = _atlas_dataset(
+        tmp_path / 'atlases',
+        {'Segs': ['MNI152NLin2009cAsym:seg-A', 'MNI152NLin2009cAsym:seg-B']},
+    )
+
+    configs = collect_atlases(
+        datasets=datasets,
+        atlases=[f'Segs:seg-{seg}'],
+        xfm_edges=_normalized_to('MNI152NLin2009cAsym'),
+    )
+    assert configs['Segs']['image'].endswith(f'_atlas-Segs_seg-{seg}_dseg.nii.gz')
+    assert configs['Segs']['labels'].endswith(f'_atlas-Segs_seg-{seg}_dseg.tsv')
+
+
 def test_collect_atlases_selector_without_transforms(tmp_path):
     """Without transforms to choose by, a tpl- selector replaces the default template."""
     datasets = _atlas_dataset(

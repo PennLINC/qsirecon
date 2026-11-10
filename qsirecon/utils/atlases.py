@@ -231,6 +231,7 @@ def collect_atlases(datasets, atlases, bids_filters={}, xfm_edges=None):
             The spaces those transforms go through, from the atlas's to the anatomical one.
     """
     import json
+    import os
 
     import pandas as pd
     from bids.layout import BIDSLayout
@@ -342,8 +343,16 @@ def collect_atlases(datasets, atlases, bids_filters={}, xfm_edges=None):
         selected = candidates[atlas][space]
         layout = layouts[selected['dataset']]
         atlas_image = selected['image']
+        # The files named like the image come first: PyBIDS only compares the entities it
+        # knows, which need not include every selector an atlas was requested with.
+        atlas_stem = atlas_image.removesuffix('.gz').removesuffix('.nii')
         atlas_labels = layout.get_nearest(atlas_image, extension='.tsv', strict=False)
+        if os.path.isfile(f'{atlas_stem}.tsv'):
+            atlas_labels = f'{atlas_stem}.tsv'
+
         atlas_metadata_file = layout.get_nearest(atlas_image, extension='.json', strict=True)
+        if os.path.isfile(f'{atlas_stem}.json'):
+            atlas_metadata_file = f'{atlas_stem}.json'
 
         if not atlas_labels:
             raise FileNotFoundError(f'No TSV file found for {atlas_image}')

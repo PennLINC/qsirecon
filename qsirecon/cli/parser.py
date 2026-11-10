@@ -79,8 +79,11 @@ class AtlasesAction(Action):
     def __call__(self, parser, namespace, values, option_string=None):
         from ..utils.atlases import AtlasSelectorError, parse_atlases
 
+        # Like --output-spaces, the option adds up when it is given more than once,
+        # so that an atlas requested twice is caught however the command is written.
+        existing = getattr(namespace, self.dest, None) or []
         try:
-            specs = parse_atlases(values)
+            specs = parse_atlases([*existing, *values])
         except AtlasSelectorError as exc:
             parser.error(str(exc))
 
@@ -498,7 +501,8 @@ def _build_parser(**kwargs):
             'the preprocessed DWI. '
             'QSIRecon stops with an error if no copy of the atlas matches the selectors, '
             'or if no chain of transforms brings that copy into the anatomical space. '
-            'Each atlas may be requested once.'
+            'Each atlas may be requested once. '
+            'If the option is given more than once, the atlases are added together.'
         ),
     )
 
