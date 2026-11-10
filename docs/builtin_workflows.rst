@@ -812,11 +812,51 @@ Using custom atlases
 It's possible to use your own atlases provided you organize the atlases into BIDS-Atlas datasets.
 Users can control which atlases are used with the ``--atlases`` and ``--datasets`` parameters.
 
-The nifti images should be registered to the
+The nifti images should be registered to a TemplateFlow template, named by the ``tpl-``
+entity of the atlas file (and ``cohort-``, for templates that have cohorts).
+Atlases in ``MNI152NLin2009cAsym`` should be registered to the
 `MNI152NLin2009cAsym <https://github.com/PennLINC/qsirecon/blob/main/qsirecon/data/mni_1mm_t1w_lps.nii.gz>`_
 included in *QSIRecon*.
 It is essential that your images are in the LPS+ orientation and have the sform zeroed-out in the header.
 **Be sure to check for alignment and orientation** in your outputs.
+
+.. _atlas_templates:
+
+Which template an atlas is taken from
+-------------------------------------
+
+Atlases are warped into the space of the DWI, so the template an atlas comes from does not
+show in the outputs, and ``--output-spaces`` plays no part in it.
+*QSIRecon* does not estimate a normalization; it warps each atlas with transforms that
+already exist:
+
+- If the atlas is available in a template the data were normalized to in *QSIPrep*,
+  that copy is used, with the transform from the input dataset.
+  For example, data preprocessed with ``MNIInfant:cohort-2`` use the ``MNIInfant`` cohort 2
+  copy of an atlas that has one.
+- Otherwise the atlas is chained to the anatomical space through the template-to-template
+  transforms that `TemplateFlow <https://www.templateflow.org>`_ distributes, and the copy
+  with the shortest chain is used.
+  For example, an atlas that only exists in ``MNI152NLin2009cAsym`` reaches data that
+  were normalized to ``MNIInfant`` cohort 2 through ``MNI152NLin6Asym``.
+  A warning in the log, and the methods boilerplate, name the templates the atlas goes
+  through.
+  Between equally long chains, a copy in another cohort of the template the data were
+  normalized to is preferred.
+- If no chain of transforms reaches any copy of the atlas, *QSIRecon* stops with an error.
+
+Atlases requested together may come from different templates.
+
+.. warning::
+   Each transform in a chain adds registration error, and a transform between an adult
+   and an infant template is the least reliable kind.
+   Check the alignment of chained atlases in the outputs.
+   The template-to-template transforms are downloaded when the workflow is built,
+   so a chained atlas needs network access unless they are already in
+   ``$TEMPLATEFLOW_HOME``.
+
+To restrict where atlases may be taken from, add a ``template`` entry to the ``atlas``
+section of a ``--bids-filter-file``.
 
 
 Connectivity Measures

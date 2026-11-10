@@ -347,8 +347,8 @@ def _build_parser(**kwargs):
         default=None,
         metavar='SPACE',
         help=(
-            'The template space that atlases are taken from and that scalar maps are '
-            'warped into. Defaults to "MNI152NLin2009cAsym". '
+            'The template space that scalar maps are warped into. '
+            'Defaults to "MNI152NLin2009cAsym". '
             'The space is a TemplateFlow template name, optionally followed by a cohort '
             'and a resolution, as in "MNI152NLin2009cAsym:res-2mm" or '
             '"MNIInfant:cohort-2:res-1p5mm". '

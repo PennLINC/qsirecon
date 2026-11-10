@@ -54,8 +54,10 @@ Output spaces
 
 *QSIRecon* always writes reconstruction outputs in the space of the preprocessed DWI,
 on the grid of the input data.
-The ``--output-spaces`` option names the template space that atlases are taken from and
-that scalar maps are warped into (in workflows that map scalars to a template).
+The ``--output-spaces`` option names the template space that scalar maps are warped into
+(in workflows that map scalars to a template).
+It does not affect atlases, which are only written in the space of the DWI
+(see :ref:`atlas_templates`).
 It follows the same syntax as *QSIPrep*'s ``--output-spaces``:
 a TemplateFlow template name, optionally followed by a cohort and a resolution::
 

@@ -207,6 +207,9 @@ def collect_anatomical_data(
         that bring the ODF report ROIs from the template they are drawn in to the
         anatomical space, or None when they could not be found, in which case the
         ODF figures are not made.
+        ``template_xfm_edges`` is the list of template transforms in the input dataset,
+        as :class:`~qsirecon.utils.transforms.Xfm` edges, for choosing atlases with.
+        It is not a workflow setting, so remove it before passing the status on.
 
     Notes
     -----
@@ -222,6 +225,7 @@ def collect_anatomical_data(
         'template_output_space': None,
         'template_transform_path': None,
         'odf_rois_to_acpc_xfm': None,
+        'template_xfm_edges': [],
     }
 
     if session_id is None:
@@ -358,6 +362,7 @@ def collect_anatomical_data(
     if status['has_qsiprep_t1w_transforms'] and not config.execution.skip_odf_reports:
         status['odf_rois_to_acpc_xfm'] = _odf_roi_transforms(dataset_edges)
 
+    status['template_xfm_edges'] = dataset_edges
     return anat_data, status
 
 

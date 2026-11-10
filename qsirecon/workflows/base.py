@@ -154,6 +154,12 @@ to workflows in *QSIRecon*'s documentation]\
             bids_filters=config.execution.bids_filters or {},
         )
 
+        # The dataset's template transforms are only needed here, to choose atlases with
+        template_xfm_edges = highres_anat_statuses[anat_input_file.path].pop(
+            'template_xfm_edges',
+            [],
+        )
+
         config.loggers.workflow.info(
             f'Anatomical data available for {anat_input_file.path}:\n'
             f'{yaml.dump(anat_data, default_flow_style=False, indent=4)}'
@@ -186,23 +192,16 @@ to workflows in *QSIRecon*'s documentation]\
             atlas_output_dir = os.path.join(config.execution.output_dir, 'sourcedata', 'atlases')
             os.makedirs(atlas_output_dir, exist_ok=True)
 
-            # Limit atlases to ones in the specified space.
-            xfm_to_anat = anat_data['template_to_acpc_xfm']
-            template_space = highres_anat_statuses[anat_input_file.path]['template_output_space']
-            bids_filters = (config.execution.bids_filters or {}).copy()
-            bids_filters['atlas'] = bids_filters.get('atlas', {})
-            bids_filters['atlas']['template'] = template_space
-
             # Collect atlases across datasets, including built-in atlases.
+            # Each atlas is taken from the template with the shortest chain of transforms
+            # to the anatomical space, and carries that chain. The output space plays no
+            # part: atlases are only ever written in the space of the DWI.
             atlas_configs = collect_atlases(
                 datasets=config.execution.datasets,
                 atlases=config.execution.atlases,
-                bids_filters=bids_filters,
+                bids_filters=config.execution.bids_filters or {},
+                xfm_edges=template_xfm_edges,
             )
-            # Patch the transform into the atlas configs. Unused.
-            # This is a placeholder until we can support atlases in various spaces.
-            for atlas_name in atlas_configs.keys():
-                atlas_configs[atlas_name]['xfm_to_anat'] = xfm_to_anat
 
             # Write template-space atlases to sourcedata
             for atlas_name, atlas_config in atlas_configs.items():

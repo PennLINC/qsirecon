@@ -82,10 +82,13 @@ def test_warp_atlases_wf(data_dir, tmp_path_factory):
             f'{atlas_name} is already on the DWI grid, so this test proves nothing'
         )
 
+    # Each atlas carries the transforms that bring it into the anatomical space
+    for atlas_config in atlas_configs.values():
+        atlas_config['xfm_to_anat'] = [str(xfm)]
+
     wf = init_warp_atlases_wf(atlas_configs=atlas_configs)
     wf.base_dir = str(tmpdir)
     wf.inputs.inputnode.source_file = str(src)
-    wf.inputs.inputnode.template_to_acpc_xfm = str(xfm)
     # The workflow leaves the datasinks' base_directory to the parent workflow's
     # clean_datasinks() call, so point them at a temporary derivatives directory here.
     for node_name in wf.list_node_names():

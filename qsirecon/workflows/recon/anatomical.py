@@ -665,9 +665,6 @@ def init_dwi_recon_anatomical_workflow(
             warp_atlases_wf = init_warp_atlases_wf(atlas_configs=atlas_configs)
             workflow.connect([
                 (inputnode, warp_atlases_wf, [('dwi_file', 'inputnode.source_file')]),
-                (_get_source_node('template_to_acpc_xfm'), warp_atlases_wf, [
-                    ('template_to_acpc_xfm', 'inputnode.template_to_acpc_xfm'),
-                ]),
                 (warp_atlases_wf, buffernode, [('outputnode.atlas_configs', 'atlas_configs')]),
             ])  # fmt:skip
 
@@ -685,16 +682,30 @@ def init_dwi_recon_anatomical_workflow(
 
 
 def init_warp_atlases_wf(atlas_configs):
-    """Warp atlases to ACPC space and convert to MIF format."""
+    """Warp atlases to ACPC space and convert to MIF format.
+
+    Parameters
+    ----------
+    atlas_configs : :obj:`dict`
+        The atlases to warp, from :func:`~qsirecon.utils.atlases.collect_atlases`.
+        Each atlas carries its own ``xfm_to_anat``: the transforms that bring it from the
+        template it is in to the anatomical space, in the order ANTs takes them.
+        The atlases need not be in the same template.
+
+    Inputs
+    ------
+    source_file
+        The preprocessed DWI, whose grid the atlases are resampled onto.
+
+    Outputs
+    -------
+    atlas_configs
+        The atlas configs, with the files written in the space of the DWI.
+    """
     workflow = Workflow(name='warp_atlases_wf')
 
     inputnode = pe.Node(
-        niu.IdentityInterface(
-            fields=[
-                'source_file',
-                'template_to_acpc_xfm',
-            ],
-        ),
+        niu.IdentityInterface(fields=['source_file']),
         name='inputnode',
     )
     outputnode = pe.Node(
@@ -716,6 +727,18 @@ def init_warp_atlases_wf(atlas_configs):
     atlas_names = sorted(atlas_configs.keys())
     atlas_images = [atlas_configs[name]['image'] for name in atlas_names]
     atlas_labels = [atlas_configs[name]['labels'] for name in atlas_names]
+    atlas_xfms = [list(atlas_configs[name]['xfm_to_anat']) for name in atlas_names]
+
+    # Atlases in a template the data were not normalized to go through other templates
+    for name in atlas_names:
+        xfm_path = atlas_configs[name].get('xfm_path') or []
+        if len(xfm_path) > 2:
+            workflow.__desc__ += (
+                f'The {name} atlas is defined in {xfm_path[0]}, which the data were not '
+                f'normalized to during preprocessing, so it was mapped through '
+                f'{", ".join(xfm_path[1:-1])} with template-to-template transforms from '
+                'TemplateFlow. '
+            )
 
     # Reorient the atlases to LPS+ before resampling them
     conform_atlases = pe.MapNode(
@@ -727,16 +750,15 @@ def init_warp_atlases_wf(atlas_configs):
     conform_atlases.inputs.in_file = atlas_images
 
     # Warp all atlases to source_file's space/resolution
+    # Each atlas has its own transforms, since the atlases may be in different templates
     warp_atlases = pe.MapNode(
         ants.ApplyTransforms(interpolation='MultiLabel', dimension=3),
-        iterfield=['input_image'],
+        iterfield=['input_image', 'transforms'],
         name='warp_atlases',
     )
+    warp_atlases.inputs.transforms = atlas_xfms
     workflow.connect([
-        (inputnode, warp_atlases, [
-            ('source_file', 'reference_image'),
-            ('template_to_acpc_xfm', 'transforms'),
-        ]),
+        (inputnode, warp_atlases, [('source_file', 'reference_image')]),
         (conform_atlases, warp_atlases, [('out_file', 'input_image')]),
     ])  # fmt:skip
 
