@@ -18,7 +18,7 @@ TF_XFMS = {
     'MNI152NLin6Asym': [
         'tpl-MNI152NLin6Asym_from-MNI152NLin2009cAsym_mode-image_xfm.h5',
         'tpl-MNI152NLin6Asym_from-MNIInfant+2_mode-image_xfm.h5',
-        # One direction only, so it cannot be used
+        # Into MNI152NLin6Asym only, so OASIS30ANTs cannot be an output space
         'tpl-MNI152NLin6Asym_from-OASIS30ANTs_mode-image_xfm.h5',
         'tpl-MNI152NLin6Asym_from-MNI152NLin2009cAsym_mode-points_xfm.h5',
     ],
@@ -167,15 +167,14 @@ def bids_dir(tmp_path):
     return bids_dir
 
 
-def _collect(bids_dir, token, needs_anat_transform=False):
+def _collect(bids_dir, *tokens, needs_anat_transform=False):
     layout = BIDSLayout(bids_dir, validate=False, config=['bids', 'derivatives'])
-    (output_space,) = spaces.parse_output_spaces([token])
     return xbids.collect_anatomical_data(
         layout=layout,
         subject_id='01',
         session_id=Query.NONE,
         needs_anat_transform=needs_anat_transform,
-        output_space=output_space,
+        output_spaces=spaces.parse_output_spaces(tokens),
         bids_filters={},
     )
 
@@ -196,59 +195,81 @@ def _forbid_templateflow(monkeypatch):
 def test_collect_direct_transforms(bids_dir, fake_templateflow, monkeypatch):
     """A space the dataset was normalized to uses its transforms, and nothing else."""
     _forbid_templateflow(monkeypatch)
-    anat_data, status = _collect(bids_dir, 'MNI152NLin2009cAsym')
-    assert status['template_output_space'] == 'MNI152NLin2009cAsym'
-    assert status['template_transform_path'] is None
-    assert isinstance(anat_data['acpc_to_template_xfm'], str)
-    assert isinstance(anat_data['template_to_acpc_xfm'], str)
+    _, status = _collect(bids_dir, 'MNI152NLin2009cAsym')
+    (space_xfms,) = status['output_space_xfms']
+    assert space_xfms['space'] == 'MNI152NLin2009cAsym'
+    assert space_xfms['transform_path'] is None
+    assert _names(space_xfms['acpc_to_template_xfm']) == [
+        'sub-01_from-ACPC_to-MNI152NLin2009cAsym_mode-image_xfm.h5',
+    ]
     assert fake_templateflow == []
 
 
 def test_collect_chained_transforms(bids_dir, fake_templateflow):
     """QSIPrep with MNI152NLin2009cAsym, then QSIRecon with MNI152NLin6Asym."""
-    anat_data, status = _collect(bids_dir, 'MNI152NLin6Asym:res-2mm', needs_anat_transform=True)
+    _, status = _collect(bids_dir, 'MNI152NLin6Asym:res-2mm', needs_anat_transform=True)
 
     assert status['has_qsiprep_anat_transforms'] is True
-    assert status['template_output_space'] == 'MNI152NLin6Asym'
-    assert status['template_transform_path'] == ['ACPC', 'MNI152NLin2009cAsym', 'MNI152NLin6Asym']
+    (space_xfms,) = status['output_space_xfms']
+    assert space_xfms['token'] == 'MNI152NLin6Asym:res-2mm'
+    assert space_xfms['space'] == 'MNI152NLin6Asym'
+    assert space_xfms['transform_path'] == ['ACPC', 'MNI152NLin2009cAsym', 'MNI152NLin6Asym']
 
     # ANTs applies the last transform first: ACPC -> MNI152NLin2009cAsym -> MNI152NLin6Asym
-    assert _names(anat_data['acpc_to_template_xfm']) == [
+    assert _names(space_xfms['acpc_to_template_xfm']) == [
         'tpl-MNI152NLin6Asym_from-MNI152NLin2009cAsym_mode-image_xfm.h5',
         'sub-01_from-ACPC_to-MNI152NLin2009cAsym_mode-image_xfm.h5',
     ]
-    # MNI152NLin6Asym -> MNI152NLin2009cAsym -> ACPC
-    assert _names(anat_data['template_to_acpc_xfm']) == [
-        'sub-01_from-MNI152NLin2009cAsym_to-ACPC_mode-image_xfm.h5',
-        'tpl-MNI152NLin2009cAsym_from-MNI152NLin6Asym_mode-image_xfm.h5',
+    # Only the transform on the chain was downloaded, and only in the direction used
+    assert fake_templateflow == ['tpl-MNI152NLin6Asym_from-MNI152NLin2009cAsym_mode-image_xfm.h5']
+
+
+def test_collect_direct_and_chained_spaces_together(bids_dir, fake_templateflow):
+    """Each requested space is resolved on its own: one directly, one through a chain."""
+    _, status = _collect(
+        bids_dir,
+        'MNI152NLin2009cAsym:res-2mm',
+        'MNI152NLin6Asym:res-1:res-2mm',
+    )
+
+    direct, chained_1, chained_2 = status['output_space_xfms']
+    assert direct['token'] == 'MNI152NLin2009cAsym:res-2mm'
+    assert direct['transform_path'] is None
+    assert _names(direct['acpc_to_template_xfm']) == [
+        'sub-01_from-ACPC_to-MNI152NLin2009cAsym_mode-image_xfm.h5',
     ]
-    # Only the transforms on the chain were downloaded
-    assert sorted(fake_templateflow) == [
-        'tpl-MNI152NLin2009cAsym_from-MNI152NLin6Asym_mode-image_xfm.h5',
-        'tpl-MNI152NLin6Asym_from-MNI152NLin2009cAsym_mode-image_xfm.h5',
+
+    assert [chained_1['token'], chained_2['token']] == [
+        'MNI152NLin6Asym:res-1',
+        'MNI152NLin6Asym:res-2mm',
     ]
+    for chained in (chained_1, chained_2):
+        assert chained['transform_path'] == ['ACPC', 'MNI152NLin2009cAsym', 'MNI152NLin6Asym']
+        assert _names(chained['acpc_to_template_xfm']) == [
+            'tpl-MNI152NLin6Asym_from-MNI152NLin2009cAsym_mode-image_xfm.h5',
+            'sub-01_from-ACPC_to-MNI152NLin2009cAsym_mode-image_xfm.h5',
+        ]
+
+    # The two resolutions share one chain, so its transform was fetched once
+    assert fake_templateflow == ['tpl-MNI152NLin6Asym_from-MNI152NLin2009cAsym_mode-image_xfm.h5']
 
 
 def test_collect_chained_transforms_two_templates(bids_dir):
     """A chain may pass through more than one template, and reach a cohort."""
-    anat_data, status = _collect(bids_dir, 'MNIInfant:cohort-2')
+    _, status = _collect(bids_dir, 'MNIInfant:cohort-2')
 
-    assert status['template_output_space'] == 'MNIInfant+2'
-    assert status['template_transform_path'] == [
+    (space_xfms,) = status['output_space_xfms']
+    assert space_xfms['space'] == 'MNIInfant+2'
+    assert space_xfms['transform_path'] == [
         'ACPC',
         'MNI152NLin2009cAsym',
         'MNI152NLin6Asym',
         'MNIInfant+2',
     ]
-    assert _names(anat_data['acpc_to_template_xfm']) == [
+    assert _names(space_xfms['acpc_to_template_xfm']) == [
         'tpl-MNIInfant_cohort-2_from-MNI152NLin6Asym_mode-image_xfm.h5',
         'tpl-MNI152NLin6Asym_from-MNI152NLin2009cAsym_mode-image_xfm.h5',
         'sub-01_from-ACPC_to-MNI152NLin2009cAsym_mode-image_xfm.h5',
-    ]
-    assert _names(anat_data['template_to_acpc_xfm']) == [
-        'sub-01_from-MNI152NLin2009cAsym_to-ACPC_mode-image_xfm.h5',
-        'tpl-MNI152NLin2009cAsym_from-MNI152NLin6Asym_mode-image_xfm.h5',
-        'tpl-MNI152NLin6Asym_from-MNIInfant+2_mode-image_xfm.h5',
     ]
 
 
@@ -259,21 +280,23 @@ def test_collect_prefers_direct_transforms(bids_dir, fake_templateflow, monkeypa
     for xfm in list(anat_dir.glob('*MNI152NLin2009cAsym*_xfm.h5')):
         shutil.copy(xfm, anat_dir / xfm.name.replace('MNI152NLin2009cAsym', 'MNI152NLin6Asym'))
 
-    anat_data, status = _collect(bids_dir, 'MNI152NLin6Asym')
-    assert status['template_transform_path'] is None
-    assert anat_data['acpc_to_template_xfm'].endswith(
-        'sub-01_from-ACPC_to-MNI152NLin6Asym_mode-image_xfm.h5'
-    )
+    _, status = _collect(bids_dir, 'MNI152NLin6Asym')
+    (space_xfms,) = status['output_space_xfms']
+    assert space_xfms['transform_path'] is None
+    assert _names(space_xfms['acpc_to_template_xfm']) == [
+        'sub-01_from-ACPC_to-MNI152NLin6Asym_mode-image_xfm.h5',
+    ]
     assert fake_templateflow == []
 
 
 @pytest.mark.parametrize(
     ('token', 'reason'),
     [
-        # TemplateFlow only has the transform into MNI152NLin6Asym, not out of it
+        # TemplateFlow only has the transform out of OASIS30ANTs, not into it
         ('OASIS30ANTs', 'TemplateFlow has no transforms that link them to OASIS30ANTs'),
         # No transforms at all for this cohort
         ('MNIInfant:cohort-3', 'TemplateFlow has no transforms that link them to MNIInfant'),
+        # cohort-auto only looks at the dataset's own transforms
         ('MNIInfant:cohort-auto', 'replace cohort-auto with a cohort label'),
     ],
 )
@@ -283,18 +306,46 @@ def test_collect_unreachable_space(bids_dir, token, reason):
         _collect(bids_dir, token)
 
     message = str(excinfo.value)
-    assert 'It has transforms for: MNI152NLin2009cAsym.' in message
+    assert 'It has transforms to: MNI152NLin2009cAsym.' in message
     assert reason in message
 
 
-def test_collect_chain_needs_both_dataset_directions(bids_dir):
-    """A chain cannot start from a dataset transform that exists in one direction only."""
-    (
-        bids_dir / 'sub-01' / 'anat' / 'sub-01_from-MNI152NLin2009cAsym_to-ACPC_mode-image_xfm.h5'
-    ).unlink()
+def test_collect_chain_is_one_way(bids_dir, fake_templateflow):
+    """A chain to an output space only needs the transforms that go toward the template."""
+    anat_dir = bids_dir / 'sub-01' / 'anat'
+    (anat_dir / 'sub-01_from-MNI152NLin2009cAsym_to-ACPC_mode-image_xfm.h5').unlink()
+
+    _, status = _collect(bids_dir, 'MNI152NLin6Asym')
+    (space_xfms,) = status['output_space_xfms']
+    assert space_xfms['transform_path'] == ['ACPC', 'MNI152NLin2009cAsym', 'MNI152NLin6Asym']
+    assert fake_templateflow == ['tpl-MNI152NLin6Asym_from-MNI152NLin2009cAsym_mode-image_xfm.h5']
+    # The ODF report ROIs need the direction that is missing, so they are left out
+    assert status['odf_rois_to_acpc_xfm'] is None
+
+
+def test_collect_chain_can_require_both_directions(bids_dir, monkeypatch):
+    """The one-way search is a setting: the chains can be made to need both directions."""
+    monkeypatch.setattr(xbids, 'OUTPUT_SPACE_CHAINS_BIDIRECTIONAL', True)
+    anat_dir = bids_dir / 'sub-01' / 'anat'
+    (anat_dir / 'sub-01_from-MNI152NLin2009cAsym_to-ACPC_mode-image_xfm.h5').unlink()
 
     with pytest.raises(ValueError, match='TemplateFlow has no transforms that link them'):
         _collect(bids_dir, 'MNI152NLin6Asym')
+
+
+def test_collect_only_inverse_transforms(bids_dir, fake_templateflow):
+    """Template-to-anatomical transforms alone cannot write anything in a template."""
+    anat_dir = bids_dir / 'sub-01' / 'anat'
+    (anat_dir / 'sub-01_from-ACPC_to-MNI152NLin2009cAsym_mode-image_xfm.h5').unlink()
+
+    _, status = _collect(bids_dir, 'MNI152NLin2009cAsym')
+    assert status['has_qsiprep_anat_transforms'] is False
+    assert status['output_space_xfms'] == []
+    # The edges are still there for atlases to be chosen with
+    assert [(xfm.frm, xfm.to) for xfm in status['template_xfm_edges']] == [
+        ('MNI152NLin2009cAsym', 'ACPC'),
+    ]
+    assert fake_templateflow == []
 
 
 def test_collect_no_transforms_does_not_chain(bids_dir, fake_templateflow):
@@ -302,10 +353,9 @@ def test_collect_no_transforms_does_not_chain(bids_dir, fake_templateflow):
     for xfm in (bids_dir / 'sub-01' / 'anat').glob('*_xfm.h5'):
         xfm.unlink()
 
-    anat_data, status = _collect(bids_dir, 'MNI152NLin6Asym')
+    _, status = _collect(bids_dir, 'MNI152NLin6Asym')
     assert status['has_qsiprep_anat_transforms'] is False
-    assert status['template_output_space'] is None
-    assert anat_data['acpc_to_template_xfm'] is None
+    assert status['output_space_xfms'] == []
     assert fake_templateflow == []
 
 
@@ -359,11 +409,11 @@ def test_odf_rois_chained_for_infant_dataset(bids_dir, fake_templateflow):
     """A dataset normalized to an infant template reaches the ROIs through TemplateFlow."""
     _infant_only(bids_dir)
 
-    anat_data, status = _collect(bids_dir, 'MNIInfant:cohort-auto')
-    assert status['template_output_space'] == 'MNIInfant+2'
+    _, status = _collect(bids_dir, 'MNIInfant:cohort-auto')
+    (space_xfms,) = status['output_space_xfms']
+    assert space_xfms['space'] == 'MNIInfant+2'
     # The output space itself is direct
-    assert status['template_transform_path'] is None
-    assert isinstance(anat_data['template_to_acpc_xfm'], str)
+    assert space_xfms['transform_path'] is None
     # MNI152NLin2009cAsym -> MNI152NLin6Asym -> MNIInfant+2 -> ACPC, last hop first
     assert _names(status['odf_rois_to_acpc_xfm']) == [
         'sub-01_from-MNIInfant+2_to-ACPC_mode-image_xfm.h5',
@@ -385,9 +435,9 @@ def test_odf_rois_dropped_when_download_fails(bids_dir, monkeypatch):
 
     monkeypatch.setattr(transforms, '_tf_get', _offline)
 
-    anat_data, status = _collect(bids_dir, 'MNIInfant:cohort-2')
+    _, status = _collect(bids_dir, 'MNIInfant:cohort-2')
     assert status['has_qsiprep_anat_transforms'] is True
-    assert anat_data['template_to_acpc_xfm'] is not None
+    assert len(status['output_space_xfms']) == 1
     assert status['odf_rois_to_acpc_xfm'] is None
 
 
@@ -432,7 +482,6 @@ def test_dwi_anatomical_wf_odf_rois(tmp_path, monkeypatch, chained):
         has_freesurfer=False,
         extras_to_make=[],
         name='dwi_specific_anat_wf',
-        template_output_space='MNI152NLin6Asym',
         odf_rois_to_acpc_xfm=odf_xfm,
     )
 

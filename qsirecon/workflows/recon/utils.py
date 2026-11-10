@@ -150,8 +150,20 @@ def init_gradient_select_wf(
 
 def init_scalar_output_wf(
     name='scalar_output_wf',
+    res=None,
 ):
-    """Write out reconstructed scalar maps."""
+    """Write out reconstructed scalar maps.
+
+    Parameters
+    ----------
+    name : :obj:`str`, optional
+        Name of the workflow.
+    res : :obj:`str`, optional
+        Value of the ``res`` entity in the names of the files written, for scalar maps
+        on a template grid whose resolution was requested with ``--output-spaces``.
+        By default the files have no ``res`` entity. One in the name of the source
+        file is never inherited, because it describes the grid of the input DWI.
+    """
     workflow = Workflow(name=name)
 
     inputnode = pe.Node(
@@ -188,6 +200,9 @@ def init_scalar_output_wf(
         name='ds_scalar',
         run_without_submitting=True,
     )
+    if res:
+        ds_scalar.inputs.res = res
+
     workflow.connect([
         (inputnode, ds_scalar, [
             ('source_file', 'source_file'),

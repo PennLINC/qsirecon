@@ -8,6 +8,7 @@ from nipype.interfaces.base import (
 
 from qsirecon.data import load as load_data
 from qsirecon.interfaces.ingress import QSIPrepDWIIngress
+from qsirecon.utils.bids import TEMPLATE_XFM_QUERIES
 
 # Anatomical (t1w/t2w) slots
 FS_FILES_TO_REGISTER = [
@@ -24,9 +25,14 @@ CREATEABLE_ANATOMICAL_OUTPUTS = [
     'fs_to_qsiprep_transform_mrtrix',
 ]
 
-# These come directly from QSIPrep outputs. They're aligned to the DWIs in AC-PC
+# These come directly from QSIPrep outputs. They're aligned to the DWIs in AC-PC.
+# The transforms to and from templates are not workflow fields: there is one per
+# template, so they are resolved into chains of files when the workflow is built
+# (see qsirecon.utils.bids.collect_anatomical_data) and set on the nodes that use them.
 _spec = yaml.safe_load(load_data.readable('io_spec.yaml').read_text())
-qsiprep_highres_anatomical_ingressed_fields = list(_spec['queries']['anat'].keys())
+qsiprep_highres_anatomical_ingressed_fields = [
+    name for name in _spec['queries']['anat'] if name not in TEMPLATE_XFM_QUERIES
+]
 
 # The init_recon_anatomical anatomical workflow can create additional
 # anatomical files (segmentations/masks/etc) that can be used downstream.
@@ -45,7 +51,6 @@ recon_workflow_anatomical_input_fields = anatomical_workflow_outputs + [
     'dwi_mask',
     'atlas_configs',
     'odf_rois',
-    'resampling_template',
     'mapping_metadata',
 ]
 

@@ -11,7 +11,7 @@ from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
 from ... import config
 from ...data import load as load_data
-from ...interfaces.anatomical import GetTemplate, VoxelSizeChooser
+from ...interfaces.anatomical import VoxelSizeChooser
 from ...interfaces.ants import ConvertTransformFile
 from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.freesurfer import find_fs_path
@@ -93,8 +93,7 @@ def init_highres_recon_anatomical_wf(
     Inputs
     ------
     acpc_preproc, acpc_brain_mask, acpc_seg, acpc_aseg, acpc_aparc, acpc_csf_probseg, \
-    acpc_gm_probseg, acpc_wm_probseg, orig_to_acpc_xfm, acpc_to_template_xfm, \
-    template_to_acpc_xfm
+    acpc_gm_probseg, acpc_wm_probseg, orig_to_acpc_xfm
         The files collected by :func:`~qsirecon.utils.bids.collect_anatomical_data`,
         each of which may be ``None``.
         ``acpc_preproc`` is the preprocessed anatomical image, which may be a T1w or a T2w.
@@ -102,8 +101,7 @@ def init_highres_recon_anatomical_wf(
     Outputs
     -------
     acpc_preproc, acpc_brain_mask, acpc_seg, acpc_aseg, acpc_aparc, acpc_csf_probseg, \
-    acpc_gm_probseg, acpc_wm_probseg, orig_to_acpc_xfm, acpc_to_template_xfm, \
-    template_to_acpc_xfm
+    acpc_gm_probseg, acpc_wm_probseg, orig_to_acpc_xfm
         The inputs, forwarded unchanged.
     brain, aseg
         FreeSurfer's ``brain.mgz`` and ``aseg.mgz``.
@@ -447,8 +445,7 @@ def init_dwi_recon_anatomical_workflow(
     has_freesurfer,
     extras_to_make,
     name,
-    template_output_space,
-    template_transform_path=None,
+    output_space_xfms=None,
     odf_rois_to_acpc_xfm=None,
     prefer_dwi_mask=False,
 ):
@@ -461,11 +458,7 @@ def init_dwi_recon_anatomical_workflow(
 
     The workflow does the following:
 
-    1. If a template space is known (``template_output_space``), builds
-       ``resampling_template``: a non-oblique grid at the requested output resolution that
-       covers the brain in template space (see :func:`init_output_grid_wf`).
-       Without a template space, ``resampling_template`` is left undefined.
-    2. Chooses a brain mask (``dwi_mask``):
+    1. Chooses a brain mask (``dwi_mask``):
 
        - If neither a preprocessed anatomical image nor a FreeSurfer directory is
          available, or ``prefer_dwi_mask`` is ``True``, the mask is estimated from the
@@ -477,13 +470,18 @@ def init_dwi_recon_anatomical_workflow(
          ``acpc_preproc`` and ``acpc_brain_mask``.
        - Otherwise, the preprocessed brain mask is resampled onto the DWI grid.
 
-    3. If a HSVS 5tt image exists in FreeSurfer native space but was not aligned to a
+    2. If a HSVS 5tt image exists in FreeSurfer native space but was not aligned to a
        preprocessed anatomical image upstream (the FreeSurfer-only case), its header is
-       adjusted with the FreeSurfer-to-DWI transform from step 2 and the result is written
+       adjusted with the FreeSurfer-to-DWI transform from step 1 and the result is written
        as a derivative of the DWI.
-    4. If transforms between AC-PC and template space are available, the ROIs used for
+    3. If transforms between AC-PC and template space are available, the ROIs used for
        ODF plots in the reports and any requested atlases are warped from template space
        onto the DWI grid (see :func:`init_warp_atlases_wf`).
+
+    Nothing is built here for the output spaces requested with ``--output-spaces``.
+    Their transforms (``output_space_xfms``) are passed on in the returned status, and
+    :func:`~qsirecon.workflows.recon.scalar_mapping.init_scalar_to_template_wf` builds a
+    grid for each of them.
 
     Parameters
     ----------
@@ -509,9 +507,13 @@ def init_dwi_recon_anatomical_workflow(
         The ``anatomical`` entries of the recon spec.
     name : :obj:`str`
         Name of the workflow.
-    template_output_space : :obj:`str` or None
-        Name of the template that the transforms map to
-        (for example ``'MNI152NLin2009cAsym'``), or ``None`` if there are no transforms.
+    output_space_xfms : :obj:`list` of :obj:`dict`, optional
+        The transforms to each requested output space, from
+        :func:`~qsirecon.utils.bids.resolve_output_space_transforms`.
+        Empty or ``None`` if there are no transforms.
+    odf_rois_to_acpc_xfm : :obj:`list` of :obj:`str`, optional
+        The transforms that bring the ODF report ROIs into the anatomical space, in the
+        order ANTs takes them.
     prefer_dwi_mask : :obj:`bool`, optional
         Estimate the brain mask from the DWI even when an anatomical mask is available.
 
@@ -522,7 +524,7 @@ def init_dwi_recon_anatomical_workflow(
         These, and the other fields of
         :class:`~qsirecon.interfaces.ingress.QSIPrepDWIIngress`, are forwarded to the
         outputnode.
-    acpc_preproc, acpc_brain_mask, template_to_acpc_xfm, fs_5tt_hsvs, brain, aseg
+    acpc_preproc, acpc_brain_mask, fs_5tt_hsvs, brain, aseg
         Outputs of :func:`init_highres_recon_anatomical_wf` that are used here.
         ``brain`` and ``aseg`` are only read in the FreeSurfer-only case, where they are
         in FreeSurfer's native space.
@@ -532,8 +534,6 @@ def init_dwi_recon_anatomical_workflow(
     -------
     dwi_mask
         Brain mask on the DWI grid.
-    resampling_template
-        Reference grid for outputs in template space.
     odf_rois
         Crossing-fiber ROIs for ODF plots, on the DWI grid.
         Only set when transforms are available.
@@ -555,8 +555,7 @@ def init_dwi_recon_anatomical_workflow(
     status : :obj:`dict`
         The availability flags after this workflow has run, with the keys
         ``has_qsiprep_5tt_hsvs``, ``has_freesurfer_5tt_hsvs``, ``has_qsiprep_anat``,
-        ``has_qsiprep_anat_transforms``, ``template_output_space``,
-        ``template_transform_path``, and ``has_odf_rois``.
+        ``has_qsiprep_anat_transforms``, ``output_space_xfms``, and ``has_odf_rois``.
         ``has_qsiprep_anat`` becomes ``True`` when FreeSurfer files were substituted for
         the preprocessed anatomical image.
         ``has_odf_rois`` says whether the ROIs that the ODF figures are centered on could
@@ -593,7 +592,7 @@ def init_dwi_recon_anatomical_workflow(
         connect_from_buffernode.update(fields)
 
     # These are always created here
-    _exchange_fields(['dwi_mask', 'atlas_configs', 'odf_rois', 'resampling_template'])
+    _exchange_fields(['dwi_mask', 'atlas_configs', 'odf_rois'])
 
     outputnode = pe.Node(
         niu.IdentityInterface(fields=recon_workflow_input_fields),
@@ -608,49 +607,11 @@ def init_dwi_recon_anatomical_workflow(
             'has_freesurfer_5tt_hsvs': has_freesurfer_5tt_hsvs,
             'has_qsiprep_anat': has_qsiprep_anat,
             'has_qsiprep_anat_transforms': has_qsiprep_anat_transforms,
-            'template_output_space': template_output_space,
-            'template_transform_path': template_transform_path,
+            # Build-time values for the nodes that write template-space outputs
+            'output_space_xfms': list(output_space_xfms or []),
             # The ROIs that the ODF figures are centered on could be brought into DWI space
             'has_odf_rois': bool(has_qsiprep_anat_transforms and odf_rois_to_acpc_xfm),
         }
-
-    # The template-space resampling grid needs a known template, which comes from the
-    # ACPC-to-template transforms. Without them (e.g., --anat-modality none), nothing can be
-    # mapped to template space, so resampling_template is left undefined.
-    if template_output_space is None:
-        config.loggers.workflow.info(
-            'No template space is known for this DWI, so no template-space resampling grid '
-            'will be created.'
-        )
-    else:
-        output_space = config.workflow.output_space()
-        get_template = pe.Node(
-            GetTemplate(
-                template_name=template_output_space,
-                resolution=output_space.templateflow_resolution,
-            ),
-            name='get_template',
-        )
-        mask_template = pe.Node(
-            afni.Calc(expr='a*b', outputtype='NIFTI_GZ'),
-            name='mask_template',
-        )
-        reorient_to_lps = pe.Node(
-            afni.Resample(orientation='RAI', outputtype='NIFTI_GZ'),
-            name='reorient_to_lps',
-        )
-
-        reference_grid_wf = init_output_grid_wf(output_space=output_space)
-        workflow.connect([
-            (get_template, mask_template, [
-                ('template_file', 'in_file_a'),
-                ('mask_file', 'in_file_b'),
-            ]),
-            (mask_template, reorient_to_lps, [('out_file', 'in_file')]),
-            (inputnode, reference_grid_wf, [('dwi_ref', 'inputnode.input_image')]),
-            (reorient_to_lps, reference_grid_wf, [('out_file', 'inputnode.template_image')]),
-            (reference_grid_wf, buffernode, [('outputnode.grid_image', 'resampling_template')]),
-        ])  # fmt:skip
 
     # Set when FreeSurfer is registered to the DWI below (the FreeSurfer-only case).
     register_fs_to_qsiprep_wf = None
@@ -789,13 +750,6 @@ def init_dwi_recon_anatomical_workflow(
                 'preprocessing was used to map atlases from template space into '
                 'alignment with DWIs. '
             )
-            if template_transform_path:
-                via = ', '.join(template_transform_path[1:-1])
-                workflow.__desc__ += (
-                    f'The data were not normalized to {template_output_space} during '
-                    f'preprocessing, so the transforms to {via} were combined with '
-                    'template-to-template transforms from TemplateFlow. '
-                )
         else:
             raise Exception(
                 'Reconstruction workflow requires an ACPC-to-template transform. None were found.'
@@ -1089,7 +1043,7 @@ def _get_resampled(atlas_configs, atlas_name, to_retrieve):
     return atlas_configs[atlas_name][to_retrieve]
 
 
-def init_output_grid_wf(output_space=None) -> Workflow:
+def init_output_grid_wf(output_space, name='output_grid_wf') -> Workflow:
     """Generate a non-oblique grid around a template brain, for template-space outputs.
 
     The template image is cropped to its non-zero extent with a margin
@@ -1104,8 +1058,11 @@ def init_output_grid_wf(output_space=None) -> Workflow:
 
     Parameters
     ----------
-    output_space : :obj:`~qsirecon.utils.spaces.SpaceSpec`, optional
-        The requested output space. Defaults to the one given with ``--output-spaces``.
+    output_space : :obj:`~qsirecon.utils.spaces.SpaceSpec`
+        The requested output space.
+    name : :obj:`str`, optional
+        Name of the workflow. One grid is built per output space and resolution, so
+        each needs its own name.
 
     Inputs
     ------
@@ -1118,22 +1075,19 @@ def init_output_grid_wf(output_space=None) -> Workflow:
     Outputs
     -------
     grid_image
-        The reference grid, used as ``resampling_template`` by downstream nodes.
+        The reference grid that template-space outputs are resampled onto.
 
     Returns
     -------
     workflow : :obj:`niworkflows.engine.workflows.LiterateWorkflow`
         The workflow.
     """
-    workflow = Workflow(name='output_grid_wf')
+    workflow = Workflow(name=name)
 
     inputnode = pe.Node(
         niu.IdentityInterface(fields=['template_image', 'input_image']), name='inputnode'
     )
     outputnode = pe.Node(niu.IdentityInterface(fields=['grid_image']), name='outputnode')
-
-    if output_space is None:
-        output_space = config.workflow.output_space()
 
     resolution = output_space.resolution
     padding = 4 if output_space.is_infant else 8

@@ -352,7 +352,7 @@ to workflows in *QSIRecon*'s documentation]\
         SubjectSummary(
             subject_id=subject_id,
             subjects_dir=config.execution.fs_subjects_dir,
-            std_spaces=[config.workflow.output_space().fullname],
+            std_spaces=_summarize_output_spaces(highres_anat_statuses.values()),
             nstd_spaces=[],
             dwi=dwi_files,
             t1w=t1w_files,
@@ -403,6 +403,45 @@ to workflows in *QSIRecon*'s documentation]\
             workflow.get_node(node).inputs.datatype = 'figures'
 
     return workflow
+
+
+def _summarize_output_spaces(statuses):
+    """Name every requested output space and resolution, for the subject summary.
+
+    Parameters
+    ----------
+    statuses : iterable of :obj:`dict`
+        The anatomical statuses of the subject, each of which may hold the output
+        spaces that were resolved for it under ``output_space_xfms``.
+
+    Returns
+    -------
+    names : :obj:`list` of :obj:`str`
+        One name per space and resolution, such as ``MNI152NLin2009cAsym (res-2mm)``,
+        in the order requested. A cohort is appended to its template as ``+<cohort>``.
+        When no transforms were found, so that nothing was resolved, the spaces are
+        named as they were requested.
+    """
+    from ..utils.spaces import SpaceSpec
+
+    specs = [
+        SpaceSpec.from_token(space_xfms['token'])
+        for status in statuses
+        for space_xfms in status.get('output_space_xfms') or []
+    ]
+    if not specs:
+        specs = config.workflow.output_space_specs()
+
+    names = []
+    for spec in specs:
+        name = spec.fullname
+        if spec.res_label:
+            name += f' (res-{spec.res_label})'
+
+        if name not in names:
+            names.append(name)
+
+    return names
 
 
 def _get_wf_name(dwi_file):

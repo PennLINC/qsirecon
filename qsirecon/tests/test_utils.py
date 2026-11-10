@@ -62,9 +62,13 @@ def test_collect_anatomical_data(tmp_path_factory):
     # These are collected
     assert anat_data['acpc_preproc'] is not None
     assert anat_data['acpc_brain_mask'] is not None
-    assert anat_data['acpc_to_template_xfm'] is not None
-    assert anat_data['template_to_acpc_xfm'] is not None
     assert anat_data['acpc_aseg'] is not None
+    # The transforms to templates are resolved for the output spaces, not returned as files
+    assert 'acpc_to_template_xfm' not in anat_data
+    assert 'template_to_acpc_xfm' not in anat_data
+    (space_xfms,) = highres_anat_status['output_space_xfms']
+    assert space_xfms['space'] == 'MNI152NLin2009cAsym'
+    assert len(space_xfms['acpc_to_template_xfm']) == 1
     # A number of inputs are not collected
     assert anat_data['acpc_aparc'] is None
     assert anat_data['acpc_csf_probseg'] is None
@@ -190,12 +194,11 @@ def test_collect_anatomical_data_missing_transform_error(tmp_path_factory):
         )
 
     message = str(exc.value)
-    assert 'requested output space (MNI152NLin2009cAsym)' in message
     assert "'suffix': 'xfm'" in message
     assert '(none)' in message
 
     # Without the requirement, the missing transform only clears the status flag.
-    anat_data, status = xbids.collect_anatomical_data(
+    _, status = xbids.collect_anatomical_data(
         layout=layout,
         subject_id='01',
         session_id=Query.NONE,
@@ -204,8 +207,7 @@ def test_collect_anatomical_data_missing_transform_error(tmp_path_factory):
     )
     assert status['has_qsiprep_anat'] is True
     assert status['has_qsiprep_anat_transforms'] is False
-    assert status['template_output_space'] is None
-    assert anat_data['acpc_to_template_xfm'] is None
+    assert status['output_space_xfms'] == []
 
 
 def test_collect_anatomical_data_no_session():
@@ -218,8 +220,7 @@ def test_collect_anatomical_data_no_session():
     )
     assert anat_data == {}
     assert status == {
-        'template_output_space': None,
-        'template_transform_path': None,
+        'output_space_xfms': [],
         'odf_rois_to_acpc_xfm': None,
         'template_xfm_edges': [],
         'has_qsiprep_anat': False,

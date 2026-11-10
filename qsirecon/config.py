@@ -601,11 +601,14 @@ class workflow(_Config):
     """List of reconstruction workflow names, derived from the recon_spec."""
 
     @classmethod
-    def output_space(cls):
-        """Parse :attr:`output_spaces` into its :class:`~qsirecon.utils.spaces.SpaceSpec`."""
+    def output_space_specs(cls):
+        """Parse :attr:`output_spaces` into :class:`~qsirecon.utils.spaces.SpaceSpec` objects.
+
+        There is one spec per requested space and resolution, in the order given.
+        """
         from .utils.spaces import DEFAULT_OUTPUT_SPACES, parse_output_spaces
 
-        return parse_output_spaces(cls.output_spaces or DEFAULT_OUTPUT_SPACES)[0]
+        return parse_output_spaces(cls.output_spaces or DEFAULT_OUTPUT_SPACES)
 
     @classmethod
     def init(cls):

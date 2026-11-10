@@ -89,15 +89,15 @@ def _fake_freesurfer_dir(root, subject_id):
 NO_ANAT_STATUS = {
     'has_qsiprep_anat': False,
     'has_qsiprep_anat_transforms': False,
-    'template_output_space': None,
+    'output_space_xfms': [],
 }
 
 
 def test_dwi_anat_wf_no_anatomical(build_config):
     """With no anatomical image and no FreeSurfer, the DWI is masked from its own b=0s.
 
-    This is the ``--anat-modality none`` case. The template grid cannot be built, so it is
-    skipped, and every remaining node must have its mandatory inputs connected.
+    This is the ``--anat-modality none`` case.
+    Every node must have its mandatory inputs connected.
     """
     wf, status = init_dwi_recon_anatomical_workflow(
         atlas_configs={},
@@ -109,23 +109,33 @@ def test_dwi_anat_wf_no_anatomical(build_config):
         has_freesurfer=False,
         extras_to_make=[],
         name='dwi_anat_wf',
-        template_output_space=None,
     )
     nodes = _node_basenames(wf)
     assert 'mask_b0s' in nodes
-    assert 'get_template' not in nodes
     assert 'resample_mask' not in nodes
     # Only the DWI data are available from the parent workflow.
     assert _unconnected_mandatory_inputs(wf, qsiprep_output_names) == []
     assert status['has_qsiprep_anat'] is False
-    assert status['template_output_space'] is None
+    assert status['output_space_xfms'] == []
 
 
 def test_dwi_anat_wf_with_template(build_config):
-    """With a preprocessed anatomical image and transforms, the template grid is built."""
+    """With a preprocessed anatomical image and transforms, the ODF ROIs are warped.
+
+    The transforms to the output spaces are handed on in the status, for the workflows
+    that write template-space outputs to build their own grids with.
+    """
     # The ODF report ROIs have their own transforms from MNI152NLin2009cAsym
     odf_rois_xfm = build_config / 'sub-01_from-MNI152NLin2009cAsym_to-ACPC_mode-image_xfm.h5'
     odf_rois_xfm.touch()
+    output_space_xfms = [
+        {
+            'token': 'MNI152NLin2009cAsym',
+            'space': 'MNI152NLin2009cAsym',
+            'acpc_to_template_xfm': [str(odf_rois_xfm)],
+            'transform_path': None,
+        },
+    ]
 
     wf, status = init_dwi_recon_anatomical_workflow(
         atlas_configs={},
@@ -137,17 +147,18 @@ def test_dwi_anat_wf_with_template(build_config):
         has_freesurfer=False,
         extras_to_make=[],
         name='dwi_anat_wf',
-        template_output_space='MNI152NLin2009cAsym',
+        output_space_xfms=output_space_xfms,
         odf_rois_to_acpc_xfm=[str(odf_rois_xfm)],
     )
     nodes = _node_basenames(wf)
-    assert 'get_template' in nodes
+    # The template grids are built where they are used, not here
+    assert 'get_template' not in nodes
     assert 'resample_mask' in nodes
     assert 'odf_rois' in nodes
     assert 'mask_b0s' not in nodes
     provided = qsiprep_output_names + anatomical_workflow_outputs
     assert _unconnected_mandatory_inputs(wf, provided) == []
-    assert status['template_output_space'] == 'MNI152NLin2009cAsym'
+    assert status['output_space_xfms'] == output_space_xfms
 
 
 def test_anat_wfs_freesurfer_only_hsvs(build_config, monkeypatch):

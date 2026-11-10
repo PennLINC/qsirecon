@@ -8,9 +8,9 @@ The grammar is the one QSIPrep uses::
 
 QSIRecon writes reconstruction outputs on the grid of the preprocessed DWI it was
 given, so the DWI spaces QSIPrep accepts (``acpc``, ``anat`` and ``dwiref``) are not
-requested here. An output space is the template that the input dataset's
-anatomical-to-template transforms are selected for: atlases are warped from it, and
-scalar maps are warped into it.
+requested here. An output space is a template that scalar maps are warped into, with
+the input dataset's anatomical-to-template transforms. Several spaces, and several
+resolutions of one space, may be requested: scalar maps are written in each.
 
 ``res-`` values come in two families:
 
@@ -24,7 +24,9 @@ preprocessed DWI.
 
 ``cohort-auto`` selects whichever cohort the input dataset's transforms were
 estimated with, since QSIPrep is the one that chooses a cohort from the
-participant's age.
+participant's age. It is replaced with that cohort (:func:`resolve_auto_cohort`)
+before the requested spaces are compared, so ``MNIInfant:cohort-2`` and
+``MNIInfant:cohort-auto`` are one space for data normalized to cohort 2.
 
 No BIDSLayout is ever constructed here and nothing needs a BIDS tree on disk, so
 every function below is directly unit-testable.
@@ -32,7 +34,7 @@ every function below is directly unit-testable.
 
 import re
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 #: What --output-spaces means when it is not given.
 DEFAULT_OUTPUT_SPACES = ('MNI152NLin2009cAsym',)
@@ -93,6 +95,47 @@ class SpaceSpec:
         if self.resolution is not None and self.resolution.kind == 'label':
             return self.resolution.label
         return '1'
+
+    @property
+    def res_label(self) -> str | None:
+        """The value of the ``res`` entity in the names of outputs in this space.
+
+        An output carries ``res-`` whenever a resolution was requested for its space,
+        and none when the voxel size was left to follow the preprocessed DWI.
+        """
+        if self.resolution is None:
+            return None
+
+        return self.resolution.label
+
+    @property
+    def node_label(self) -> str:
+        """This spec, spelled so that it can be part of a workflow node name."""
+        return re.sub(r'[^A-Za-z0-9]+', '_', str(self))
+
+    @classmethod
+    def from_token(cls, token: str) -> 'SpaceSpec':
+        """Rebuild a spec from the token :meth:`__str__` wrote, without validating it.
+
+        Unlike :func:`parse_space_token`, this looks nothing up in TemplateFlow, so it
+        is only for tokens that were already validated.
+        """
+        space, *rest = token.split(':')
+        cohort = None
+        resolution = None
+        for item in rest:
+            key, _, value = item.partition('-')
+            if key == 'cohort':
+                cohort = value
+            elif key == 'res':
+                mm = _MM_RE.match(value)
+                if mm:
+                    zooms = _parse_sizes(mm.group('sizes'))
+                    resolution = Resolution(kind='mm', label=value, zooms=zooms)
+                else:
+                    resolution = Resolution(kind='label', label=value)
+
+        return cls(space=space, resolution=resolution, cohort=cohort)
 
     def matches(self, name: str) -> bool:
         """Whether ``name``, a ``from-``/``to-`` label such as ``MNIInfant+2``, is this space."""
@@ -260,16 +303,51 @@ def dedupe_specs(specs) -> list[SpaceSpec]:
 
 
 def parse_output_spaces(tokens: Sequence) -> list[SpaceSpec]:
-    """Parse every token, de-duplicate, and check the whole request makes sense."""
-    specs = dedupe_specs(spec for token in tokens for spec in parse_space_token(token))
+    """Parse every token into specs and de-duplicate them, keeping the order given.
 
-    if len(specs) > 1:
+    Any number of spaces, and of resolutions per space, may be requested.
+    """
+    return dedupe_specs(spec for token in tokens for spec in parse_space_token(token))
+
+
+def resolve_auto_cohort(spec: SpaceSpec, names) -> SpaceSpec:
+    """Replace ``cohort-auto`` with the cohort the input dataset was normalized to.
+
+    Parameters
+    ----------
+    spec : :class:`SpaceSpec`
+        A requested output space. Returned unchanged unless its cohort is ``auto``.
+    names : iterable of :obj:`str`
+        The templates the input dataset has anatomical-to-template transforms for,
+        as ``to-`` labels such as ``MNIInfant+2``.
+
+    Raises
+    ------
+    OutputSpacesError
+        If the dataset has transforms to no cohort of the template, or to several.
+    """
+    if spec.cohort != 'auto':
+        return spec
+
+    names = sorted(set(names))
+    found = [name for name in names if spec.matches(name)]
+    if not found:
         raise OutputSpacesError(
-            'QSIRecon writes template-space outputs in one space at one resolution, but '
-            f'--output-spaces asked for {len(specs)}: {", ".join(str(s) for s in specs)}.'
+            f'The output space {spec} was requested, and cohort-auto takes the cohort from '
+            f'the transforms in the input dataset, but the dataset has no transform to '
+            f'{spec.space}. It has transforms to: {", ".join(names) or "none"}. '
+            'To reach another template through a chain of transforms, replace cohort-auto '
+            'with a cohort label.'
         )
 
-    return specs
+    if len(found) > 1:
+        raise OutputSpacesError(
+            f'The output space {spec} matches any cohort, and the input dataset has '
+            f'transforms to several: {", ".join(found)}. Name one cohort in --output-spaces.'
+        )
+
+    cohort = found[0].partition('+')[2]
+    return replace(spec, cohort=cohort or None)
 
 
 def zooms_label(zooms) -> str:
