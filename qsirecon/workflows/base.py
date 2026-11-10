@@ -151,7 +151,6 @@ to workflows in *QSIRecon*'s documentation]\
             subject_id=subject_id,
             session_id=_session_filter,
             needs_t1w_transform=bool(config.execution.atlases),
-            infant_mode=config.workflow.infant,
             bids_filters=config.execution.bids_filters or {},
         )
 
@@ -328,7 +327,7 @@ to workflows in *QSIRecon*'s documentation]\
         SubjectSummary(
             subject_id=subject_id,
             subjects_dir=config.execution.fs_subjects_dir,
-            std_spaces=['MNIInfant' if config.workflow.infant else 'MNI152NLin2009cAsym'],
+            std_spaces=[config.workflow.output_space().fullname],
             nstd_spaces=[],
             dwi=dwi_files,
             t1w=sorted(highres_anat_statuses.keys()),

@@ -6,7 +6,6 @@ from pathlib import Path
 import nipype.interfaces.io as nio
 from nipype.interfaces import afni, ants, mrtrix3
 from nipype.interfaces import utility as niu
-from nipype.interfaces.base import traits
 from nipype.pipeline import engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
@@ -402,9 +401,11 @@ def init_dwi_recon_anatomical_workflow(
             'template_output_space': template_output_space,
         }
 
+    output_space = config.workflow.output_space()
     get_template = pe.Node(
         GetTemplate(
             template_name=template_output_space,
+            resolution=output_space.templateflow_resolution,
         ),
         name='get_template',
     )
@@ -417,7 +418,7 @@ def init_dwi_recon_anatomical_workflow(
         name='reorient_to_lps',
     )
 
-    reference_grid_wf = init_output_grid_wf()
+    reference_grid_wf = init_output_grid_wf(output_space=output_space)
     workflow.connect([
         (get_template, mask_template, [
             ('template_file', 'in_file_a'),
@@ -830,20 +831,46 @@ def _get_resampled(atlas_configs, atlas_name, to_retrieve):
     return atlas_configs[atlas_name][to_retrieve]
 
 
-def init_output_grid_wf() -> Workflow:
-    """Generate a non-oblique, uniform voxel-size grid around a brain."""
+def init_output_grid_wf(output_space=None) -> Workflow:
+    """Generate a non-oblique grid around a template brain, for template-space outputs.
+
+    The voxel size comes from the resolution of the requested output space:
+
+    * a physical size (``res-2mm``) is used as given;
+    * a TemplateFlow label (``res-2``) keeps the voxel size of the template image,
+      which was fetched at that resolution;
+    * with no resolution, the smallest voxel dimension of ``input_image`` (the DWI
+      reference) is used.
+
+    Parameters
+    ----------
+    output_space : :obj:`~qsirecon.utils.spaces.SpaceSpec`, optional
+        The requested output space. Defaults to the one given with ``--output-spaces``.
+
+    Inputs
+    ------
+    template_image
+        The masked template, at the TemplateFlow resolution of the output space.
+    input_image
+        An image on the grid of the preprocessed DWI.
+
+    Outputs
+    -------
+    grid_image
+        The reference grid for template-space outputs.
+    """
     workflow = Workflow(name='output_grid_wf')
 
     inputnode = pe.Node(
         niu.IdentityInterface(fields=['template_image', 'input_image']), name='inputnode'
     )
     outputnode = pe.Node(niu.IdentityInterface(fields=['grid_image']), name='outputnode')
-    # Create the output reference grid_image
-    if config.workflow.output_resolution is None:
-        voxel_size = traits.Undefined
-    else:
-        voxel_size = config.workflow.output_resolution
-    padding = 4 if config.workflow.infant else 8
+
+    if output_space is None:
+        output_space = config.workflow.output_space()
+
+    resolution = output_space.resolution
+    padding = 4 if output_space.is_infant else 8
 
     autobox_template = pe.Node(
         afni.Autobox(outputtype='NIFTI_GZ', padding=padding), name='autobox_template'
@@ -851,18 +878,30 @@ def init_output_grid_wf() -> Workflow:
     deoblique_autobox = pe.Node(
         afni.Warp(outputtype='NIFTI_GZ', deoblique=True), name='deoblique_autobox'
     )
-    voxel_size_chooser = pe.Node(
-        VoxelSizeChooser(voxel_size=voxel_size), name='voxel_size_chooser'
-    )
-    resample_to_voxel_size = pe.Node(
-        afni.Resample(outputtype='NIFTI_GZ'), name='resample_to_voxel_size'
-    )
-
     workflow.connect([
         (inputnode, autobox_template, [('template_image', 'in_file')]),
         (autobox_template, deoblique_autobox, [('out_file', 'in_file')]),
+    ])  # fmt:skip
+
+    if resolution is not None and resolution.kind == 'label':
+        # The template was fetched at the requested voxel size
+        workflow.connect([(deoblique_autobox, outputnode, [('out_file', 'grid_image')])])
+        return workflow
+
+    resample_to_voxel_size = pe.Node(
+        afni.Resample(outputtype='NIFTI_GZ'), name='resample_to_voxel_size'
+    )
+    workflow.connect([
         (deoblique_autobox, resample_to_voxel_size, [('out_file', 'in_file')]),
         (resample_to_voxel_size, outputnode, [('out_file', 'grid_image')]),
+    ])  # fmt:skip
+
+    if resolution is not None:
+        resample_to_voxel_size.inputs.voxel_size = tuple(resolution.zooms)
+        return workflow
+
+    voxel_size_chooser = pe.Node(VoxelSizeChooser(), name='voxel_size_chooser')
+    workflow.connect([
         (inputnode, voxel_size_chooser, [('input_image', 'input_image')]),
         (voxel_size_chooser, resample_to_voxel_size, [(('voxel_size', _tupleize), 'voxel_size')])
     ])  # fmt:skip

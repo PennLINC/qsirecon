@@ -41,7 +41,6 @@ def test_collect_anatomical_data(tmp_path_factory):
         subject_id='01',
         session_id=_session_filter,
         needs_t1w_transform=False,
-        infant_mode=False,
         bids_filters={},
     )
     assert highres_anat_status['has_qsiprep_t1w'] is True

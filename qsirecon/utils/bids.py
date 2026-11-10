@@ -153,7 +153,7 @@ def collect_anatomical_data(
     subject_id,
     session_id,
     needs_t1w_transform,
-    infant_mode=False,
+    output_space=None,
     bids_filters=None,
 ):
     """Gather any high-res anatomical data (images, transforms, segmentations) to use
@@ -172,8 +172,9 @@ def collect_anatomical_data(
         Whether a T1w transform is needed
     bids_filters : :obj:`dict`, optional
         BIDS query filters
-    infant_mode : :obj:`bool`, optional
-        Whether the subject is an infant
+    output_space : :obj:`~qsirecon.utils.spaces.SpaceSpec`, optional
+        The template space to collect transforms for.
+        Defaults to the space requested with ``--output-spaces``.
 
     Returns
     -------
@@ -201,9 +202,14 @@ def collect_anatomical_data(
     _spec = yaml.safe_load(load_data.readable('io_spec.yaml').read_text())
     queries = _spec['queries']['anat']
 
-    if infant_mode:
-        queries['acpc_to_template_xfm']['to'] = 'MNIInfant'
-        queries['template_to_acpc_xfm']['from'] = 'MNIInfant'
+    # The transforms are selected by template (and cohort) below, because a cohort is
+    # part of the from-/to- label (MNIInfant+2) and may not be known in advance.
+    if output_space is None:
+        output_space = config.workflow.output_space()
+
+    template_entities = {'acpc_to_template_xfm': 'to', 'template_to_acpc_xfm': 'from'}
+    for name, entity in template_entities.items():
+        queries[name].pop(entity, None)
 
     # Apply filters. These may override anything.
     bids_filters = bids_filters or {}
@@ -218,12 +224,23 @@ def collect_anatomical_data(
             session=session_id,
             **query,
         )
+        entity = template_entities.get(name)
+        if entity and entity not in query:
+            files = [f for f in files if output_space.matches(get_entity(f, entity) or '')]
+
         if len(files) == 1:
             anat_data[name] = files[0]
         elif len(files) > 1:
             files_str = '\n\t'.join(files)
+            hint = ''
+            if entity and output_space.cohort == 'auto':
+                hint = (
+                    f'\nThe output space {output_space} matches any cohort. '
+                    'Name one cohort in --output-spaces.'
+                )
+
             raise ValueError(
-                f'More than one {name} found.\nFiles found:\n\t{files_str}\nQuery: {query}'
+                f'More than one {name} found.\nFiles found:\n\t{files_str}\nQuery: {query}{hint}'
             )
         else:
             anat_data[name] = None
@@ -246,7 +263,7 @@ def collect_anatomical_data(
         if needs_t1w_transform:
             raise ValueError(
                 'Reconstruction workflow requires a T1w/ACPC-to-template transform. '
-                'None were found.'
+                f'None were found for the requested output space ({output_space}).'
             )
 
         LOGGER.warning('No anat-to-template or template-to-anat transforms found.')
