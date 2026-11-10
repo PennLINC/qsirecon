@@ -144,7 +144,6 @@ def init_pyafq_wf(inputs_dict, name='afq', qsirecon_suffix='', params={}):
             ('acpc_csf_probseg', 'csf_probseg'),
             ('acpc_gm_probseg', 'gm_probseg'),
             ('acpc_wm_probseg', 'wm_probseg'),
-            ('template_to_acpc_xfm', 'itk_file'),
         ]),
         (run_afq, outputnode, [('afq_dir', 'afq_dir')]),
     ])  # fmt:skip

@@ -88,7 +88,7 @@ def test_pyafq_interface_requires_pve_for_tractography(tmp_path):
         files[name] = str(tmp_path / f'{name}.nii.gz')
         img.to_filename(files[name])
 
-    for name in ('bval_file', 'bvec_file', 'itk_file'):
+    for name in ('bval_file', 'bvec_file'):
         files[name] = str(tmp_path / name)
         (tmp_path / name).write_text('0\n')
 
