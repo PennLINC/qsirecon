@@ -106,6 +106,29 @@ used for tractography with no T1w-based anatomical constraints.
 This workflow produces :ref:`mrtrix_dwi_outputs`.
 
 
+.. _mrtrix_multishell_msmt_noACT_estimate:
+
+``mrtrix_multishell_msmt_noACT_estimate``
+=========================================
+
+This workflow only estimates multi-tissue response functions
+(``dwi2response dhollander``) for each participant, so they can be averaged across participants.
+It is the first step of :ref:`precomputed_response_functions`.
+
+
+.. _mrtrix_multishell_msmt_noACT_apply:
+
+``mrtrix_multishell_msmt_noACT_apply``
+======================================
+
+Identical to :ref:`mrtrix_multishell_msmt_noACT`, except that FODs are estimated with
+precomputed (e.g., group-average) response functions read from
+``/responses/wm.txt``, ``/responses/gm.txt``, and ``/responses/csf.txt``,
+and outputs are written to ``qsirecon-MRtrix3_act-None_response-common``.
+Mount your response functions at ``/responses`` when running it.
+See :ref:`precomputed_response_functions` for a worked example.
+
+
 .. _mrtrix_singleshell_ss3t_ACT-hsvs:
 
 

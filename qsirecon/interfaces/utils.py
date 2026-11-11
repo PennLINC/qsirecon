@@ -306,11 +306,6 @@ class _LoadResponseFunctionsInputSpec(BaseInterfaceInputSpec):
         ),
     )
     using_multitissue = traits.Bool(desc='Whether to use multitissue response functions or not.')
-    input_dir = traits.Directory(
-        exists=True,
-        mandatory=True,
-        desc='Directory containing response function files.',
-    )
 
 
 class _LoadResponseFunctionsOutputSpec(TraitedSpec):
@@ -319,11 +314,39 @@ class _LoadResponseFunctionsOutputSpec(TraitedSpec):
     csf_txt = File(exists=True)
 
 
-class LoadResponseFunctions(SimpleInterface):
-    """Collect response function files from the input directory.
+def check_response_file(response_file, label):
+    """Check that a precomputed response function path is absolute and exists.
 
-    The names of the response function files are specified in the reconstruction specification,
-    and must be located in the recon_spec_aux_files directory.
+    Parameters
+    ----------
+    response_file : str
+        Path to the response function file, as written in the recon spec.
+    label : str
+        Tissue label (e.g., "WM") used in error messages.
+
+    Returns
+    -------
+    response_file : str
+        The unchanged path.
+    """
+    if not os.path.isabs(response_file):
+        raise ValueError(
+            f'{label} response file "{response_file}" must be an absolute path. '
+            'Precomputed response function paths in the recon spec are used as-is, '
+            'so they must point to where the files are located (or mounted, in a container).'
+        )
+
+    if not os.path.exists(response_file):
+        raise FileNotFoundError(f'{label} response file {response_file} not found')
+
+    return response_file
+
+
+class LoadResponseFunctions(SimpleInterface):
+    """Collect precomputed response function files.
+
+    The absolute paths to the response function files are specified in the reconstruction
+    specification. When running in a container, the files must be mounted at those paths.
 
     TODO: Support BEP016-format JSON files.
     """
@@ -332,24 +355,15 @@ class LoadResponseFunctions(SimpleInterface):
     output_spec = _LoadResponseFunctionsOutputSpec
 
     def _run_interface(self, runtime):
-        wm_file = os.path.abspath(os.path.join(self.inputs.input_dir, self.inputs.wm_file))
-        self._results['wm_txt'] = wm_file
-        if not os.path.exists(wm_file):
-            raise FileNotFoundError(f'WM response file {wm_file} not found')
+        self._results['wm_txt'] = check_response_file(self.inputs.wm_file, 'WM')
 
         if self.inputs.gm_file and self.inputs.using_multitissue:
-            gm_file = os.path.abspath(os.path.join(self.inputs.input_dir, self.inputs.gm_file))
-            if not os.path.exists(gm_file):
-                raise FileNotFoundError(f'GM response file {gm_file} not found')
-            self._results['gm_txt'] = gm_file
+            self._results['gm_txt'] = check_response_file(self.inputs.gm_file, 'GM')
         elif self.inputs.using_multitissue:
             raise ValueError('gm_file is required when using multitissue response functions')
 
         if self.inputs.csf_file and self.inputs.using_multitissue:
-            csf_file = os.path.abspath(os.path.join(self.inputs.input_dir, self.inputs.csf_file))
-            if not os.path.exists(csf_file):
-                raise FileNotFoundError(f'CSF response file {csf_file} not found')
-            self._results['csf_txt'] = csf_file
+            self._results['csf_txt'] = check_response_file(self.inputs.csf_file, 'CSF')
         elif self.inputs.using_multitissue:
             raise ValueError('csf_file is required when using multitissue response functions')
 
