@@ -59,6 +59,29 @@ def test_precomputed_multi_tissue_needs_all_tissues(mrtrix_config):
     assert wf.get_node('ds_csf_txt') is not None
 
 
+@pytest.mark.parametrize('has_anat', [True, False])
+def test_peaks_report_anatomical_underlay(mrtrix_config, monkeypatch, has_anat):
+    """The peaks report shows the anatomical image only when QSIPrep provided one."""
+    monkeypatch.setattr(config.execution, 'skip_odf_reports', False)
+    wf = init_mrtrix_csd_recon_wf(
+        {'has_qsiprep_anat': has_anat, 'has_qsiprep_anat_transforms': False},
+        name='csd',
+        qsirecon_suffix='MRtrix3',
+        params={
+            'fod': {'algorithm': 'csd'},
+            'response': {'algorithm': 'precomputed', 'wm_txt': '/responses/wm.txt'},
+        },
+    )
+    inputnode = wf.get_node('inputnode')
+    plot_peaks = wf.get_node('plot_peaks')
+    connections = wf._graph.get_edge_data(inputnode, plot_peaks)['connect']
+    anat_connections = {
+        ('acpc_preproc', 'anat_file'),
+        ('acpc_brain_mask', 'anat_mask_file'),
+    }
+    assert anat_connections.issubset(connections) is has_anat
+
+
 def test_precomputed_relative_path_rejected(mrtrix_config):
     """Relative precomputed response paths fail at build time."""
     with pytest.raises(ValueError, match='must be an absolute path'):

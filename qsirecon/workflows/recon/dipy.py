@@ -29,10 +29,10 @@ from ...interfaces.recon_scalars import (
     DIPYFORCEReconScalars,
     DIPYMAPMRIReconScalars,
 )
-from ...interfaces.reports import CLIReconPeaksReport, ScalarReport
+from ...interfaces.reports import ReconPeaksReport, ScalarReport
 from ...utils.bids import clean_datasinks
 from ...utils.boilerplate import build_documentation
-from .utils import init_scalar_output_wf
+from .utils import connect_anat_underlay, init_scalar_output_wf
 
 LOGGER = logging.getLogger('nipype.interface')
 
@@ -216,7 +216,7 @@ def init_dipy_brainsuite_shore_recon_wf(
 
     if plot_reports:
         plot_peaks = pe.Node(
-            CLIReconPeaksReport(),
+            ReconPeaksReport(),
             name='plot_peaks',
             n_procs=omp_nthreads,
         )
@@ -241,6 +241,7 @@ def init_dipy_brainsuite_shore_recon_wf(
             ]),
             (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')]),
         ])  # fmt:skip
+        connect_anat_underlay(workflow, inputnode, plot_peaks, inputs_dict)
 
     # Plot targeted regions
     if inputs_dict['has_qsiprep_anat_transforms'] and plot_reports:
@@ -542,7 +543,7 @@ def init_dipy_mapmri_recon_wf(
 
     if plot_reports:
         plot_peaks = pe.Node(
-            CLIReconPeaksReport(),
+            ReconPeaksReport(),
             name='plot_peaks',
             n_procs=omp_nthreads,
         )
@@ -565,6 +566,7 @@ def init_dipy_mapmri_recon_wf(
                 ('odf_amplitudes', 'odf_file')]),
             (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')]),
         ])  # fmt:skip
+        connect_anat_underlay(workflow, inputnode, plot_peaks, inputs_dict)
 
     # Plot targeted regions
     if inputs_dict['has_qsiprep_anat_transforms'] and plot_reports:
@@ -858,7 +860,7 @@ def init_dipy_dki_recon_wf(inputs_dict, name='dipy_dki_recon', qsirecon_suffix='
 
     if plot_reports and False:
         plot_peaks = pe.Node(
-            CLIReconPeaksReport(peaks_only=True),
+            ReconPeaksReport(peaks_only=True),
             name='plot_peaks',
             n_procs=config.nipype.omp_nthreads,
         )
@@ -883,6 +885,7 @@ def init_dipy_dki_recon_wf(inputs_dict, name='dipy_dki_recon', qsirecon_suffix='
             ]),
             (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')]),
         ])  # fmt:skip
+        connect_anat_underlay(workflow, inputnode, plot_peaks, inputs_dict)
 
     if qsirecon_suffix:
         external_format_datasinks(qsirecon_suffix, params, workflow)
