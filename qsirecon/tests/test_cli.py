@@ -6,11 +6,13 @@ import sys
 from unittest.mock import patch
 
 import pytest
+import yaml
 from nipype import config as nipype_config
 
 from qsirecon.cli import run
 from qsirecon.cli.parser import parse_args
 from qsirecon.cli.workflow import build_boilerplate, build_workflow, copy_boilerplate
+from qsirecon.data import load as load_data
 from qsirecon.reports.core import generate_reports
 from qsirecon.tests.utils import (
     check_generated_files,
@@ -24,6 +26,7 @@ from qsirecon.utils.bids import (
     write_bidsignore,
     write_derivative_description,
 )
+from qsirecon.utils.misc import load_yaml
 
 nipype_config.enable_debug_mode()
 
@@ -838,6 +841,12 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
 
     _run_and_generate(f'{TEST_NAME}_estimate', parameters, test_main=False)
 
+    # Point a copy of the built-in "apply" spec at the estimated response functions.
+    # Precomputed response function paths must be absolute.
+    apply_spec = load_yaml(load_data('pipelines/mrtrix_multishell_msmt_noACT_apply.yaml'))
+    response = apply_spec['nodes'][0]['parameters']['response']
+    assert response['algorithm'] == 'precomputed'
+
     # Now convert the response functions from JSON to MRtrix format
     for tissue in ['wm', 'gm', 'csf']:
         label = tissue.upper()
@@ -849,8 +858,13 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
             'dwi',
             f'sub-ABCD_acq-10per000_space-T1w_model-dhollander_label-{label}_response.txt',
         )
-        out_txt_file = os.path.join(test_dir, f'{tissue}.txt')
+        out_txt_file = os.path.abspath(os.path.join(test_dir, f'{tissue}.txt'))
         shutil.copyfile(in_txt_file, out_txt_file)
+        response[f'{tissue}_txt'] = out_txt_file
+
+    apply_spec_file = os.path.join(test_dir, 'mrtrix_multishell_msmt_noACT_apply.yaml')
+    with open(apply_spec_file, 'w') as fobj:
+        yaml.safe_dump(apply_spec, fobj, sort_keys=False)
 
     # Now apply the response functions
     apply_work_dir = os.path.join(working_dir, f'{TEST_NAME}_apply')
@@ -861,9 +875,7 @@ def test_mrtrix3_recon_with_response_functions(data_dir, output_dir, working_dir
         'participant',
         f'-w={apply_work_dir}',
         '--sloppy',
-        '--recon-spec=mrtrix_multishell_msmt_noACT_apply',
-        '--recon-spec-aux-files',
-        test_dir,
+        f'--recon-spec={apply_spec_file}',
         '--atlases',
         'Gordon333Ext',
     ]

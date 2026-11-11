@@ -71,6 +71,228 @@ All nodes must have a ``name`` element, this serves
 as an id for this node and is used for :ref:`passing_downstream`.
 
 
+.. _precomputed_response_functions:
+
+Using precomputed response functions
+====================================
+
+Instead of estimating fiber response functions for each scan,
+an MRtrix3 ``csd`` node can load precomputed response functions,
+such as a group-average response function shared by every participant in a study.
+Set the response ``algorithm`` to ``precomputed`` and give the path to each
+MRtrix-format response function file:
+
+.. code-block:: yaml
+
+  nodes:
+  -   action: csd
+      name: msmt_csd
+      parameters:
+          fod:
+              algorithm: msmt_csd
+          mtnormalize: true
+          response:
+              algorithm: precomputed
+              wm_txt: /responses/wm.txt
+              gm_txt: /responses/gm.txt
+              csf_txt: /responses/csf.txt
+      qsirecon_suffix: MRtrix3_act-None_response-common
+      software: MRTrix3
+
+These paths must be absolute, and they are used exactly as written.
+When running *QSIRecon* in a container, the paths refer to locations *inside* the container,
+so mount the directory holding the response functions at the matching location
+(e.g., ``-v /path/to/my/responses:/responses:ro`` for Docker,
+or ``-B /path/to/my/responses:/responses`` for Apptainer/Singularity).
+
+Multi-tissue FOD algorithms (``msmt_csd`` and ``ss3t``) need all three of
+``wm_txt``, ``gm_txt``, and ``csf_txt``.
+Single-tissue CSD (``fod: {algorithm: csd}``) needs only ``wm_txt``.
+*QSIRecon* checks this, and that the paths are absolute, when it builds the workflow.
+
+.. note::
+    Earlier versions of *QSIRecon* located these files with the ``--recon-spec-aux-files``
+    command-line option.
+    That option has been removed; write the full paths in the recon spec instead.
+
+
+Why use a common response function?
+-----------------------------------
+
+The amplitude of a fiber orientation distribution (FOD) is expressed relative to the
+response function used to estimate it.
+If each participant's FODs are estimated with that participant's own response function,
+FOD amplitudes are on a different scale for each participant,
+so measures derived from them cannot be compared directly between participants.
+This includes apparent fiber density :footcite:p:`raffelt2012afd`
+and fixel-based measures :footcite:p:`raffelt2017fba`.
+The same applies to connection densities from SIFT2 :footcite:p:`smith2015sift2`.
+Using one set of response functions for every participant
+(together with multi-tissue intensity normalization, ``mtnormalize: true``)
+puts all participants' FODs, and the measures derived from them, in the same units.
+
+:footcite:t:`smith2022quantitative` explain in detail how to make SIFT2-weighted connectomes
+comparable across participants. In that framework, each participant's connection densities are
+scaled by the SIFT2 proportionality coefficient (mu), which *QSIRecon* writes out for each
+participant as ``*_model-sift2_mu.txt``. That scaling is only meaningful
+when every participant's FODs were estimated with the same response functions.
+The `MRtrix3 fixel-based analysis documentation
+<https://mrtrix.readthedocs.io/en/latest/fixel_based_analysis/mt_fibre_density_cross-section.html>`_
+makes the same point for fixel-based analysis.
+
+
+Worked example: estimating, averaging, and applying a group-average response function
+-------------------------------------------------------------------------------------
+
+This example uses two built-in recon specs:
+
+* ``mrtrix_multishell_msmt_noACT_estimate`` estimates multi-tissue response functions
+  (``dwi2response dhollander`` :footcite:p:`dhollander2019response`) for each participant,
+  and stops there.
+* ``mrtrix_multishell_msmt_noACT_apply`` fits multi-shell multi-tissue CSD with the response
+  functions in ``/responses/{wm,gm,csf}.txt``, then runs tractography with SIFT2 and builds
+  connectivity matrices.
+
+The commands below use Apptainer and assume the QSIPrep outputs are in ``inputs/qsiprep``,
+under the current directory.
+
+**Step 1: Estimate a response function for each participant.**
+
+.. code-block:: bash
+
+   apptainer run \
+       --containall \
+       --writable-tmpfs \
+       -B "${PWD}" \
+       qsirecon-latest.sif \
+       "${PWD}/inputs/qsiprep" \
+       "${PWD}/results/estimate" \
+       participant \
+       -w "${PWD}/work/estimate" \
+       --recon-spec mrtrix_multishell_msmt_noACT_estimate \
+       -v -v
+
+The response functions are written as text files, one per tissue type, to
+``results/estimate/derivatives/qsirecon-MRtrix3_act-None_response-subject/``.
+For example::
+
+   sub-01/dwi/sub-01_space-T1w_model-dhollander_label-WM_response.txt
+   sub-01/dwi/sub-01_space-T1w_model-dhollander_label-GM_response.txt
+   sub-01/dwi/sub-01_space-T1w_model-dhollander_label-CSF_response.txt
+
+**Step 2: Average the response functions across participants.**
+
+Use MRtrix3's ``responsemean``, which is included in the *QSIRecon* container,
+to average each tissue's response functions:
+
+.. code-block:: bash
+
+   estimate_dir="${PWD}/results/estimate/derivatives/qsirecon-MRtrix3_act-None_response-subject"
+   mkdir -p "${PWD}/responses"
+   for label in WM GM CSF; do
+       lower_label=$(echo "${label}" | tr '[:upper:]' '[:lower:]')
+       apptainer exec \
+           --containall \
+           -B "${PWD}" \
+           qsirecon-latest.sif \
+           responsemean \
+           $(find "${estimate_dir}" -name "*_label-${label}_response.txt" | sort) \
+           "${PWD}/responses/${lower_label}.txt"
+   done
+
+This writes ``responses/wm.txt``, ``responses/gm.txt``, and ``responses/csf.txt``.
+``responsemean`` can only average response functions with the same number of b-values,
+and it assumes the b-values themselves are the same, so average scans with
+different acquisition schemes separately.
+The average does not have to include every participant:
+the MRtrix3 documentation suggests leaving out participants whose response functions could not be
+estimated reliably, or whose whole brain is affected by pathology.
+
+**Step 3: Apply the averaged response functions.**
+
+Mount the ``responses`` directory at ``/responses``, where the built-in apply spec looks for it:
+
+.. code-block:: bash
+
+   apptainer run \
+       --containall \
+       --writable-tmpfs \
+       -B "${PWD}" \
+       -B "${PWD}/responses":/responses \
+       qsirecon-latest.sif \
+       "${PWD}/inputs/qsiprep" \
+       "${PWD}/results/apply" \
+       participant \
+       -w "${PWD}/work/apply" \
+       --recon-spec mrtrix_multishell_msmt_noACT_apply \
+       --atlases 4S156Parcels \
+       -v -v
+
+The apply spec builds connectivity matrices, so it needs at least one atlas
+(see :ref:`connectivity_atlases`).
+
+With Docker, the equivalent mount is ``-v "${PWD}/responses":/responses:ro``:
+
+.. code-block:: bash
+
+   docker run -ti --rm \
+       -v "${PWD}/inputs/qsiprep":/data:ro \
+       -v "${PWD}/results/apply":/out \
+       -v "${PWD}/work/apply":/work \
+       -v "${PWD}/responses":/responses:ro \
+       pennlinc/qsirecon:latest \
+       /data /out participant \
+       -w /work \
+       --recon-spec mrtrix_multishell_msmt_noACT_apply \
+       --atlases 4S156Parcels \
+       -v -v
+
+The outputs are written to
+``results/apply/derivatives/qsirecon-MRtrix3_act-None_response-common/``,
+including copies of the response functions that were used
+(``*_model-precomputed_label-*_response.txt``),
+the FODs, the SIFT2 weights and mu, and the connectivity matrices.
+
+To restrict either run to some participants, use ``--participant-label``.
+Every participant you want to compare should be processed with the same averaged
+response functions.
+
+
+Writing your own estimate and apply recon specs
+-----------------------------------------------
+
+The built-in specs are a starting point. For example, you could use a different response
+algorithm, single-shell 3-tissue CSD, ACT, or response functions stored somewhere else.
+
+An *estimate* spec has a ``csd`` node with a ``response`` section and **no** ``fod`` section.
+Without a ``fod`` section, *QSIRecon* estimates and saves the response functions and skips FOD
+estimation:
+
+.. code-block:: yaml
+
+  name: my_estimate
+  anatomical: []
+  space: T1w
+  nodes:
+  -   action: csd
+      input: qsirecon
+      name: estimate_response_functions
+      parameters:
+          response:
+              algorithm: dhollander
+      qsirecon_suffix: MRtrix3_act-None_response-subject
+      software: MRTrix3
+
+An *apply* spec is any spec whose ``csd`` node uses ``algorithm: precomputed``,
+with absolute paths to the averaged files (see the example at the top of this section).
+Downstream nodes, such as tractography and connectivity, are added as usual.
+To use the files where they already are, rather than at ``/responses``,
+copy the built-in apply spec and change ``wm_txt``, ``gm_txt``, and ``csf_txt``.
+In a container, those paths must still be paths *inside* the container,
+so mount the files there.
+Then pass the spec's file path to ``--recon-spec``.
+
+
 .. _connecting_nodes:
 
 Connecting Nodes
