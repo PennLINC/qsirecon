@@ -1,0 +1,71 @@
+# Skeleton based on QSIPrep derivatives from a run with --anat-modality T2w.
+# The T2w is the only anatomical image; the brain mask, segmentations, and transforms
+# were all derived from it and are named without a modality.
+"01":
+  - anat:
+    - from: ACPC
+      to: anat
+      mode: image
+      suffix: xfm
+      extension: .mat
+    - from: ACPC
+      to: MNI152NLin2009cAsym
+      mode: image
+      suffix: xfm
+      extension: .h5
+    - from: anat
+      to: ACPC
+      mode: image
+      suffix: xfm
+      extension: .mat
+    - from: MNI152NLin2009cAsym
+      to: ACPC
+      mode: image
+      suffix: xfm
+      extension: .h5
+    - space: ACPC
+      desc: aseg
+      suffix: dseg
+      extension: .nii.gz
+    - space: ACPC
+      desc: brain
+      suffix: mask
+      extension: .nii.gz
+    - space: ACPC
+      desc: preproc
+      suffix: T2w
+      extension: .nii.gz
+    - space: ACPC
+      suffix: dseg
+      extension: .nii.gz
+    dwi:
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: brain
+      suffix: mask
+      extension: .nii.gz
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: preproc
+      suffix: dwi
+      extension: .bval
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: preproc
+      suffix: dwi
+      extension: .bvec
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: preproc
+      suffix: dwi
+      extension: .nii.gz
+    - acq: abcdPA
+      run: 01
+      space: ACPC
+      desc: preproc
+      suffix: dwiref
+      extension: .nii.gz

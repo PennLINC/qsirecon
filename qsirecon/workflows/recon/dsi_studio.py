@@ -120,7 +120,7 @@ distance of {romdd} in DSI Studio (version {DSI_STUDIO_VERSION}). """
         ])  # fmt:skip
 
         # Plot targeted regions
-        if inputs_dict['has_qsiprep_t1w_transforms']:
+        if inputs_dict['has_qsiprep_anat_transforms']:
             ds_report_odfs = pe.Node(
                 DerivativesDataSink(
                     desc='GQIODF',
