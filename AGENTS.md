@@ -194,6 +194,19 @@ QSIRecon wraps several external neuroimaging tools:
 - **Ingress2QSIRecon** (`== 0.2.3`): Data ingression from other pipelines
 - **DSI Studio**, **MRtrix3**, **TORTOISE**: Called via subprocess interfaces
 
+### GitHub Lockfile Workflow
+
+`.github/workflows/pixi-lock.yml` (details in `.maint/INSTRUCTIONS.md`):
+
+- Trigger: every `pull_request` event (not `pull_request_target`; `actions/checkout` refuses to check out a fork's head there).
+- Fork PRs run `validate-lockfile` with read-only permissions and no persisted credentials: `pixi lock --check` only, no push.
+- Same-repo PRs run `update-lockfile` (the only job with `contents: write`). It checks out with `persist-credentials: false`, runs `pixi lock --check`, and then restores the committed file with `git checkout -- pixi.lock`. Only when the check failed does it run `datalad run ... -- pixi lock` and push the commit to the PR branch (plain, non-forced). The push step alone receives the token, through an `http.extraheader` on the command line.
+- The reset matters: `pixi lock --check` exits 0 but still rewrites the workspace package's hatch-vcs version in `pixi.lock` on every commit. Until 2026-11, the check ran inside `datalad run`, so that rewrite was committed and pushed, and each bot push queued another run (PennLINC/qsirecon#396). Do not move the check back under `datalad run`.
+- A push made with `GITHUB_TOKEN` does not start the bot commit's checks on its own: GitHub queues them as "action required", and a maintainer must approve them.
+- Third-party actions are pinned to commit SHAs with a `# vX.Y.Z` comment.
+- Both jobs look for `pyproject.toml` or `pixi.lock` edits anywhere in the PR (`git diff base...HEAD`), not only the latest commit, and skip their pixi steps otherwise.
+- `check-lockfile` is an aggregate job that fails unless exactly the applicable job succeeded; require it, not the two underlying jobs, as the status check.
+
 ---
 
 ## Cross-Project Development Roadmap

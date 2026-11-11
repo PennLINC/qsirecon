@@ -47,12 +47,19 @@ Both resolve into `pixi.lock`.
 
 1. **Edit version specifiers** in `pyproject.toml`.
 2. **Commit and open a PR.**
-3. **`pixi-lock.yml` runs on every `pull_request_target`.** It checks whether
-   the latest commit touched `pyproject.toml` or `pixi.lock` and only then runs
-   lockfile-update steps.
-4. **Lockfile push behavior:**
-   - **Same-repo PR branches:** workflow can push `pixi.lock` updates.
-   - **Fork PR branches:** workflow does not push; update lockfile manually on Linux.
+3. **`pixi-lock.yml` runs on every `pull_request`.** It checks whether the PR
+   (`base...HEAD`, not only the latest commit) touched `pyproject.toml` or
+   `pixi.lock`, and only then runs the lockfile steps.
+4. **Lockfile behavior depends on PR source:**
+   - **Same-repo PR branches:** the workflow runs `pixi lock --check`, then restores
+     the committed `pixi.lock` (the check rewrites the workspace package's own
+     version, which changes with every commit, even when it passes). Only if the
+     check failed does it regenerate `pixi.lock` with `datalad run ... -- pixi lock`
+     and push that commit to the PR branch. GitHub holds the checks for the bot's
+     commit as "action required" until a maintainer approves them.
+   - **Fork PR branches:** the workflow only checks the lockfile (`pixi lock --check`),
+     with read-only permissions, and does **not** push. If the check fails, update
+     `pixi.lock` manually on Linux and push from the contributor branch.
 5. **Review lockfile changes locally** if needed (diff rendering may be limited in UI).
 
 > **Note:** The lockfile targets Linux; regenerate `pixi.lock` in a Linux
@@ -90,19 +97,35 @@ This section describes what causes lockfile updates, image rebuilds, and deploys
 
 ### GitHub Action: `.github/workflows/pixi-lock.yml`
 
-The workflow triggers on every `pull_request_target` event.
+The workflow triggers on every `pull_request` event and runs one of two jobs,
+depending on where the PR branch lives, plus an aggregate job:
 
-- **Always runs**
-  - checkout
-  - "latest commit touched dependency files?" check
-- **Runs lockfile steps only if latest commit touched**
-  - `pyproject.toml` or `pixi.lock`
-- **Pushes lockfile update only when**
-  - those files changed in latest commit, and
-  - PR source branch is in this repository (not a fork)
+- **`validate-lockfile`** (fork PRs only; read-only, no persisted credentials)
+  - Always runs `Checkout pull request` and `Check pull request for dependency edits`.
+  - If the PR touched `pyproject.toml` or `pixi.lock`, runs `prefix-dev/setup-pixi`
+    and `pixi lock --check`. It never pushes.
+- **`update-lockfile`** (same-repo PRs only; the only job with `contents: write`)
+  - Always runs `Checkout pull request` (with `persist-credentials: false`) and
+    `Check pull request for dependency edits`.
+  - If the PR touched `pyproject.toml` or `pixi.lock`, runs `prefix-dev/setup-pixi`
+    and `Check lockfile`, which runs `pixi lock --check`, records `stale=true|false`,
+    and resets `pixi.lock` with `git checkout -- pixi.lock`.
+  - If the lockfile is stale, runs `Set git identity`, `Install the latest version
+    of uv`, `Update lockfile` (`uvx datalad run -i pixi.lock -i pyproject.toml
+    -o pixi.lock -- pixi lock`), and `Push updated lockfile` (non-forced). The push
+    step is the only one that receives the token, passed as an `http.extraheader`
+    on the `git push` command line.
+- **`check-lockfile`** (always)
+  - Fails unless exactly the applicable job above succeeded and the other was skipped.
+    This is the job to require as a status check.
 
 Practical implication: editing non-dependency files still triggers the workflow,
-but lockfile update steps are skipped.
+but the pixi steps are skipped.
+
+Do not move `pixi lock --check` back under `datalad run`. The check exits 0 but
+still rewrites the workspace package's hatch-vcs version in `pixi.lock`, so
+running it under DataLad committed and pushed that rewrite on every run, and each
+bot push queued another run (#396).
 
 ### CircleCI: `.circleci/config.yml` (hybrid model)
 
