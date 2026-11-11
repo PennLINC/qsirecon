@@ -19,7 +19,7 @@ def _build_precomputed_wf(fod_algorithm, response):
         'response': {'algorithm': 'precomputed', **response},
     }
     return init_mrtrix_csd_recon_wf(
-        {'has_qsiprep_t1w_transforms': False},
+        {'has_qsiprep_anat_transforms': False},
         name='csd',
         qsirecon_suffix='MRtrix3',
         params=params,
