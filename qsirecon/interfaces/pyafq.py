@@ -54,7 +54,6 @@ class PyAFQInputSpec(BaseInterfaceInputSpec):
         File(exists=True),
         desc='WM probability map on the T1w grid',
     )
-    itk_file = File(exists=True, mandatory=True)
     kwargs = traits.Dict(exists=True, mandatory=True)
     tck_file = traits.Either(None, File(exists=True))
     n_procs = traits.Int(1, usedefault=True)
@@ -87,7 +86,6 @@ class PyAFQRecon(SimpleInterface):
             'csf_probseg',
             'gm_probseg',
             'wm_probseg',
-            'itk_file',
             'tck_file',
         ):
             source = getattr(self.inputs, name)
