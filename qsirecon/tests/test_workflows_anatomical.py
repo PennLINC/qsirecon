@@ -71,8 +71,7 @@ def build_config(tmp_path, monkeypatch):
     monkeypatch.setattr(config.execution, 'fs_subjects_dir', None)
     monkeypatch.setattr(config.nipype, 'omp_nthreads', 1)
     monkeypatch.setattr(config.workflow, 'b0_threshold', 100)
-    monkeypatch.setattr(config.workflow, 'output_resolution', None)
-    monkeypatch.setattr(config.workflow, 'infant', False)
+    monkeypatch.setattr(config.workflow, 'output_spaces', None)
     return tmp_path
 
 
@@ -124,6 +123,10 @@ def test_dwi_anat_wf_no_anatomical(build_config):
 
 def test_dwi_anat_wf_with_template(build_config):
     """With a preprocessed anatomical image and transforms, the template grid is built."""
+    # The ODF report ROIs have their own transforms from MNI152NLin2009cAsym
+    odf_rois_xfm = build_config / 'sub-01_from-MNI152NLin2009cAsym_to-ACPC_mode-image_xfm.h5'
+    odf_rois_xfm.touch()
+
     wf, status = init_dwi_recon_anatomical_workflow(
         atlas_configs={},
         has_qsiprep_5tt_hsvs=False,
@@ -135,6 +138,7 @@ def test_dwi_anat_wf_with_template(build_config):
         extras_to_make=[],
         name='dwi_anat_wf',
         template_output_space='MNI152NLin2009cAsym',
+        odf_rois_to_acpc_xfm=[str(odf_rois_xfm)],
     )
     nodes = _node_basenames(wf)
     assert 'get_template' in nodes
@@ -267,10 +271,13 @@ def test_warp_atlases_wf(data_dir, tmp_path_factory):
             f'{atlas_name} is already on the DWI grid, so this test proves nothing'
         )
 
+    # Each atlas carries the transforms that bring it into the anatomical space
+    for atlas_config in atlas_configs.values():
+        atlas_config['xfm_to_anat'] = [str(xfm)]
+
     wf = init_warp_atlases_wf(atlas_configs=atlas_configs)
     wf.base_dir = str(tmpdir)
     wf.inputs.inputnode.source_file = str(src)
-    wf.inputs.inputnode.template_to_acpc_xfm = str(xfm)
     # The workflow leaves the datasinks' base_directory to the parent workflow's
     # clean_datasinks() call, so point them at a temporary derivatives directory here.
     for node_name in wf.list_node_names():

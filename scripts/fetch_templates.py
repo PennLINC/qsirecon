@@ -2,8 +2,8 @@
 """
 Standalone script to facilitate caching of required TemplateFlow templates.
 
-QSIRecon fetches templates dynamically based on ``template_output_space``,
-but MNI152NLin2009cAsym (adult default) and MNIInfant (infant mode) are the
+QSIRecon fetches templates dynamically based on ``--output-spaces``,
+but MNI152NLin2009cAsym (the default) and MNIInfant are the
 most common choices.  Pre-caching them avoids network access at runtime.
 """
 
@@ -23,7 +23,7 @@ def fetch_MNI2009():
 
 
 def fetch_MNIInfant():
-    """MNIInfant — used when --infant is set."""
+    """MNIInfant — used when it is requested with --output-spaces."""
     tf.get('MNIInfant', resolution=1, desc=None, suffix='T1w')
     tf.get('MNIInfant', resolution=1, desc='brain', suffix='mask')
 

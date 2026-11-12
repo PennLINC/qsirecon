@@ -244,7 +244,7 @@ def init_dipy_brainsuite_shore_recon_wf(
         connect_anat_underlay(workflow, inputnode, plot_peaks, inputs_dict)
 
     # Plot targeted regions
-    if inputs_dict['has_qsiprep_anat_transforms'] and plot_reports:
+    if inputs_dict.get('has_odf_rois') and plot_reports:
         ds_report_odfs = pe.Node(
             DerivativesDataSink(
                 desc='3dSHOREODF',
@@ -569,7 +569,7 @@ def init_dipy_mapmri_recon_wf(
         connect_anat_underlay(workflow, inputnode, plot_peaks, inputs_dict)
 
     # Plot targeted regions
-    if inputs_dict['has_qsiprep_anat_transforms'] and plot_reports:
+    if inputs_dict.get('has_odf_rois') and plot_reports:
         ds_report_odfs = pe.Node(
             DerivativesDataSink(
                 desc='MAPLMRIODF',

@@ -584,16 +584,22 @@ class workflow(_Config):
 
     b0_threshold = None
     """Any value in the .bval file less than this will be considered a b=0 image."""
-    infant = False
-    """Configure pipelines specifically for infant brains"""
     input_type = None
     """Specifies which pipeline was used to preprocess data in ``bids_dir``."""
     recon_spec = None
     """Recon workflow specification."""
-    output_resolution = None
-    """Isotropic voxel size for outputs."""
+    output_spaces = None
+    """Canonical ``--output-spaces`` tokens, as a list of strings. ``None`` means the
+    default, ``MNI152NLin2009cAsym``."""
     qsirecon_suffixes = []
     """List of reconstruction workflow names, derived from the recon_spec."""
+
+    @classmethod
+    def output_space(cls):
+        """Parse :attr:`output_spaces` into its :class:`~qsirecon.utils.spaces.SpaceSpec`."""
+        from .utils.spaces import DEFAULT_OUTPUT_SPACES, parse_output_spaces
+
+        return parse_output_spaces(cls.output_spaces or DEFAULT_OUTPUT_SPACES)[0]
 
     @classmethod
     def init(cls):

@@ -55,7 +55,6 @@ def test_collect_anatomical_data(tmp_path_factory):
         subject_id='01',
         session_id=_session_filter,
         needs_anat_transform=False,
-        infant_mode=False,
         bids_filters={},
     )
     assert highres_anat_status['has_qsiprep_anat'] is True
@@ -226,7 +225,6 @@ def test_collect_anatomical_data_multimodal(tmp_path_factory):
         subject_id='01',
         session_id=Query.NONE,
         needs_anat_transform=True,
-        infant_mode=False,
         bids_filters={},
     )
     assert status['has_qsiprep_anat'] is True
@@ -240,7 +238,6 @@ def test_collect_anatomical_data_multimodal(tmp_path_factory):
         subject_id='01',
         session_id=Query.NONE,
         needs_anat_transform=True,
-        infant_mode=False,
         bids_filters={'acpc_preproc': {'suffix': 'T2w'}},
     )
     assert status['has_qsiprep_anat'] is True
@@ -260,7 +257,6 @@ def test_collect_anatomical_data_t2w_only(tmp_path_factory):
         subject_id='01',
         session_id=Query.NONE,
         needs_anat_transform=True,
-        infant_mode=False,
         bids_filters={},
     )
     assert status['has_qsiprep_anat'] is True
@@ -282,7 +278,6 @@ def test_collect_anatomical_data_duplicate_error(tmp_path_factory):
             subject_id='01',
             session_id=Query.NONE,
             needs_anat_transform=False,
-            infant_mode=False,
             bids_filters={'acpc_preproc': {'suffix': 'T2w', 'desc': ['preproc', 'unfatsat']}},
         )
 
@@ -299,6 +294,12 @@ def test_collect_anatomical_data_missing_transform_error(tmp_path_factory):
         't2w_anat.yml',
         'test_collect_anatomical_data_missing_transform_error',
     )
+    # Leave the dataset without any template transforms. (A dataset that has transforms
+    # for another template is covered in test_utils_spaces.py and test_utils_transforms.py.)
+    for xfm in layout.get(suffix='xfm', extension='.h5', return_type='file'):
+        os.remove(xfm)
+
+    layout = BIDSLayout(layout.root, validate=False, config=['bids', 'derivatives'])
 
     with pytest.raises(ValueError, match='no "acpc_to_template_xfm" file was found') as exc:
         xbids.collect_anatomical_data(
@@ -306,12 +307,12 @@ def test_collect_anatomical_data_missing_transform_error(tmp_path_factory):
             subject_id='01',
             session_id=Query.NONE,
             needs_anat_transform=True,
-            infant_mode=True,
             bids_filters={},
         )
 
     message = str(exc.value)
-    assert "'to': 'MNIInfant'" in message
+    assert 'requested output space (MNI152NLin2009cAsym)' in message
+    assert "'suffix': 'xfm'" in message
     assert '(none)' in message
 
     # Without the requirement, the missing transform only clears the status flag.
@@ -320,7 +321,6 @@ def test_collect_anatomical_data_missing_transform_error(tmp_path_factory):
         subject_id='01',
         session_id=Query.NONE,
         needs_anat_transform=False,
-        infant_mode=True,
         bids_filters={},
     )
     assert status['has_qsiprep_anat'] is True
@@ -340,6 +340,9 @@ def test_collect_anatomical_data_no_session():
     assert anat_data == {}
     assert status == {
         'template_output_space': None,
+        'template_transform_path': None,
+        'odf_rois_to_acpc_xfm': None,
+        'template_xfm_edges': [],
         'has_qsiprep_anat': False,
         'has_qsiprep_anat_transforms': False,
     }

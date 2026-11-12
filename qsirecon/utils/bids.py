@@ -38,8 +38,23 @@ from nipype.pipeline import engine as pe
 from packaging.version import Version
 
 from .. import config
+from .transforms import (
+    ANAT_SPACE,
+    NoTransformChainError,
+    Xfm,
+    chain_files,
+    fetch_templateflow_xfm,
+    find_transform_chain,
+    templateflow_edges,
+)
 
 LOGGER = config.loggers.utils
+
+#: Names the input dataset may give the anatomical space in from-/to- labels
+ANAT_ALIASES = ('ACPC', 'T1w', 'T2w')
+#: The template that the ROIs for the ODF reports are drawn in
+#: (data/tpl-MNI152NLin2009cAsym_atlas-crossingfibers_res-01_dseg.nii.gz)
+ODF_ROI_SPACE = 'MNI152NLin2009cAsym'
 
 
 class BIDSError(ValueError):
@@ -212,7 +227,7 @@ def collect_anatomical_data(
     subject_id,
     session_id,
     needs_anat_transform,
-    infant_mode=False,
+    output_space=None,
     bids_filters=None,
 ):
     """Collect the preprocessed anatomical files that reconstruction workflows can use.
@@ -248,8 +263,9 @@ def collect_anatomical_data(
         Whether the reconstruction workflow requires transforms between AC-PC and
         template space (for example because atlases were requested).
         If ``True`` and no transforms are found, a :class:`ValueError` is raised.
-    infant_mode : :obj:`bool`, optional
-        Whether to look for ``MNIInfant`` instead of ``MNI152NLin2009cAsym`` transforms.
+    output_space : :obj:`~qsirecon.utils.spaces.SpaceSpec`, optional
+        The template space to collect transforms for.
+        Defaults to the space requested with ``--output-spaces``.
     bids_filters : :obj:`dict`, optional
         Overrides for the ``io_spec.yaml`` queries, keyed by query name.
         Each value is a dictionary of entity filters that is merged into that query.
@@ -261,20 +277,35 @@ def collect_anatomical_data(
         Keys are ``acpc_preproc``, ``acpc_brain_mask``, ``acpc_seg``, ``acpc_aseg``,
         ``acpc_aparc``, ``acpc_csf_probseg``, ``acpc_gm_probseg``, ``acpc_wm_probseg``,
         ``orig_to_acpc_xfm``, ``acpc_to_template_xfm``, and ``template_to_acpc_xfm``.
+        ``acpc_to_template_xfm`` and ``template_to_acpc_xfm`` are each a single file
+        when the input dataset has transforms for the output space.
+        Otherwise they are lists of files, in the order ANTs takes them,
+        that chain the dataset's transforms with TemplateFlow's.
     status : :obj:`dict`
         Flags describing what was found:
 
         - ``has_qsiprep_anat``: both ``acpc_preproc`` and ``acpc_brain_mask`` were found.
         - ``has_qsiprep_anat_transforms``: both ``acpc_to_template_xfm`` and
-          ``template_to_acpc_xfm`` were found.
-        - ``template_output_space``: the template named in the transforms,
+          ``template_to_acpc_xfm`` were found, directly or through a chain.
+        - ``template_output_space``: the output space the transforms are for,
           or ``None`` if no transforms were found.
+        - ``template_transform_path``: the list of spaces a chain goes through, from
+          the anatomical space to the output space, or ``None`` when there is no chain.
+        - ``odf_rois_to_acpc_xfm``: the list of transforms, in the order ANTs takes
+          them, that bring the ODF report ROIs from the template they are drawn in to
+          the anatomical space, or ``None`` when they could not be found, in which case
+          the ODF figures are not made.
+        - ``template_xfm_edges``: the template transforms in the input dataset, as
+          :class:`~qsirecon.utils.transforms.Xfm` edges, for choosing atlases with.
+          It is not a workflow setting, so remove it before passing the status on.
 
     Raises
     ------
     ValueError
         If a query matches more than one file of the same modality,
-        or if ``needs_anat_transform`` is ``True`` and the transforms are missing.
+        if the requested output space cannot be reached from the transforms in the
+        input dataset, or if ``needs_anat_transform`` is ``True`` and the transforms
+        are missing.
         The message includes the query and the files it matched.
 
     Notes
@@ -287,7 +318,12 @@ def collect_anatomical_data(
     from qsirecon.data import load as load_data
 
     anat_data = {}
-    status = {'template_output_space': None}
+    status = {
+        'template_output_space': None,
+        'template_transform_path': None,
+        'odf_rois_to_acpc_xfm': None,
+        'template_xfm_edges': [],
+    }
 
     if session_id is None:
         LOGGER.warning('Assuming no anatomical data.')
@@ -298,9 +334,14 @@ def collect_anatomical_data(
     _spec = yaml.safe_load(load_data.readable('io_spec.yaml').read_text())
     queries = _spec['queries']['anat']
 
-    if infant_mode:
-        queries['acpc_to_template_xfm']['to'] = 'MNIInfant'
-        queries['template_to_acpc_xfm']['from'] = 'MNIInfant'
+    # The transforms are selected by template (and cohort) below, because a cohort is
+    # part of the from-/to- label (MNIInfant+2) and may not be known in advance.
+    if output_space is None:
+        output_space = config.workflow.output_space()
+
+    template_entities = {'acpc_to_template_xfm': 'to', 'template_to_acpc_xfm': 'from'}
+    for name, entity in template_entities.items():
+        queries[name].pop(entity, None)
 
     # Apply filters. These may override anything.
     bids_filters = bids_filters or {}
@@ -309,6 +350,10 @@ def collect_anatomical_data(
             queries[acq].update(bids_filters[acq])
 
     descriptions = {}
+    # Templates the input dataset has transforms for, other than the requested one
+    other_templates = set()
+    # Every template transform in the input dataset, as edges of a transform graph
+    dataset_edges = []
     for name, query in queries.items():
         found = layout.get(
             subject=subject_id,
@@ -337,16 +382,61 @@ def collect_anatomical_data(
             found = preferred
 
         files = [f.path for f in found]
+        entity = template_entities.get(name)
+        templates = {f: get_entity(f, entity) or '' for f in files} if entity else {}
+        for f, template in templates.items():
+            if not template or template in ANAT_ALIASES:
+                continue
+
+            if entity == 'to':
+                dataset_edges.append(Xfm(path=f, frm=ANAT_SPACE, to=template))
+            else:
+                dataset_edges.append(Xfm(path=f, frm=template, to=ANAT_SPACE))
+
+        # A filter on from/to already chose the transform
+        if entity and entity not in query:
+            files = [f for f in files if output_space.matches(templates[f])]
+            other_templates.update(
+                template
+                for template in templates.values()
+                if template and not output_space.matches(template)
+            )
+
         if len(files) == 1:
             anat_data[name] = files[0]
         elif len(files) > 1:
+            hint = ''
+            if entity and output_space.cohort == 'auto':
+                hint = (
+                    f'\nThe output space {output_space} matches any cohort. '
+                    'Name one cohort in --output-spaces.'
+                )
+
             raise ValueError(
                 f'More than one file matched the "{name}" query. '
                 'Use --bids-filter-file to narrow the query down to a single file.\n'
-                f'{descriptions[name]}'
+                f'{descriptions[name]}{hint}'
             )
         else:
             anat_data[name] = None
+
+    # The input dataset was normalized, but not to the requested space.
+    # See if TemplateFlow's template-to-template transforms can link them.
+    has_direct = anat_data['acpc_to_template_xfm'] and anat_data['template_to_acpc_xfm']
+    chain_problem = ''
+    if not has_direct and other_templates:
+        try:
+            chain = _chain_template_transforms(dataset_edges, output_space)
+        except NoTransformChainError as exc:
+            chain_problem = str(exc)
+        else:
+            anat_data.update(chain['anat_data'])
+            status['template_transform_path'] = chain['path']
+            LOGGER.warning(
+                f'The input dataset has no transforms for the output space {output_space}. '
+                f'Chaining transforms through {" -> ".join(chain["path"])}, '
+                'with template-to-template transforms from TemplateFlow.'
+            )
 
     # Identify the found anatomical files.
     LOGGER.info(
@@ -367,27 +457,151 @@ def collect_anatomical_data(
             status['has_qsiprep_anat'] = False
 
     status['has_qsiprep_anat_transforms'] = True
-    for name in ('acpc_to_template_xfm', 'template_to_acpc_xfm'):
-        if not anat_data[name]:
-            if needs_anat_transform:
-                raise ValueError(
-                    'The reconstruction workflow requires transforms between AC-PC and '
-                    f'template space, but no "{name}" file was found.\n'
-                    f'{descriptions[name]}'
-                )
+    missing = [
+        name for name in ('acpc_to_template_xfm', 'template_to_acpc_xfm') if not anat_data[name]
+    ]
+    if missing and other_templates:
+        # The dataset was normalized, but the requested space cannot be reached from it.
+        # Continuing would silently drop every template-space step, so stop here.
+        available = ', '.join(sorted(_space_token(name) for name in other_templates))
+        raise ValueError(
+            f'The output space {output_space} was requested, but the input dataset has '
+            f'no transforms to and from it for sub-{subject_id}. '
+            f'It has transforms for: {available}. '
+            f'{chain_problem} '
+            'Request one of those with --output-spaces, or rerun QSIPrep with '
+            f'{output_space.space} among its --output-spaces.'
+        )
 
-            LOGGER.warning(
-                f'No "{name}" transform found. '
-                'Template-space atlases and ROIs will not be available.\n'
+    for name in missing:
+        if needs_anat_transform:
+            raise ValueError(
+                'The reconstruction workflow requires transforms between AC-PC and '
+                f'template space, but no "{name}" file was found for the requested output '
+                f'space ({output_space}).\n'
                 f'{descriptions[name]}'
             )
-            status['has_qsiprep_anat_transforms'] = False
 
-    if status['has_qsiprep_anat_transforms']:
+        LOGGER.warning(
+            f'No "{name}" transform found. '
+            'Template-space atlases and ROIs will not be available.\n'
+            f'{descriptions[name]}'
+        )
+        status['has_qsiprep_anat_transforms'] = False
+
+    if status['template_transform_path']:
+        status['template_output_space'] = status['template_transform_path'][-1]
+    elif status['has_qsiprep_anat_transforms']:
         # Determine the output space from the transform file
         status['template_output_space'] = _determine_output_space(anat_data)
 
+    if status['has_qsiprep_anat_transforms'] and not config.execution.skip_odf_reports:
+        status['odf_rois_to_acpc_xfm'] = _odf_roi_transforms(dataset_edges)
+
+    status['template_xfm_edges'] = dataset_edges
     return anat_data, status
+
+
+def _odf_roi_transforms(dataset_edges):
+    """Find the transforms that bring the ODF report ROIs into the anatomical space.
+
+    The ROIs are drawn in MNI152NLin2009cAsym, whatever the output space is. The input
+    dataset's own transform from that template is used when there is one. Otherwise
+    the ROIs are chained through TemplateFlow's template-to-template transforms to a
+    template the dataset does have.
+
+    Parameters
+    ----------
+    dataset_edges : :obj:`list` of :class:`~qsirecon.utils.transforms.Xfm`
+        The template transforms in the input dataset.
+
+    Returns
+    -------
+    files : :obj:`list` of :obj:`str` or None
+        The transforms in the order ANTs takes them.
+        None if no chain was found or a transform could not be downloaded,
+        in which case the ODF figures are not made.
+    """
+    try:
+        try:
+            edges = dataset_edges
+            path = find_transform_chain(edges, ODF_ROI_SPACE, ANAT_SPACE, bidirectional=False)
+        except NoTransformChainError:
+            edges = [*dataset_edges, *templateflow_edges()]
+            path = find_transform_chain(edges, ODF_ROI_SPACE, ANAT_SPACE, bidirectional=False)
+
+        return [
+            fetch_templateflow_xfm(xfm) if xfm.source == 'templateflow' else xfm.path
+            for xfm in chain_files(edges, path)
+        ]
+    except Exception as exc:
+        # The ROIs only feed a report figure, so nothing here should stop the build
+        LOGGER.warning(
+            f'Could not find transforms from {ODF_ROI_SPACE}, the space of the ROIs used in '
+            f'the ODF reports, to the anatomical space ({exc}). The ODF figures will not be '
+            'included in the reports.'
+        )
+        return None
+
+
+def _chain_template_transforms(dataset_edges, output_space):
+    """Link the anatomical space to an output space the input dataset has no transforms for.
+
+    The anatomical-to-template transforms in the input dataset are chained with the
+    template-to-template transforms TemplateFlow distributes, which are downloaded
+    if they are on the chain.
+
+    Parameters
+    ----------
+    dataset_edges : :obj:`list` of :class:`~qsirecon.utils.transforms.Xfm`
+        The template transforms in the input dataset.
+    output_space : :obj:`~qsirecon.utils.spaces.SpaceSpec`
+        The requested output space.
+
+    Returns
+    -------
+    chain : :obj:`dict`
+        ``path`` is the list of spaces from the anatomical space to the output space.
+        ``anat_data`` holds ``acpc_to_template_xfm`` and ``template_to_acpc_xfm`` as
+        lists of files in the order ANTs takes them.
+
+    Raises
+    ------
+    NoTransformChainError
+        If the output space cannot be reached, with the reason as its message.
+    """
+    if output_space.cohort == 'auto':
+        raise NoTransformChainError(
+            'Transforms can only be chained to a named cohort, so replace cohort-auto '
+            'with a cohort label.'
+        )
+
+    edges = [*dataset_edges, *templateflow_edges()]
+    target = output_space.fullname
+    try:
+        path = find_transform_chain(edges, ANAT_SPACE, target)
+    except NoTransformChainError:
+        raise NoTransformChainError(
+            f'TemplateFlow has no transforms that link them to {target} in both directions.'
+        ) from None
+
+    anat_data = {}
+    for name, direction in (
+        ('acpc_to_template_xfm', path),
+        ('template_to_acpc_xfm', path[::-1]),
+    ):
+        anat_data[name] = [
+            fetch_templateflow_xfm(xfm) if xfm.source == 'templateflow' else xfm.path
+            for xfm in chain_files(edges, direction)
+        ]
+
+    return {'path': path, 'anat_data': anat_data}
+
+
+def _space_token(name):
+    """Spell a ``from-``/``to-`` label such as ``MNIInfant+2`` as an --output-spaces token."""
+    template, _, cohort = name.partition('+')
+    return f'{template}:cohort-{cohort}' if cohort else template
 
 
 def _determine_output_space(status):

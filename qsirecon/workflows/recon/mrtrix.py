@@ -389,7 +389,7 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
         connect_anat_underlay(workflow, inputnode, plot_peaks, inputs_dict)
 
         # Plot targeted regions
-        if inputs_dict['has_qsiprep_anat_transforms']:
+        if inputs_dict.get('has_odf_rois'):
             ds_report_odfs = pe.Node(
                 DerivativesDataSink(
                     desc='wmFOD',
