@@ -8,6 +8,9 @@ ARG TAG_DSISTUDIOCHEN=26.7.1
 ARG TAG_AFNI=AFNI_25.2.09
 ARG TAG_TORTOISE=26.1.3
 ARG TAG_TORTOISECUDA=26.1.3
+ARG TAG_TRXVIZ=0.6.0
+# sha256 of TRXViz-linux-legacy.tar.gz (built on Debian 11, glibc 2.31) for TAG_TRXVIZ
+ARG TRXVIZ_SHA256=c8a4bbd1277f4e543aa54dcf8230ca4a11b8cd7f1ec6180481426abc2473f8be
 
 FROM pennlinc/qsiprep-freesurfer:${TAG_FREESURFER} AS build_freesurfer
 FROM pennlinc/qsiprep-ants:${TAG_ANTS} AS build_ants
@@ -121,13 +124,13 @@ RUN apt-get update -qq \
            libxm4 \
            libxmu6 \
            libxt6 \
+           mesa-vulkan-drivers \
            netpbm \
            pandoc \
            perl \
            tcsh \
            unzip \
            xfonts-base \
-           xvfb \
            xz-utils \
            zlib1g \
            ${DSI_STUDIO_DEPS} \
@@ -137,6 +140,20 @@ RUN apt-get update -qq \
 COPY --from=build_dsistudio /opt/dsi-studio /opt/dsi-studio
 COPY --from=build_dsistudio_chen /opt/dsi-studio/dsi_studio_64 /opt/dsi-studio-chen
 RUN mv /opt/dsi-studio-chen/dsi_studio /opt/dsi-studio/dsi_studio_chen
+
+# TRXViz's headless renderer draws the ODF and peak report figures. It needs no X server,
+# but it does need Vulkan: its GL fallback lacks the storage buffers the glyph shaders use.
+# mesa-vulkan-drivers provides lavapipe, a CPU Vulkan driver, for machines without a GPU.
+ARG TAG_TRXVIZ
+ARG TRXVIZ_SHA256
+RUN mkdir -p /opt/trxviz \
+    && curl -fsSL -o /tmp/trxviz.tar.gz \
+       "https://github.com/tee-ar-ex/TRXViz/releases/download/${TAG_TRXVIZ}/TRXViz-linux-legacy.tar.gz" \
+    && echo "${TRXVIZ_SHA256}  /tmp/trxviz.tar.gz" | sha256sum -c - \
+    && tar -xzf /tmp/trxviz.tar.gz -C /opt/trxviz trxviz-cli \
+    && rm /tmp/trxviz.tar.gz \
+    && /opt/trxviz/trxviz-cli --help > /dev/null
+ENV PATH="/opt/trxviz:$PATH"
 
 WORKDIR /opt/art
 ENV PATH="/opt/art/bin:$PATH"
