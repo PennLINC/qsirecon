@@ -359,6 +359,34 @@ def decode_srgb(png_file):
     return png_file
 
 
+def blacken_margins(png_file):
+    """Paint TRXViz's white clear color black where it borders the tile, in place.
+
+    TRXViz 0.6.0 clears 2D renders to white, so a slice that does not fill the square tile
+    (most sagittal and coronal slices) leaves white margins. Nothing in the slice drawing
+    is pure white: the background tops out at ``BACKGROUND_BRIGHTNESS`` and a unit
+    direction cannot color all three channels fully. Only pure-white regions connected to
+    the tile's edge are changed, so a white highlight inside the slice is kept.
+    This can go once TRXViz's 2D background is configurable
+    (https://github.com/tee-ar-ex/TRXViz/issues/15).
+    """
+    from scipy import ndimage
+
+    with Image.open(png_file) as img:
+        rgba = np.array(img.convert('RGBA'))
+
+    white = np.all(rgba[..., :3] == 255, axis=2)
+    labels, _ = ndimage.label(white)
+    edge_labels = np.setdiff1d(
+        np.unique(np.concatenate([labels[0], labels[-1], labels[:, 0], labels[:, -1]])),
+        [0],
+    )
+    margin = np.isin(labels, edge_labels)
+    rgba[margin, :3] = 0
+    Image.fromarray(rgba, mode='RGBA').save(png_file)
+    return png_file
+
+
 def build_project(
     volume_file,
     odx_dir,
@@ -535,7 +563,7 @@ def render_project(project, project_file, png_file, size):
             )
         )
 
-    return decode_srgb(png_file)
+    return blacken_margins(decode_srgb(png_file))
 
 
 def _slice_mask(shape, voxel_axis, index):

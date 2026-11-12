@@ -174,6 +174,24 @@ def test_underlay_for_axis():
     assert 0 <= underlay.get_fdata().min() <= underlay.get_fdata().max() <= 1
 
 
+def test_blacken_margins(tmp_path):
+    """White margins touching the tile edge turn black; white inside the slice stays."""
+    tile = np.full((20, 20, 3), 255, dtype='uint8')  # white clear color everywhere
+    tile[5:15, :] = 60  # a slice band spanning the tile's width
+    tile[9:11, 9:11] = 255  # a white highlight inside the slice
+    png = tmp_path / 'tile.png'
+    Image.fromarray(tile).save(png)
+
+    trxviz.blacken_margins(str(png))
+    with Image.open(png) as img:
+        result = np.asarray(img.convert('RGB'))
+
+    assert np.all(result[:5] == 0)
+    assert np.all(result[15:] == 0)
+    assert np.all(result[9:11, 9:11] == 255)
+    assert np.all(result[5:9] == 60)
+
+
 def test_decode_srgb(tmp_path):
     """sRGB-encoded pixels are converted back to linear values."""
     png = tmp_path / 'tile.png'
