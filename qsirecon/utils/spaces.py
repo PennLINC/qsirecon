@@ -195,6 +195,29 @@ def _validate_cohort(space: str, cohort: str | None) -> None:
         )
 
 
+def split_key_values(token: str, items, valid_keys, error=OutputSpacesError) -> list[tuple]:
+    """Split the ``key-value`` parts of a token into ``(key, value)`` pairs.
+
+    ``--atlases`` shares this grammar with ``--output-spaces``, with its own keys and
+    its own ``error`` class.
+    """
+    pairs = []
+    for item in items:
+        key, _, value = item.partition('-')
+        if not value:
+            raise error(f'"{item}" in "{token}" is not a key-value specification.')
+
+        if key not in valid_keys:
+            raise error(
+                f'"{key}" in "{token}" is not a valid specifier. '
+                f'QSIRecon accepts: {", ".join(valid_keys)}.'
+            )
+
+        pairs.append((key, value))
+
+    return pairs
+
+
 def parse_space_token(token: str) -> list[SpaceSpec]:
     """Parse one ``--output-spaces`` token into one or more :class:`SpaceSpec`.
 
@@ -218,17 +241,7 @@ def parse_space_token(token: str) -> list[SpaceSpec]:
 
     cohort = None
     res_values = []
-    for item in rest:
-        key, _, value = item.partition('-')
-        if not value:
-            raise OutputSpacesError(f'"{item}" in "{token}" is not a key-value specification.')
-
-        if key not in VALID_KEYS:
-            raise OutputSpacesError(
-                f'"{key}" in "{token}" is not a valid specifier. '
-                f'QSIRecon accepts: {", ".join(VALID_KEYS)}.'
-            )
-
+    for key, value in split_key_values(token, rest, VALID_KEYS):
         if key == 'cohort':
             if cohort is not None:
                 raise OutputSpacesError(f'"{token}" specifies more than one cohort.')

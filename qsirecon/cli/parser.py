@@ -73,6 +73,23 @@ class OutputSpacesAction(Action):
         setattr(namespace, self.dest, [*existing, *[str(spec) for spec in specs]])
 
 
+class AtlasesAction(Action):
+    """Parse and validate --atlases at parse time, storing canonical tokens."""
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        from ..utils.atlases import AtlasSelectorError, parse_atlases
+
+        # Like --output-spaces, the option adds up when it is given more than once,
+        # so that an atlas requested twice is caught however the command is written.
+        existing = getattr(namespace, self.dest, None) or []
+        try:
+            specs = parse_atlases([*existing, *values])
+        except AtlasSelectorError as exc:
+            parser.error(str(exc))
+
+        setattr(namespace, self.dest, [str(spec) for spec in specs])
+
+
 class RemovedInfantAction(Action):
     """Point users of the removed --infant flag at --output-spaces."""
 
@@ -461,7 +478,7 @@ def _build_parser(**kwargs):
     g_parcellation = parser.add_argument_group('Parcellation options')
     g_parcellation.add_argument(
         '--atlases',
-        action='store',
+        action=AtlasesAction,
         nargs='+',
         metavar='ATLAS',
         default=None,
@@ -469,7 +486,22 @@ def _build_parser(**kwargs):
         help=(
             'Selection of atlases to apply to the data. '
             'Built-in atlases include: AAL116, AICHA384Ext, Brainnetome246Ext, '
-            'Gordon333Ext, and the 4S atlases.'
+            'Gordon333Ext, and the 4S atlases. '
+            'An atlas name alone lets QSIRecon choose which copy of the atlas to use: the '
+            'one with the shortest chain of transforms to the anatomical space. '
+            'To pin the copy, follow the name with selectors, as in '
+            '"4S156Parcels:tpl-MNI152NLin2009cAsym:res-01" or '
+            '"4S156Parcels:tpl-MNIInfant:cohort-2". '
+            'The selectors are "tpl", "cohort", "res", "desc" and "seg", and each is '
+            'matched literally against the entity of the same name in the atlas file '
+            '("res-01" and "res-1" are different). '
+            'A template with cohorts needs a cohort. '
+            '"res" only selects a file: atlases are always resampled onto the grid of '
+            'the preprocessed DWI. '
+            'QSIRecon stops with an error if no copy of the atlas matches the selectors, '
+            'or if no chain of transforms brings that copy into the anatomical space. '
+            'Each atlas may be requested once. '
+            'If the option is given more than once, the atlases are added together.'
         ),
     )
 
