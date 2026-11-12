@@ -92,6 +92,127 @@ def test_get_iterable_dwis_and_anats(tmp_path_factory):
     assert dwis_and_anats[0][1] is not None
 
 
+# One subject with a preprocessed DWI in each of two sessions and a subject-level T1w.
+# The ses-post DWI is in T1w space, so a filter can override the default space query.
+TWO_SESSION_SKELETON = {
+    '01': [
+        {
+            'anat': [
+                {'space': 'ACPC', 'desc': 'preproc', 'suffix': 'T1w', 'extension': '.nii.gz'},
+            ],
+        },
+        {
+            'session': 'pre',
+            'dwi': [
+                {'space': 'ACPC', 'desc': 'preproc', 'suffix': 'dwi', 'extension': '.nii.gz'},
+            ],
+        },
+        {
+            'session': 'post',
+            'dwi': [
+                {'space': 'T1w', 'desc': 'preproc', 'suffix': 'dwi', 'extension': '.nii.gz'},
+            ],
+        },
+    ],
+}
+
+
+@pytest.fixture(scope='module')
+def two_session_bids_dir(tmp_path_factory):
+    """Write the two-session skeleton to disk."""
+    bids_dir = tmp_path_factory.mktemp('two_session') / 'bids'
+    generate_bids_skeleton(str(bids_dir), TWO_SESSION_SKELETON)
+    return bids_dir
+
+
+@pytest.fixture(scope='module')
+def two_session_layout(two_session_bids_dir):
+    """Index the two-session skeleton."""
+    return BIDSLayout(
+        two_session_bids_dir,
+        validate=False,
+        config=['bids', 'derivatives'],
+    )
+
+
+@pytest.mark.parametrize(
+    ('bids_filters', 'expected_sessions'),
+    [
+        (None, ['post', 'pre']),
+        ({}, ['post', 'pre']),
+        # Only the "dwi" filter applies to the DWI query.
+        ({'acpc_preproc': {'suffix': 'T2w'}}, ['post', 'pre']),
+        ({'dwi': {'session': 'pre'}}, ['pre']),
+        ({'dwi': {'session': ['post']}}, ['post']),
+        # A filter value replaces the default query value for the same entity.
+        ({'dwi': {'space': 'T1w'}}, ['post']),
+        ({'dwi': {'session': Query.NONE}}, []),
+    ],
+)
+def test_get_iterable_dwis_and_anats_bids_filters(
+    two_session_layout,
+    bids_filters,
+    expected_sessions,
+):
+    """The "dwi" entry of the BIDS filters limits which DWIs are reconstructed.
+
+    Regression test for https://github.com/PennLINC/qsirecon/issues/119.
+    """
+    dwis_and_anats = xbids.get_iterable_dwis_and_anats(
+        layout=two_session_layout,
+        bids_filters=bids_filters,
+    )
+    sessions = sorted(dwi.entities['session'] for dwi, _ in dwis_and_anats)
+    assert sessions == expected_sessions
+    # Every selected DWI is still paired with the subject-level T1w.
+    for _, anat in dwis_and_anats:
+        assert anat is not None
+        assert anat.entities['suffix'] == 'T1w'
+
+
+def test_get_iterable_dwis_and_anats_does_not_modify_filters(two_session_layout):
+    """The caller's filter dictionary is left unchanged."""
+    bids_filters = {'dwi': {'session': 'pre'}}
+    xbids.get_iterable_dwis_and_anats(layout=two_session_layout, bids_filters=bids_filters)
+    assert bids_filters == {'dwi': {'session': 'pre'}}
+
+
+def test_parse_args_applies_dwi_bids_filter(two_session_bids_dir, tmp_path):
+    """``--bids-filter-file`` limits the DWIs in the processing list.
+
+    Regression test for https://github.com/PennLINC/qsirecon/issues/119.
+    """
+    import json
+
+    from qsirecon import config
+    from qsirecon.cli.parser import parse_args
+
+    filter_file = tmp_path / 'filter.json'
+    filter_file.write_text(json.dumps({'dwi': {'session': 'pre'}}))
+    # parse_args only checks that the license file exists.
+    license_file = tmp_path / 'license.txt'
+    license_file.write_text('placeholder')
+
+    parse_args(
+        [
+            str(two_session_bids_dir),
+            str(tmp_path / 'out'),
+            'participant',
+            '--recon-spec',
+            'dipy_dki',
+            '-w',
+            str(tmp_path / 'work'),
+            '--bids-filter-file',
+            str(filter_file),
+            '--fs-license-file',
+            str(license_file),
+            '--notrack',
+        ]
+    )
+    sessions = [dwi.entities['session'] for dwi, _ in config.execution.processing_list]
+    assert sessions == ['pre']
+
+
 def test_collect_anatomical_data_multimodal(tmp_path_factory):
     """A T1w and a coregistered T2w are both present. The T1w is used unless overridden."""
     layout = _layout_from_skeleton(

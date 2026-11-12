@@ -32,6 +32,23 @@ when some specific options were selected for preprocessing.
     Minor and patch releases may be made independently.
 
 
+.. _selecting_dwis:
+
+Selecting which DWI runs are reconstructed
+==========================================
+
+By default, *QSIRecon* reconstructs every preprocessed DWI run
+(``desc-preproc_dwi`` in ``ACPC`` or ``T1w`` space) of each selected participant.
+To limit this, pass a ``--bids-filter-file`` with a ``dwi`` entry.
+Its entities are added to the DWI query and replace the defaults for the same entities.
+For example, to reconstruct only the runs from session ``pre``::
+
+    {"dwi": {"session": "pre"}}
+
+``--session-id`` also selects sessions, by leaving the other sessions out of the
+PyBIDS index.
+
+
 .. _anatomical_image:
 
 Which anatomical image is used
