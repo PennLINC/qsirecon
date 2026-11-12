@@ -72,6 +72,11 @@ merged_entities = {**merged_entities, **qsirecon_entities, **atlas_entities}
 merged_entities = [{'name': k, 'pattern': v} for k, v in merged_entities.items()]
 config_entities = frozenset({e['name'] for e in merged_entities})
 
+#: Entities that an output never takes from the name of its source file.
+#: ``res`` describes a grid. Outputs in the space of the DWI have never carried it, and a
+#: template-space output gets the ``res`` of its requested output space instead.
+NEVER_INHERITED_ENTITIES = ('res',)
+
 
 def get_bids_params(fullpath):
     bids_patterns = [
@@ -106,6 +111,9 @@ class DerivativesDataSink(BaseDerivativesDataSink):
     """Store derivative files.
 
     A child class of the niworkflows DerivativesDataSink, using QSIRecon's configuration files.
+
+    Entities in :data:`NEVER_INHERITED_ENTITIES` are not copied from the name of the
+    source file. They only appear in an output's name when set as inputs.
     """
 
     out_path_base = ''
@@ -113,6 +121,15 @@ class DerivativesDataSink(BaseDerivativesDataSink):
     _config_entities = config_entities
     _config_entities_dict = merged_entities
     _file_patterns = qsirecon_spec['default_path_patterns']
+
+    def _run_interface(self, runtime):
+        dismissed = self.inputs.dismiss_entities
+        requested = [entity for entity in (dismissed or []) if entity is not None]
+        self.inputs.dismiss_entities = [*requested, *NEVER_INHERITED_ENTITIES]
+        try:
+            return super()._run_interface(runtime)
+        finally:
+            self.inputs.dismiss_entities = dismissed
 
 
 class _CopyAtlasInputSpec(BaseInterfaceInputSpec):
@@ -283,8 +300,8 @@ def get_recon_output_name(
     dismiss_entities=None,
 ):
     source_entities = parse_file_entities(source_file)
-    if dismiss_entities:
-        source_entities = {k: v for k, v in source_entities.items() if k not in dismiss_entities}
+    dismiss_entities = [*(dismiss_entities or []), *NEVER_INHERITED_ENTITIES]
+    source_entities = {k: v for k, v in source_entities.items() if k not in dismiss_entities}
 
     out_path = base_dir
     if qsirecon_suffix and qsirecon_suffix.lower() != 'qsirecon':

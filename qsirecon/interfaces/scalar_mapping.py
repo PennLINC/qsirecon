@@ -265,7 +265,9 @@ class TemplateMapper(ScalarMapper):
             new_metadata['path'] = output_fname
             if 'bids' not in new_metadata:
                 raise Exception(f'incomplete metadata spec {new_metadata}')
-            new_metadata['bids']['space'] = self.inputs.template_space
+            # A new dictionary, so that the entities of the scalar in the space of the DWI,
+            # and those of the same scalar in other template spaces, are left alone
+            new_metadata['bids'] = {**new_metadata['bids'], 'space': self.inputs.template_space}
             resampled_image_metadata.append(new_metadata)
 
         self._results['template_space_scalars'] = resampled_images

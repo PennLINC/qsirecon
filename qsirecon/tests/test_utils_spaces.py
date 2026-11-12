@@ -140,15 +140,18 @@ def test_parse_space_token_errors(token, message):
 
 
 def test_parse_output_spaces():
-    """Repeats collapse, and more than one distinct space is rejected."""
+    """Repeats collapse, and several spaces and resolutions are kept in the order given."""
     specs = spaces.parse_output_spaces(['MNIInfant:cohort-2', 'MNIInfant:cohort-2'])
     assert specs == [SpaceSpec(space='MNIInfant', cohort='2')]
 
-    with pytest.raises(OutputSpacesError, match='one space at one resolution'):
-        spaces.parse_output_spaces(['MNI152NLin2009cAsym', 'MNI152NLin6Asym'])
-
-    with pytest.raises(OutputSpacesError, match='one space at one resolution'):
-        spaces.parse_output_spaces(['MNI152NLin2009cAsym:res-1mm:res-2mm'])
+    specs = spaces.parse_output_spaces(
+        ['MNI152NLin2009cAsym:res-1:res-2mm', 'MNI152NLin6Asym', 'MNI152NLin2009cAsym:res-2mm'],
+    )
+    assert [str(spec) for spec in specs] == [
+        'MNI152NLin2009cAsym:res-1',
+        'MNI152NLin2009cAsym:res-2mm',
+        'MNI152NLin6Asym',
+    ]
 
 
 def test_space_spec_properties():
@@ -156,6 +159,8 @@ def test_space_spec_properties():
     (adult,) = spaces.parse_space_token('MNI152NLin2009cAsym:res-2')
     assert adult.fullname == 'MNI152NLin2009cAsym'
     assert adult.templateflow_resolution == '2'
+    assert adult.res_label == '2'
+    assert adult.node_label == 'MNI152NLin2009cAsym_res_2'
     assert not adult.is_infant
     assert adult.matches('MNI152NLin2009cAsym')
     assert not adult.matches('MNI152NLin6Asym')
@@ -164,6 +169,8 @@ def test_space_spec_properties():
     (infant,) = spaces.parse_space_token('MNIInfant:cohort-2:res-2mm')
     assert infant.fullname == 'MNIInfant+2'
     assert infant.templateflow_resolution == '1'
+    assert infant.res_label == '2mm'
+    assert infant.node_label == 'MNIInfant_cohort_2_res_2mm'
     assert infant.is_infant
     assert infant.matches('MNIInfant+2')
     assert not infant.matches('MNIInfant+1')
@@ -171,9 +178,56 @@ def test_space_spec_properties():
 
     (any_cohort,) = spaces.parse_space_token('MNIInfant:cohort-auto')
     assert any_cohort.fullname == 'MNIInfant'
+    # No resolution was requested, so outputs in this space have no res- entity
+    assert any_cohort.res_label is None
     assert any_cohort.matches('MNIInfant+1')
     assert any_cohort.matches('MNIInfant+2')
     assert not any_cohort.matches('MNI152NLin2009cAsym')
+
+
+@pytest.mark.parametrize(
+    'token',
+    [
+        'MNI152NLin2009cAsym',
+        'MNI152NLin2009cAsym:res-2mm',
+        'MNI152NLin2009cAsym:res-1p5x1p5x3mm',
+        'MNI152NLin6Asym:res-2',
+        'MNIInfant:cohort-2:res-1p5mm',
+        'MNIInfant:cohort-auto',
+    ],
+)
+def test_space_spec_from_token(token, monkeypatch):
+    """A canonical token is rebuilt into the same spec without asking TemplateFlow."""
+    (expected,) = spaces.parse_space_token(token)
+
+    def _fail(*args):
+        raise AssertionError('TemplateFlow was consulted')
+
+    for name in ('_templates', '_cohorts', '_resolutions'):
+        monkeypatch.setattr(spaces, name, _fail)
+
+    assert SpaceSpec.from_token(token) == expected
+
+
+def test_resolve_auto_cohort():
+    """cohort-auto becomes the cohort the dataset has a transform to."""
+    names = ['MNI152NLin2009cAsym', 'MNIInfant+2']
+    (auto,) = spaces.parse_space_token('MNIInfant:cohort-auto:res-2mm')
+    (named,) = spaces.parse_space_token('MNIInfant:cohort-2:res-2mm')
+    (adult,) = spaces.parse_space_token('MNI152NLin2009cAsym')
+
+    assert spaces.resolve_auto_cohort(auto, names) == named
+    # Specs that name their cohort, or have none, are left alone
+    assert spaces.resolve_auto_cohort(named, names) is named
+    assert spaces.resolve_auto_cohort(adult, names) is adult
+    (other,) = spaces.parse_space_token('MNIInfant:cohort-1')
+    assert spaces.resolve_auto_cohort(other, names) is other
+
+    with pytest.raises(OutputSpacesError, match='has no transform to MNIInfant'):
+        spaces.resolve_auto_cohort(auto, ['MNI152NLin2009cAsym'])
+
+    with pytest.raises(OutputSpacesError, match='Name one cohort in --output-spaces'):
+        spaces.resolve_auto_cohort(auto, [*names, 'MNIInfant+3'])
 
 
 def test_zoom_formatting():
@@ -184,15 +238,17 @@ def test_zoom_formatting():
     assert spaces.format_zooms((1.5, 1.5, 3.0)) == '1.5 x 1.5 x 3 mm'
 
 
-def test_config_output_space(output_spaces_setting):
-    """The config returns the default space until one is requested."""
+def test_config_output_space_specs(output_spaces_setting):
+    """The config returns the default space until others are requested."""
     config.workflow.output_spaces = None
-    assert config.workflow.output_space() == SpaceSpec(space='MNI152NLin2009cAsym')
+    assert config.workflow.output_space_specs() == [SpaceSpec(space='MNI152NLin2009cAsym')]
 
-    config.workflow.output_spaces = ['MNIInfant:cohort-2:res-2mm']
-    spec = config.workflow.output_space()
-    assert spec.fullname == 'MNIInfant+2'
-    assert spec.resolution.zooms == (2.0, 2.0, 2.0)
+    config.workflow.output_spaces = ['MNIInfant:cohort-2:res-2mm', 'MNI152NLin6Asym:res-2']
+    infant, adult = config.workflow.output_space_specs()
+    assert infant.fullname == 'MNIInfant+2'
+    assert infant.resolution.zooms == (2.0, 2.0, 2.0)
+    assert adult.fullname == 'MNI152NLin6Asym'
+    assert adult.templateflow_resolution == '2'
 
 
 @pytest.fixture
@@ -230,13 +286,22 @@ def test_cli_output_spaces(cli_args):
     )
     assert opts.output_spaces == ['MNI152NLin2009cAsym:res-2']
 
+    # Several spaces, and several resolutions of one space, are all kept
+    opts = _parse(
+        [*cli_args, '--output-spaces', 'MNI152NLin2009cAsym:res-1:res-2mm', 'MNI152NLin6Asym'],
+    )
+    assert opts.output_spaces == [
+        'MNI152NLin2009cAsym:res-1',
+        'MNI152NLin2009cAsym:res-2mm',
+        'MNI152NLin6Asym',
+    ]
+
 
 @pytest.mark.parametrize(
     ('extra', 'message'),
     [
         (['--output-spaces', 'acpc'], 'is not an output space in QSIRecon'),
-        (['--output-spaces', 'MNI152NLin2009cAsym', 'MNI152NLin6Asym'], 'one space at one'),
-        (['--output-spaces', 'MNI152NLin2009cAsym:res-1:res-2'], 'one space at one'),
+        (['--output-spaces', 'MNI152NLin2009cAsym', 'NotATemplate'], 'is not a known output'),
         (['--output-resolution', '2'], 'MNI152NLin2009cAsym:res-2mm'),
         (['--output-resolution', '1.7'], 'MNI152NLin2009cAsym:res-1p7mm'),
         (['--infant'], 'MNIInfant:cohort-auto'),
@@ -268,35 +333,102 @@ def infant_layout(tmp_path):
     return bids_dir
 
 
-def _collect(bids_dir, token, needs_anat_transform=False):
+def _collect(bids_dir, *tokens, needs_anat_transform=False):
     layout = BIDSLayout(bids_dir, validate=False, config=['bids', 'derivatives'])
-    (output_space,) = spaces.parse_output_spaces([token])
     return xbids.collect_anatomical_data(
         layout=layout,
         subject_id='01',
         session_id=Query.NONE,
         needs_anat_transform=needs_anat_transform,
-        output_space=output_space,
+        output_spaces=spaces.parse_output_spaces(tokens),
         bids_filters={},
     )
 
 
+def _names(files):
+    return [str(f).replace('\\', '/').rsplit('/', 1)[-1] for f in files]
+
+
 @pytest.mark.parametrize(
-    ('token', 'template'),
+    ('token', 'resolved', 'template'),
     [
-        ('MNI152NLin2009cAsym', 'MNI152NLin2009cAsym'),
-        ('MNI152NLin2009cAsym:res-2mm', 'MNI152NLin2009cAsym'),
-        ('MNIInfant:cohort-2', 'MNIInfant+2'),
-        ('MNIInfant:cohort-auto', 'MNIInfant+2'),
+        ('MNI152NLin2009cAsym', 'MNI152NLin2009cAsym', 'MNI152NLin2009cAsym'),
+        ('MNI152NLin2009cAsym:res-2mm', 'MNI152NLin2009cAsym:res-2mm', 'MNI152NLin2009cAsym'),
+        ('MNIInfant:cohort-2', 'MNIInfant:cohort-2', 'MNIInfant+2'),
+        ('MNIInfant:cohort-auto', 'MNIInfant:cohort-2', 'MNIInfant+2'),
     ],
 )
-def test_collect_anatomical_data_output_space(infant_layout, token, template):
-    """The transforms of the requested template (and cohort) are the ones collected."""
+def test_collect_anatomical_data_output_space(infant_layout, token, resolved, template):
+    """The transform to the requested template (and cohort) is the one collected."""
     anat_data, status = _collect(infant_layout, token)
     assert status['has_qsiprep_anat_transforms'] is True
-    assert status['template_output_space'] == template
-    assert f'from-ACPC_to-{template}_' in anat_data['acpc_to_template_xfm']
-    assert f'from-{template}_to-ACPC_' in anat_data['template_to_acpc_xfm']
+    # The template transforms are not returned as workflow inputs
+    assert 'acpc_to_template_xfm' not in anat_data
+    assert 'template_to_acpc_xfm' not in anat_data
+
+    (space_xfms,) = status['output_space_xfms']
+    assert space_xfms['token'] == resolved
+    assert space_xfms['space'] == template
+    assert space_xfms['transform_path'] is None
+    assert _names(space_xfms['acpc_to_template_xfm']) == [
+        f'sub-01_from-ACPC_to-{template}_mode-image_xfm.h5',
+    ]
+
+
+def test_collect_anatomical_data_several_spaces(infant_layout):
+    """Every requested space and resolution gets its transforms, in the order requested."""
+    import json
+
+    _, status = _collect(
+        infant_layout,
+        'MNI152NLin2009cAsym:res-1:res-2mm',
+        'MNIInfant:cohort-2',
+        'MNI152NLin2009cAsym',
+    )
+    resolved = status['output_space_xfms']
+    assert [space_xfms['token'] for space_xfms in resolved] == [
+        'MNI152NLin2009cAsym:res-1',
+        'MNI152NLin2009cAsym:res-2mm',
+        'MNIInfant:cohort-2',
+        'MNI152NLin2009cAsym',
+    ]
+    assert [space_xfms['space'] for space_xfms in resolved] == [
+        'MNI152NLin2009cAsym',
+        'MNI152NLin2009cAsym',
+        'MNIInfant+2',
+        'MNI152NLin2009cAsym',
+    ]
+    # Resolutions of one template share its transforms
+    adult = resolved[0]['acpc_to_template_xfm']
+    assert _names(adult) == ['sub-01_from-ACPC_to-MNI152NLin2009cAsym_mode-image_xfm.h5']
+    assert resolved[1]['acpc_to_template_xfm'] == adult
+    assert resolved[3]['acpc_to_template_xfm'] == adult
+    assert _names(resolved[2]['acpc_to_template_xfm']) == [
+        'sub-01_from-ACPC_to-MNIInfant+2_mode-image_xfm.h5',
+    ]
+    # The entries travel in the dictionary given to every reconstruction workflow,
+    # which may be written to a sidecar
+    assert json.loads(json.dumps(resolved)) == resolved
+
+
+def test_collect_anatomical_data_auto_cohort_is_deduplicated(infant_layout):
+    """cohort-auto is resolved before repeats are dropped, so it cannot repeat a space."""
+    _, status = _collect(infant_layout, 'MNIInfant:cohort-2', 'MNIInfant:cohort-auto')
+    assert [space_xfms['token'] for space_xfms in status['output_space_xfms']] == [
+        'MNIInfant:cohort-2',
+    ]
+
+    # Different resolutions of the resolved space are still different outputs
+    _, status = _collect(
+        infant_layout,
+        'MNIInfant:cohort-auto:res-2mm',
+        'MNIInfant:cohort-2:res-2mm',
+        'MNIInfant:cohort-auto',
+    )
+    assert [space_xfms['token'] for space_xfms in status['output_space_xfms']] == [
+        'MNIInfant:cohort-2:res-2mm',
+        'MNIInfant:cohort-2',
+    ]
 
 
 @pytest.mark.parametrize('needs_anat_transform', [False, True])
@@ -308,16 +440,31 @@ def test_collect_anatomical_data_missing_space(infant_layout, token, needs_anat_
 
     message = str(excinfo.value)
     assert f'The output space {token} was requested' in message
-    assert 'It has transforms for: MNI152NLin2009cAsym, MNIInfant:cohort-2.' in message
+    assert 'It has transforms to: MNI152NLin2009cAsym, MNIInfant:cohort-2.' in message
     assert 'TemplateFlow has no transforms that link them' in message
 
 
-def test_collect_anatomical_data_incomplete_space(infant_layout):
-    """One direction of the requested space's transforms is not enough."""
+def test_collect_anatomical_data_one_unreachable_space_is_an_error(infant_layout):
+    """A space that cannot be reached stops the build even when the others can."""
+    with pytest.raises(ValueError, match='The output space MNI152NLin6Asym was requested'):
+        _collect(infant_layout, 'MNI152NLin2009cAsym', 'MNI152NLin6Asym')
+
+
+def test_collect_anatomical_data_one_way_space(infant_layout):
+    """Scalar maps only go into the template, so only that direction is needed."""
     anat_dir = infant_layout / 'sub-01' / 'anat'
     (anat_dir / 'sub-01_from-MNIInfant+2_to-ACPC_mode-image_xfm.h5').unlink()
 
-    with pytest.raises(ValueError, match=r'It has transforms for: MNI152NLin2009cAsym\. '):
+    _, status = _collect(infant_layout, 'MNIInfant:cohort-2')
+    (space_xfms,) = status['output_space_xfms']
+    assert _names(space_xfms['acpc_to_template_xfm']) == [
+        'sub-01_from-ACPC_to-MNIInfant+2_mode-image_xfm.h5',
+    ]
+
+    # The transform out of the template is of no use for an output space
+    (anat_dir / 'sub-01_from-MNIInfant+2_to-ACPC_mode-image_xfm.h5').touch()
+    (anat_dir / 'sub-01_from-ACPC_to-MNIInfant+2_mode-image_xfm.h5').unlink()
+    with pytest.raises(ValueError, match=r'It has transforms to: MNI152NLin2009cAsym\. '):
         _collect(infant_layout, 'MNIInfant:cohort-2')
 
 
@@ -326,13 +473,13 @@ def test_collect_anatomical_data_no_transforms(infant_layout):
     for xfm in (infant_layout / 'sub-01' / 'anat').glob('*_xfm.h5'):
         xfm.unlink()
 
-    anat_data, status = _collect(infant_layout, 'MNI152NLin2009cAsym')
+    anat_data, status = _collect(infant_layout, 'MNI152NLin2009cAsym', 'MNI152NLin6Asym')
     assert status['has_qsiprep_anat_transforms'] is False
-    assert status['template_output_space'] is None
-    assert anat_data['acpc_to_template_xfm'] is None
-    assert anat_data['template_to_acpc_xfm'] is None
+    assert status['output_space_xfms'] == []
+    assert status['odf_rois_to_acpc_xfm'] is None
+    assert 'acpc_to_template_xfm' not in anat_data
 
-    with pytest.raises(ValueError, match='requested output space'):
+    with pytest.raises(ValueError, match='no "acpc_to_template_xfm" file was found'):
         _collect(infant_layout, 'MNI152NLin2009cAsym', needs_anat_transform=True)
 
 
@@ -345,8 +492,28 @@ def test_collect_anatomical_data_ambiguous_cohort(infant_layout):
     with pytest.raises(ValueError, match='Name one cohort in --output-spaces'):
         _collect(infant_layout, 'MNIInfant:cohort-auto')
 
-    _, status = _collect(infant_layout, 'MNIInfant:cohort-3')
-    assert status['template_output_space'] == 'MNIInfant+3'
+    # Naming the cohorts gives both
+    _, status = _collect(infant_layout, 'MNIInfant:cohort-3', 'MNIInfant:cohort-2')
+    assert [space_xfms['space'] for space_xfms in status['output_space_xfms']] == [
+        'MNIInfant+3',
+        'MNIInfant+2',
+    ]
+
+
+def test_collect_anatomical_data_duplicate_transforms(infant_layout):
+    """Two transforms to one template cannot be chosen between."""
+    anat_dir = infant_layout / 'sub-01' / 'anat'
+    name = 'sub-01_from-ACPC_to-MNI152NLin2009cAsym_mode-image_xfm.h5'
+    shutil.copy(anat_dir / name, anat_dir / name.replace('sub-01_', 'sub-01_acq-b_'))
+
+    with pytest.raises(ValueError, match='More than one from-ACPC_to-MNI152NLin2009cAsym') as exc:
+        _collect(infant_layout, 'MNI152NLin2009cAsym')
+
+    assert '--bids-filter-file' in str(exc.value)
+
+    # A duplicate that is not on the way to a requested space does no harm
+    _, status = _collect(infant_layout, 'MNIInfant:cohort-2')
+    assert len(status['output_space_xfms']) == 1
 
 
 @pytest.mark.parametrize(
@@ -372,8 +539,9 @@ def test_init_output_grid_wf(token, nodes, voxel_size, padding):
     from qsirecon.workflows.recon.anatomical import init_output_grid_wf
 
     (output_space,) = spaces.parse_output_spaces([token])
-    wf = init_output_grid_wf(output_space=output_space)
+    wf = init_output_grid_wf(output_space=output_space, name='grid_wf')
 
+    assert wf.name == 'grid_wf'
     optional = {'voxel_size_chooser', 'resample_to_voxel_size'}
     assert optional.intersection(wf.list_node_names()) == nodes
     assert wf.get_node('autobox_template').inputs.padding == padding
@@ -385,13 +553,24 @@ def test_init_output_grid_wf(token, nodes, voxel_size, padding):
             assert fixed == voxel_size
 
 
-@pytest.mark.parametrize('template', [None, 'MNI152NLin2009cAsym', 'MNIInfant+2'])
-def test_dwi_anatomical_wf_template_grid(tmp_path, monkeypatch, template):
-    """The template grid is only built when there are transforms to a template."""
+@pytest.mark.parametrize('has_transforms', [False, True])
+def test_dwi_anatomical_wf_passes_output_spaces_on(tmp_path, monkeypatch, has_transforms):
+    """The DWI anatomical workflow builds no template grid; it hands the transforms on."""
     from qsirecon.workflows.recon.anatomical import init_dwi_recon_anatomical_workflow
 
     monkeypatch.setattr(config.execution, 'output_dir', tmp_path)
     monkeypatch.setattr(config.workflow, 'b0_threshold', 100)
+
+    output_space_xfms = []
+    if has_transforms:
+        output_space_xfms = [
+            {
+                'token': 'MNIInfant:cohort-2:res-2mm',
+                'space': 'MNIInfant+2',
+                'acpc_to_template_xfm': ['from-ACPC_to-MNIInfant+2_xfm.h5'],
+                'transform_path': None,
+            },
+        ]
 
     wf, status = init_dwi_recon_anatomical_workflow(
         atlas_configs={},
@@ -399,27 +578,44 @@ def test_dwi_anatomical_wf_template_grid(tmp_path, monkeypatch, template):
         needs_anat_transform=False,
         has_freesurfer_5tt_hsvs=False,
         has_qsiprep_anat=True,
-        has_qsiprep_anat_transforms=template is not None,
+        has_qsiprep_anat_transforms=has_transforms,
         has_freesurfer=False,
         extras_to_make=[],
         name='dwi_specific_anat_wf',
-        template_output_space=template,
+        output_space_xfms=output_space_xfms,
     )
 
-    assert status['template_output_space'] == template
+    assert status['output_space_xfms'] == output_space_xfms
+    assert 'template_output_space' not in status
     nodes = wf.list_node_names()
-    has_grid = any(name.startswith('output_grid_wf.') for name in nodes)
-    assert has_grid is (template is not None)
-    assert ('get_template' in nodes) is (template is not None)
-    if template:
-        assert wf.get_node('get_template').inputs.template_name == template
+    assert not any('output_grid' in name or 'get_template' in name for name in nodes)
+    assert 'resampling_template' not in wf.get_node('outputnode').inputs.copyable_trait_names()
 
 
-def test_scalar_to_template_wf_needs_template():
-    """Mapping scalars to a template fails clearly when there is no template space."""
-    from qsirecon.workflows.recon.scalar_mapping import init_scalar_to_template_wf
+def test_subject_summary_names_every_space(output_spaces_setting):
+    """The report summary lists every requested space and resolution."""
+    from qsirecon.workflows.base import _summarize_output_spaces
 
-    with pytest.raises(ValueError, match='requires ACPC-to-template transforms'):
-        init_scalar_to_template_wf(
-            inputs_dict={'has_qsiprep_anat_transforms': False, 'template_output_space': None},
-        )
+    statuses = [
+        {
+            'output_space_xfms': [
+                {'token': 'MNI152NLin2009cAsym:res-1'},
+                {'token': 'MNI152NLin2009cAsym:res-2mm'},
+                {'token': 'MNIInfant:cohort-2'},
+            ],
+        },
+        # A second anatomical image of the same subject resolves the same spaces
+        {'output_space_xfms': [{'token': 'MNIInfant:cohort-2'}]},
+        {'output_space_xfms': []},
+    ]
+    assert _summarize_output_spaces(statuses) == [
+        'MNI152NLin2009cAsym (res-1)',
+        'MNI152NLin2009cAsym (res-2mm)',
+        'MNIInfant+2',
+    ]
+
+    # With nothing resolved, the spaces are named as they were requested
+    config.workflow.output_spaces = None
+    assert _summarize_output_spaces([{'output_space_xfms': []}]) == ['MNI152NLin2009cAsym']
+    config.workflow.output_spaces = ['MNI152NLin6Asym:res-2', 'MNIInfant:cohort-auto']
+    assert _summarize_output_spaces([]) == ['MNI152NLin6Asym (res-2)', 'MNIInfant']
