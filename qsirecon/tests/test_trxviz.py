@@ -75,6 +75,30 @@ def test_hemisphere_from_directions_accepts_full_sphere():
         trxviz.hemisphere_from_directions(full, len(full))
 
 
+def test_fold_full_sphere():
+    """AMICO-style full-sphere ODFs fold onto the hemisphere; others pass through."""
+    hemisphere = _hemisphere()
+    n = len(hemisphere.vertices)
+    full = np.vstack([hemisphere.vertices, -hemisphere.vertices])
+    # Peaks only in the first half, as peaks_to_odfs writes them
+    odfs = np.zeros((2, 2 * n))
+    odfs[0, 5] = 0.7
+    odfs[1, n + 9] = 0.4  # and one mirrored peak, as a symmetric layout would have
+    folded, directions = trxviz.fold_full_sphere(odfs, full)
+    assert folded.shape == (2, n)
+    np.testing.assert_allclose(directions, hemisphere.vertices)
+    assert folded[0, 5] == 0.7
+    assert folded[1, 9] == 0.4
+    # The folded result matches a hemisphere of the right size
+    assert len(trxviz.hemisphere_from_directions(directions, folded.shape[1]).vertices) == n
+
+    # Hemisphere-sampled ODFs (DSI Studio GQI, MRtrix, DIPY) are left alone
+    half_odfs = np.ones((2, n))
+    same, same_dirs = trxviz.fold_full_sphere(half_odfs, full)
+    assert same is half_odfs
+    assert len(same_dirs) == 2 * n
+
+
 def test_find_peaks_crossing():
     """Two orthogonal fibers give two peaks, scaled relative to the largest one."""
     hemisphere = _hemisphere()

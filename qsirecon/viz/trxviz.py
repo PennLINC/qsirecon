@@ -95,6 +95,35 @@ def find_trxviz_cli():
     return cli
 
 
+def fold_full_sphere(odfs, directions):
+    """Fold ODFs sampled on a full, antipodally ordered sphere onto its first half.
+
+    Some inputs carry one amplitude per vertex of a full sphere whose second half mirrors
+    the first. AMICO's fib files are one: their stand-in ODFs (from
+    :func:`~qsirecon.interfaces.converters.peaks_to_odfs`) put each peak on the nearest
+    vertex of the first half and leave the second half empty. The larger amplitude of each
+    antipodal pair is kept, so both that layout and symmetric duplicates fold correctly.
+    Other inputs are returned unchanged.
+
+    Parameters
+    ----------
+    odfs : (n_voxels, n_amplitudes) array
+    directions : (n_directions, 3) array
+    """
+    directions = np.asarray(directions, dtype=float)
+    n_directions = len(directions)
+    half = n_directions // 2
+    full_sphere = (
+        odfs.shape[1] == n_directions
+        and n_directions % 2 == 0
+        and np.allclose(directions[half:], -directions[:half], atol=1e-4)
+    )
+    if not full_sphere:
+        return odfs, directions
+
+    return np.maximum(odfs[:, :half], odfs[:, half:]), directions[:half]
+
+
 def hemisphere_from_directions(directions, n_amplitudes):
     """Build the hemisphere whose vertices match the columns of an ODF amplitude array.
 
@@ -667,6 +696,7 @@ def plot_odfs_and_peaks(
 
     odfs = np.nan_to_num(odf_img.get_fdata(dtype='float32')[odx_mask])
 
+    odfs, directions = fold_full_sphere(odfs, directions)
     hemisphere = hemisphere_from_directions(directions, odfs.shape[1])
     peak_counts, peak_dirs = find_peaks(odfs, hemisphere)
     odx_dir = write_odx(
