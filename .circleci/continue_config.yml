@@ -133,7 +133,7 @@ commands:
             # which registers custom CLI options like --data_dir/--output_dir/--working_dir.
             #
             # PYTHONPATH makes the mount authoritative for *subprocesses* too, not
-            # just pytest. Nipype CommandLine nodes (recon_plot, mif2fib, ...) run
+            # just pytest. Nipype CommandLine nodes (mif2fib, fib2mif, ...) run
             # with cwd set to the node directory, so they would otherwise import
             # qsirecon via the image's editable .pth, which points at the /app copy
             # baked in at build time. The image is reused whenever Dockerfile and

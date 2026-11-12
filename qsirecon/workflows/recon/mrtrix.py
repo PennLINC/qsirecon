@@ -31,10 +31,11 @@ from ...interfaces.mrtrix import (
     SS3TEstimateFOD,
     TckGen,
 )
-from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport
+from ...interfaces.reports import ConnectivityReport, ReconPeaksReport
 from ...interfaces.utils import LoadResponseFunctions
 from ...utils.bids import clean_datasinks
 from ...utils.misc import remove_non_alphanumeric
+from .utils import connect_anat_underlay
 
 LOGGER = logging.getLogger('nipype.interface')
 MULTI_RESPONSE_ALGORITHMS = ('dhollander', 'msmt_5tt')
@@ -364,7 +365,7 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
     if not config.execution.skip_odf_reports:
         # Make a visual report of the model
         plot_peaks = pe.Node(
-            CLIReconPeaksReport(),
+            ReconPeaksReport(),
             name='plot_peaks',
             n_procs=omp_nthreads,
         )
@@ -385,6 +386,7 @@ MRtrix3Tissue (https://3Tissue.github.io), a fork of MRtrix3 (@mrtrix3)."""
             ]),
             (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')]),
         ])  # fmt:skip
+        connect_anat_underlay(workflow, inputnode, plot_peaks, inputs_dict)
 
         # Plot targeted regions
         if inputs_dict.get('has_odf_rois'):

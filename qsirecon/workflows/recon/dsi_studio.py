@@ -28,10 +28,10 @@ from ...interfaces.dsi_studio import (
 )
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import DSIStudioReconScalars
-from ...interfaces.reports import CLIReconPeaksReport, ConnectivityReport, ScalarReport
+from ...interfaces.reports import ConnectivityReport, ReconPeaksReport, ScalarReport
 from ...utils.bids import clean_datasinks
 from ...utils.misc import remove_non_alphanumeric
-from .utils import init_scalar_output_wf
+from .utils import connect_anat_underlay, init_scalar_output_wf
 
 LOGGER = logging.getLogger('nipype.interface')
 
@@ -96,7 +96,7 @@ distance of {romdd} in DSI Studio (version {DSI_STUDIO_VERSION}). """
     if plot_reports:
         # Make a visual report of the model
         plot_peaks = pe.Node(
-            CLIReconPeaksReport(subtract_iso=True),
+            ReconPeaksReport(subtract_iso=True),
             name='plot_peaks',
             n_procs=omp_nthreads,
         )
@@ -118,6 +118,7 @@ distance of {romdd} in DSI Studio (version {DSI_STUDIO_VERSION}). """
             (gqi_recon, plot_peaks, [('output_fib', 'fib_file')]),
             (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')]),
         ])  # fmt:skip
+        connect_anat_underlay(workflow, inputnode, plot_peaks, inputs_dict)
 
         # Plot targeted regions
         if inputs_dict.get('has_odf_rois'):

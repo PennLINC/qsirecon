@@ -905,11 +905,13 @@ def get_entity(filename, entity):
     return entity_value
 
 
-def get_iterable_dwis_and_anats(layout):
+def get_iterable_dwis_and_anats(layout, bids_filters=None):
     """Pair each preprocessed DWI with the anatomical image it should use.
 
     DWIs are found by querying for ``dwi`` images in ``T1w`` or ``ACPC`` space in any
     session.
+    The ``dwi`` entry of ``bids_filters`` is added to that query, and its values replace
+    the defaults for the same entities.
     For each DWI, the anatomical candidates are the ``T1w`` and ``T2w`` images in AC-PC
     space (or without a ``space`` entity) from the DWI's own session or, if that session
     has none, from the subject level.
@@ -925,6 +927,11 @@ def get_iterable_dwis_and_anats(layout):
     ----------
     layout : :obj:`bids.layout.BIDSLayout`
         Layout of the preprocessed input dataset.
+    bids_filters : :obj:`dict` or None, optional
+        BIDS filters from ``--bids-filter-file``, keyed by query name.
+        Only the ``dwi`` entry is used here.
+        For example, ``{"dwi": {"session": "pre"}}`` selects the DWIs from session
+        ``pre`` only.
 
     Returns
     -------
@@ -936,13 +943,16 @@ def get_iterable_dwis_and_anats(layout):
     """
     from bids.layout import Query
 
+    dwi_query = {
+        'suffix': 'dwi',
+        'session': Query.OPTIONAL,
+        'space': ['T1w', 'ACPC'],
+        'extension': ['nii', 'nii.gz'],
+    }
+    dwi_query.update((bids_filters or {}).get('dwi', {}))
+
     dwis_and_anats = []
-    dwi_files = layout.get(
-        suffix='dwi',
-        session=Query.OPTIONAL,
-        space=['T1w', 'ACPC'],
-        extension=['nii', 'nii.gz'],
-    )
+    dwi_files = layout.get(**dwi_query)
 
     for dwi_scan in dwi_files:
         subject_level_anats = layout.get(

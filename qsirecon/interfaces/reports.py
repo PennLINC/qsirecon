@@ -10,16 +10,14 @@ Interfaces to generate reportlets
 import json
 import os.path as op
 import time
-from pathlib import Path
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import nibabel as nb
 import numpy as np
 import pandas as pd
 from nipype.interfaces.base import (
     BaseInterfaceInputSpec,
-    CommandLine,
-    CommandLineInputSpec,
     Directory,
     File,
     InputMultiObject,
@@ -253,37 +251,43 @@ def _filename_to_colors(labels_column, colormap='rainbow'):
     return colors.tolist()
 
 
-class _ReconPeaksReportInputSpec(CommandLineInputSpec):
-    mif_file = File(exists=True, argstr='--mif %s')
-    fib_file = File(exists=True, argstr='--fib %s')
-    odf_file = File(exists=True, argstr='--amplitudes %s')
-    directions_file = File(exists=True, argstr='--directions %s')
-    mask_file = File(exists=True, argstr='--mask_file %s')
-    background_image = File(exists=True, argstr='--background_image %s')
-    odf_rois = File(exists=True, argstr='--odf_rois %s')
-    peak_report = File('peaks_mosaic.png', argstr='--peaks_image %s', usedefault=True)
-    odf_report = File('odfs_mosaic.png', argstr='--odfs_image %s', usedefault=True)
-    peaks_only = traits.Bool(
-        False, usedefault=True, argstr='--peaks_only', desc='only produce a peak directions report'
+class _ReconPeaksReportInputSpec(BaseInterfaceInputSpec):
+    mif_file = File(exists=True, desc='MRtrix SH (FOD) image')
+    fib_file = File(exists=True, desc='DSI Studio fib file')
+    odf_file = File(exists=True, desc='4D image of ODF amplitudes')
+    directions_file = File(exists=True, desc='.npy file with the directions of odf_file')
+    mask_file = File(exists=True, desc='brain mask; peaks and ODFs are drawn inside it')
+    background_image = File(
+        exists=True,
+        desc=(
+            'background image on the ODF voxel grid. Required with fib_file. '
+            'The mean ODF amplitude is used if it is not set.'
+        ),
     )
+    odf_rois = File(exists=True, desc='image with ROIs 1, 2, and 3 for the ODF report')
+    anat_file = File(
+        exists=True,
+        desc=(
+            'anatomical image aligned to the ODFs (QSIPrep AC-PC T1w or T2w). '
+            'If set, it is shown behind the peaks and ODFs instead of background_image.'
+        ),
+    )
+    anat_mask_file = File(exists=True, desc='brain mask of anat_file')
+    peak_report = File('peaks_mosaic.png', usedefault=True, desc='name of the peaks report')
+    odf_report = File('odfs_mosaic.png', usedefault=True, desc='name of the ODF report')
+    peaks_only = traits.Bool(False, usedefault=True, desc='only produce a peak directions report')
     subtract_iso = traits.Bool(
         False,
         usedefault=True,
-        argstr='--subtract-iso',
         desc='subtract isotropic component from ODFs',
     )
-
-
-XVFB_ERROR = """
-
-ODF/Peak Plotting did not produce the expected output:
-  {}
-
-This could be due to how QSIRecon was run as a container.
-
-If you ran Singularity/Apptainer with --containall, please also use --writable-tmpfs
-
-"""
+    n_cuts = traits.Int(3, usedefault=True, desc='number of slices per axis in the peaks report')
+    padding = traits.Int(
+        10,
+        usedefault=True,
+        desc='controls how close to the center of the brain the peak slices are',
+    )
+    tile_size = traits.Int(800, usedefault=True, desc='size (pixels) of each rendered slice')
 
 
 class _ReconPeaksReportOutputSpec(TraitedSpec):
@@ -291,32 +295,69 @@ class _ReconPeaksReportOutputSpec(TraitedSpec):
     odf_report = File()
 
 
-class CLIReconPeaksReport(CommandLine):
+class ReconPeaksReport(SimpleInterface):
+    """Plot ODF peaks (and ODFs in ROIs) with TRXViz's headless renderer."""
+
     input_spec = _ReconPeaksReportInputSpec
     output_spec = _ReconPeaksReportOutputSpec
-    _cmd = 'recon_plot'
 
-    def _list_outputs(self):
-        outputs = self.output_spec().get()
-        workdir = Path('.')
+    def _run_interface(self, runtime):
+        from ..viz.trxviz import plot_odfs_and_peaks
+        from .converters import fib2amps, mif2amps
 
-        # There will always be a peak report
-        peaks_file = workdir / self.inputs.peak_report
-        if not peaks_file.exists():
-            raise Exception(XVFB_ERROR.format(peaks_file.absolute()))
-        outputs['peak_report'] = str(peaks_file.absolute())
+        inputs = self.inputs
+        background_img = None
+        if isdefined(inputs.background_image):
+            background_img = nb.load(inputs.background_image)
 
-        # If there will be no ODF report, we are done
-        if self.inputs.peaks_only or not isdefined(self.inputs.odf_rois):
-            return outputs
+        if isdefined(inputs.mif_file):
+            odf_img, directions = mif2amps(inputs.mif_file, runtime.cwd)
+        elif isdefined(inputs.fib_file):
+            if background_img is None:
+                raise ValueError('background_image is required to plot a fib file.')
+            odf_img, directions = fib2amps(inputs.fib_file, inputs.background_image)
+        elif isdefined(inputs.odf_file) and isdefined(inputs.directions_file):
+            odf_img = nb.load(inputs.odf_file)
+            directions = np.load(inputs.directions_file)
+        else:
+            raise ValueError(
+                'Plotting peaks requires mif_file, fib_file, or odf_file and directions_file.'
+            )
 
-        # Find the ODF report
-        odfs_file = workdir / self.inputs.odf_report
-        if not odfs_file.exists():
-            raise Exception(XVFB_ERROR.format(odfs_file.absolute()))
-        outputs['odf_report'] = str(odfs_file.absolute())
+        if background_img is None:
+            background_img = nb.Nifti1Image(
+                odf_img.get_fdata(dtype='float32').mean(3),
+                odf_img.affine,
+            )
 
-        return outputs
+        mask_img = nb.load(inputs.mask_file) if isdefined(inputs.mask_file) else None
+        plot_odfs = isdefined(inputs.odf_rois) and not inputs.peaks_only
+        peaks_file = op.join(runtime.cwd, inputs.peak_report)
+        odfs_file = op.join(runtime.cwd, inputs.odf_report) if plot_odfs else None
+
+        plot_odfs_and_peaks(
+            odf_img,
+            directions,
+            background_img,
+            peaks_file,
+            mask_img=mask_img,
+            odf_rois_img=nb.load(inputs.odf_rois) if plot_odfs else None,
+            odfs_file=odfs_file,
+            subtract_iso=inputs.subtract_iso,
+            n_cuts=inputs.n_cuts,
+            padding=inputs.padding,
+            tile_size=inputs.tile_size,
+            workdir=op.join(runtime.cwd, 'trxviz'),
+            anat_img=nb.load(inputs.anat_file) if isdefined(inputs.anat_file) else None,
+            anat_mask_img=(
+                nb.load(inputs.anat_mask_file) if isdefined(inputs.anat_mask_file) else None
+            ),
+        )
+        self._results['peak_report'] = peaks_file
+        if plot_odfs:
+            self._results['odf_report'] = odfs_file
+
+        return runtime
 
 
 class _ConnectivityReportInputSpec(BaseInterfaceInputSpec):

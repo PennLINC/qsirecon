@@ -255,11 +255,16 @@ def _build_parser(**kwargs):
         action='store',
         type=BIDSFilter,
         metavar='FILE',
-        help='A JSON file describing custom BIDS input filters using PyBIDS. '
-        'For further details, please check out '
-        'https://fmriprep.readthedocs.io/en/%s/faq.html#'
-        'how-do-I-select-only-certain-files-to-be-input-to-fMRIPrep'
-        % (currentv.base_version if is_release else 'latest'),
+        help=(
+            'A JSON file describing custom BIDS input filters using PyBIDS. '
+            'The "dwi" key selects which preprocessed DWI runs are reconstructed '
+            '(e.g., {"dwi": {"session": "pre"}}). '
+            'The other keys are the query names in qsirecon/data/io_spec.yaml '
+            '(e.g., "acpc_preproc") and "atlas". '
+            'For further details, please check out '
+            'https://qsirecon.readthedocs.io/en/%s/input_data.html'
+            % (currentv.base_version if is_release else 'latest')
+        ),
     )
     g_bids.add_argument(
         '--bids-database-dir',
@@ -446,7 +451,11 @@ def _build_parser(**kwargs):
         '--skip-odf-reports',
         action='store_true',
         default=False,
-        help='run only reconstruction, assumes preprocessing has already completed.',
+        help=(
+            'Skip the ODF and peak figures in the HTML reports. '
+            'These figures show whether the ODFs are correctly oriented, '
+            'so check them on a few subjects before turning them off.'
+        ),
     )
 
     g_parcellation = parser.add_argument_group('Parcellation options')
@@ -770,4 +779,7 @@ def parse_args(args=None, namespace=None):
         )
 
     config.execution.participant_label = sorted(participant_label)
-    config.execution.processing_list = get_iterable_dwis_and_anats(layout=config.execution.layout)
+    config.execution.processing_list = get_iterable_dwis_and_anats(
+        layout=config.execution.layout,
+        bids_filters=config.execution.bids_filters,
+    )

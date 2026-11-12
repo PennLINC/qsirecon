@@ -16,11 +16,11 @@ from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.converters import NODDItoFIBGZ
 from ...interfaces.interchange import recon_workflow_input_fields
 from ...interfaces.recon_scalars import AMICOReconScalars
-from ...interfaces.reports import CLIReconPeaksReport, ScalarReport
+from ...interfaces.reports import ReconPeaksReport, ScalarReport
 from ...utils.bids import clean_datasinks
 from ...utils.boilerplate import build_documentation
 from ...utils.misc import load_yaml
-from .utils import init_scalar_output_wf
+from .utils import connect_anat_underlay, init_scalar_output_wf
 
 
 def init_amico_noddi_fit_wf(
@@ -164,7 +164,7 @@ def init_amico_noddi_fit_wf(
 
     if plot_reports:
         plot_peaks = pe.Node(
-            CLIReconPeaksReport(),
+            ReconPeaksReport(),
             name='plot_peaks',
             n_procs=omp_nthreads,
         )
@@ -183,6 +183,7 @@ def init_amico_noddi_fit_wf(
             (noddi_fit, plot_peaks, [('icvf', 'background_image')]),
             (plot_peaks, ds_report_peaks, [('peak_report', 'in_file')]),
         ])  # fmt:skip
+        connect_anat_underlay(workflow, inputnode, plot_peaks, inputs_dict)
 
     if qsirecon_suffix:
         derivatives_config = load_yaml(load_data('nonscalars/amico_noddi.yaml'))
