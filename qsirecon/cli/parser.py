@@ -370,7 +370,11 @@ def _build_parser(**kwargs):
         '--skip-odf-reports',
         action='store_true',
         default=False,
-        help='run only reconstruction, assumes preprocessing has already completed.',
+        help=(
+            'Skip the ODF and peak figures in the HTML reports. '
+            'These figures show whether the ODFs are correctly oriented, '
+            'so check them on a few subjects before turning them off.'
+        ),
     )
 
     g_parcellation = parser.add_argument_group('Parcellation options')
