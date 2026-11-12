@@ -18,6 +18,23 @@ from ...interfaces.utils import TestReportPlot, WriteSidecar
 from ...utils.bids import clean_datasinks
 
 
+def connect_anat_underlay(workflow, inputnode, plot_node, inputs_dict):
+    """Show the anatomical image behind a ReconPeaksReport's peaks and ODFs, if there is one.
+
+    ``acpc_preproc`` (the T1w or T2w) and ``acpc_brain_mask`` are in the same AC-PC world
+    space as the DWIs, so TRXViz can draw them behind the glyphs at full resolution.
+    """
+    if not inputs_dict.get('has_qsiprep_anat'):
+        return
+
+    workflow.connect([
+        (inputnode, plot_node, [
+            ('acpc_preproc', 'anat_file'),
+            ('acpc_brain_mask', 'anat_mask_file'),
+        ]),
+    ])  # fmt:skip
+
+
 def init_conform_dwi_wf(inputs_dict, name='conform_dwi', qsirecon_suffix='', params={}):
     """If data were preprocessed elsewhere, ensure the gradients and images
     conform to LPS+ before running other parts of the pipeline."""
