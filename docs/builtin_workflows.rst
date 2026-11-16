@@ -246,6 +246,8 @@ fODFs, the white matter/gray matter interface in which walkers are seeded, the b
 definitions, and their regions of interest warped from the MNI template into the subject.
 As with :ref:`pyafq_tractometry`, the preprocessed anatomical image, brain mask and CSF, GM and
 WM probability maps from QSIPrep are required.
+Because the chain's absorbing states come from these T1w-based tissue maps,
+susceptibility distortion correction is recommended so that the DWI data line up with them.
 Walkers move through voxels where the WM partial volume exceeds 0.4, end in gray matter,
 and never enter CSF.
 pyAFQ's streamline-based criteria (curvature, length and cleaning) do not apply to MPAT,
