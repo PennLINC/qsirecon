@@ -33,7 +33,8 @@ dependencies = [
     "niworkflows >= 1.13,< 1.14",
     "packaging",  # for version string parsing
     "psutil <= 5.9.8",
-    "pyAFQ >= 3.0,< 4",
+    # MPAT (the mpat extra) needs pyAFQ 3.4 or newer.
+    "pyAFQ >= 3.4,< 4",
     "pybids",
     "pyyaml",
     "requests",
@@ -84,9 +85,13 @@ maint = [
     "fuzzywuzzy",
     "python-Levenshtein",
 ]
+# MPAT is not on PyPI, so it is pinned to a commit. The container installs this extra.
+mpat = [
+    "mpat-tractography @ git+https://github.com/rokemlab/MPAT.git@af645771815551d68d21a1d04af6b4f23ea1e9de",
+]
 
 # Aliases
-all = ["qsirecon[dev,doc,maint,tests]"]
+all = ["qsirecon[dev,doc,maint,mpat,tests]"]
 
 [project.scripts]
 qsirecon = "qsirecon.cli.run:main"
@@ -137,15 +142,18 @@ test = { features = ["editable", "tests"], solve-group = "default" }
 qsirecon = { features = ["production", "container"], solve-group = "production" }
 
 [tool.pixi.feature.editable.pypi-dependencies]
-qsirecon = { path = ".", editable = true }
+qsirecon = { path = ".", editable = true, extras = ["mpat"] }
 
 [tool.pixi.feature.production.pypi-dependencies]
-qsirecon = { path = ".", editable = false }
+qsirecon = { path = ".", editable = false, extras = ["mpat"] }
 
 [tool.pixi.tasks]
 
 [tool.pixi.pypi-options.dependency-overrides]
 numpy = ">=1.26,<1.27"
+# MPAT requires MITTENS from its git repository, which builds with a Rust toolchain.
+# The same release is on PyPI as wheels, so use those instead.
+mittens-dmri = "==2.0.0a1"
 
 [tool.pixi.dependencies]
 python = "3.11.*"
@@ -299,6 +307,7 @@ markers = [
     "mrtrix3_recon_with_response_functions: test 28",
     "chen_autotrack: test 29",
     "abcd_rsi: test 30",
+    "mpat_recon: test 32",
 ]
 env = [
     "RUNNING_PYTEST = 1",

@@ -33,8 +33,8 @@ def test_parse_qsirecon_params_dict(workflow_warnings):
         }
     )
     assert kwargs['b0_threshold'] == 50
-    # Empty strings mean None
-    assert kwargs['csd_sh_order_max'] is None
+    # Empty strings mean "use pyAFQ's default", so they are not passed on
+    assert 'csd_sh_order_max' not in kwargs
     assert kwargs['tracking_params'] == {'n_seeds': 1}
     assert kwargs['segmentation_params'] == {
         'clip_edges': False,

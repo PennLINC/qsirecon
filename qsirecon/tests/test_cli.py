@@ -741,6 +741,39 @@ def test_pyafq_recon_full(data_dir, output_dir, working_dir):
 
 
 @pytest.mark.integration
+@pytest.mark.mpat_recon
+def test_mpat_recon(data_dir, output_dir, working_dir):
+    """Reconstruction workflow tests
+
+    This tests the following features:
+    - MPAT bundle tractography on pyAFQ's fODF, seeds and bundle ROIs
+    - Sloppy mode (two bundles, an affine mapping and a loose solver tolerance)
+
+    Inputs
+    ------
+    - qsirecon multi shell results (data/DSDTI_fmap)
+    """
+    TEST_NAME = 'mpat_recon'
+
+    dataset_dir = download_test_data('multishell_output', data_dir)
+    # XXX: Having to modify dataset_dirs is suboptimal.
+    dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
+    out_dir = os.path.join(output_dir, TEST_NAME)
+    work_dir = os.path.join(working_dir, TEST_NAME)
+
+    parameters = [
+        dataset_dir,
+        out_dir,
+        'participant',
+        f'-w={work_dir}',
+        '--sloppy',
+        '--recon-spec=mpat_tractography',
+    ]
+
+    _run_and_generate(TEST_NAME, parameters, test_main=False)
+
+
+@pytest.mark.integration
 @pytest.mark.mrtrix3_recon
 def test_mrtrix3_recon(data_dir, output_dir, working_dir):
     """Reconstruction workflow tests

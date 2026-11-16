@@ -32,6 +32,9 @@ def _parse_qsirecon_params_dict(params_dict):
     the segmentation parameters, because recognize() passes them on to clean_bundle()).
     Parameters pyAFQ does not recognize are dropped with a warning, because they would
     otherwise silently take no effect.
+    An empty string means "use pyAFQ's default", so those parameters are not passed on.
+    (pyAFQ 3.4 no longer reads empty strings as None, and some of its defaults,
+    such as ``dist_to_waypoint``, are no longer None.)
     """
     kwargs = {}
     known_args = set()
@@ -46,7 +49,7 @@ def _parse_qsirecon_params_dict(params_dict):
 
         for arg in args:
             known_args.add(arg)
-            if arg in params_dict:
+            if params_dict.get(arg, '') != '':
                 kwargs[arg] = afb.pyafq_str_to_val(params_dict[arg])
 
     nested_params = {
@@ -57,7 +60,7 @@ def _parse_qsirecon_params_dict(params_dict):
     for path, defaults in nested_params.items():
         for arg in defaults:
             known_args.add(arg)
-            if arg not in params_dict:
+            if params_dict.get(arg, '') == '':
                 continue
 
             target = kwargs

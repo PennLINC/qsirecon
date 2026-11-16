@@ -77,6 +77,11 @@ derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/s
 derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/sub-ABCD_acq-10per000_space-T1w_desc-template_anat.nii.gz
 derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/sub-ABCD_acq-10per000_space-mni_b0ref.json
 derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/sub-ABCD_acq-10per000_space-mni_b0ref.nii.gz
+derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/tract_profile_plots
+derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/tract_profile_plots/sub-ABCD_acq-10per000_param-dtifa_desc-alltracts_tractography.json
+derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/tract_profile_plots/sub-ABCD_acq-10per000_param-dtifa_desc-alltracts_tractography.png
+derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/tract_profile_plots/sub-ABCD_acq-10per000_param-dtimd_desc-alltracts_tractography.json
+derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/tract_profile_plots/sub-ABCD_acq-10per000_param-dtimd_desc-alltracts_tractography.png
 derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/viz_bundles
 derivatives/qsirecon-PYAFQ/sub-ABCD/dwi/sub-ABCD_acq-10per000_space-T1w_dwimap/viz_core_bundles
 logs
