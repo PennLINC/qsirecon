@@ -32,9 +32,9 @@ def default_bundle_dict():
     weights that are downloaded at run time, so QSIRecon leaves those two out.
     MPAT's rules for pyAFQ's bundles (``mpat.bundles.MPAT_RULES``) apply either way.
     """
-    import AFQ.api.bundle_dict as abd
+    from AFQ.api.bundle_dict import callosal_bd, default_bd, slf_bd
 
-    return abd.default_bd() + abd.slf_bd() + abd.callosal_bd()
+    return default_bd() + slf_bd() + callosal_bd()
 
 
 class _MPATInputSpec(PyAFQBaseInputSpec):
