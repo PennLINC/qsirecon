@@ -307,47 +307,45 @@ unless ``mittens-dmri`` 2.0.0a1 is installed from PyPI first.
 MPAT Outputs
 ------------
 
-All outputs are written to a directory (``sub-*_dwimap``) in ``qsirecon-MPAT``.
-Each bundle's files are named with its pyAFQ name without spaces (``bundle-LeftArcuate``).
+Outputs are written to the ``dwi`` folder of ``qsirecon-MPAT``.
+Each file name starts with the entities of the preprocessed DWI (``sub-*[_ses-*]_..._space-*``),
+followed by ``model-mpat``.
+Each bundle's files carry its pyAFQ name without spaces or hyphens (``bundle-LeftArcuate``).
 
-+--------------------------------------------+-----------------------------------------------------+
-| File Name                                  | Description                                         |
-+============================================+=====================================================+
-| ``*_bundle-*_desc-density_map.nii.gz``     | Expected number of steps of the bundle's            |
-|                                            | streamlines in each voxel, summed over all seeds    |
-+--------------------------------------------+-----------------------------------------------------+
-| ``*_bundle-*_desc-endpoints_map.nii.gz``   | Expected number of bundle endpoints in each gray    |
-|                                            | matter or edge voxel (two per streamline)           |
-+--------------------------------------------+-----------------------------------------------------+
-| ``*_bundle-*_desc-seedprob_probmap.nii.gz``| Probability that a streamline seeded in each        |
-|                                            | interface voxel belongs to the bundle               |
-+--------------------------------------------+-----------------------------------------------------+
-| ``*_bundle-*_desc-visitodf_dwimap.nii.gz`` | Visitation ODF: the directions in which the         |
-|                                            | bundle's streamlines travel in each voxel, as       |
-|                                            | spherical harmonics (DIPY ``descoteaux07``, lmax 8) |
-+--------------------------------------------+-----------------------------------------------------+
-| ``*_bundle-*_desc-{start,end}_mask.nii.gz``| The endpoint regions used                           |
-+--------------------------------------------+-----------------------------------------------------+
-| ``*_bundle-*_desc-include_mask.nii.gz``,   | The include regions (labeled 1, 2, ... in pyAFQ's   |
-| ``*_bundle-*_desc-exclude_mask.nii.gz``    | order) and the exclude regions used                 |
-+--------------------------------------------+-----------------------------------------------------+
-| ``*_bundle-*_desc-core.{trx,json}``,       | The bundle's core: the ridge path of the density,   |
-| ``*_bundle-*_desc-core_path.tsv``          | with 100 nodes                                      |
-+--------------------------------------------+-----------------------------------------------------+
-| ``*_bundle-*_desc-summary.json``           | Settings, solver diagnostics and a mass check       |
-+--------------------------------------------+-----------------------------------------------------+
-| ``*_desc-mpat_table.tsv``                  | Expected number of streamlines, solver steps and    |
-|                                            | run time for each bundle                            |
-+--------------------------------------------+-----------------------------------------------------+
-| ``*_desc-mpat_dseg.nii.gz``                | Tissue labels used: 1 WM, 2 GM, 3 CSF, 4 edge of    |
-|                                            | the brain, 5 isolated WM                            |
-+--------------------------------------------+-----------------------------------------------------+
-| ``*_desc-overlength_map.nii.gz``           | Fraction of walkers still walking after             |
-|                                            | ``max_length``, per voxel                           |
-+--------------------------------------------+-----------------------------------------------------+
-| ``*_desc-mpat_collage.png``,               | Maximum intensity projections of every bundle, and  |
-| ``*.html``                                 | viewer pages (with ``viz: true``)                   |
-+--------------------------------------------+-----------------------------------------------------+
+``*_model-mpat_param-density_bundle-*_dwimap.nii.gz``
+  Expected number of steps of the bundle's streamlines in each voxel, summed over all seeds.
+  Its JSON sidecar holds MPAT's settings, solver diagnostics and a mass check for the bundle.
+``*_model-mpat_param-endpoints_bundle-*_dwimap.nii.gz``
+  Expected number of bundle endpoints in each gray matter or edge voxel (two per streamline).
+``*_model-mpat_param-seedprob_bundle-*_dwimap.nii.gz``
+  Probability that a streamline seeded in each white matter/gray matter interface voxel
+  belongs to the bundle.
+``*_model-mpat_param-visitodf_bundle-*_dwimap.nii.gz``
+  Visitation ODF: the directions in which the bundle's streamlines travel in each voxel,
+  as spherical harmonics (DIPY ``descoteaux07``, lmax 8), in expected visits per steradian.
+``*_model-mpat_bundle-*_desc-{start,end}_mask.nii.gz``
+  The endpoint regions used.
+``*_model-mpat_bundle-*_desc-include_mask.nii.gz``, ``*_model-mpat_bundle-*_desc-exclude_mask.nii.gz``
+  The include regions (labeled 1, 2, ... in pyAFQ's order) and the exclude regions used.
+``*_model-mpat_bundle-*_desc-core_streamlines.trx``
+  The bundle's core: the ridge path of its density, with 100 nodes, in TRX format.
+  Its JSON sidecar describes how the core was found.
+``*_model-mpat_bundle-*_desc-core_bundlestats.tsv``
+  The coordinates of the core's nodes (mm) and the density along it, relative to its peak.
+``*_model-mpat_bundlestats.tsv``
+  The expected number of streamlines, solver steps and run time of each bundle.
+``*_model-mpat_desc-tissue_dseg.nii.gz``
+  Tissue labels used: 1 white matter, 2 gray matter, 3 CSF, 4 edge of the brain,
+  5 white matter with no way out (left out of the walk).
+``*_model-mpat_param-overlength_dwimap.nii.gz``
+  Fraction of walkers still walking after ``max_length``, per voxel.
+``*_model-mpat_param-trapped_desc-*_dwimap.nii.gz``
+  Written only when a solve stalls: where the walker mass it could not finish sits.
+
+With ``viz: true``, the ``figures`` folder also holds a collage of maximum intensity projections
+of every bundle (``*_model-mpat_dwimap.png``), a viewer page with all bundles
+(``*_model-mpat_dwimap.html``), and a viewer page for each bundle with its visitation ODF
+glyphs (``*_model-mpat_bundle-*_dwimap.html``).
 
 
 .. _amico_noddi:

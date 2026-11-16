@@ -10,9 +10,9 @@ import nipype.interfaces.utility as niu
 import nipype.pipeline.engine as pe
 
 from ... import config
-from ...interfaces.bids import ReconDerivativesDataSink
+from ...interfaces.bids import DerivativesDataSink
 from ...interfaces.interchange import recon_workflow_input_fields
-from ...interfaces.mpat import MPATRecon
+from ...interfaces.mpat import MPATDerivativesDataSink, MPATRecon
 from ...utils.bids import clean_datasinks
 from .pyafq import _parse_qsirecon_params_dict
 
@@ -176,16 +176,58 @@ def init_mpat_wf(inputs_dict, name='mpat', qsirecon_suffix='', params={}):
     )
 
     if qsirecon_suffix:
-        ds_mpat = pe.Node(
-            ReconDerivativesDataSink(
-                qsirecon_suffix=qsirecon_suffix,
-                extension='.nii.gz',
-                use_ext=False,
-                dismiss_entities=['desc'],
-            ),
+        # Each MPAT output is written on its own, named from the preprocessed DWI
+        # (subject, session, space, ...) plus the entities MPATRecon assigns it.
+        ds_mpat = pe.MapNode(
+            MPATDerivativesDataSink(dismiss_entities=['desc']),
+            iterfield=['in_file', 'model', 'bundle', 'param', 'desc', 'suffix', 'compress'],
             name=f'ds_{name}',
             run_without_submitting=True,
         )
-        workflow.connect([(run_mpat, ds_mpat, [('mpat_dir', 'in_file')])])
+        workflow.connect([
+            (run_mpat, ds_mpat, [
+                ('out_files', 'in_file'),
+                ('out_models', 'model'),
+                ('out_bundles', 'bundle'),
+                ('out_params', 'param'),
+                ('out_descs', 'desc'),
+                ('out_suffixes', 'suffix'),
+                # Without it, the sink writes .nii.gz inputs as .nii
+                ('out_compress', 'compress'),
+            ]),
+        ])  # fmt:skip
+
+    if qsirecon_suffix and run_mpat.inputs.viz:
+        # The collage and viewer pages go to the figures folder, with the reports.
+        ds_figures = pe.MapNode(
+            DerivativesDataSink(
+                datatype='figures',
+                model='mpat',
+                suffix='dwimap',
+                dismiss_entities=['desc'],
+            ),
+            iterfield=['in_file'],
+            name=f'ds_{name}_figures',
+            run_without_submitting=True,
+        )
+        ds_bundle_figures = pe.MapNode(
+            DerivativesDataSink(
+                datatype='figures',
+                model='mpat',
+                bundle='',
+                suffix='dwimap',
+                dismiss_entities=['desc'],
+            ),
+            iterfield=['in_file', 'bundle'],
+            name=f'ds_{name}_bundle_figures',
+            run_without_submitting=True,
+        )
+        workflow.connect([
+            (run_mpat, ds_figures, [('figures', 'in_file')]),
+            (run_mpat, ds_bundle_figures, [
+                ('bundle_figures', 'in_file'),
+                ('bundle_figure_bundles', 'bundle'),
+            ]),
+        ])  # fmt:skip
 
     return clean_datasinks(workflow, qsirecon_suffix)

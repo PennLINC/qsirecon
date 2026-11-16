@@ -101,7 +101,11 @@ def test_builtin_spec_builds(nipype_config, workflow_warnings):
     assert inputs.kwargs['tracking_params'] == {'odf_model': 'CSD'}
     assert inputs.kwargs['segmentation_params'] == {'dist_to_atlas': 4}
     assert inputs.kwargs['bundle_info'] is None
-    assert 'ds_mpat_tractography' in wf.list_node_names()
+    node_names = wf.list_node_names()
+    assert 'ds_mpat_tractography' in node_names
+    # viz is on in the packaged spec, so the collage and viewer pages are written too
+    assert 'ds_mpat_tractography_figures' in node_names
+    assert 'ds_mpat_tractography_bundle_figures' in node_names
     assert '@mpat' in wf.__desc__
 
 
@@ -125,10 +129,90 @@ def test_sloppy_spec(nipype_config):
     assert node['parameters']['mpat']['viz'] is False
     assert node['parameters']['pyafq']['mapping_definition'] == 'AffMap()'
 
-    wf = init_mpat_wf({'has_qsiprep_anat': True}, name='mpat', params=node['parameters'])
+    wf = init_mpat_wf(
+        {'has_qsiprep_anat': True},
+        name='mpat',
+        qsirecon_suffix='MPAT',
+        params=node['parameters'],
+    )
     inputs = wf.get_node('run_mpat').inputs
     assert inputs.bundles == ['Left Arcuate', 'Right Corticospinal']
     assert type(inputs.kwargs['mapping_definition']).__name__ == 'AffMap'
+    # Without viz there are no figures to write
+    assert [n for n in wf.list_node_names() if n.startswith('ds_')] == ['ds_mpat']
+
+
+def test_collect_bids_outputs(tmp_path):
+    """MPAT's files are sorted into BIDS derivatives, figures, and files that are not kept."""
+    from qsirecon.interfaces.mpat import collect_bids_outputs
+
+    stem = 'sub-01_acq-x'
+    bundle = f'{stem}_bundle-LeftArcuate'
+    names = [
+        f'{bundle}_desc-core.json',
+        f'{bundle}_desc-core.trx',
+        f'{bundle}_desc-core_path.tsv',
+        f'{bundle}_desc-density_map.nii.gz',
+        f'{bundle}_desc-end_mask.nii.gz',
+        f'{bundle}_desc-endpoints_map.nii.gz',
+        f'{bundle}_desc-exclude_mask.nii.gz',
+        f'{bundle}_desc-include_mask.nii.gz',
+        f'{bundle}_desc-seedprob_probmap.nii.gz',
+        f'{bundle}_desc-start_mask.nii.gz',
+        f'{bundle}_desc-summary.json',
+        f'{bundle}_desc-view.html',
+        f'{bundle}_desc-visitodf_dwimap.nii.gz',
+        f'{stem}_desc-mpat_collage.png',
+        f'{stem}_desc-mpat_dseg.nii.gz',
+        f'{stem}_desc-mpat_table.tsv',
+        f'{stem}_desc-mpat_view.html',
+        f'{stem}_desc-overlength_map.nii.gz',
+        # Only when a solve stalls, or when bundles use SynthSeg labels
+        f'{stem}_desc-trappedforward2_map.nii.gz',
+        f'{stem}_model-synthseg2parc_dseg.nii.gz',
+        # Not derivatives
+        f'{stem}_desc-chain_cache.npz',
+        f'{stem}_desc-mpat_rois.html',
+    ]
+    for name in names:
+        (tmp_path / name).write_text('')
+
+    derivatives, bundle_figures, figures, skipped = collect_bids_outputs(str(tmp_path))
+    named = {
+        (d['model'], d['bundle'], d['param'], d['desc'], d['suffix'], d['in_file'][-7:])
+        for d in derivatives
+    }
+    assert len(named) == len(derivatives)
+    expected = {
+        ('mpat', 'LeftArcuate', '', 'core', 'streamlines', 'ore.trx'),
+        ('mpat', 'LeftArcuate', '', 'core', 'streamlines', 're.json'),
+        ('mpat', 'LeftArcuate', '', 'core', 'bundlestats', 'ath.tsv'),
+        ('mpat', 'LeftArcuate', 'density', '', 'dwimap', '.nii.gz'),
+        # MPAT's summary is the density map's sidecar
+        ('mpat', 'LeftArcuate', 'density', '', 'dwimap', 'ry.json'),
+        ('mpat', 'LeftArcuate', 'endpoints', '', 'dwimap', '.nii.gz'),
+        ('mpat', 'LeftArcuate', 'seedprob', '', 'dwimap', '.nii.gz'),
+        ('mpat', 'LeftArcuate', 'visitodf', '', 'dwimap', '.nii.gz'),
+        ('mpat', 'LeftArcuate', '', 'start', 'mask', '.nii.gz'),
+        ('mpat', 'LeftArcuate', '', 'end', 'mask', '.nii.gz'),
+        ('mpat', 'LeftArcuate', '', 'include', 'mask', '.nii.gz'),
+        ('mpat', 'LeftArcuate', '', 'exclude', 'mask', '.nii.gz'),
+        ('mpat', '', '', 'tissue', 'dseg', '.nii.gz'),
+        ('mpat', '', '', '', 'bundlestats', 'ble.tsv'),
+        ('mpat', '', 'overlength', '', 'dwimap', '.nii.gz'),
+        ('mpat', '', 'trapped', 'forward2', 'dwimap', '.nii.gz'),
+        ('synthseg2parc', '', '', '', 'dseg', '.nii.gz'),
+    }
+    assert named == expected
+    assert bundle_figures == [(str(tmp_path / f'{bundle}_desc-view.html'), 'LeftArcuate')]
+    assert sorted(figures) == [
+        str(tmp_path / f'{stem}_desc-mpat_collage.png'),
+        str(tmp_path / f'{stem}_desc-mpat_view.html'),
+    ]
+    assert sorted(skipped) == [
+        str(tmp_path / f'{stem}_desc-chain_cache.npz'),
+        str(tmp_path / f'{stem}_desc-mpat_rois.html'),
+    ]
 
 
 def test_build_workflow_dispatches_to_mpat(nipype_config):
@@ -156,6 +240,70 @@ def test_default_bundle_dict():
         assert name in names
 
     assert not any('Fornix' in name or 'Cingulum Hippocampus' in name for name in names)
+
+
+@pytest.mark.parametrize(
+    ('in_name', 'entities', 'compress', 'expected'),
+    [
+        (
+            'x_desc-density_map.nii.gz',
+            {
+                'model': 'mpat',
+                'bundle': 'LeftArcuate',
+                'param': 'density',
+                'desc': '',
+                'suffix': 'dwimap',
+            },
+            True,
+            'sub-01_acq-x_space-T1w_model-mpat_param-density_bundle-LeftArcuate_dwimap.nii.gz',
+        ),
+        (
+            'x_desc-core.trx',
+            {
+                'model': 'mpat',
+                'bundle': 'LeftArcuate',
+                'param': '',
+                'desc': 'core',
+                'suffix': 'streamlines',
+            },
+            False,
+            'sub-01_acq-x_space-T1w_model-mpat_bundle-LeftArcuate_desc-core_streamlines.trx',
+        ),
+        (
+            'x_desc-mpat_dseg.nii.gz',
+            {'model': 'mpat', 'bundle': '', 'param': '', 'desc': 'tissue', 'suffix': 'dseg'},
+            True,
+            'sub-01_acq-x_space-T1w_model-mpat_desc-tissue_dseg.nii.gz',
+        ),
+    ],
+)
+def test_mpat_datasink_names(tmp_path, in_name, entities, compress, expected):
+    """Blank entities are left out, and the DWI's entities (including space) are kept."""
+    import nibabel as nib
+    import numpy as np
+
+    from qsirecon.interfaces.mpat import MPATDerivativesDataSink
+
+    source = tmp_path / 'sub-01_acq-x_space-T1w_desc-preproc_dwi.nii.gz'
+    img = nib.Nifti1Image(np.zeros((2, 2, 2), dtype=np.float32), np.eye(4))
+    img.to_filename(source)
+    in_file = tmp_path / in_name
+    if in_name.endswith('.nii.gz'):
+        img.to_filename(in_file)
+    else:
+        in_file.write_text('')
+
+    out_dir = tmp_path / 'out'
+    sink = MPATDerivativesDataSink(
+        base_directory=str(out_dir),
+        source_file=str(source),
+        in_file=str(in_file),
+        dismiss_entities=['desc'],
+        compress=compress,
+        **entities,
+    )
+    result = sink.run(cwd=str(tmp_path))
+    assert result.outputs.out_file == str(out_dir / 'sub-01' / 'dwi' / expected)
 
 
 def test_mpat_interface_requires_pve(tmp_path):
