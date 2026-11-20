@@ -182,6 +182,9 @@ and define the white matter/gray matter interface in which tractography is seede
 Because these come from QSIPrep, pyAFQ's neural-network segmentation models are not needed.
 Any pyAFQ parameter in the recon spec that the installed version of pyAFQ does not recognize
 is dropped with a warning in the log.
+A top-level parameter set to an empty string (``''``) is passed to pyAFQ as ``None``.
+A tracking, segmentation or cleaning parameter set to an empty string is not passed,
+so pyAFQ's own default applies.
 
 pyAFQ loads its bundle templates from ``$AFQ_HOME`` (``~/AFQ_data`` by default) and downloads
 them from figshare when they are missing.
@@ -221,6 +224,131 @@ PyAFQ Outputs
 +========================+===========================================+
 | sub-* (directory)      | PyAFQ results direcrory for each subject  |
 +------------------------+-------------------------------------------+
+
+
+.. _mpat_tractography:
+
+``mpat_tractography``
+=====================
+
+This workflow uses Markov probabilistic absorbing tractography (MPAT) :footcite:p:`mpat`
+to compute the major white matter bundles that pyAFQ :footcite:p:`pyafq,pyafq2` defines.
+Instead of sampling streamlines, MPAT treats probabilistic tractography as an absorbing Markov
+chain on (white matter voxel, direction) states, and solves for the expected result of
+infinitely many streamlines.
+The transition probabilities come from the analytic hop geometry of MITTENS
+:footcite:p:`mittens`, applied to the fiber orientation distributions (fODFs) that pyAFQ fits.
+Each bundle's include, exclude and endpoint regions are applied exactly, with forward and
+backward passes over the chain.
+See the `MPAT documentation <https://github.com/rokemlab/MPAT>`_ for a description of the method.
+
+pyAFQ supplies everything apart from the chain: the constrained spherical deconvolution
+fODFs, the white matter/gray matter interface in which walkers are seeded, the bundle
+definitions, and their regions of interest warped from the MNI template into the subject.
+As with :ref:`pyafq_tractometry`, the preprocessed anatomical image, brain mask and CSF, GM and
+WM probability maps from QSIPrep are required.
+Because the chain's absorbing states come from these T1w-based tissue maps,
+susceptibility distortion correction is recommended so that the DWI data line up with them.
+Walkers move through voxels where the WM partial volume exceeds 0.4, end in gray matter,
+and never enter CSF.
+pyAFQ's streamline-based criteria (curvature, length and cleaning) do not apply to MPAT,
+and no tract profiles are computed.
+
+By default, MPAT computes pyAFQ's default, superior longitudinal fasciculus and callosal
+bundles, and applies MPAT's own rules for them (for example, excluding the fornix from the
+anterior thalamic radiations).
+MPAT's standalone default also includes the hippocampal cingulum and the fornix,
+whose endpoints are SynthSeg labels.
+SynthSeg's neural network models are not in the QSIRecon image, so QSIRecon leaves those
+bundles out.
+
+The node's parameters have two sections.
+``pyafq`` takes the ParticipantAFQ settings that the :ref:`pyafq_tractometry` workflow takes,
+such as ``bundle_info``, ``odf_model`` and ``mapping_definition``.
+``mpat`` takes the settings of MPAT itself:
+
+``angle`` (default 35)
+  Maximum turn per one-voxel hop, in degrees.
+``bundles`` (default ``null``)
+  pyAFQ names of the bundles to compute, such as ``Left Arcuate``.
+  ``null`` computes every bundle in ``bundle_info``.
+``double_odf`` (default ``true``)
+  Weight each hop by how well the fODF of the next voxel supports it, similar to iFOD2.
+  ``false`` gives first-order hops, like pyAFQ's probabilistic tracker.
+``fornix_exclude`` (default ``true``)
+  Exclude the fornix and septum on the midline from the anterior thalamic radiations.
+``max_length`` (default 250)
+  Soft maximum streamline length, in mm. States from which most walkers would still be
+  walking after this length end them as invalid. ``0`` turns this off.
+``max_mem`` (default ``auto``)
+  Memory budget for the solves, such as ``16GB``. With ``auto``, MPAT uses
+  min(80%, memory - 10 GB) of the memory given with ``--mem``, but at least half of it.
+  Without ``--mem``, MPAT reads the memory limit of the job (cgroup, SLURM or physical memory).
+  The budget sets how many bundles share each pass over the transition matrix,
+  and does not change the results.
+``midline_tol`` (default ``null``)
+  Distance in mm past the midline the corticospinal tracts may go before the other hemisphere
+  is excluded. ``null`` uses MPAT's rule (10 mm).
+``moments`` (default ``false``)
+  Track spatial first moments, which gives narrower, more accurate bundles but takes about
+  five times longer.
+``tol`` (default ``1e-6``)
+  Remaining walker mass at which the solves stop.
+``viz`` (default ``true``)
+  Write a collage of the bundles and standalone HTML viewer pages.
+  The viewer pages load NiiVue from a CDN when they are opened.
+
+MPAT runs with ``--omp-nthreads`` threads.
+Its memory use grows with the number of white matter voxels, so allow at least 16 GB.
+Because MPAT sizes its solves to the memory it is given, QSIRecon runs one MPAT node at a time.
+
+MPAT is installed in the QSIRecon container.
+Outside the container, install it with the ``mpat`` extra (``pip install "qsirecon[mpat]"``).
+MPAT depends on MITTENS from its git repository, so pip needs a Rust toolchain to build it,
+unless ``mittens-dmri`` 2.0.0a1 is installed from PyPI first.
+
+MPAT Outputs
+------------
+
+Outputs are written to the ``dwi`` folder of ``qsirecon-MPAT``.
+Each file name starts with the entities of the preprocessed DWI (``sub-*[_ses-*]_..._space-*``),
+followed by ``model-mpat``.
+Each bundle's files carry its pyAFQ name without spaces or hyphens (``bundle-LeftArcuate``).
+
+``*_model-mpat_param-density_bundle-*_dwimap.nii.gz``
+  Expected number of steps of the bundle's streamlines in each voxel, summed over all seeds.
+  Its JSON sidecar holds MPAT's settings, solver diagnostics and a mass check for the bundle.
+``*_model-mpat_param-endpoints_bundle-*_dwimap.nii.gz``
+  Expected number of bundle endpoints in each gray matter or edge voxel (two per streamline).
+``*_model-mpat_param-seedprob_bundle-*_dwimap.nii.gz``
+  Probability that a streamline seeded in each white matter/gray matter interface voxel
+  belongs to the bundle.
+``*_model-mpat_param-visitodf_bundle-*_dwimap.nii.gz``
+  Visitation ODF: the directions in which the bundle's streamlines travel in each voxel,
+  as spherical harmonics (DIPY ``descoteaux07``, lmax 8), in expected visits per steradian.
+``*_model-mpat_bundle-*_desc-{start,end}_mask.nii.gz``
+  The endpoint regions used.
+``*_model-mpat_bundle-*_desc-include_mask.nii.gz``, ``*_model-mpat_bundle-*_desc-exclude_mask.nii.gz``
+  The include regions (labeled 1, 2, ... in pyAFQ's order) and the exclude regions used.
+``*_model-mpat_bundle-*_desc-core_streamlines.trx``
+  The bundle's core: the ridge path of its density, with 100 nodes, in TRX format.
+  Its JSON sidecar describes how the core was found.
+``*_model-mpat_bundle-*_desc-core_bundlestats.tsv``
+  The coordinates of the core's nodes (mm) and the density along it, relative to its peak.
+``*_model-mpat_bundlestats.tsv``
+  The expected number of streamlines, solver steps and run time of each bundle.
+``*_model-mpat_desc-tissue_dseg.nii.gz``
+  Tissue labels used: 1 white matter, 2 gray matter, 3 CSF, 4 edge of the brain,
+  5 white matter with no way out (left out of the walk).
+``*_model-mpat_param-overlength_dwimap.nii.gz``
+  Fraction of walkers still walking after ``max_length``, per voxel.
+``*_model-mpat_param-trapped_desc-*_dwimap.nii.gz``
+  Written only when a solve stalls: where the walker mass it could not finish sits.
+
+With ``viz: true``, the ``figures`` folder also holds a collage of maximum intensity projections
+of every bundle (``*_model-mpat_dwimap.png``), a viewer page with all bundles
+(``*_model-mpat_dwimap.html``), and a viewer page for each bundle with its visitation ODF
+glyphs (``*_model-mpat_bundle-*_dwimap.html``).
 
 
 .. _amico_noddi:
@@ -714,6 +842,8 @@ the model-fitting workflows and which sampling schemes work with them.
 |:ref:`dsi_studio_gqi`                           |     Yes     |    Yes     |      Yes*       |
 +------------------------------------------------+-------------+------------+-----------------+
 |:ref:`hbcd_scalar_maps`                         |     Yes     |    No      |      No         |
++------------------------------------------------+-------------+------------+-----------------+
+|:ref:`mpat_tractography`                        |     Yes     |    No      |      Yes        |
 +------------------------------------------------+-------------+------------+-----------------+
 |:ref:`mrtrix_multishell_msmt_ACT-fast`\*        |     Yes     |    No      |      No         |
 +------------------------------------------------+-------------+------------+-----------------+

@@ -331,6 +331,12 @@ def workflow_from_spec(inputs_dict, node_spec):
         if node_spec['action'] == 'pyafq_tractometry':
             return init_pyafq_wf(**kwargs)
 
+    elif software == 'MPAT':
+        from .mpat import init_mpat_wf
+
+        if node_spec['action'] == 'tractography':
+            return init_mpat_wf(**kwargs)
+
     elif software == 'TORTOISE':
         if node_spec['action'] == 'estimate':
             return init_tortoise_estimator_wf(**kwargs)

@@ -1,0 +1,42 @@
+description: Use MPAT to compute white matter bundles as expectations over all streamlines,
+    with pyAFQ's fODF, seeds and bundle definitions
+name: mpat_tractography
+nodes:
+-   action: tractography
+    input: qsirecon
+    name: mpat_tractography
+    parameters:
+        # ParticipantAFQ settings, as in the pyafq_tractometry spec.
+        # MPAT uses the fODF, tissue, seeds and bundle ROIs from pyAFQ,
+        # but none of pyAFQ's tractography, cleaning or tract profile settings.
+        pyafq:
+            b0_threshold: 50
+            # null: pyAFQ's default, SLF and callosal bundles
+            bundle_info: null
+            csd_lambda_: 1
+            csd_response: ''
+            csd_sh_order_max: ''
+            csd_tau: 0.1
+            dist_to_atlas: 4
+            mapping_definition: ''
+            odf_model: CSD
+            reg_subject_spec: power_map
+            reg_template_spec: mni_T1
+            robust_tensor_fitting: false
+        # Settings of MPAT itself (mpat.run)
+        mpat:
+            angle: 35
+            # null: every bundle in bundle_info
+            bundles: null
+            double_odf: true
+            fornix_exclude: true
+            max_length: 250
+            # auto: from --mem, or else from the memory limit of the job
+            max_mem: auto
+            midline_tol: null
+            moments: false
+            tol: 1.0e-06
+            viz: true
+    qsirecon_suffix: MPAT
+    software: MPAT
+space: T1w

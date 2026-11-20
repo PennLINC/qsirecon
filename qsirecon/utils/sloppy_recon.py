@@ -40,6 +40,14 @@ def make_sloppy(spec):
             'mapping_definition': 'AffMap()',
             'bundle_info': 'default_bd()["Left Arcuate", "Right Corticospinal"]',
         },
+        ('MPAT', 'tractography'): {
+            'pyafq': {'mapping_definition': 'AffMap()'},
+            'mpat': {
+                'bundles': ['Left Arcuate', 'Right Corticospinal'],
+                'tol': 1e-3,
+                'viz': False,
+            },
+        },
     }
     sloppy_spec = deepcopy(spec)
     sloppy_nodes = []
