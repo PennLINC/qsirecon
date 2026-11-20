@@ -26,7 +26,7 @@
 
 import os
 import sys
-from argparse import Action
+from argparse import SUPPRESS, Action
 from pathlib import Path
 
 from .. import config
@@ -54,6 +54,50 @@ class ToDict(Action):
 
             d[name] = loc
         setattr(namespace, self.dest, d)
+
+
+class OutputSpacesAction(Action):
+    """Parse and validate --output-spaces at parse time, storing canonical tokens."""
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        from ..utils.spaces import OutputSpacesError, parse_space_token
+
+        specs = []
+        for token in values:
+            try:
+                specs.extend(parse_space_token(token))
+            except OutputSpacesError as exc:
+                parser.error(str(exc))
+
+        existing = getattr(namespace, self.dest, None) or []
+        setattr(namespace, self.dest, [*existing, *[str(spec) for spec in specs]])
+
+
+class RemovedInfantAction(Action):
+    """Point users of the removed --infant flag at --output-spaces."""
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        parser.error(
+            '--infant has been removed. Request the infant template with --output-spaces '
+            'instead, for example "--output-spaces MNIInfant:cohort-auto".'
+        )
+
+
+class RemovedOutputResolutionAction(Action):
+    """Point users of the removed --output-resolution flag at --output-spaces."""
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        from ..utils.spaces import zooms_label
+
+        try:
+            label = zooms_label([float(values)])
+        except ValueError:
+            label = '<size>mm'
+
+        parser.error(
+            '--output-resolution has been removed. Put the voxel size on the output space '
+            f'instead, for example "--output-spaces MNI152NLin2009cAsym:res-{label}".'
+        )
 
 
 def _build_parser(**kwargs):
@@ -302,7 +346,35 @@ def _build_parser(**kwargs):
 
     g_conf = parser.add_argument_group('Workflow configuration')
     g_conf.add_argument(
-        '--infant', action='store_true', help='configure pipelines to process infant brains'
+        '--output-spaces',
+        nargs='+',
+        action=OutputSpacesAction,
+        default=None,
+        metavar='SPACE',
+        help=(
+            'The template space that scalar maps are warped into. '
+            'Defaults to "MNI152NLin2009cAsym". '
+            'The space is a TemplateFlow template name, optionally followed by a cohort '
+            'and a resolution, as in "MNI152NLin2009cAsym:res-2mm" or '
+            '"MNIInfant:cohort-2:res-1p5mm". '
+            'QSIRecon uses the transforms between the anatomical space and this template '
+            'that are in the input dataset. If the data were not normalized to this '
+            'template, the transforms in the input dataset are chained with the '
+            'template-to-template transforms that TemplateFlow distributes, when a chain '
+            'exists. '
+            'The resolution sets the voxel size of the template-space outputs. '
+            'It is a physical size with an "mm" suffix ("res-2mm", "res-1p5mm", or '
+            'anisotropic "res-1p5x1p5x3mm"), or a TemplateFlow resolution label ("res-1", '
+            '"res-2"), which keeps the voxel size the template has at that resolution. '
+            'Without a resolution, the smallest voxel dimension of the preprocessed DWI is '
+            'used. If the voxel size is smaller than that of the preprocessed DWI, the '
+            'data are upsampled. '
+            'Templates with cohorts need one: either a cohort label ("cohort-2") or '
+            '"cohort-auto", which uses whichever cohort the transforms in the input '
+            'dataset were estimated with. '
+            'Only one output space may be requested. Reconstruction outputs in the space '
+            'of the preprocessed DWI are always written, on the grid of the input data.'
+        ),
     )
     g_conf.add_argument(
         '--b0-threshold',
@@ -313,15 +385,19 @@ def _build_parser(**kwargs):
         'a b=0 image. Current default threshold = 100; this threshold can be '
         'lowered or increased. Note, setting this too high can result in inaccurate results.',
     )
+    # Removed options, kept only to tell users what replaced them
+    g_conf.add_argument(
+        '--infant',
+        nargs=0,
+        action=RemovedInfantAction,
+        default=SUPPRESS,
+        help=SUPPRESS,
+    )
     g_conf.add_argument(
         '--output-resolution',
-        action='store',
-        # required when not recon-only (which can be specified in sysargs 2 ways)
-        required=False,
-        type=float,
-        help='the isotropic voxel size in mm the data will be resampled to '
-        'after preprocessing. If set to a lower value than the original voxel '
-        'size, your data will be upsampled using BSpline interpolation.',
+        action=RemovedOutputResolutionAction,
+        default=SUPPRESS,
+        help=SUPPRESS,
     )
 
     # FreeSurfer options
@@ -489,14 +565,37 @@ https://qsirecon.readthedocs.io/en/latest/installation.html#upgrading""",
     return parser
 
 
+def _finalize_output_spaces(opts, parser=None):
+    """Validate ``opts.output_spaces`` and store it in canonical form.
+
+    Runs after the whole command line has been read, so the result does not depend
+    on the order options were given in. When the option is not given it is left as
+    None, so a setting loaded from ``--config-file`` is kept.
+    """
+    from ..utils.spaces import OutputSpacesError, parse_output_spaces
+
+    if not opts.output_spaces:
+        return opts
+
+    try:
+        specs = parse_output_spaces(opts.output_spaces)
+    except OutputSpacesError as exc:
+        if parser is not None:
+            parser.error(str(exc))
+
+        raise SystemExit(str(exc)) from None
+
+    opts.output_spaces = [str(spec) for spec in specs]
+    return opts
+
+
 def parse_args(args=None, namespace=None):
     """Parse args and run further checks on the command line."""
     import logging
 
-    # from niworkflows.utils.spaces import Reference, SpatialReferences
-
     parser = _build_parser()
     opts = parser.parse_args(args, namespace)
+    _finalize_output_spaces(opts, parser)
 
     if opts.config_file:
         skip = {} if opts.reports_only else {'execution': ('run_uuid',)}
@@ -555,12 +654,6 @@ def parse_args(args=None, namespace=None):
                 'Telemetry system to collect crashes and errors is enabled '
                 '- thanks for your feedback! Use option ``--notrack`` to opt out.'
             )
-
-    # Initialize --output-spaces if not defined
-    # if config.execution.output_spaces is None:
-    #     config.execution.output_spaces = SpatialReferences(
-    #         [Reference("MNI152NLin2009cAsym", {"res": "native"})]
-    #     )
 
     # Retrieve logging level
     build_log = config.loggers.cli

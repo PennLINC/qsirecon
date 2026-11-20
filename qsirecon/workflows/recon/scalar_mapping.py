@@ -21,6 +21,7 @@ from ...interfaces.recon_scalars import (
 from ...interfaces.scalar_mapping import BundleMapper, TemplateMapper
 from ...interfaces.utils import SplitAtlasConfigs
 from ...utils.bids import clean_datasinks
+from ...utils.spaces import format_zooms
 from .utils import init_scalar_output_wf
 
 LOGGER = logging.getLogger('nipype.workflow')
@@ -193,9 +194,24 @@ def init_scalar_to_template_wf(
         )
 
     workflow = Workflow(name=name)
+    resolution = config.workflow.output_space().resolution
+    if resolution is None:
+        grid_desc = 'at the smallest voxel dimension of the preprocessed DWI'
+    elif resolution.kind == 'label':
+        grid_desc = f"on the template's res-{resolution.label} grid"
+    else:
+        grid_desc = f'with {format_zooms(resolution.zooms)} voxels'
+
     workflow.__desc__ = (
-        f'Scalar NIfTI files were warped to {inputs_dict["template_output_space"]} template space.'
+        f'Scalar NIfTI files were warped to {inputs_dict["template_output_space"]} template '
+        f'space, {grid_desc}.'
     )
+    if inputs_dict.get('template_transform_path'):
+        via = ', '.join(inputs_dict['template_transform_path'][1:-1])
+        workflow.__desc__ += (
+            f' The transform from preprocessing to {via} was combined with '
+            'template-to-template transforms from TemplateFlow.'
+        )
 
     inputnode = pe.Node(
         niu.IdentityInterface(

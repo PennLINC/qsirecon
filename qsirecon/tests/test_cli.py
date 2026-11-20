@@ -554,7 +554,8 @@ def test_dipy_mapmri(data_dir, output_dir, working_dir):
         f'-w={work_dir}',
         '--sloppy',
         '--recon-spec=dipy_mapmri',
-        '--output-resolution=5',
+        '--output-spaces',
+        'MNI152NLin2009cAsym:res-5mm',
     ]
 
     _run_and_generate(TEST_NAME, parameters, test_main=False)
@@ -662,7 +663,8 @@ def test_scalar_mapper(data_dir, output_dir, working_dir):
         f'-w={work_dir}',
         '--sloppy',
         '--recon-spec=test_scalar_maps',
-        '--output-resolution=3.5',
+        '--output-spaces',
+        'MNI152NLin2009cAsym:res-3p5mm',
         '--nthreads=1',
         '--atlases',
         '4S156Parcels',

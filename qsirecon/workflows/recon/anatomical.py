@@ -6,7 +6,6 @@ from pathlib import Path
 import nipype.interfaces.io as nio
 from nipype.interfaces import afni, ants, mrtrix3
 from nipype.interfaces import utility as niu
-from nipype.interfaces.base import traits
 from nipype.pipeline import engine as pe
 from niworkflows.engine.workflows import LiterateWorkflow as Workflow
 
@@ -449,6 +448,8 @@ def init_dwi_recon_anatomical_workflow(
     extras_to_make,
     name,
     template_output_space,
+    template_transform_path=None,
+    odf_rois_to_acpc_xfm=None,
     prefer_dwi_mask=False,
 ):
     """Build the DWI-specific anatomical data for one preprocessed DWI series.
@@ -554,9 +555,12 @@ def init_dwi_recon_anatomical_workflow(
     status : :obj:`dict`
         The availability flags after this workflow has run, with the keys
         ``has_qsiprep_5tt_hsvs``, ``has_freesurfer_5tt_hsvs``, ``has_qsiprep_anat``,
-        ``has_qsiprep_anat_transforms``, and ``template_output_space``.
+        ``has_qsiprep_anat_transforms``, ``template_output_space``,
+        ``template_transform_path``, and ``has_odf_rois``.
         ``has_qsiprep_anat`` becomes ``True`` when FreeSurfer files were substituted for
         the preprocessed anatomical image.
+        ``has_odf_rois`` says whether the ROIs that the ODF figures are centered on could
+        be brought into the space of the DWI.
         These keys are merged into the ``inputs_dict`` that reconstruction nodes receive.
     """
     workflow = Workflow(name=name)
@@ -605,6 +609,9 @@ def init_dwi_recon_anatomical_workflow(
             'has_qsiprep_anat': has_qsiprep_anat,
             'has_qsiprep_anat_transforms': has_qsiprep_anat_transforms,
             'template_output_space': template_output_space,
+            'template_transform_path': template_transform_path,
+            # The ROIs that the ODF figures are centered on could be brought into DWI space
+            'has_odf_rois': bool(has_qsiprep_anat_transforms and odf_rois_to_acpc_xfm),
         }
 
     # The template-space resampling grid needs a known template, which comes from the
@@ -616,9 +623,11 @@ def init_dwi_recon_anatomical_workflow(
             'will be created.'
         )
     else:
+        output_space = config.workflow.output_space()
         get_template = pe.Node(
             GetTemplate(
                 template_name=template_output_space,
+                resolution=output_space.templateflow_resolution,
             ),
             name='get_template',
         )
@@ -631,7 +640,7 @@ def init_dwi_recon_anatomical_workflow(
             name='reorient_to_lps',
         )
 
-        reference_grid_wf = init_output_grid_wf()
+        reference_grid_wf = init_output_grid_wf(output_space=output_space)
         workflow.connect([
             (get_template, mask_template, [
                 ('template_file', 'in_file_a'),
@@ -780,6 +789,13 @@ def init_dwi_recon_anatomical_workflow(
                 'preprocessing was used to map atlases from template space into '
                 'alignment with DWIs. '
             )
+            if template_transform_path:
+                via = ', '.join(template_transform_path[1:-1])
+                workflow.__desc__ += (
+                    f'The data were not normalized to {template_output_space} during '
+                    f'preprocessing, so the transforms to {via} were combined with '
+                    'template-to-template transforms from TemplateFlow. '
+                )
         else:
             raise Exception(
                 'Reconstruction workflow requires an ACPC-to-template transform. None were found.'
@@ -830,30 +846,31 @@ def init_dwi_recon_anatomical_workflow(
             (ds_resampled_mask, buffernode, [('out_file', 'dwi_mask')]),
         ])  # fmt:skip
 
-    if has_qsiprep_anat_transforms:
+    # The ROIs are drawn in MNI152NLin2009cAsym, which may not be the output space, so they
+    # have their own transforms. Without them, odf_rois stays undefined and the ODF
+    # figures are not made.
+    if has_qsiprep_anat_transforms and odf_rois_to_acpc_xfm:
         config.loggers.workflow.info('Transforming ODF ROIs into DWI space for visual report.')
         # Resample ROI targets to DWI resolution for ODF plotting
-        crossing_rois_file = load_data('crossing_rois.nii.gz')
+        crossing_rois_file = load_data(
+            'tpl-MNI152NLin2009cAsym_atlas-crossingfibers_res-01_dseg.nii.gz',
+        )
         odf_rois = pe.Node(
             ants.ApplyTransforms(interpolation='MultiLabel', dimension=3), name='odf_rois'
         )
         odf_rois.inputs.input_image = crossing_rois_file
+        odf_rois.inputs.transforms = odf_rois_to_acpc_xfm
         workflow.connect([
-            (_get_source_node('template_to_acpc_xfm'), odf_rois, [
-                ('template_to_acpc_xfm', 'transforms'),
-            ]),
             (inputnode, odf_rois, [('dwi_file', 'reference_image')]),
             (odf_rois, buffernode, [('output_image', 'odf_rois')]),
         ])  # fmt:skip
 
+    if has_qsiprep_anat_transforms:
         # Similarly, if we need atlases, transform them into DWI space
         if atlas_configs:
             warp_atlases_wf = init_warp_atlases_wf(atlas_configs=atlas_configs)
             workflow.connect([
                 (inputnode, warp_atlases_wf, [('dwi_file', 'inputnode.source_file')]),
-                (_get_source_node('template_to_acpc_xfm'), warp_atlases_wf, [
-                    ('template_to_acpc_xfm', 'inputnode.template_to_acpc_xfm'),
-                ]),
                 (warp_atlases_wf, buffernode, [('outputnode.atlas_configs', 'atlas_configs')]),
             ])  # fmt:skip
 
@@ -873,8 +890,8 @@ def init_dwi_recon_anatomical_workflow(
 def init_warp_atlases_wf(atlas_configs):
     """Warp template-space atlases onto the DWI grid and convert them to MIF format.
 
-    Each atlas is reoriented to LPS+, resampled onto the DWI grid with the
-    template-to-AC-PC transform using nearest-neighbor (multi-label) interpolation,
+    Each atlas is reoriented to LPS+, resampled onto the DWI grid with its own chain of
+    transforms using nearest-neighbor (multi-label) interpolation,
     written to the derivatives with its label table, and converted to MRtrix3's MIF
     format for use in connectivity workflows.
 
@@ -883,15 +900,15 @@ def init_warp_atlases_wf(atlas_configs):
     atlas_configs : :obj:`dict`
         Atlas configurations from :func:`~qsirecon.utils.atlases.collect_atlases`,
         keyed by atlas name.
-        Each entry provides the template-space ``image``, its ``labels`` table, and
-        ``metadata``.
+        Each entry provides the template-space ``image``, its ``labels`` table,
+        ``metadata``, and ``xfm_to_anat``: the transforms that bring the atlas from the
+        template it is in to the anatomical space, in the order ANTs takes them.
+        The atlases need not be in the same template.
 
     Inputs
     ------
     source_file
         The preprocessed DWI, used both as the reference grid and to name the outputs.
-    template_to_acpc_xfm
-        Transform from template space to AC-PC space, as written by QSIPrep.
 
     Outputs
     -------
@@ -902,12 +919,7 @@ def init_warp_atlases_wf(atlas_configs):
     workflow = Workflow(name='warp_atlases_wf')
 
     inputnode = pe.Node(
-        niu.IdentityInterface(
-            fields=[
-                'source_file',
-                'template_to_acpc_xfm',
-            ],
-        ),
+        niu.IdentityInterface(fields=['source_file']),
         name='inputnode',
     )
     outputnode = pe.Node(
@@ -929,6 +941,18 @@ def init_warp_atlases_wf(atlas_configs):
     atlas_names = sorted(atlas_configs.keys())
     atlas_images = [atlas_configs[name]['image'] for name in atlas_names]
     atlas_labels = [atlas_configs[name]['labels'] for name in atlas_names]
+    atlas_xfms = [list(atlas_configs[name]['xfm_to_anat']) for name in atlas_names]
+
+    # Atlases in a template the data were not normalized to go through other templates
+    for name in atlas_names:
+        xfm_path = atlas_configs[name].get('xfm_path') or []
+        if len(xfm_path) > 2:
+            workflow.__desc__ += (
+                f'The {name} atlas is defined in {xfm_path[0]}, which the data were not '
+                f'normalized to during preprocessing, so it was mapped through '
+                f'{", ".join(xfm_path[1:-1])} with template-to-template transforms from '
+                'TemplateFlow. '
+            )
 
     # Reorient the atlases to LPS+ before resampling them
     conform_atlases = pe.MapNode(
@@ -940,16 +964,15 @@ def init_warp_atlases_wf(atlas_configs):
     conform_atlases.inputs.in_file = atlas_images
 
     # Warp all atlases to source_file's space/resolution
+    # Each atlas has its own transforms, since the atlases may be in different templates
     warp_atlases = pe.MapNode(
         ants.ApplyTransforms(interpolation='MultiLabel', dimension=3),
-        iterfield=['input_image'],
+        iterfield=['input_image', 'transforms'],
         name='warp_atlases',
     )
+    warp_atlases.inputs.transforms = atlas_xfms
     workflow.connect([
-        (inputnode, warp_atlases, [
-            ('source_file', 'reference_image'),
-            ('template_to_acpc_xfm', 'transforms'),
-        ]),
+        (inputnode, warp_atlases, [('source_file', 'reference_image')]),
         (conform_atlases, warp_atlases, [('out_file', 'input_image')]),
     ])  # fmt:skip
 
@@ -1066,22 +1089,30 @@ def _get_resampled(atlas_configs, atlas_name, to_retrieve):
     return atlas_configs[atlas_name][to_retrieve]
 
 
-def init_output_grid_wf() -> Workflow:
-    """Generate a non-oblique, uniform voxel-size grid around a brain.
+def init_output_grid_wf(output_space=None) -> Workflow:
+    """Generate a non-oblique grid around a template brain, for template-space outputs.
 
     The template image is cropped to its non-zero extent with a margin
-    (AFNI's ``3dAutobox``), deobliqued, and resampled to the requested output
-    resolution.
-    When no ``--output-resolution`` was given, the voxel size is taken from the
-    input image.
+    (AFNI's ``3dAutobox``) and deobliqued.
+    The voxel size then comes from the resolution of the requested output space:
+
+    * a physical size (``res-2mm``) is used as given;
+    * a TemplateFlow label (``res-2``) keeps the voxel size of the template image,
+      which was fetched at that resolution;
+    * with no resolution, the smallest voxel dimension of ``input_image`` (the DWI
+      reference) is used.
+
+    Parameters
+    ----------
+    output_space : :obj:`~qsirecon.utils.spaces.SpaceSpec`, optional
+        The requested output space. Defaults to the one given with ``--output-spaces``.
 
     Inputs
     ------
     template_image
-        A brain-masked image in the space the grid should cover, typically the
-        template image.
+        The brain-masked template, at the TemplateFlow resolution of the output space.
     input_image
-        The image whose voxel size is used when no output resolution was requested,
+        The image whose voxel size is used when the output space has no resolution,
         typically the DWI reference image.
 
     Outputs
@@ -1100,12 +1131,12 @@ def init_output_grid_wf() -> Workflow:
         niu.IdentityInterface(fields=['template_image', 'input_image']), name='inputnode'
     )
     outputnode = pe.Node(niu.IdentityInterface(fields=['grid_image']), name='outputnode')
-    # Create the output reference grid_image
-    if config.workflow.output_resolution is None:
-        voxel_size = traits.Undefined
-    else:
-        voxel_size = config.workflow.output_resolution
-    padding = 4 if config.workflow.infant else 8
+
+    if output_space is None:
+        output_space = config.workflow.output_space()
+
+    resolution = output_space.resolution
+    padding = 4 if output_space.is_infant else 8
 
     autobox_template = pe.Node(
         afni.Autobox(outputtype='NIFTI_GZ', padding=padding), name='autobox_template'
@@ -1113,18 +1144,30 @@ def init_output_grid_wf() -> Workflow:
     deoblique_autobox = pe.Node(
         afni.Warp(outputtype='NIFTI_GZ', deoblique=True), name='deoblique_autobox'
     )
-    voxel_size_chooser = pe.Node(
-        VoxelSizeChooser(voxel_size=voxel_size), name='voxel_size_chooser'
-    )
-    resample_to_voxel_size = pe.Node(
-        afni.Resample(outputtype='NIFTI_GZ'), name='resample_to_voxel_size'
-    )
-
     workflow.connect([
         (inputnode, autobox_template, [('template_image', 'in_file')]),
         (autobox_template, deoblique_autobox, [('out_file', 'in_file')]),
+    ])  # fmt:skip
+
+    if resolution is not None and resolution.kind == 'label':
+        # The template was fetched at the requested voxel size
+        workflow.connect([(deoblique_autobox, outputnode, [('out_file', 'grid_image')])])
+        return workflow
+
+    resample_to_voxel_size = pe.Node(
+        afni.Resample(outputtype='NIFTI_GZ'), name='resample_to_voxel_size'
+    )
+    workflow.connect([
         (deoblique_autobox, resample_to_voxel_size, [('out_file', 'in_file')]),
         (resample_to_voxel_size, outputnode, [('out_file', 'grid_image')]),
+    ])  # fmt:skip
+
+    if resolution is not None:
+        resample_to_voxel_size.inputs.voxel_size = tuple(resolution.zooms)
+        return workflow
+
+    voxel_size_chooser = pe.Node(VoxelSizeChooser(), name='voxel_size_chooser')
+    workflow.connect([
         (inputnode, voxel_size_chooser, [('input_image', 'input_image')]),
         (voxel_size_chooser, resample_to_voxel_size, [(('voxel_size', _tupleize), 'voxel_size')])
     ])  # fmt:skip

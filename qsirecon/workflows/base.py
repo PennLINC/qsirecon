@@ -85,7 +85,7 @@ def init_single_subject_recon_wf(subject_id):
     )
     from ..interfaces.reports import AboutSummary, SubjectSummary
     from ..utils.atlases import collect_atlases
-    from ..utils.bids import collect_anatomical_data, get_entity
+    from ..utils.bids import collect_anatomical_data
     from .recon.anatomical import (
         init_dwi_recon_anatomical_workflow,
         init_highres_recon_anatomical_wf,
@@ -165,8 +165,13 @@ to workflows in *QSIRecon*'s documentation]\
             subject_id=subject_id,
             session_id=_session_filter,
             needs_anat_transform=bool(config.execution.atlases),
-            infant_mode=config.workflow.infant,
             bids_filters=config.execution.bids_filters or {},
+        )
+
+        # The dataset's template transforms are only needed here, to choose atlases with
+        template_xfm_edges = highres_anat_statuses[anat_key].pop(
+            'template_xfm_edges',
+            [],
         )
 
         config.loggers.workflow.info(
@@ -203,29 +208,22 @@ to workflows in *QSIRecon*'s documentation]\
             atlas_output_dir = os.path.join(config.execution.output_dir, 'sourcedata', 'atlases')
             os.makedirs(atlas_output_dir, exist_ok=True)
 
-            # Limit atlases to ones in the specified space.
-            xfm_to_anat = anat_data.get('template_to_acpc_xfm')
-            if xfm_to_anat is None:
+            if not template_xfm_edges:
                 raise ValueError(
-                    'Atlases were requested, but no template-to-ACPC transform is available '
-                    f'for {anat_label}.'
+                    'Atlases were requested, but the input dataset has no transforms '
+                    f'between a template and the anatomical space for {anat_label}.'
                 )
 
-            template_space = get_entity(xfm_to_anat, 'from')
-            bids_filters = (config.execution.bids_filters or {}).copy()
-            bids_filters['atlas'] = bids_filters.get('atlas', {})
-            bids_filters['atlas']['template'] = template_space
-
             # Collect atlases across datasets, including built-in atlases.
+            # Each atlas is taken from the template with the shortest chain of transforms
+            # to the anatomical space, and carries that chain. The output space plays no
+            # part: atlases are only ever written in the space of the DWI.
             atlas_configs = collect_atlases(
                 datasets=config.execution.datasets,
                 atlases=config.execution.atlases,
-                bids_filters=bids_filters,
+                bids_filters=config.execution.bids_filters or {},
+                xfm_edges=template_xfm_edges,
             )
-            # Patch the transform into the atlas configs. Unused.
-            # This is a placeholder until we can support atlases in various spaces.
-            for atlas_name in atlas_configs.keys():
-                atlas_configs[atlas_name]['xfm_to_anat'] = xfm_to_anat
 
             # Write template-space atlases to sourcedata
             for atlas_name, atlas_config in atlas_configs.items():
@@ -354,7 +352,7 @@ to workflows in *QSIRecon*'s documentation]\
         SubjectSummary(
             subject_id=subject_id,
             subjects_dir=config.execution.fs_subjects_dir,
-            std_spaces=['MNIInfant' if config.workflow.infant else 'MNI152NLin2009cAsym'],
+            std_spaces=[config.workflow.output_space().fullname],
             nstd_spaces=[],
             dwi=dwi_files,
             t1w=t1w_files,

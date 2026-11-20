@@ -121,7 +121,7 @@ distance of {romdd} in DSI Studio (version {DSI_STUDIO_VERSION}). """
         connect_anat_underlay(workflow, inputnode, plot_peaks, inputs_dict)
 
         # Plot targeted regions
-        if inputs_dict['has_qsiprep_anat_transforms']:
+        if inputs_dict.get('has_odf_rois'):
             ds_report_odfs = pe.Node(
                 DerivativesDataSink(
                     desc='GQIODF',

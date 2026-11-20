@@ -309,7 +309,15 @@ class VoxelSizeChooser(SimpleInterface):
 
 
 class _GetTemplateInputSpec(BaseInterfaceInputSpec):
-    template_name = traits.Str(mandatory=True)
+    template_name = traits.Str(
+        mandatory=True,
+        desc='TemplateFlow template name, with any cohort appended as "+<cohort>".',
+    )
+    resolution = traits.Str(
+        '1',
+        usedefault=True,
+        desc='TemplateFlow resolution label to fetch the template at.',
+    )
 
 
 class _GetTemplateOutputSpec(BaseInterfaceInputSpec):
@@ -329,28 +337,28 @@ class GetTemplate(SimpleInterface):
         if '+' in template_name:
             template_name, cohort = template_name.split('+')
 
-        template_file = str(
-            get_template(
+        found = {}
+        for name, desc, suffix in (
+            ('template_file', None, 'T1w'),
+            ('mask_file', 'brain', 'mask'),
+        ):
+            files = get_template(
                 template_name,
                 cohort=cohort,
-                resolution='1',
-                desc=None,
-                suffix='T1w',
+                resolution=self.inputs.resolution,
+                desc=desc,
+                suffix=suffix,
                 extension='.nii.gz',
-            ),
-        )
-        mask_file = str(
-            get_template(
-                template_name,
-                cohort=cohort,
-                resolution='1',
-                desc='brain',
-                suffix='mask',
-                extension='.nii.gz',
-            ),
-        )
+            )
+            if not files or isinstance(files, list):
+                raise FileNotFoundError(
+                    f'Expected one {suffix} image for template {self.inputs.template_name} at '
+                    f'res-{self.inputs.resolution} in TemplateFlow, but found: {files}'
+                )
 
-        self._results['template_file'] = template_file
-        self._results['mask_file'] = mask_file
+            found[name] = str(files)
+
+        self._results['template_file'] = found['template_file']
+        self._results['mask_file'] = found['mask_file']
 
         return runtime
