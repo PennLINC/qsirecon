@@ -169,9 +169,9 @@ This workflow produces :ref:`mrtrix_dwi_outputs`.
 ``pyafq_tractometry``
 =====================
 
-This workflow uses the AFQ :footcite:p:`pyafq2` implemented in Python :footcite:p:`pyafq` to recognize
-major white matter pathways within the tractography, and then extract tissue properties along
-those pathways. See the `pyAFQ documentation <https://tractometry.org/pyAFQ/>`_ .
+This workflow uses the AFQ :footcite:p:`pyafq2` implemented in Python
+:footcite:p:`pyafq,pyafq3` to recognize major white matter pathways within the tractography,
+and then extract tissue properties along those pathways. See the `pyAFQ documentation <https://tractometry.org/pyAFQ/>`_ .
 
 pyAFQ (version 3 and later) requires anatomical images that are aligned with the DWI data:
 the preprocessed T1w image, its brain mask, and the CSF, GM and WM tissue probability maps
@@ -182,8 +182,9 @@ and define the white matter/gray matter interface in which tractography is seede
 Because these come from QSIPrep, pyAFQ's neural-network segmentation models are not needed.
 Any pyAFQ parameter in the recon spec that the installed version of pyAFQ does not recognize
 is dropped with a warning in the log.
-A parameter set to an empty string (``''``) is not passed to pyAFQ, so pyAFQ's own default
-applies.
+A top-level parameter set to an empty string (``''``) is passed to pyAFQ as ``None``.
+A tracking, segmentation or cleaning parameter set to an empty string is not passed,
+so pyAFQ's own default applies.
 
 pyAFQ loads its bundle templates from ``$AFQ_HOME`` (``~/AFQ_data`` by default) and downloads
 them from figshare when they are missing.

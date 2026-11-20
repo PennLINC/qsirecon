@@ -34,7 +34,7 @@ dependencies = [
     "packaging",  # for version string parsing
     "psutil <= 5.9.8",
     # MPAT (the mpat extra) needs pyAFQ 3.4 or newer.
-    "pyAFQ >= 3.4,< 4",
+    "pyAFQ >= 3.4, < 4",
     "pybids",
     "pyyaml",
     "requests",
