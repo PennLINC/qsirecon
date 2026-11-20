@@ -47,7 +47,9 @@ def _parse_qsirecon_params_dict(params_dict):
         for arg in args:
             known_args.add(arg)
             if arg in params_dict:
-                kwargs[arg] = afb.pyafq_str_to_val(params_dict[arg])
+                value = params_dict[arg]
+                # Empty strings mean None, but pyafq_str_to_val raises an IndexError on them
+                kwargs[arg] = None if value == '' else afb.pyafq_str_to_val(value)
 
     nested_params = {
         ('tracking_params',): get_default_args(aft.track),
@@ -57,7 +59,8 @@ def _parse_qsirecon_params_dict(params_dict):
     for path, defaults in nested_params.items():
         for arg in defaults:
             known_args.add(arg)
-            if arg not in params_dict:
+            # An empty string keeps pyAFQ's default, which is not always None
+            if params_dict.get(arg, '') == '':
                 continue
 
             target = kwargs
