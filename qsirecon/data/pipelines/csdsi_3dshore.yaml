@@ -25,8 +25,8 @@ nodes:
             algorithm: msmt_csd
             max_sh:
             - 8
-            - 0
-            - 0
+            - 8
+            - 8
         mtnormalize: true
         response:
             algorithm: dhollander
