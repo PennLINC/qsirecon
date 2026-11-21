@@ -98,6 +98,138 @@ def shrink_dataset_fov(src_qsiprep_dir, dest_qsiprep_dir, target_fov_mm=100.0):
     return dest_qsiprep_dir
 
 
+def add_synthetic_qc_maps(src_qsiprep_dir, dest_qsiprep_dir):
+    """Copy a QSIPrep-derivative tree and add synthetic voxelwise QC maps to it.
+
+    TEMPORARY: the integration test datasets predate QSIPrep's QC maps, so without this
+    the ``qsiprep_qc_scalars`` node is dropped and never runs in the integration tests.
+    Remove this once the datasets are regenerated with a QSIPrep that writes the maps.
+
+    Next to each ``*_desc-preproc_dwi.nii.gz``, this writes the maps
+    :func:`~qsirecon.interfaces.qc_maps.find_qsiprep_qc_maps` looks for, with sidecars,
+    in the layouts that need reducing to 3D:
+
+    * a 4D noise map with one volume per (pretend) series, and ``NoiseMapIndex``
+    * a b=0 tSNR map
+    * an eddy-style 4D CNR map: the b=0 tSNR, then one volume per shell
+    * a 4D Jacobian map with ``JacobianWeightIndex``
+    * a 5D ITK displacement field
+
+    The values are smooth fields scaled to plausible ranges, not real estimates.
+    A map that already exists is left alone, so this does nothing to a dataset that
+    has real QC maps.
+
+    Parameters
+    ----------
+    src_qsiprep_dir : str
+        Path to a QSIPrep-derivative directory (the qsirecon input directory).
+    dest_qsiprep_dir : str
+        Where to write the copy. Overwritten if it already exists.
+
+    Returns
+    -------
+    str
+        ``dest_qsiprep_dir`` (for use as the qsirecon input directory).
+    """
+    import json
+
+    from qsirecon.interfaces.qc_maps import (
+        B0_THRESHOLD,
+        PREPROC_SUFFIX,
+        _shells,
+        find_qsiprep_qc_maps,
+    )
+
+    if os.path.isdir(dest_qsiprep_dir):
+        shutil.rmtree(dest_qsiprep_dir)
+    shutil.copytree(src_qsiprep_dir, dest_qsiprep_dir)
+
+    dwi_files = sorted(
+        glob(os.path.join(dest_qsiprep_dir, '**', f'*_{PREPROC_SUFFIX}.nii.gz'), recursive=True)
+    )
+    if not dwi_files:
+        raise ValueError(f'No *_{PREPROC_SUFFIX}.nii.gz found under {dest_qsiprep_dir}')
+
+    def _write(path, data, affine, sidecar):
+        nb.Nifti1Image(data.astype(np.float32), affine).to_filename(path)
+        sidecar = {'Description': 'SYNTHETIC map written for the integration tests', **sidecar}
+        with open(path.replace('.nii.gz', '.json'), 'w') as fobj:
+            json.dump(sidecar, fobj, indent=2)
+
+    for dwi_file in dwi_files:
+        existing = find_qsiprep_qc_maps(dwi_file)
+        prefix = dwi_file[: -len(f'{PREPROC_SUFFIX}.nii.gz')]
+        bval_file = dwi_file.replace('.nii.gz', '.bval')
+        bvals = np.atleast_1d(np.loadtxt(bval_file))
+        n_vols = bvals.size
+
+        img = nb.load(dwi_file)
+        affine = img.affine
+        data = img.get_fdata(dtype=np.float32)
+        b0 = data[..., bvals <= B0_THRESHOLD].mean(axis=3)
+        in_brain = b0 > 0.2 * np.percentile(b0, 99)
+
+        # A smooth field rising from 1 at the center of the grid to 2 at the corners
+        grid = np.indices(b0.shape, dtype=np.float32)
+        center = (np.array(b0.shape, dtype=np.float32) - 1) / 2
+        radius = np.sqrt(
+            sum(((grid[axis] - center[axis]) / max(center[axis], 1)) ** 2 for axis in range(3))
+        )
+        field = 1 + radius / radius.max()
+
+        sigma = 0.02 * np.median(b0[in_brain]) * field
+        # Two pretend series, splitting the volumes in half; the second is noisier
+        series_index = [0 if vol < n_vols // 2 else 1 for vol in range(n_vols)]
+        if 'noise_map_file' not in existing:
+            _write(
+                f'{prefix}stat-std_desc-noise_dwimap.nii.gz',
+                np.stack([sigma, 1.25 * sigma], axis=-1),
+                affine,
+                {
+                    'Units': 'arbitrary',
+                    'DenoisingMethod': 'dwidenoise',
+                    'Quantity': 'sigma',
+                    'NoiseMapIndex': series_index,
+                },
+            )
+
+        tsnr = np.where(in_brain, b0 / sigma, 0)
+        if 'tsnr_file' not in existing:
+            _write(f'{prefix}stat-tsnr_dwimap.nii.gz', tsnr, affine, {})
+
+        if 'cnr_file' not in existing:
+            shell_cnr = [tsnr * np.exp(-bval * 0.0007) for bval in _shells(bval_file)]
+            _write(
+                f'{prefix}model-eddy_stat-cnr_dwimap.nii.gz',
+                np.stack([tsnr, *shell_cnr], axis=-1),
+                affine,
+                {},
+            )
+
+        # Opposite phase-encoding directions stretch and compress the same region
+        stretch = 0.2 * np.exp(-(((grid[1] - center[1]) / max(center[1], 1)) ** 2) * 4)
+        if 'jacobian_file' not in existing:
+            _write(
+                f'{prefix}desc-jacobian_dwimap.nii.gz',
+                np.stack([1 + stretch, 1 / (1 + stretch)], axis=-1),
+                affine,
+                {'SignalRedistributionMethod': 'Jacobian', 'JacobianWeightIndex': series_index},
+            )
+
+        if 'sdc_displacement_file' not in existing:
+            displacement = np.zeros(b0.shape + (1, 3), dtype=np.float32)
+            # Up to 10 mm along the second (phase-encoding) axis, largest at the front
+            displacement[..., 0, 1] = 10 * stretch * (grid[1] / max(b0.shape[1] - 1, 1))
+            _write(
+                f'{prefix}desc-sdc_displacement.nii.gz',
+                displacement,
+                affine,
+                {'EstimationMethod': 'synthetic'},
+            )
+
+    return dest_qsiprep_dir
+
+
 def get_test_data_path():
     """Return the path to test datasets, terminated with separator.
 

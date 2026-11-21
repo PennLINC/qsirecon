@@ -15,6 +15,7 @@ from qsirecon.cli.workflow import build_boilerplate, build_workflow, copy_boiler
 from qsirecon.data import load as load_data
 from qsirecon.reports.core import generate_reports
 from qsirecon.tests.utils import (
+    add_synthetic_qc_maps,
     check_generated_files,
     download_test_data,
     freesurfer_license,
@@ -654,6 +655,10 @@ def test_scalar_mapper(data_dir, output_dir, working_dir):
     dataset_dir = os.path.join(dataset_dir, 'multishell_output', 'qsiprep')
     out_dir = os.path.join(output_dir, TEST_NAME)
     work_dir = os.path.join(working_dir, TEST_NAME)
+
+    # TEMPORARY: multishell_output predates QSIPrep's QC maps, so add synthetic ones to
+    # exercise the qsiprep_qc_scalars node. Remove once the dataset is regenerated.
+    dataset_dir = add_synthetic_qc_maps(dataset_dir, os.path.join(work_dir, 'qc_qsiprep'))
 
     parameters = [
         dataset_dir,
