@@ -11,6 +11,9 @@ ARG TAG_TORTOISECUDA=26.1.3
 ARG TAG_TRXVIZ=0.6.0
 # sha256 of TRXViz-linux-legacy.tar.gz (built on Debian 11, glibc 2.31) for TAG_TRXVIZ
 ARG TRXVIZ_SHA256=c8a4bbd1277f4e543aa54dcf8230ca4a11b8cd7f1ec6180481426abc2473f8be
+ARG TAG_ATLASPACK=0.2.0
+# sha256 of atlaspack-${TAG_ATLASPACK}.tar.gz, from the release's SHA256SUMS asset
+ARG ATLASPACK_SHA256=c06657d97bfbf26bcb3cf36252c3086bd7441f8e633e1d7b2d8f1fbff1a27719
 
 FROM pennlinc/qsiprep-freesurfer:${TAG_FREESURFER} AS build_freesurfer
 FROM pennlinc/qsiprep-ants:${TAG_ANTS} AS build_ants
@@ -180,9 +183,13 @@ RUN if [ -f /usr/lib/x86_64-linux-gnu/libQt5Core.so.5 ]; then \
       strip --remove-section=.note.ABI-tag /usr/lib/x86_64-linux-gnu/libQt5Core.so.5; \
     fi && ldconfig
 
-# Download atlases from AtlasPack (stored in tar.gz file on Box)
+# Download atlases from AtlasPack (BIDS-Atlas dataset published as a GitHub release asset)
+ARG TAG_ATLASPACK
+ARG ATLASPACK_SHA256
 RUN mkdir -p "/home/qsirecon/.cache/qsirecon" && \
-    curl -o AtlasPack.tar.gz -sSL "https://upenn.box.com/shared/static/0gxdoe77tuih5p9ainn4utdqj3kcq7p1.tar.gz" && \
+    curl -fsSL -o AtlasPack.tar.gz \
+        "https://github.com/PennLINC/AtlasPack/releases/download/${TAG_ATLASPACK}/atlaspack-${TAG_ATLASPACK}.tar.gz" && \
+    echo "${ATLASPACK_SHA256}  AtlasPack.tar.gz" | sha256sum -c - && \
     tar -xzf AtlasPack.tar.gz && \
     mv AtlasPack "/home/qsirecon/.cache/qsirecon/AtlasPack" && \
     rm AtlasPack.tar.gz
